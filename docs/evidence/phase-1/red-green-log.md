@@ -38,3 +38,9 @@ Acceptance: invalid transitions remain issues without mutation, completion requi
 - GREEN: added qualification/roster contracts and the pure staffing reducer; 2 files and 5 tests passed.
 - Invariants: mandatory failures remain blocking despite exceptions; a second role or missing hard capability is rejected; disconnected active state becomes unavailable and invalidates qualification.
 - REFACTOR verification: public exports formatted; `npm.cmd run typecheck` passed.
+## Task 5 - Knowledge lifecycle truth slice
+
+- RED: focused knowledge suites failed to import the absent `knowledge.js` and `knowledge-truth.js` modules; zero tests ran.
+- GREEN: added lifecycle contracts, pure reduction, and current-knowledge selection; 2 files and 5 tests passed.
+- Invariants: provenance is required; adapter findings remain provisional; manager promotion is explicit; unauthorized, stale, rejected, and superseded records remain inspectable but not current.
+- REFACTOR verification: public exports formatted; `npm.cmd run typecheck` passed.

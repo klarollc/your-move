@@ -31,7 +31,7 @@ For every behavioral task: record the focused command and expected RED failure b
   - Files: contracts staffing test/source; domain staffing reducer/test.
   - Dependencies: Tasks 1-2.
 
-- [ ] Task 5: Knowledge lifecycle truth slice
+- [x] Task 5: Knowledge lifecycle truth slice
   - Acceptance: provenance and lifecycle stay visible; provisional findings do not self-promote; unusable records do not appear current.
   - Verify: focused unit tests over promotion, rejection, conflict, staleness, and supersession.
   - Files: contracts knowledge test/source; domain knowledge reducer/test.
