@@ -31,13 +31,14 @@
     "test:unit": "vitest run --project unit --passWithNoTests",
     "test:integration": "vitest run --project integration --passWithNoTests",
     "test:live:codex": "vitest run --project integration packages/runtime-codex/src/codex-live.integration.test.ts",
+    "test:ui-contract": "node --test scripts/graybox-evidence.test.mjs && vitest run --project contract packages/contracts/src/workspace.contract.test.ts",
     "test:component": "vitest run --project component",
     "test:contract": "vitest run --project contract --passWithNoTests",
     "test:e2e": "playwright test --grep @e2e --project chromium-1440 --project chromium-1280",
     "test:a11y": "playwright test --grep @a11y --project chromium-1440 --project chromium-1280",
     "test:visual": "playwright test --grep @visual --project chromium-1440 --project chromium-1280",
     "build": "npm run typecheck && npm run build --workspace @cuckcode/web",
-    "verify": "npm run test:protocol && npm run test:roles && npm run test:qualification && npm run test:scaffold && npm run format:check && npm run lint && npm run typecheck && npm run test:unit && npm run test:integration && npm run test:contract && npm run build && npm run test:e2e && npm run test:a11y && npm run test:visual"
+    "verify": "npm run test:protocol && npm run test:roles && npm run test:qualification && npm run test:scaffold && npm run test:ui-contract && npm run format:check && npm run lint && npm run typecheck && npm run test:unit && npm run test:component && npm run test:integration && npm run test:contract && npm run build && npm run test:e2e && npm run test:a11y && npm run test:visual"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
