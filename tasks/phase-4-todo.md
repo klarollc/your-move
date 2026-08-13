@@ -11,7 +11,7 @@ Composition: `.ui-craft/spec.md`
   - Acceptance: consistent phase definition; graybox cannot satisfy high-fidelity gates.
   - Verify: document/validator tests and source-boundary scan.
 
-- [ ] Task 2: Workspace read-model and intent contracts.
+- [x] Task 2: Workspace read-model and intent contracts.
   - Acceptance: stable DOM/canvas twins, canonical cause/freshness, reciprocal commands, fail-closed validation.
   - Verify: focused contract/unit tests.
 

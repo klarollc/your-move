@@ -11,3 +11,12 @@ Date: 2026-08-13
 - REFACTOR: formatting applied; the focused test remained green.
 - Verification: focused Node test, ESLint, TypeScript, and `git diff --check` passed.
 - Invariant: graybox rendered evidence can prove composition and interaction only. It cannot promote an asset, token, baseline, golden state, or art direction.
+## Task 2 — Workspace read model and intent contracts
+
+Date: 2026-08-13
+
+- RED: focused Vitest contract failed because `workspace.js` did not exist.
+- GREEN: 4 contract tests passed for stable DOM/canvas twins, canonical cause/freshness, cross-entity attention integrity, current-revision commands, and fail-closed stale/cross-project/secret/authority cases.
+- Refinement: the first GREEN attempt returned a generic invalid-command code for provider-authored manager authority; validation order was corrected and the stable `WORKSPACE_AUTHORITY_INVALID` result passed.
+- Verification: focused contract, ESLint, TypeScript, and diff checks passed.
+- Invariant: canvas and DOM are equal projections of one versioned workspace read model; manager-only authority cannot be supplied by a provider or stale browser state.

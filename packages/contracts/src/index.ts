@@ -5,3 +5,4 @@ export * from "./knowledge.js";
 export * from "./collaboration.js";
 export * from "./persistence.js";
 export * from "./runtime.js";
+export * from "./workspace.js";
