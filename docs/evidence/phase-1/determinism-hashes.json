@@ -1,0 +1,22 @@
+{
+    "capturedAt":  "2026-08-13T09:11:07.6822191-07:00",
+    "implementationCommit":  "69ac58ccae419a5735fddb9c840a855edc8a2d1f",
+    "scenarioCount":  10,
+    "normalSnapshotSha256":  "a87566774cc87b19d0a01a6500f0fd96cf7b222a7c5ee11bf311e8c0f28f5679",
+    "reversedNormalSnapshotSha256":  "a87566774cc87b19d0a01a6500f0fd96cf7b222a7c5ee11bf311e8c0f28f5679",
+    "normalSceneSha256":  "9baa9c02eb57cc8f4cd1c42f68ad49d7e790b93e2b13bc7f03d41cf98a537f87",
+    "humanAgentParity":  true,
+    "attentionCount":  1,
+    "scenarios":  {
+                      "normal-completion":  "9a0d52161f3cead5aba3272ae6511c5ca7d74dab708b54a4273b0e0b46bbafee",
+                      "manager-question-response":  "bfca3af5ac932cb24df1037d9cdade76e1ab533e6033ee59c0bcdba6bcfd44b6",
+                      "permission-denial":  "74753703485c94cb26f1f7b955c5fb324f6ec6bb59cf96ea7fb8d5653a7136ef",
+                      "dependency-wait":  "511034f7f30da514ab1f38eb61ad0f7621f8a05e63d683e3f21575aa9126f135",
+                      "test-failure-revision":  "08d26f8cdaa0f559c34a62df9b445c8e2c5611dfff5dad42bed5f991aa676149",
+                      "agent-disconnect":  "13e2d894c187e60bf52c0e864dea721c845410d967c74d5eb4fa1512ca673c7a",
+                      "agent-disconnect-recovery":  "eee0cc3500ebabbd3b0a6328f359a99862e4bc3d0921cc85042534f6b1ee12b0",
+                      "stale-out-of-order":  "0655262e32338e955f1676668925e4d1ee1077f5bd5eeabf54de1291cff94ad6",
+                      "cancellation":  "49bbc0326902ef69ff88bcb835481cb9aee9730b936096b2c84a37c74b6db24c",
+                      "reviewer-disagreement":  "a5a4b1535bea553f54510ed666629c3830365e29dfb18a8d5c3419b2df73c195"
+                  }
+}

@@ -76,3 +76,10 @@ Acceptance: invalid transitions remain issues without mutation, completion requi
 - Coverage: normal completion, manager question/response, permission denial, dependency wait, test failure/revision, disconnect, disconnect/recovery, stale/out-of-order input, cancellation, and reviewer disagreement.
 - Public-contract proof: every emitted event validates; repeated generation is byte-identical; replay, scene, and attention assertions pass.
 - Boundary verification: typecheck passed; source scan found no wall-clock read, randomness, provider/network call, Node process API, or UI dependency. Lockfile refresh audited 307 packages with zero vulnerabilities and ran no install scripts.
+## Phase 1 full machine gate
+
+- First `npm.cmd run verify`: stopped at lint because the reciprocal parity test removed the human-only label through an unused `_label` binding. No later gate was executed in that run.
+- Minimal correction: assert that the human label is non-empty before returning the shared actionable record.
+- Final `npm.cmd run verify`: passed scaffold (2), formatting, lint, typecheck, unit (15 files, 42 tests), integration (1 file, 2 tests), contract (2 files, 17 tests), production build, Chromium E2E (4), axe (2), and the no-baseline visual command.
+- Dependency audit: 307 installed packages, zero known vulnerabilities, and no unreviewed install scripts.
+- Implementation commit verified: `69ac58ccae419a5735fddb9c840a855edc8a2d1f`.

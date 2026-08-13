@@ -1,0 +1,36 @@
+{
+    "capturedAt":  "2026-08-13T09:11:07.7324158-07:00",
+    "timezone":  "Pacific Standard Time",
+    "os":  "Microsoft Windows NT 10.0.26200.0",
+    "architecture":  "X64",
+    "powershell":  "5.1.26100.9168",
+    "node":  "v24.18.0",
+    "npm":  "11.16.0",
+    "git":  "git version 2.53.0.windows.2",
+    "codex":  "codex-cli 0.146.0",
+    "implementationCommit":  "69ac58ccae419a5735fddb9c840a855edc8a2d1f",
+    "packageLockSha256":  "dada937683343a18c500e384989bc8aadc37305292c695e0cef8092aae09ec9d",
+    "verify":  {
+                   "scaffold":  2,
+                   "unit":  42,
+                   "integration":  2,
+                   "contract":  17,
+                   "chromiumE2e":  4,
+                   "axe":  2,
+                   "format":  true,
+                   "lint":  true,
+                   "typecheck":  true,
+                   "build":  true,
+                   "visualCommand":  true
+               },
+    "npmAuditVulnerabilities":  {
+                                    "info":  0,
+                                    "low":  0,
+                                    "moderate":  0,
+                                    "high":  0,
+                                    "critical":  0,
+                                    "total":  0
+                                },
+    "unreviewedInstallScripts":  0,
+    "sourceBoundaryScan":  "clean"
+}

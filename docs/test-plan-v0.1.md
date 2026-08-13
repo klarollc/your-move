@@ -1,6 +1,6 @@
 # CuckCode test and quality plan v0.1
 
-Status: **Phase 0 accepted 2026-08-13; activated for owner-approved Phase 1 implementation**
+Status: **Phase 0 accepted 2026-08-13; Phase 1 machine gate passed and owner acceptance is pending**
 Applies to: all scaffold and implementation phases, including D-26 reciprocal usability  
 Principle: passing automated checks is necessary but never substitutes for rendered, accessibility, or owner visual evidence.
 

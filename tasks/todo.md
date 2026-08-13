@@ -1,6 +1,6 @@
 # Phase 1 Task Checklist
 
-Status: **Owner-approved for Phase 1 implementation on 2026-08-13**
+Status: **Tasks complete; Phase 1 owner acceptance pending**
 Plan: `tasks/plan.md`
 
 For every behavioral task: record the focused command and expected RED failure before implementation, make the smallest GREEN change, refactor only while green, and append evidence under `docs/evidence/phase-1/`.
@@ -69,5 +69,5 @@ For every behavioral task: record the focused command and expected RED failure b
   - Files: simulator and scenario tests/sources; package references if necessary.
   - Dependencies: Tasks 2 and 7-9.
 
-- [ ] Checkpoint C: run `npm.cmd run verify`; capture environment, invariant matrix, RED-GREEN record, hashes, source-boundary scan, and commits.
+- [x] Checkpoint C: run `npm.cmd run verify`; capture environment, invariant matrix, RED-GREEN record, hashes, source-boundary scan, and commits.
 - [ ] Owner Phase 1 gate: accept evidence or request corrections. Phase 2 remains unauthorized.
