@@ -10,5 +10,5 @@
     "types": ["vite/client"]
   },
   "include": ["src", "vite.config.ts"],
-  "references": [{ "path": "../../packages/ui-system" }]
+  "references": [{ "path": "../../packages/application" }, { "path": "../../packages/ui-system" }]
 }

@@ -1,6 +1,12 @@
+import { executeAttentionCommand } from "@cuckcode/application";
 import { createOfficeCamera, createOfficeLayout, officeLayoutPolicy } from "@cuckcode/ui-system";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import type {
+  AttentionDisposition,
+  OfficeAttentionItem,
+  OfficeDispositionResult,
+} from "./attention-rail.js";
 import { OfficeShell, type OfficeShellState } from "./office-shell.js";
 import {
   createOfficeSceneAdapter,
@@ -23,6 +29,29 @@ const sceneDescriptors: readonly SceneDescriptor[] = Object.freeze([
   zone("zone_review", 230, 210, 180, 110, 9),
   zone("zone_manager", -230, 370, 240, 100, 10),
   zone("zone_delivery", 260, 370, 180, 100, 11),
+]);
+
+const officeAttention: readonly OfficeAttentionItem[] = Object.freeze([
+  {
+    attentionId: "attention_blocked_test",
+    entityId: "agent_test_engineer",
+    label: "Test evidence is blocked",
+    reason: "blocked",
+    priority: 10,
+    causeEventId: "event_test_blocked",
+    plainLanguage: "The Test Engineer needs the current browser evidence.",
+    requiredAction: "Redirect the evidence request or decline the blocker.",
+  },
+  {
+    attentionId: "attention_graybox_review",
+    entityId: "agent_implementation_engineer",
+    label: "Graybox review requested",
+    reason: "review_requested",
+    priority: 40,
+    causeEventId: "event_review_requested",
+    plainLanguage: "The Implementation Engineer is waiting for a manager disposition.",
+    requiredAction: "Approve, decline, defer, cancel, or redirect the request.",
+  },
 ]);
 
 export function OfficeWorkspace({ initialState }: Readonly<{ initialState: OfficeShellState }>) {
@@ -55,8 +84,60 @@ export function OfficeWorkspace({ initialState }: Readonly<{ initialState: Offic
       onResetView={() => setCanvasKey((value) => value + 1)}
       selectedEntityId={selectedEntityId}
       onSelectEntity={setSelectedEntityId}
+      attention={officeAttention}
+      onDisposition={(item, intent, scope) =>
+        executeFixtureDisposition(initialState, item, intent, scope)
+      }
     />
   );
+}
+
+function executeFixtureDisposition(
+  state: OfficeShellState,
+  item: OfficeAttentionItem,
+  intent: AttentionDisposition,
+  scope: Record<string, string>,
+): OfficeDispositionResult {
+  const commandId = `command_${item.attentionId}_${intent}`;
+  const result = executeAttentionCommand({
+    command: {
+      schemaVersion: 1,
+      commandId,
+      projectId: "project_graybox",
+      expectedRevision: 42,
+      actor: { actorType: "manager", actorId: "manager_local" },
+      intent,
+      targetEntityId: item.entityId,
+      payload: { attentionId: item.attentionId, ...scope },
+    },
+    current: {
+      projectId: "project_graybox",
+      revision: 42,
+      freshness: state === "stale" ? "stale" : "current",
+      connection:
+        state === "offline" ? "disconnected" : state === "error" ? "timeout" : "connected",
+      attention: officeAttention,
+    },
+  });
+  if (!result.ok) {
+    return {
+      ok: false,
+      code: result.code,
+      ...(result.requiredAction ? { requiredAction: result.requiredAction } : {}),
+    };
+  }
+  return {
+    ok: true,
+    receipt: {
+      receiptId: result.receipt.receiptId,
+      acceptedRevision: result.receipt.acceptedRevision,
+      resultingRevision: result.receipt.resultingRevision,
+      targetEntityId: result.receipt.targetEntityId,
+      disposition: result.receipt.disposition,
+      correlationId: result.receipt.technicalScope.correlationId,
+      agentVisible: result.receipt.agentVisible,
+    },
+  };
 }
 
 function OfficeCanvas({
