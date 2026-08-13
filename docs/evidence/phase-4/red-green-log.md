@@ -110,3 +110,32 @@ Date: 2026-08-13
 - Accessibility: 4 focused axe scans passed across ready/fallback states at 1440×900 and 1280×800. Controls are native buttons with visible focus and no precision drag requirement. Manual screen reader and 200% zoom remain Task 15 gates.
 - Verification: camera unit 6/6; adapter lifecycle 4/4; combined Task 6/7 browser 8/8; camera axe 4/4; formatting, ESLint, TypeScript, production build, and diff checks passed.
 - Evidence boundary: this proves the bounded graybox camera probe only. It does not prove the Task 8 persistent shell/DOM parity, Checkpoint B, manual accessibility, high fidelity, art direction, or owner graybox acceptance.
+## Task 8 — React shell and equivalent Office outline
+
+Date: 2026-08-13
+
+- RED 1: focused component coverage failed because the semantic Office shell did not exist.
+- GREEN 1: 8 component tests passed for exactly three persistent structures, skip-link focus, seven zones, six people, 13 stable DOM/canvas twins, state/relationship/action semantics, a polite live region, and truthful loading/empty/partial/error/stale/offline/canvas-loss causes and recoveries.
+- Harness refinement: the first state-matrix run retained prior renders because this component project does not auto-clean between parameterized tests. Explicit Testing Library cleanup fixed the harness; no product behavior changed.
+- RED 2: focused browser coverage found the Phase 0 scaffold still on the default route and no state fixtures or canvas-loss recovery.
+- GREEN 2: the default route is now the graybox office workspace. A 13-entity Pixi scene and equivalent Office outline share stable IDs; keyboard Tab reaches the skip link first; Enter focuses the outline; real `webglcontextlost` removes the canvas, preserves causes/actions/outline, and Retry canvas remounts WebGL.
+- Unhappy paths: deterministic query fixtures cover loading, empty, partial, error, stale, offline, and canvas-loss while preserving Reset view and outline actions. Component coverage proves the full lattice; browser coverage proves offline and actual context loss/recovery.
+- Persistent chrome: project bar, office scene, and Office outline are the only three persistent structures. No inspector, metric panel, card dashboard, or dense status sidebar was introduced.
+- Test migration: three obsolete Phase 0 browser tests now assert the current title, workspace, equivalent outline, reduced-motion stability, axe compliance, and non-baseline current-build capture. They no longer overwrite Phase 0 screenshot evidence.
+- Browser-noise boundary: Chromium emits an exact WebGL driver performance warning containing `GPU stall due to ReadPixels`; the Task 8 failure collector excludes only that driver message. All application warnings/errors, request failures, and non-loopback requests remain failures.
+- Visual QA: direct 1280 current-build inspection passed for office-primary composition, visible six-role/team geometry, separated project bar, and internally scrollable outline/actions. Automated 1440 capture passed, but the local forwarding viewer rejected two resized copies; direct 1440 visual inspection is not claimed.
+- Verification: Task 8 component 8/8; focused shell E2E 4/4 across both viewports; migrated current-office browser checks 8/8; TypeScript, ESLint, formatting, build, and diff checks passed.
+- Evidence boundary: the default office is a neutral graybox and does not prove Task 9 shared selection/inspector, later attention/Library/motion work, manual accessibility, comprehension, high fidelity, art direction, or owner graybox acceptance.
+
+## Checkpoint B — Foundational office
+
+Date: 2026-08-13
+
+- Result: PASS.
+- Full repository gate: `npm.cmd run verify` passed.
+- Protocol: 4 tests and 275 exact Codex 0.146.0 schemas; roles: 3 tests and 6 pinned Candidate/non-executable Agency Agents roles; qualification: 16 tests.
+- Static/UI boundary: graybox evidence 3/3; workspace contracts 4/4; formatting, ESLint, TypeScript, production build, scaffold contract, and dependency boundaries passed.
+- Behavior: 26 unit files / 95 tests; 2 component files / 9 tests; 12 integration files / 38 tests plus one guarded live test skipped; 7 contract files / 35 tests.
+- Browser: 16 E2E, 10 axe, and 6 rendered current-build tests passed across Chromium 1440×900 and 1280×800, including reduced motion, clean application console/request inventory, real context-loss recovery, camera parity, and semantic outline access.
+- Evidence-integrity refinement: full verify revealed Task 8's unscoped global button padding changed all four Task 5 screenshot bytes. Shell button/focus rules were scoped to `.office-shell`; the four Task 5 captures were rerun and returned exactly to their registered SHA-256 values, while 8 focused shell component/E2E/axe/visual checks remained green.
+- Evidence boundary: Checkpoint B proves deterministic foundational graybox behavior only. Manual screen reader, 200% zoom, comprehension study, Tasks 9–15, owner graybox acceptance, high fidelity, and art direction remain open.

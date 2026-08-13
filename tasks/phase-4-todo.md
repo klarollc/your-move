@@ -37,11 +37,11 @@ Composition: `.ui-craft/spec.md`
   - Acceptance: fixed orientation, bounded controls, exact reset, deterministic cutaway and keyboard parity.
   - Verify: geometry/unit and two-viewport browser tests.
 
-- [ ] Task 8: React shell and equivalent Office outline.
+- [x] Task 8: React shell and equivalent Office outline.
   - Acceptance: approved persistent structures, semantic equivalence, truthful unhappy paths, visible focus.
   - Verify: component, axe, keyboard, and scaffold-replacement E2E.
 
-- [ ] Checkpoint B: foundational office behavior, two viewports, reduced motion, console/network, and full regressions.
+- [x] Checkpoint B: foundational office behavior, two viewports, reduced motion, console/network, and full regressions.
 
 - [ ] Task 9: Shared selection, focus, and contextual inspector.
   - Acceptance: one selection model; complete truthfulness answers; deterministic resize; focus restoration.
