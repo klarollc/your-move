@@ -10,3 +10,4 @@ docs/
 .ui-craft/
 AGENTS.md
 README.md
+packages/runtime-codex/protocol/*/schemas/

@@ -20,7 +20,7 @@ Prior checklist: `tasks/phase-2-todo.md`
   - Verify: `npm.cmd run test:runtime`.
   - Dependencies: Tasks 1-2.
 
-- [ ] Checkpoint A: runtime/contracts, format, lint, typecheck, schema/source scans, Tasks 1-3 evidence.
+- [x] Checkpoint A: runtime/contracts, format, lint, typecheck, schema/source scans, Tasks 1-3 evidence.
 
 - [ ] Task 4: Codex stdio supervisor and handshake
   - Acceptance: direct fixed spawn, bounded JSONL, strict handshake, redacted stderr, cleanup, auth distinction.

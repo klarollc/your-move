@@ -31,3 +31,16 @@ Date: 2026-08-13
 - GREEN: 5 contract tests passed for fragmented/coalesced framing, deterministic replay, duplicate/unknown responses, malformed/oversized lines, stderr isolation, and post-disconnect rejection.
 - REFACTOR: formatted the three scoped fake/test/export files; focused tests remained green.
 - Verification: `npm.cmd run typecheck` passed without Codex, authentication, network, wall-clock waits, or external effects.
+## Checkpoint A - Contracts, protocol, and deterministic fake
+
+Date: 2026-08-13
+
+- `npm.cmd run protocol:codex:check`: PASS, 275 files at version 0.146.0.
+- `npm.cmd run format:check`: PASS; generator-owned schemas are narrowly excluded and independently hash-checked.
+- `npm.cmd run lint`: PASS.
+- `npm.cmd run typecheck`: PASS.
+- `npm.cmd run test:runtime`: PASS, 2 files / 8 tests.
+- `npm.cmd run test:unit`: PASS, 18 files / 50 tests.
+- `npm.cmd run test:contract`: PASS, 6 files / 31 tests.
+- Secret-value scan: PASS; no `sk-`-style value of 20 or more identifier characters in production package/script sources outside the generated protocol.
+- Scope: machine/static evidence only; no browser or visual claim.
