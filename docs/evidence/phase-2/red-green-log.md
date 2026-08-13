@@ -30,3 +30,8 @@
 - Task 9 RED: receipt store absent. GREEN: 2 integration tests prove current-context lookup, snapshot-bound reconnect reuse, and once-only attributable versioned feedback delivery at a safe checkpoint.
 - Refactor gate: exact-optional typecheck rejected explicit undefined cleanup fields in refreshed runs. The implementation now omits stale optional fields structurally.
 - Combined gate: typecheck passed; unit 17 files/47 tests; integration 7 files/19 tests.
+## Task 10 - Recovery and integrity
+- RED: recovery module absent.
+- GREEN: 2 focused integration tests prove synchronous SQLite snapshotting, verified project-content copying, atomic no-overwrite publication, restored database/content equivalence, deterministic manifest structure, and visible content corruption.
+- Full persistence gate: 8 integration files/21 tests, including the existing crash/WAL recovery proof. Format, lint, and typecheck passed.
+- Boundary: portable profiles are not included because they are explicitly stored outside project truth.
