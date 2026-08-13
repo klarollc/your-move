@@ -166,3 +166,17 @@ Date: 2026-08-13
 - Visual QA refinement: direct current-build inspection at both viewports found the exact receipt identifier overflowing the 280px rail. The receipt now wraps within its bounded container, a browser geometry assertion prevents horizontal recurrence, and recaptured scene, receipt, controls, and Office outline segments passed direct inspection. The office remains primary and all critical content stays reachable.
 - Broader regression: production build and TypeScript passed; all 15 component tests, 24 E2E tests, 10 automated axe scans, and 6 rendered visual tests passed across both viewports.
 - Evidence boundary: Task 10 proves graybox attention interaction, attribution, layout, and fail-closed behavior only. It does not prove Task 11 Library/evidence surfaces, later motion/manual accessibility/comprehension gates, high fidelity, art direction, or owner graybox acceptance.
+## Task 11 — Project Library and evidence/review surfaces
+
+Date: 2026-08-13
+
+- RED 1: the focused application suite failed to import the absent browser-safe evidence projector.
+- GREEN 1: 3 application tests passed. Authoritative, approved, provisional, contested, stale, superseded, and rejected remain seven deterministic lifecycle values; unauthorized records are omitted; sensitive title/snippet/summary content is withheld; hidden reasoning is never projected; and test, visual, and release evidence remain separate.
+- RED 2: 2 focused Library component tests failed because no Library or focused-evidence surface existed.
+- GREEN 2: 2 Library tests and 16 shell tests passed. The quiet Library exposes seven lifecycle rows and three evidence lanes, labels complete-but-unapproved explicitly, opens focused evidence, retains stable revision/origin IDs, locates the origin in the shared office selection, and restores focus to the initiating evidence control.
+- RED 3: both 1280x800 browser journeys timed out because the production office had no safe Library projection.
+- GREEN 3: 4 focused browser journeys passed across 1440x900 and 1280x800. The Project Library, review station, and delivery area are stable spatial origins; the 420px Library resize preserves the office; visual evidence opens directly from the review station; and origin changes fall back to the Office outline when the original inspector action no longer exists.
+- Security boundary: only the already projected `BrowserLibraryProjection` enters the web fixture. Raw unauthorized titles/snippets, secrets, hidden reasoning, filesystem paths, and credentials are absent from the browser surface and fixture bundle; application tests separately prove their removal before projection.
+- Visual QA: direct current-build inspection at both viewports passed for Library hierarchy, all seven explicit lifecycle labels, evidence-lane separation, complete-not-approved wording, preserved office scene, and reachable spatial outline origins. Separate overview and origin-return captures prevent evidence scrolling from hiding either proof. These are graybox interaction/layout captures, not art approval.
+- Broader regression: production build and TypeScript passed; 28 unit files / 107 tests, 3 component files / 19 tests, 28 E2E tests, 12 axe scans, and 6 rendered visual tests passed.
+- Evidence boundary: Task 11 does not prove Task 12 failure/motion equivalence, manual accessibility, comprehension, high fidelity, art direction, or owner graybox acceptance.

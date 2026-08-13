@@ -51,7 +51,7 @@ Composition: `.ui-craft/spec.md`
   - Acceptance: derived order, direct office link, dismissal is not approval, exact receipts and agent disposition.
   - Verify: component/application/browser journey.
 
-- [ ] Task 11: Project Library and evidence/review surfaces.
+- [x] Task 11: Project Library and evidence/review surfaces.
   - Acceptance: lifecycle/permission isolation; evidence classes separate; completion distinct from approval.
   - Verify: component, access canary, and browser evidence journey.
 
