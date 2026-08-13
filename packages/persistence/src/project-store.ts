@@ -1,0 +1,107 @@
+import { createHash } from "node:crypto";
+import { mkdirSync, realpathSync } from "node:fs";
+import { isAbsolute, join, relative, resolve } from "node:path";
+import Database from "better-sqlite3";
+const APPLICATION_ID = 0x4355434b;
+const INITIAL_SQL = `
+CREATE TABLE IF NOT EXISTS schema_migrations(id TEXT PRIMARY KEY, checksum TEXT NOT NULL, applied_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS canonical_events(event_id TEXT PRIMARY KEY, project_id TEXT NOT NULL, occurred_at TEXT NOT NULL, received_at TEXT NOT NULL, kind TEXT NOT NULL, canonical_json TEXT NOT NULL, content_hash TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS knowledge_records(knowledge_id TEXT PRIMARY KEY, project_id TEXT NOT NULL, status TEXT NOT NULL, classification TEXT NOT NULL, title TEXT NOT NULL, content TEXT NOT NULL, provenance_json TEXT NOT NULL, revision INTEGER NOT NULL, source_hash TEXT, superseded_by TEXT, authorized INTEGER NOT NULL);
+CREATE VIRTUAL TABLE IF NOT EXISTS knowledge_fts USING fts5(knowledge_id UNINDEXED, project_id UNINDEXED, classification UNINDEXED, title, content);
+CREATE TABLE IF NOT EXISTS content_manifests(record_id TEXT PRIMARY KEY, project_id TEXT NOT NULL, kind TEXT NOT NULL, relative_path TEXT NOT NULL, media_type TEXT NOT NULL, byte_size INTEGER NOT NULL, content_hash TEXT NOT NULL, classification TEXT NOT NULL, manifest_json TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS packet_receipts(packet_id TEXT PRIMARY KEY, project_id TEXT NOT NULL, run_id TEXT NOT NULL, snapshot_id TEXT NOT NULL, status TEXT NOT NULL, packet_json TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS notebook_entries(entry_id TEXT PRIMARY KEY, project_id TEXT NOT NULL, agent_id TEXT NOT NULL, version INTEGER NOT NULL, enabled INTEGER NOT NULL, content TEXT NOT NULL, classification TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS profile_entries(entry_id TEXT PRIMARY KEY, agent_id TEXT NOT NULL, version INTEGER NOT NULL, enabled INTEGER NOT NULL, content TEXT NOT NULL, promoted_by TEXT NOT NULL, created_at TEXT NOT NULL);
+`;
+const checksum = (text: string) => createHash("sha256").update(text).digest("hex");
+export function resolveProjectRoomPath(projectRoot: string, relativePath: string): string {
+  const root = realpathSync(resolve(projectRoot));
+  if (
+    isAbsolute(relativePath) ||
+    /^[A-Za-z]:[\\/]/.test(relativePath) ||
+    relativePath.split(/[\\/]/).includes("..")
+  )
+    throw new Error("CUCKCODE_PATH_OUTSIDE_PROJECT_ROOT");
+  const candidate = resolve(root, relativePath);
+  const rel = relative(root, candidate);
+  if (rel.startsWith("..") || isAbsolute(rel))
+    throw new Error("CUCKCODE_PATH_OUTSIDE_PROJECT_ROOT");
+  return candidate;
+}
+export type ProjectStore = {
+  database: Database.Database;
+  root: string;
+  databasePath: string;
+  schema(): {
+    applicationId: number;
+    userVersion: number;
+    migrations: { id: string; checksum: string }[];
+  };
+  integrity(): string;
+  hasTable(name: string): boolean;
+  close(): void;
+};
+export function openProjectStore(
+  projectRoot: string,
+  options: { testMigrationSql?: string } = {},
+): ProjectStore {
+  const root = realpathSync(resolve(projectRoot));
+  const stateDir = resolveProjectRoomPath(root, ".cuckcode/state");
+  mkdirSync(stateDir, { recursive: true });
+  for (const dir of ["artifacts", "evidence", "traces", "manifests"]) {
+    mkdirSync(resolveProjectRoomPath(root, `.cuckcode/${dir}`), { recursive: true });
+  }
+  const db = new Database(join(stateDir, "cuckcode.sqlite"));
+  db.pragma("journal_mode = WAL");
+  db.pragma("foreign_keys = ON");
+  db.pragma(`application_id = ${APPLICATION_ID}`);
+  db.transaction(() => {
+    db.exec(INITIAL_SQL);
+    const expected = checksum(INITIAL_SQL);
+    const row = db
+      .prepare("SELECT checksum FROM schema_migrations WHERE id=?")
+      .get("001_initial") as { checksum: string } | undefined;
+    if (row && row.checksum !== expected) throw new Error("CUCKCODE_MIGRATION_CHECKSUM_MISMATCH");
+    if (!row)
+      db.prepare("INSERT INTO schema_migrations VALUES(?,?,?)").run(
+        "001_initial",
+        expected,
+        "2026-08-13T00:00:00.000Z",
+      );
+    db.pragma("user_version = 1");
+  })();
+  if (options.testMigrationSql) {
+    try {
+      db.transaction(() => db.exec(options.testMigrationSql!))();
+    } catch (error) {
+      db.close();
+      throw error;
+    }
+  }
+  return {
+    database: db,
+    root,
+    databasePath: join(stateDir, "cuckcode.sqlite"),
+    schema() {
+      return {
+        applicationId: db.pragma("application_id", { simple: true }) as number,
+        userVersion: db.pragma("user_version", { simple: true }) as number,
+        migrations: db.prepare("SELECT id, checksum FROM schema_migrations ORDER BY id").all() as {
+          id: string;
+          checksum: string;
+        }[],
+      };
+    },
+    integrity() {
+      return db.pragma("integrity_check", { simple: true }) as string;
+    },
+    hasTable(name: string) {
+      return Boolean(
+        db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?").get(name),
+      );
+    },
+    close() {
+      db.close();
+    },
+  };
+}

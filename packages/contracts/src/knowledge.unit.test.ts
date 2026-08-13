@@ -7,6 +7,7 @@ describe("knowledge contracts", () => {
     expect(knowledgeLifecycleStatuses).toEqual([
       "provisional",
       "authoritative",
+      "approved",
       "contested",
       "rejected",
       "stale",

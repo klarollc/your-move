@@ -6,22 +6,22 @@ Prior checklist: `tasks/phase-1-todo.md`
 
 Every behavioral task records focused RED, minimal GREEN, refactor/checkpoint verification, exact files, and commit evidence under `docs/evidence/phase-2/`.
 
-- [ ] Task 1: Reconcile lifecycle and define persistence contracts
+- [x] Task 1: Reconcile lifecycle and define persistence contracts
   - Acceptance: `approved` regression/correction; distinct authority; version/path/provenance/hidden-reasoning validation.
   - Verify: focused unit/contract tests and typecheck.
   - Dependencies: none.
 
-- [ ] Task 2: Project-room paths and transactional migrations
+- [x] Task 2: Project-room paths and transactional migrations
   - Acceptance: traversal/junction confinement; deterministic fresh/upgrade schema; rollback/checksum enforcement.
   - Verify: focused integration tests using isolated temporary roots.
   - Dependencies: Task 1.
 
-- [ ] Task 3: Append-only canonical event store
+- [x] Task 3: Append-only canonical event store
   - Acceptance: idempotent identical events; conflicting IDs rejected; atomic ordered batches; no cross-project writes.
   - Verify: focused integration tests and canonical hash comparisons.
   - Dependencies: Tasks 1–2.
 
-- [ ] Checkpoint A: unit/integration, format, lint, typecheck, migration audit, and Tasks 1–3 RED-GREEN evidence.
+- [x] Checkpoint A: unit/integration, format, lint, typecheck, migration audit, and Tasks 1–3 RED-GREEN evidence.
 
 - [ ] Task 4: Content-addressed artifacts and evidence
   - Acceptance: verified manifests; deduplication; visible mismatch/missing/collision errors; interruption safety.
