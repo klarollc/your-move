@@ -21,7 +21,7 @@ Composition: `.ui-craft/spec.md`
 
 - [x] Checkpoint A: contracts, harness, dependency/license, fixture-isolation, formatting, lint, typecheck, and RED–GREEN evidence.
 
-- [ ] Task 4: Loopback session, read model, and command boundary.
+- [x] Task 4: Loopback session, read model, and command boundary.
   - Acceptance: loopback/exact-origin/CSRF/session enforcement; stale recovery; no browser authority; production fixture rejection.
   - Verify: server integration/security matrix.
 

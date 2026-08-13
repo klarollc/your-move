@@ -211,6 +211,21 @@ describe("loopback session boundary", () => {
     ).rejects.toThrow();
   });
 
+  it("refuses construction for a non-loopback host", () => {
+    expect(() =>
+      createLoopbackApp({
+        mode: "test",
+        host: "0.0.0.0",
+        allowedOrigin,
+        projectId: "project_fixture",
+        initialRevision: 7,
+        sessionId: "session_fixture",
+        csrfToken: "csrf_fixture",
+        readModel: { schemaVersion: 1, projectId: "project_fixture", revision: 7 },
+      }),
+    ).toThrow("LOOPBACK_HOST_REQUIRED");
+  });
+
   it("rejects fixture mode in production", () => {
     expect(() =>
       createLoopbackApp({

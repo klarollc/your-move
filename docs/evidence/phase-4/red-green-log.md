@@ -43,3 +43,17 @@ Date: 2026-08-13
 - Regression: 23 files / 79 unit tests; 1 component test; 11 files / 31 integration tests plus the guarded live test skipped by design; 7 files / 35 contract tests.
 - Browser: 4 scaffold journeys, 2 automated accessibility scans, and 2 non-baseline rendered harness captures passed across Chromium 1440×900 and 1280×800.
 - Scope label: rendered harness evidence only; no graybox office, manual accessibility, comprehension, or art-direction claim.
+
+## Task 4 — Loopback session, read model, command, and event boundary
+
+Date: 2026-08-13
+
+- Dependency approval: owner authorized `@types/ws` as a development-only typing dependency; version `8.18.1` is pinned exactly and the package audit reports zero vulnerabilities.
+- RED 1: the focused integration suite failed with `ERR_MODULE_NOT_FOUND` because the loopback session boundary did not exist.
+- GREEN 1: exact-origin session bootstrap, memory-only session/CSRF mutation checks, authenticated read-model access, typed command receipts, stale-revision recovery, cross-project denial, and production fixture rejection passed.
+- RED 2: reconnect coverage failed because `injectWS` and the authenticated event route did not exist.
+- GREEN 2: authenticated WebSocket replay resumes strictly after `sinceRevision`; unknown sessions reject; a non-loopback host cannot construct the server.
+- Security boundary: the server binds by contract only to `127.0.0.1`, accepts one exact origin, keeps session and CSRF values out of URLs, disables Fastify logging, and imports no Codex client, SQLite access, filesystem/path API, browser storage, or canonical reducer.
+- Verification: focused Task 4 integration 7/7; full integration 37 passed with one guarded live test skipped; formatting, ESLint, TypeScript, build, and dependency audit passed.
+- Full repository gate: `npm.cmd run verify` passed with 79 unit, 1 component, 37 integration, 35 contract, 4 browser, 2 automated accessibility, and 2 rendered harness tests; protocol, role, qualification, UI-boundary, formatting, lint, typecheck, and build gates also passed.
+- Evidence boundary: browser and rendered results remain scaffold/harness evidence. They do not prove the later graybox office, manual accessibility, comprehension, or art-direction gates.
