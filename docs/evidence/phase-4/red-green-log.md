@@ -180,3 +180,16 @@ Date: 2026-08-13
 - Visual QA: direct current-build inspection at both viewports passed for Library hierarchy, all seven explicit lifecycle labels, evidence-lane separation, complete-not-approved wording, preserved office scene, and reachable spatial outline origins. Separate overview and origin-return captures prevent evidence scrolling from hiding either proof. These are graybox interaction/layout captures, not art approval.
 - Broader regression: production build and TypeScript passed; 28 unit files / 107 tests, 3 component files / 19 tests, 28 E2E tests, 12 axe scans, and 6 rendered visual tests passed.
 - Evidence boundary: Task 11 does not prove Task 12 failure/motion equivalence, manual accessibility, comprehension, high fidelity, art direction, or owner graybox acceptance.
+## Task 12 — Failure, reconnect, and motion equivalence
+
+Date: 2026-08-13
+
+- RED 1: the focused unit suite failed to import the absent semantic-motion planner.
+- GREEN 1: 3 motion unit tests passed. Canonical revision is applied before presentation; one transition leads while later transitions queue deterministically; only authored semantic travel is allowed; checkpoints are named; transform/opacity are the only animated properties; loops are false; reduced motion uses immediate placement; and pausing motion never pauses runtime work.
+- RED 2: 11 component checks failed because rate/budget limits, permission denial, missing artifact, test failure, reviewer disagreement, event conflict, restart, cancellation, and semantic motion cues were not represented.
+- GREEN 2: 27 shell component tests passed. Every failure state now exposes a plain-language cause, non-idle runtime label, recovery action, stable outline state, and live-region semantics; the motion cue exposes canonical revision, checkpoint, presentation, queue length, loop state, and runtime independence without becoming a persistent dashboard structure.
+- RED 3: the focused browser suite found new failure query states falling back to ready and no production motion fixture.
+- GREEN 3: 6 browser journeys passed across 1440x900 and 1280x800. Eleven failure/recovery states remain explicit, standard motion runs one 480ms non-looping transform/opacity explanation at a named checkpoint, and reduced motion exposes the same revision, destination, queue, and announcement with zero animations.
+- Visual QA refinement: the first reduced-motion capture named revision 43 but omitted the destination. The persistent label now reads `Handoff recorded at Review station · revision 43`; both viewport captures and direct inspection passed. The cue remains subordinate to the office and does not fabricate activity.
+- Broader regression: production build and TypeScript passed; 29 unit files / 110 tests, 3 component files / 30 tests, 34 E2E tests, 12 axe scans, and 6 rendered visual tests passed.
+- Evidence boundary: Task 12 proves graybox state/motion semantic equivalence and deterministic browser checkpoints only. It does not prove Checkpoint C, manual accessibility, comprehension, high fidelity, art direction, or owner graybox acceptance.

@@ -55,7 +55,7 @@ Composition: `.ui-craft/spec.md`
   - Acceptance: lifecycle/permission isolation; evidence classes separate; completion distinct from approval.
   - Verify: component, access canary, and browser evidence journey.
 
-- [ ] Task 12: Failure, reconnect, and motion equivalence.
+- [x] Task 12: Failure, reconnect, and motion equivalence.
   - Acceptance: no false state degradation; canonical-first motion; no ambient loops; reduced-motion semantics.
   - Verify: deterministic motion/failure matrix and reduced-motion E2E.
 
