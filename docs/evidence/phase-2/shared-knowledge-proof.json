@@ -1,0 +1,35 @@
+{
+    "lifecycle":  [
+                      "provisional",
+                      "contested",
+                      "approved"
+                  ],
+    "retrieval":  {
+                      "provisionalFound":  true,
+                      "contestedFound":  true,
+                      "approvedFound":  true
+                  },
+    "isolation":  {
+                      "alphaCanaryCrossed":  false,
+                      "betaCanaryCrossed":  false
+                  },
+    "propagation":  {
+                        "pausedBeforeAction":  true,
+                        "refreshedAtCheckpoint":  true
+                    },
+    "resolutionRecipients":  2,
+    "recovery":  {
+                     "backupIntegrity":  "ok",
+                     "exportIntegrity":  "ok"
+                 },
+    "hashes":  {
+                   "schema":  "ff327a6adf54cb7e4bff851f9c0d74d139a07cc64f6d7fb407c3ede5cc5af701",
+                   "rebuildBefore":  "8b1f7d7e4e16e91109709893285a09755cb1dbd36e884f30a4c0f81fd40bcba8",
+                   "rebuildAfter":  "8b1f7d7e4e16e91109709893285a09755cb1dbd36e884f30a4c0f81fd40bcba8",
+                   "restart":  "8b1f7d7e4e16e91109709893285a09755cb1dbd36e884f30a4c0f81fd40bcba8",
+                   "backupDatabase":  "268cd07195a802cd9c952121f6cab4918da127af5e2d2758a50967547641de42",
+                   "exportDatabase":  "268cd07195a802cd9c952121f6cab4918da127af5e2d2758a50967547641de42",
+                   "packet":  "6fd24a25ca6e1f7169adc04b9a3631b2feb8f0998fdf6964c87aacf9b281fcbf",
+                   "packetRepeat":  "6fd24a25ca6e1f7169adc04b9a3631b2feb8f0998fdf6964c87aacf9b281fcbf"
+               }
+}

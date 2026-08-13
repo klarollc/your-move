@@ -49,3 +49,7 @@
 - Audit found the scenario refreshed one affected run but did not prove both collaborating agents received the manager resolution.
 - RED: the contract required two resolution recipients and received no recipient evidence.
 - GREEN: separate researcher and reviewer runs both pause on the critical conflict, refresh at the accepted checkpoint, and store valid attributable packet receipts. Focused contract, lint, and typecheck passed.
+## Checkpoint C - Definitive gate
+- `npm.cmd run verify` passed against implementation commit `04af121`.
+- Scaffold 2; unit 17 files/47 tests; integration 8 files/23 tests; contract 4 files/23 tests; build passed; Chromium regression 4; axe regression 2; visual command passed with no Phase 2 visual tests.
+- Dependency audit reports zero vulnerabilities. Source-boundary scans report no forbidden matches. Machine-readable environment, hashes, audit, source scan, and invariant matrix are retained in this evidence directory.

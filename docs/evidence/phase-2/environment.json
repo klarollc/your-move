@@ -1,0 +1,14 @@
+{
+    "phase":  2,
+    "capturedAt":  "2026-08-13T16:51:04.3494787Z",
+    "implementationCommit":  "04af12169e5a9200884aeb384f9436c67120da19",
+    "platform":  "Microsoft Windows NT 10.0.26200.0",
+    "powershell":  "5.1.26100.9168",
+    "node":  "v24.18.0",
+    "npm":  "11.16.0",
+    "sqlite":  "3.53.4",
+    "betterSqlite3":  "13.0.3",
+    "typescript":  "6.0.3",
+    "vitest":  "4.1.10",
+    "playwright":  "1.62.1"
+}

@@ -1,0 +1,14 @@
+{
+    "capturedAt":  "2026-08-13T16:51:04.3494787Z",
+    "implementationCommit":  "04af12169e5a9200884aeb384f9436c67120da19",
+    "domainForbiddenMatches":  [
+
+                               ],
+    "applicationForbiddenMatches":  [
+
+                                    ],
+    "persistenceProviderOrUiMatches":  [
+
+                                       ],
+    "passed":  true
+}
