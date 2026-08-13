@@ -152,3 +152,17 @@ Date: 2026-08-13
 - Visual QA: direct 1280 current-build inspection passed for office-primary composition, contextual inspector hierarchy, complete truth fields, and reachable outline actions; no V0/V1 Task 9 discrepancy remained. Captures remain non-baseline test outputs.
 - Verification: component 9/9; selection/inspector E2E 4/4 across 1440×900 and 1280×800; default-office axe 2/2; formatting, ESLint, TypeScript, and diff checks passed.
 - Evidence boundary: Task 9 does not prove attention actions, evidence surfaces, motion/failure equivalence, manual accessibility, comprehension, high fidelity, art direction, or owner graybox acceptance.
+
+## Task 10 — Attention rail and manager escalation actions
+
+Date: 2026-08-13
+
+- RED 1: the focused application suite failed to import the absent attention command handler.
+- GREEN 1: 9 application tests passed for approve, decline, defer, cancel, and redirect receipts; current-revision and manager authority checks; target correlation; required defer/redirect scope; and fail-closed stale, timeout, and disconnect behavior.
+- RED 2: 4 focused component tests failed because the shell exposed no manager-attention trigger, rail, canonical order, locate action, dismissal distinction, receipt, or stale/offline denial.
+- GREEN 2: 14 focused component tests passed. The rail consumes its supplied canonical projection without re-sorting or becoming a second task store, collapses when empty, locates the same stable office entity, preserves topmost Escape behavior and trigger focus, and separates local dismissal from canonical disposition.
+- RED 3: both 1280x800 browser journeys timed out waiting for the absent production attention projection.
+- GREEN 3: 4 focused browser journeys passed across 1440x900 and 1280x800. The production fixture now traverses the shared application handler, resizes the office by exactly 280 CSS pixels, locates the target, keeps the inspector topmost, restores focus, rejects stale disposition, and exposes an exact attributable agent-visible revision 42-to-43 receipt.
+- Visual QA refinement: direct current-build inspection at both viewports found the exact receipt identifier overflowing the 280px rail. The receipt now wraps within its bounded container, a browser geometry assertion prevents horizontal recurrence, and recaptured scene, receipt, controls, and Office outline segments passed direct inspection. The office remains primary and all critical content stays reachable.
+- Broader regression: production build and TypeScript passed; all 15 component tests, 24 E2E tests, 10 automated axe scans, and 6 rendered visual tests passed across both viewports.
+- Evidence boundary: Task 10 proves graybox attention interaction, attribution, layout, and fail-closed behavior only. It does not prove Task 11 Library/evidence surfaces, later motion/manual accessibility/comprehension gates, high fidelity, art direction, or owner graybox acceptance.

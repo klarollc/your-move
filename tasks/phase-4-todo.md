@@ -47,7 +47,7 @@ Composition: `.ui-craft/spec.md`
   - Acceptance: one selection model; complete truthfulness answers; deterministic resize; focus restoration.
   - Verify: component/E2E parity matrix.
 
-- [ ] Task 10: Attention rail and manager escalation actions.
+- [x] Task 10: Attention rail and manager escalation actions.
   - Acceptance: derived order, direct office link, dismissal is not approval, exact receipts and agent disposition.
   - Verify: component/application/browser journey.
 
