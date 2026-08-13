@@ -46,6 +46,18 @@ class MemoryRenderer implements SceneRendererPort {
   }
 }
 
+class DeferredMountRenderer extends MemoryRenderer {
+  resolveMount: (() => void) | undefined;
+
+  override mount() {
+    return new Promise<void>((resolve) => {
+      this.resolveMount = () => {
+        this.mounted = true;
+        resolve();
+      };
+    });
+  }
+}
 const node = (entityId: string, depth: number): SceneDescriptor => ({
   entityId,
   entityType: "agent",
@@ -104,5 +116,18 @@ describe("office scene adapter", () => {
     expect(fallbackStates).toEqual([false, true]);
     expect(renderer.nodes.size).toBe(0);
     expect(renderer.destroyed).toBe(true);
+  });
+
+  it("releases a renderer when unmounted during asynchronous initialization", async () => {
+    const renderer = new DeferredMountRenderer();
+    const adapter = createOfficeSceneAdapter(renderer, () => undefined);
+
+    const mounting = adapter.mount({} as HTMLElement);
+    adapter.unmount();
+    renderer.resolveMount?.();
+    await mounting;
+
+    expect(renderer.destroyed).toBe(true);
+    expect(renderer.mounted).toBe(false);
   });
 });

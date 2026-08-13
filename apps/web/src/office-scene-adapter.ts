@@ -31,19 +31,33 @@ export function createOfficeSceneAdapter(
   renderer: SceneRendererPort,
   setCanvasUnavailable: (unavailable: boolean) => void,
 ): OfficeSceneAdapter {
-  let mounted = false;
+  let state: "idle" | "mounting" | "mounted" = "idle";
+  let cancelMount = false;
   let entityIds = new Set<string>();
 
   return {
     async mount(host) {
-      if (mounted) throw new Error("OFFICE_SCENE_ALREADY_MOUNTED");
-      await renderer.mount(host);
-      mounted = true;
+      if (state !== "idle") throw new Error("OFFICE_SCENE_ALREADY_MOUNTED");
+      state = "mounting";
+      cancelMount = false;
+      try {
+        await renderer.mount(host);
+      } catch (error) {
+        state = "idle";
+        throw error;
+      }
+      if (cancelMount) {
+        renderer.clear();
+        renderer.destroy();
+        state = "idle";
+        return;
+      }
+      state = "mounted";
       setCanvasUnavailable(false);
     },
 
     update(descriptors) {
-      requireMounted(mounted);
+      requireMounted(state === "mounted");
       const ordered = [...descriptors].sort(
         (left, right) => left.depth - right.depth || left.entityId.localeCompare(right.entityId),
       );
@@ -57,22 +71,26 @@ export function createOfficeSceneAdapter(
     },
 
     resize(width, height) {
-      requireMounted(mounted);
+      requireMounted(state === "mounted");
       if (width <= 0 || height <= 0) throw new RangeError("OFFICE_SCENE_SIZE_INVALID");
       renderer.resize(width, height);
     },
 
     contextLost() {
-      requireMounted(mounted);
+      requireMounted(state === "mounted");
       setCanvasUnavailable(true);
     },
 
     unmount() {
-      if (!mounted) return;
+      if (state === "idle") return;
+      if (state === "mounting") {
+        cancelMount = true;
+        return;
+      }
       renderer.clear();
       renderer.destroy();
       entityIds = new Set();
-      mounted = false;
+      state = "idle";
     },
   };
 }
