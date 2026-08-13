@@ -41,9 +41,10 @@ const snapshot: CanonicalProjectSnapshot = {
 
 describe("reciprocal projections", () => {
   it("exposes byte-equivalent actionable records to humans and agents", () => {
-    const human = projectAccessibleOutline(snapshot).items.map(
-      ({ label: _label, ...record }) => record,
-    );
+    const human = projectAccessibleOutline(snapshot).items.map(({ label, ...record }) => {
+      expect(label.length).toBeGreaterThan(0);
+      return record;
+    });
     const agent = projectAgentActionableState(snapshot).items;
 
     expect(agent).toEqual(human);
