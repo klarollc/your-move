@@ -96,24 +96,24 @@ export function runSharedKnowledgeAcceptance(input: {
     maxRecords: 20,
     records: contextRecords(contested),
   });
-  const run: RunSyncState = {
-    runId: "run_alpha",
+  const runs: RunSyncState[] = ["researcher", "reviewer"].map((role) => ({
+    runId: `run_${role}`,
     projectId: "project_alpha",
-    workItemId: "work_alpha",
+    workItemId: `work_${role}`,
     packetId: initialPacket.packetId,
     snapshotId: initialPacket.snapshotId,
     status: "active",
     packetValid: true,
     pendingChanges: [],
     promotionAllowed: true,
-  };
-  const paused = applyKnowledgeChange([run], {
+  }));
+  const paused = applyKnowledgeChange(runs, {
     changeId: "change_resolution_required",
     projectId: "project_alpha",
-    workItemIds: ["work_alpha"],
+    workItemIds: runs.map((run) => run.workItemId),
     critical: true,
     kind: "knowledge.contested",
-  })[0]!;
+  });
 
   upsertKnowledge(alpha, {
     ...record("alpha_rule", "project_alpha", "approved", "Use indigo", 3, "manager"),
@@ -147,22 +147,32 @@ export function runSharedKnowledgeAcceptance(input: {
     records: contextRecords(rebuilt),
   };
   const packet = assembleContextPacket(packetInput);
-  const refreshed = reachSafeCheckpoint(paused, {
-    ok: true,
-    packetId: packet.packetId,
-    snapshotId: packet.snapshotId,
-    acknowledgedChanges: ["change_resolution_required"],
-  });
-  recordPacketReceipt(alpha, {
-    packetId: packet.packetId,
-    projectId: "project_alpha",
-    runId: "run_alpha",
-    snapshotId: packet.snapshotId,
-    status: "valid",
-    knowledgeIds: packet.contents.map((item) => item.id),
-    qualificationId: "qualification_alpha",
-    completedWorkIds: ["research_complete"],
-  });
+  const refreshed = paused.map((run) =>
+    reachSafeCheckpoint(run, {
+      ok: true,
+      packetId: packet.packetId,
+      snapshotId: packet.snapshotId,
+      acknowledgedChanges: ["change_resolution_required"],
+    }),
+  );
+  refreshed.forEach((run) =>
+    recordPacketReceipt(alpha, {
+      packetId: `${packet.packetId}:${run.runId}`,
+      projectId: "project_alpha",
+      runId: run.runId,
+      snapshotId: packet.snapshotId,
+      status: "valid",
+      knowledgeIds: packet.contents.map((item) => item.id),
+      qualificationId: `qualification_${run.runId}`,
+      completedWorkIds: ["research_complete"],
+    }),
+  );
+  const resolutionRecipients = Number(
+    alpha.database
+      .prepare("SELECT count(*) FROM packet_receipts WHERE snapshot_id=? AND status='valid'")
+      .pluck()
+      .get(packet.snapshotId),
+  );
   storeContent(alpha, {
     recordId: "evidence_resolution",
     projectId: "project_alpha",
@@ -215,12 +225,15 @@ export function runSharedKnowledgeAcceptance(input: {
     },
     isolation: { alphaCanaryCrossed, betaCanaryCrossed },
     propagation: {
-      pausedBeforeAction: paused.status === "paused" && paused.packetValid === false,
-      refreshedAtCheckpoint:
-        refreshed.status === "active" &&
-        refreshed.packetValid === true &&
-        refreshed.pendingChanges.length === 0,
+      pausedBeforeAction: paused.every(
+        (run) => run.status === "paused" && run.packetValid === false,
+      ),
+      refreshedAtCheckpoint: refreshed.every(
+        (run) =>
+          run.status === "active" && run.packetValid === true && run.pendingChanges.length === 0,
+      ),
     },
+    resolutionRecipients,
     recovery: { backupIntegrity, exportIntegrity },
     hashes: {
       schema: schemaHash,

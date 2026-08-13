@@ -45,3 +45,7 @@
 - Harness RED first failed to parse because the scoped PowerShell fallback inserted literal newline markers; the test text was corrected before behavioral evidence was accepted.
 - Behavioral RED: 2 of 7 focused tests failed because junction escape was accepted and migration-checksum rejection retained an open database handle.
 - GREEN: nearest-existing-ancestor realpath confinement rejects the junction; all startup failures close SQLite. Focused project-store integration: 7 passed. Lint and typecheck passed.
+## Checkpoint C acceptance correction - Task 11
+- Audit found the scenario refreshed one affected run but did not prove both collaborating agents received the manager resolution.
+- RED: the contract required two resolution recipients and received no recipient evidence.
+- GREEN: separate researcher and reviewer runs both pause on the critical conflict, refresh at the accepted checkpoint, and store valid attributable packet receipts. Focused contract, lint, and typecheck passed.

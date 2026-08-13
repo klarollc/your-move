@@ -29,6 +29,7 @@ describe("cross-project shared-knowledge contract", () => {
     expect(first.lifecycle).toEqual(["provisional", "contested", "approved"]);
     expect(first.isolation).toEqual({ alphaCanaryCrossed: false, betaCanaryCrossed: false });
     expect(first.propagation).toEqual({ pausedBeforeAction: true, refreshedAtCheckpoint: true });
+    expect(first.resolutionRecipients).toBe(2);
     expect(first.hashes.rebuildBefore).toBe(first.hashes.rebuildAfter);
     expect(first.hashes.restart).toBe(first.hashes.rebuildAfter);
     expect(first.hashes.backupDatabase).toBe(first.hashes.exportDatabase);
