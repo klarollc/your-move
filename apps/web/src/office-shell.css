@@ -379,3 +379,8 @@ body {
 .office-attention-receipt p {
   overflow-wrap: anywhere;
 }
+
+.office-shell[data-library-open="true"] .office-scene,
+.office-shell[data-library-open="true"] .office-outline {
+  margin-right: 420px;
+}

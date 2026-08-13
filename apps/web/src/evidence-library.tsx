@@ -1,5 +1,5 @@
 import type { BrowserLibraryProjection } from "@cuckcode/application";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import "./evidence-library.css";
 
@@ -13,23 +13,41 @@ type EvidenceRecord = BrowserLibraryProjection["evidence"][number];
 
 export function EvidenceLibrary({
   projection,
+  initialEvidenceKind,
   onClose,
   onLocateOrigin,
 }: Readonly<{
   projection: BrowserLibraryProjection;
+  initialEvidenceKind?: EvidenceRecord["kind"];
   onClose: () => void;
   onLocateOrigin: (entityId: string) => void;
 }>) {
-  const [focusedEvidence, setFocusedEvidence] = useState<EvidenceRecord | undefined>(undefined);
+  const libraryRef = useRef<HTMLElement>(null);
+  const [focusedEvidence, setFocusedEvidence] = useState<EvidenceRecord | undefined>(() =>
+    initialEvidenceKind
+      ? projection.evidence.find(({ kind }) => kind === initialEvidenceKind)
+      : undefined,
+  );
   const focusTriggerRef = useRef<HTMLButtonElement | undefined>(undefined);
 
   const closeEvidence = () => {
     setFocusedEvidence(undefined);
-    focusTriggerRef.current?.focus();
+    if (focusTriggerRef.current) focusTriggerRef.current.focus();
+    else libraryRef.current?.focus();
   };
 
+  useEffect(() => {
+    const closeTopmost = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      if (focusedEvidence) closeEvidence();
+      else onClose();
+    };
+    window.addEventListener("keydown", closeTopmost);
+    return () => window.removeEventListener("keydown", closeTopmost);
+  });
+
   return (
-    <aside className="evidence-library" aria-label="Project Library">
+    <aside className="evidence-library" aria-label="Project Library" ref={libraryRef} tabIndex={-1}>
       <header>
         <div>
           <p>Shared project knowledge</p>

@@ -1,3 +1,4 @@
+import type { BrowserLibraryProjection } from "@cuckcode/application";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import {
@@ -6,6 +7,7 @@ import {
   type OfficeAttentionItem,
   type OfficeDispositionResult,
 } from "./attention-rail.js";
+import { EvidenceLibrary } from "./evidence-library.js";
 import "./office-shell.css";
 
 export type OfficeShellState =
@@ -135,6 +137,7 @@ export function OfficeShell({
   onSelectEntity,
   attention = [],
   onDisposition,
+  library,
 }: Readonly<{
   state: OfficeShellState;
   canvas?: ReactNode;
@@ -148,8 +151,14 @@ export function OfficeShell({
     intent: AttentionDisposition,
     scope: Record<string, string>,
   ) => OfficeDispositionResult | Promise<OfficeDispositionResult>;
+  library?: BrowserLibraryProjection;
 }>) {
   const outlineRef = useRef<HTMLElement>(null);
+  const libraryTriggerRef = useRef<HTMLButtonElement>(null);
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  const [initialEvidenceKind, setInitialEvidenceKind] = useState<
+    "test" | "visual" | "release" | undefined
+  >(undefined);
   const attentionTriggerRef = useRef<HTMLButtonElement>(null);
   const [attentionOpen, setAttentionOpen] = useState(false);
   const [dismissedAttentionIds, setDismissedAttentionIds] = useState<ReadonlySet<string>>(
@@ -192,7 +201,7 @@ export function OfficeShell({
   };
 
   useEffect(() => {
-    if (!selectedEntity) return;
+    if (!selectedEntity || libraryOpen) return;
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") closeInspector();
     };
@@ -207,7 +216,7 @@ export function OfficeShell({
   };
 
   useEffect(() => {
-    if (!attentionOpen || selectedEntity) return;
+    if (!attentionOpen || selectedEntity || libraryOpen) return;
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") closeAttention();
     };
@@ -223,6 +232,7 @@ export function OfficeShell({
       aria-label="CuckCode office workspace"
       data-inspector-open={Boolean(selectedEntity)}
       data-attention-open={attentionOpen}
+      data-library-open={libraryOpen}
     >
       <a
         className="office-skip-link"
@@ -416,7 +426,48 @@ export function OfficeShell({
           >
             Locate in office
           </button>
+          {library &&
+          ["zone_library", "zone_review", "zone_delivery"].includes(selectedEntity.entityId) ? (
+            <button
+              ref={libraryTriggerRef}
+              type="button"
+              onClick={() => {
+                setInitialEvidenceKind(
+                  selectedEntity.entityId === "zone_review"
+                    ? "visual"
+                    : selectedEntity.entityId === "zone_delivery"
+                      ? "release"
+                      : undefined,
+                );
+                setLibraryOpen(true);
+                setAnnouncement(`${selectedEntity.label} evidence opened`);
+              }}
+            >
+              {selectedEntity.entityId === "zone_review"
+                ? "Open Visual QA evidence"
+                : selectedEntity.entityId === "zone_delivery"
+                  ? "Open Release evidence"
+                  : "Open Project Library"}
+            </button>
+          ) : null}
         </aside>
+      ) : null}
+      {libraryOpen && library ? (
+        <EvidenceLibrary
+          key={initialEvidenceKind ?? "library"}
+          projection={library}
+          {...(initialEvidenceKind ? { initialEvidenceKind } : {})}
+          onClose={() => {
+            setLibraryOpen(false);
+            setAnnouncement("Project Library closed");
+            libraryTriggerRef.current?.focus();
+          }}
+          onLocateOrigin={(entityId) => {
+            setInternalSelection(entityId);
+            onSelectEntity?.(entityId);
+            setAnnouncement(`${entityId} located from evidence`);
+          }}
+        />
       ) : null}
       <p className="office-live-region" role="status" aria-live="polite">
         {announcement}

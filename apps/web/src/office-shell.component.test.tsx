@@ -1,4 +1,5 @@
 import "@testing-library/jest-dom/vitest";
+import type { BrowserLibraryProjection } from "@cuckcode/application";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
@@ -228,5 +229,80 @@ describe("OfficeShell manager attention", () => {
     render(<OfficeShell state="ready" attention={[]} />);
     expect(screen.queryByRole("button", { name: /Manager attention/ })).toBeNull();
     expect(screen.queryByRole("complementary", { name: "Manager attention" })).toBeNull();
+  });
+});
+
+const libraryProjection: BrowserLibraryProjection = {
+  knowledge: [
+    {
+      knowledgeId: "knowledge_scope",
+      status: "authoritative",
+      title: "Approved Phase 4 scope",
+      snippet: "Tasks 1 through 15 only.",
+      revision: 4,
+      originatingEntityId: "zone_library",
+    },
+  ],
+  evidence: [
+    {
+      evidenceId: "evidence_test",
+      kind: "test",
+      status: "complete",
+      summary: "Tests complete; approval remains separate.",
+      revision: 42,
+      originatingEntityId: "agent_test_engineer",
+      approved: false,
+    },
+    {
+      evidenceId: "evidence_visual",
+      kind: "visual",
+      status: "approved",
+      summary: "Graybox interaction composition approved.",
+      revision: 42,
+      originatingEntityId: "zone_review",
+      approved: true,
+    },
+    {
+      evidenceId: "evidence_release",
+      kind: "release",
+      status: "pending",
+      summary: "Release review has not started.",
+      revision: 42,
+      originatingEntityId: "zone_delivery",
+      approved: false,
+    },
+  ],
+};
+
+describe("OfficeShell spatial evidence surfaces", () => {
+  it("opens the Project Library from its office entity and restores trigger focus", async () => {
+    const user = userEvent.setup();
+    render(<OfficeShell state="ready" library={libraryProjection} />);
+    await user.click(screen.getByRole("button", { name: "Locate Project Library" }));
+    const trigger = screen.getByRole("button", { name: "Open Project Library" });
+    await user.click(trigger);
+
+    const library = screen.getByRole("complementary", { name: "Project Library" });
+    expect(library).toHaveTextContent("Approved Phase 4 scope");
+    expect(library).toHaveTextContent("Complete — not approved");
+
+    await user.click(screen.getByRole("button", { name: "Close Library" }));
+    expect(library).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+  });
+
+  it("opens review and delivery evidence with a reachable stable office origin", async () => {
+    const user = userEvent.setup();
+    render(<OfficeShell state="ready" library={libraryProjection} />);
+    await user.click(screen.getByRole("button", { name: "Locate Review station" }));
+    await user.click(screen.getByRole("button", { name: "Open Visual QA evidence" }));
+
+    const focused = screen.getByRole("dialog", { name: "Evidence: Visual QA review" });
+    expect(focused).toHaveTextContent("zone_review");
+    await user.click(screen.getByRole("button", { name: "Locate origin in office" }));
+    expect(screen.getByRole("region", { name: "Office scene" })).toHaveAttribute(
+      "data-selected-entity-id",
+      "zone_review",
+    );
   });
 });
