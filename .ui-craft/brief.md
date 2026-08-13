@@ -68,9 +68,9 @@ The first slice is a local-first desktop web application. The Chromium client re
 - The office occupies nearly the full application surface. Persistent chrome is limited to a slim project bar, collapsible manager-attention rail, and on-demand contextual inspector.
 - Persistent card grids, metric panels, dashboard widgets, and dense status sidebars are excluded from the vertical slice.
 
-## 7. Visual discovery required
+## 7. Numeric visual discovery required
 
-No visual style, accent, font family, camera model, or animation stack has been approved. These decisions must be made before tokens or high-fidelity work:
+The visual thesis, fixed camera orientation, material direction, warm-amber role, typography roles, and restrained-motion principles are approved. The following exact measurements and asset-system decisions remain unapproved and must be resolved through graybox observation or the later reference-board gate:
 
 - exact isometric projection ratio, elevation angle, discrete zoom limits, and cutaway measurements; the fixed orientation, bounded pan/zoom, no rotation, and canonical reset composition are approved;
 - contemporary-studio references, material language, and explicit exclusions;

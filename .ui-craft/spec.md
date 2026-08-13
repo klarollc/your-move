@@ -1,6 +1,6 @@
 # CuckCode composition specification
 
-Status: Proposed for Phase 4 approval
+Status: **Owner-approved for Phase 4 Tasks 1–15 on 2026-08-13**
 Date: 2026-08-13
 
 ## Surface: Graybox office workspace

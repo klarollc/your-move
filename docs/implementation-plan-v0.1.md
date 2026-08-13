@@ -1,7 +1,7 @@
 # CuckCode phased implementation plan v0.1
 
-Status: **Phases 0–2 owner-accepted 2026-08-13; Phase 3 specification and planning authorized; Phase 3 implementation and Phases 4–8 remain unapproved**
-Source of truth: `docs/master-design-document-v0.1.md`, owner-approved 2026-08-12 and amended by D-26 on 2026-08-13  
+Status: **Phases 0–3 owner-accepted 2026-08-13; Phase 4 Tasks 1–15 owner-approved 2026-08-13; Tasks 16–17 and Phases 5–8 remain unapproved**
+Source of truth: `docs/master-design-document-v0.1.md`, owner-approved 2026-08-12 and amended by D-26 on 2026-08-13
 Scope: planning only; this document does not authorize scaffolding, dependency installation, role import, runtime connection, or production implementation.
 
 ## Outcome
@@ -192,6 +192,6 @@ Fixture acceptance atomically creates the D-24 review. Within 10 business days i
 
 Any production reuse begins a separate architecture review and TDD scope. Fixture code is never copied directly into production.
 
-## Approval requested
+## Approval status
 
-Phases 0, 1, and 2 were accepted by the owner on 2026-08-13. The owner authorized Phase 3 specification and planning on 2026-08-13. Phase 3 implementation and each later phase remain separately gated.
+Phases 0 through 3 were accepted by the owner on 2026-08-13. Phase 4 is defined by `docs/phase-4-graybox-office-and-kickoff-spec-v0.1.md`, `.ui-craft/spec.md`, `tasks/phase-4-plan.md`, and `tasks/phase-4-todo.md`. The owner approved deterministic Tasks 1–15 on 2026-08-13. Live role promotion/kickoff, Phase 5, and high-fidelity art remain separately gated.

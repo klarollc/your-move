@@ -1,8 +1,8 @@
 # CuckCode master design document
 
-Version: 0.1  
-Status: Draft for product and architecture review  
-Date: 2026-08-12  
+Version: 0.1
+Status: Draft for product and architecture review
+Date: 2026-08-12
 Implementation authority: **Not granted**
 
 ## 1. Document purpose
@@ -87,6 +87,7 @@ These are not silent assumptions. Work stops at the named gate until the owner a
 | D-24 | **Approved 2026-08-12:** fixture code is isolated by default; a production-suitability review must receive a recorded disposition within 10 business days after owner acceptance before the initiative can fully close | Define kickoff proposal and selection protocol | Collaborative planning |
 | D-25 | **Approved 2026-08-12:** collaborative kickoff uses one attributable role-specific round, Delivery Lead synthesis preserving disagreements, one team revision, and final manager selection or redirection | Approve MDD v0.1 for implementation planning | Definition gate |
 | D-26 | **Approved 2026-08-13:** reciprocal usability—human and agent interfaces are equal projections of canonical state; the product must reduce avoidable friction for both and support structured, truthful collaboration | Carry reciprocal-usability acceptance through every phase | Cross-cutting architecture and UX |
+| D-27 | **Approved 2026-08-13:** the newer phased implementation sequence controls numbering; Phase 4 is graybox office and collaborative kickoff, while art-direction candidates and high fidelity remain later separately gated phases | Execute the approved Phase 4 Tasks 1–15 and stop at the graybox owner gate | Phase 4 implementation |
 
 ## 4. Product principles
 
@@ -1240,36 +1241,50 @@ No task may use guessed default commands.
 
 ## 24. Delivery phases and gates
 
-### Phase 0 — Definition
+### Phase 0 — Reproducible scaffold
 
-Deliverables: approved MDD, decisions D-01–D-08, source register, art-direction brief.  
-Gate: explicit owner approval.
+Deliverables: pinned npm workspace, commands, environment manifest, and empty verification harness.
+Gate: clean reproducible install and explicit owner approval.
 
-### Phase 1 — Contract proof
+### Phase 1 — Pure contracts and deterministic truth
 
-Deliverables: role schemas/import validator, domain events/reducer, runtime simulator, truthfulness invariant tests.  
+Deliverables: canonical contracts, reducers, scene/attention/outline projectors, and runtime simulator.
 Gate: RED–GREEN evidence and deterministic replay proof.
 
-### Phase 2 — Graybox office
+### Phase 2 — Persistence and shared Project Library
 
-Deliverables: office zones, avatars, state projection, inspector, office outline, manager escalation using simulator.  
-Gate: comprehension walkthrough and accessibility fundamentals; visual style intentionally graybox.
+Deliverables: project-local SQLite, content-addressed evidence, shared knowledge, context packets, propagation, isolation, and recovery.
+Gate: persistence/rebuild/isolation evidence and explicit owner approval.
 
-### Phase 3 — Live runtime
+### Phase 3 — Runtime adapter and trust onboarding
 
-Deliverables: one adapter, capability matching, bounded permissions, live event normalization, disconnect/recovery.  
-Gate: contract suite plus one supervised end-to-end live run.
+Deliverables: provider-neutral runtime, pinned Codex adapter, bounded permissions, stable bindings, Candidate admission/qualification, staffing truth, and one supervised live contract run.
+Gate: deterministic contract suite, supervised live evidence, and explicit owner approval.
 
-### Phase 4 — Art-direction implementation
+### Phase 4 — Graybox office and collaborative kickoff
 
-Deliverables: approved tokens/assets, golden states, motion and reduced-motion behavior, full manager journey.  
-Gate: rendered capture matrix, V0/V1 cleared, explicit owner visual approval.
+Deliverables: React/PixiJS graybox office, accessible Office outline, manager controls, deterministic motion and reduced-motion behavior, structured D-25 kickoff workflow, strict graybox evidence, and—after a separate owner gate—the bounded live kickoff and manager-approved initial charter.
+Gate: rendered graybox capture matrix, accessibility and comprehension thresholds, V0/V1 cleared, explicit owner graybox approval, and recorded charter. High-fidelity art remains excluded.
 
-### Phase 5 — Vertical-slice acceptance
+### Phase 5 — Controlled six-role acceptance project
 
-Deliverables: representative software feature, full TDD evidence, visual QA evidence, comprehension study, release-review packet.  
-Gate: owner accepts the vertical slice or records bounded revisions.
+Deliverables: execute the approved charter as the isolated representative software feature with full TDD, shared-knowledge, visual-QA, and independent-release evidence.
+Gate: owner accepts the fixture outcome or records bounded revisions.
 
+### Phase 6 — Art-direction candidates and golden states
+
+Deliverables: three original controlled-composition candidates, approved reference board/tokens, and named golden-state references.
+Gate: explicit owner promotion of one coherent visual system from Candidate to Active.
+
+### Phase 7 — High-fidelity implementation
+
+Deliverables: approved materials, lighting, avatars, typography, props, motion, reduced-motion treatment, and visual regression baselines.
+Gate: rendered capture matrix, V0/V1 cleared, V2 disposition, and explicit owner visual approval.
+
+### Phase 8 — Production-suitability disposition
+
+Deliverables: D-24 review and recorded `promote_candidate`, `reuse_concepts_only`, `do_not_promote`, or approved deferral.
+Gate: disposition within the governed review period; production reuse remains a separate scope.
 ## 25. Boundaries
 
 ### Always
