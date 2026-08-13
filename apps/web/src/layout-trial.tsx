@@ -70,7 +70,10 @@ export function LayoutTrial() {
             height={layout.projectedOfficeBounds.height}
           />
           {layout.zones.map((zone) => {
-            const labelPoint = centroid(zone.polygon);
+            const labelPoint = {
+              x: centroid(zone.polygon).x,
+              y: Math.min(...zone.polygon.map(({ y }) => y)) + 18,
+            };
             return (
               <g key={zone.zoneId}>
                 <polygon
