@@ -1,3 +1,4 @@
+import websocket from "@fastify/websocket";
 import { validateWorkspaceCommand } from "@cuckcode/contracts";
 import Fastify, { type FastifyInstance } from "fastify";
 
@@ -14,6 +15,12 @@ type LoopbackAppOptions = {
   sessionId: string;
   csrfToken: string;
   readModel: unknown;
+  eventHistory?: Array<{
+    revision: number;
+    eventId: string;
+    type: string;
+    payload: Record<string, unknown>;
+  }>;
   fixtureMode?: boolean;
 };
 
@@ -31,6 +38,32 @@ export function createLoopbackApp(options: LoopbackAppOptions): LoopbackApp {
     if (request.url.startsWith("/api/") && request.headers.origin !== options.allowedOrigin) {
       await reply.code(403).send({ code: "ORIGIN_REJECTED" });
     }
+  });
+
+  app.register(websocket);
+  app.register(async (instance) => {
+    instance.get(
+      "/api/events",
+      {
+        websocket: true,
+        preValidation: async (request, reply) => {
+          if (request.headers["x-cuckcode-session"] !== options.sessionId) {
+            await reply.code(403).send({ code: "SESSION_REJECTED" });
+          }
+        },
+      },
+      (socket, request) => {
+        const sinceRevision = Number(
+          new URL(request.url, "http://127.0.0.1").searchParams.get("sinceRevision"),
+        );
+        const history = options.eventHistory ?? [];
+        for (const event of history) {
+          if (Number.isInteger(sinceRevision) && event.revision > sinceRevision) {
+            socket.send(JSON.stringify(event));
+          }
+        }
+      },
+    );
   });
 
   app.get("/api/session", async () => ({

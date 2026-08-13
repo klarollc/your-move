@@ -9,7 +9,14 @@ afterEach(async () => {
   await Promise.all(apps.splice(0).map((app) => app.close()));
 });
 
-function createApp() {
+function createApp(
+  eventHistory: Array<{
+    revision: number;
+    eventId: string;
+    type: string;
+    payload: Record<string, unknown>;
+  }> = [],
+) {
   const app = createLoopbackApp({
     mode: "test",
     host: "127.0.0.1",
@@ -19,6 +26,7 @@ function createApp() {
     sessionId: "session_fixture",
     csrfToken: "csrf_fixture",
     readModel: { schemaVersion: 1, projectId: "project_fixture", revision: 7 },
+    eventHistory,
   });
   apps.push(app);
   return app;
@@ -152,6 +160,55 @@ describe("loopback session boundary", () => {
     });
     expect(crossProject.statusCode).toBe(403);
     expect(crossProject.json()).toMatchObject({ code: "WORKSPACE_PROJECT_MISMATCH" });
+  });
+
+  it("replays events after the persisted revision and rejects an unknown session", async () => {
+    const app = createApp([
+      {
+        revision: 7,
+        eventId: "event_revision_7",
+        type: "workspace.updated",
+        payload: { entityId: "agent_delivery" },
+      },
+    ]);
+    await app.ready();
+
+    let resolveMessage: (message: string) => void = () => undefined;
+    const messagePromise = new Promise<string>((resolve) => {
+      resolveMessage = resolve;
+    });
+    const socket = await app.injectWS(
+      "/api/events?sinceRevision=6",
+      {
+        headers: {
+          origin: allowedOrigin,
+          "x-cuckcode-session": "session_fixture",
+        },
+      },
+      {
+        onInit: (client) => {
+          client.once("message", (data) => resolveMessage(data.toString()));
+        },
+      },
+    );
+    const message = await messagePromise;
+
+    expect(JSON.parse(message)).toEqual({
+      revision: 7,
+      eventId: "event_revision_7",
+      type: "workspace.updated",
+      payload: { entityId: "agent_delivery" },
+    });
+    socket.close();
+
+    await expect(
+      app.injectWS("/api/events?sinceRevision=6", {
+        headers: {
+          origin: allowedOrigin,
+          "x-cuckcode-session": "session_other",
+        },
+      }),
+    ).rejects.toThrow();
   });
 
   it("rejects fixture mode in production", () => {
