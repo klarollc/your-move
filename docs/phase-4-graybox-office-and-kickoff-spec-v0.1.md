@@ -1,7 +1,7 @@
 # Phase 4 specification: Graybox office and collaborative kickoff
 
 Version: 0.1
-Status: Proposed for owner approval
+Status: **Owner-approved for Phase 4 Tasks 1–15 on 2026-08-13**
 Date: 2026-08-13
 Authority: `docs/master-design-document-v0.1.md`, D-02, D-04 through D-09, D-11 through D-26; `docs/implementation-plan-v0.1.md`
 

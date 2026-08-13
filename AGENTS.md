@@ -13,10 +13,11 @@ If implementation and documentation disagree, stop. Update and approve the desig
 
 ## Current boundary
 
-Phases 0, 1, and 2 were owner-accepted on 2026-08-13. The owner approved `docs/phase-3-runtime-and-onboarding-spec-v0.1.md`, `tasks/plan.md`, and `tasks/todo.md` for Phase 3 implementation on 2026-08-13. Execute only that approved scope and stop at the Phase 3 evidence gate; Phase 4 remains unauthorized.
+Phases 0 through 3 were owner-accepted on 2026-08-13. The owner approved `docs/phase-4-graybox-office-and-kickoff-spec-v0.1.md`, `.ui-craft/spec.md`, `tasks/phase-4-plan.md`, and `tasks/phase-4-todo.md` for Phase 4 Tasks 1–15 on 2026-08-13.
 
-Phase 3 is limited to the provider-neutral runtime contract, pinned local Codex App Server stdio adapter, process supervision, normalized runtime events and approvals, stable runtime bindings, Candidate onboarding, controlled Agency Agents role-template import, universal and six role-specific qualification suites, staffing truth, and one explicitly supervised local live contract run. Do not add production UI, begin the collaborative kickoff, promote high-fidelity art, deploy, or begin Phase 4 behavior.
+Phase 4 authority is limited to deterministic graybox office composition and behavior, the accessible DOM equivalent, loopback application boundary, simulator-driven collaboration/kickoff workflow, strict rendered graybox QA, manual accessibility, and the five-person comprehension study. Stop at the owner graybox gate.
 
+Tasks 16–17, executable role promotion, any live kickoff, high-fidelity art, final visual tokens/assets, visual-baseline promotion, Phase 5 behavior, deployment, and external effects remain unauthorized pending separate explicit approval.
 ## Required delivery method
 
 - Use specification-driven development with explicit human approval between specification, plan, tasks, and implementation.

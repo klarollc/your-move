@@ -1,11 +1,11 @@
 # Phase 4 checklist: Graybox office and collaborative kickoff
 
-Status: Proposed; implementation unauthorized until owner approval
+Status: **Owner-approved for deterministic Tasks 1–15 on 2026-08-13; Tasks 16–17 remain unauthorized**
 Specification: `docs/phase-4-graybox-office-and-kickoff-spec-v0.1.md`
 Plan: `tasks/phase-4-plan.md`
 Composition: `.ui-craft/spec.md`
 
-- [ ] Owner approves Phase 4 specification, composition, plan, and this checklist for Tasks 1–15 only.
+- [x] Owner approved Phase 4 specification, composition, plan, and this checklist for Tasks 1–15 only on 2026-08-13.
 
 - [ ] Task 1: Reconcile authority and freeze Phase 4 composition.
   - Acceptance: consistent phase definition; graybox cannot satisfy high-fidelity gates.
