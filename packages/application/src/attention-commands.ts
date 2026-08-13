@@ -55,10 +55,12 @@ type AttentionCommandResult =
       requiredAction?: string;
     }>;
 
-export function executeAttentionCommand(input: Readonly<{
-  command: WorkspaceCommand;
-  current: AttentionContext;
-}>): AttentionCommandResult {
+export function executeAttentionCommand(
+  input: Readonly<{
+    command: WorkspaceCommand;
+    current: AttentionContext;
+  }>,
+): AttentionCommandResult {
   if (input.current.freshness !== "current") return unavailable("ATTENTION_WORKSPACE_STALE");
   if (input.current.connection === "timeout") return unavailable("ATTENTION_COMMAND_TIMEOUT");
   if (input.current.connection === "disconnected") {
