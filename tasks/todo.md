@@ -11,7 +11,7 @@ For every behavioral task: record the focused command and expected RED failure b
   - Files: contracts primitives test/source; domain canonical JSON test/source.
   - Dependencies: none.
 
-- [ ] Task 2: Versioned event envelope and canonical ordering
+- [x] Task 2: Versioned event envelope and canonical ordering
   - Acceptance: invalid or unsupported events are rejected; duplicates are idempotent or conflicting; permutation order is stable.
   - Verify: focused unit tests with malformed, duplicate, conflict, and permutation fixtures.
   - Files: contracts events test/source; domain ordering test/source.
