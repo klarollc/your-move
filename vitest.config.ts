@@ -13,6 +13,14 @@ export default defineConfig({
       },
       {
         test: {
+          name: "component",
+          include: ["**/*.component.test.tsx"],
+          environment: "jsdom",
+          exclude: ["**/.restore/**", "**/dist/**", "**/node_modules/**"],
+        },
+      },
+      {
+        test: {
           name: "integration",
           include: ["**/*.integration.test.ts"],
           environment: "node",
