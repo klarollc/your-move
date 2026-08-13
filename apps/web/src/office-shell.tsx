@@ -1,4 +1,6 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+
+import "./office-shell.css";
 
 export type OfficeShellState =
   "ready" | "loading" | "empty" | "partial" | "error" | "stale" | "offline" | "canvas-loss";
@@ -118,17 +120,30 @@ const presentations: Record<
   },
 };
 
-export function OfficeShell({ state }: Readonly<{ state: OfficeShellState }>) {
+export function OfficeShell({
+  state,
+  canvas,
+  onRecovery,
+  onResetView,
+}: Readonly<{
+  state: OfficeShellState;
+  canvas?: ReactNode;
+  onRecovery?: () => void;
+  onResetView?: () => void;
+}>) {
   const outlineRef = useRef<HTMLElement>(null);
   const [announcement, setAnnouncement] = useState(
     state === "ready" ? "Workspace current" : `Workspace ${state}`,
   );
+  useEffect(() => {
+    setAnnouncement(state === "ready" ? "Workspace current" : `Workspace ${state}`);
+  }, [state]);
   const presentation = presentations[state];
   const zones = officeShellEntities.filter(({ kind }) => kind === "zone");
   const people = officeShellEntities.filter(({ kind }) => kind === "person");
 
   return (
-    <div className="office-shell">
+    <main className="office-shell" aria-label="CuckCode office workspace">
       <a
         className="office-skip-link"
         href="#office-outline"
@@ -151,7 +166,13 @@ export function OfficeShell({ state }: Readonly<{ state: OfficeShellState }>) {
         </div>
         <span>{presentation.runtime}</span>
         <span>Local session · revision 42</span>
-        <button type="button" onClick={() => setAnnouncement("Canonical view restored")}>
+        <button
+          type="button"
+          onClick={() => {
+            onResetView?.();
+            setAnnouncement("Canonical view restored");
+          }}
+        >
           Reset view
         </button>
       </header>
@@ -162,9 +183,11 @@ export function OfficeShell({ state }: Readonly<{ state: OfficeShellState }>) {
         data-scene-entity-ids={officeShellEntities.map(({ entityId }) => entityId).join(",")}
         data-testid="persistent-structure"
       >
-        <div className="office-canvas-host" data-office-canvas-host aria-hidden="true">
-          <span>PixiJS office host</span>
-        </div>
+        {canvas ?? (
+          <div className="office-canvas-placeholder" data-office-canvas-host aria-hidden="true">
+            <span>Office scene unavailable; use the Office outline.</span>
+          </div>
+        )}
       </section>
 
       <section
@@ -186,7 +209,10 @@ export function OfficeShell({ state }: Readonly<{ state: OfficeShellState }>) {
         {presentation.recovery ? (
           <button
             type="button"
-            onClick={() => setAnnouncement(`${presentation.recovery} requested`)}
+            onClick={() => {
+              onRecovery?.();
+              setAnnouncement(`${presentation.recovery} requested`);
+            }}
           >
             {presentation.recovery}
           </button>
@@ -232,6 +258,6 @@ export function OfficeShell({ state }: Readonly<{ state: OfficeShellState }>) {
       <p className="office-live-region" role="status" aria-live="polite">
         {announcement}
       </p>
-    </div>
+    </main>
   );
 }
