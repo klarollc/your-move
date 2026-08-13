@@ -376,3 +376,6 @@ body {
   background: #fff;
   font-size: 12px;
 }
+.office-attention-receipt p {
+  overflow-wrap: anywhere;
+}
