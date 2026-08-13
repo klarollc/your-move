@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
-import { mkdirSync, realpathSync } from "node:fs";
-import { isAbsolute, join, relative, resolve } from "node:path";
+import { existsSync, mkdirSync, realpathSync } from "node:fs";
+import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import Database from "better-sqlite3";
 const APPLICATION_ID = 0x4355434b;
 const INITIAL_SQL = `
@@ -23,10 +23,20 @@ export function resolveProjectRoomPath(projectRoot: string, relativePath: string
   )
     throw new Error("CUCKCODE_PATH_OUTSIDE_PROJECT_ROOT");
   const candidate = resolve(root, relativePath);
-  const rel = relative(root, candidate);
+  let existingAncestor = candidate;
+  while (!existsSync(existingAncestor)) {
+    const parent = dirname(existingAncestor);
+    if (parent === existingAncestor) break;
+    existingAncestor = parent;
+  }
+  const resolvedCandidate = resolve(
+    realpathSync(existingAncestor),
+    relative(existingAncestor, candidate),
+  );
+  const rel = relative(root, resolvedCandidate);
   if (rel.startsWith("..") || isAbsolute(rel))
     throw new Error("CUCKCODE_PATH_OUTSIDE_PROJECT_ROOT");
-  return candidate;
+  return resolvedCandidate;
 }
 export type ProjectStore = {
   database: Database.Database;
@@ -52,31 +62,29 @@ export function openProjectStore(
     mkdirSync(resolveProjectRoomPath(root, `.cuckcode/${dir}`), { recursive: true });
   }
   const db = new Database(join(stateDir, "cuckcode.sqlite"));
-  db.pragma("journal_mode = WAL");
-  db.pragma("foreign_keys = ON");
-  db.pragma(`application_id = ${APPLICATION_ID}`);
-  db.transaction(() => {
-    db.exec(INITIAL_SQL);
-    const expected = checksum(INITIAL_SQL);
-    const row = db
-      .prepare("SELECT checksum FROM schema_migrations WHERE id=?")
-      .get("001_initial") as { checksum: string } | undefined;
-    if (row && row.checksum !== expected) throw new Error("CUCKCODE_MIGRATION_CHECKSUM_MISMATCH");
-    if (!row)
-      db.prepare("INSERT INTO schema_migrations VALUES(?,?,?)").run(
-        "001_initial",
-        expected,
-        "2026-08-13T00:00:00.000Z",
-      );
-    db.pragma("user_version = 1");
-  })();
-  if (options.testMigrationSql) {
-    try {
-      db.transaction(() => db.exec(options.testMigrationSql!))();
-    } catch (error) {
-      db.close();
-      throw error;
-    }
+  try {
+    db.pragma("journal_mode = WAL");
+    db.pragma("foreign_keys = ON");
+    db.pragma(`application_id = ${APPLICATION_ID}`);
+    db.transaction(() => {
+      db.exec(INITIAL_SQL);
+      const expected = checksum(INITIAL_SQL);
+      const row = db
+        .prepare("SELECT checksum FROM schema_migrations WHERE id=?")
+        .get("001_initial") as { checksum: string } | undefined;
+      if (row && row.checksum !== expected) throw new Error("CUCKCODE_MIGRATION_CHECKSUM_MISMATCH");
+      if (!row)
+        db.prepare("INSERT INTO schema_migrations VALUES(?,?,?)").run(
+          "001_initial",
+          expected,
+          "2026-08-13T00:00:00.000Z",
+        );
+      db.pragma("user_version = 1");
+    })();
+    if (options.testMigrationSql) db.transaction(() => db.exec(options.testMigrationSql!))();
+  } catch (error) {
+    db.close();
+    throw error;
   }
   return {
     database: db,

@@ -40,3 +40,8 @@
 - GREEN: one contract test executes the two-project scenario twice from fresh roots and requires byte-equivalent path-independent results.
 - The scenario proves provisional contribution, contested review, manager-approved resolution, critical pre-action pause, safe-checkpoint refresh, context receipt, FTS rebuild, restart, backup/export database equivalence, project canary isolation, and deterministic packet/schema/query hashes.
 - Task gate: format, lint, and typecheck passed; unit 17 files/47 tests; integration 8 files/21 tests; contract 4 files/23 tests.
+## Checkpoint C audit correction - Task 2
+- Audit found the approved junction-escape criterion lacked a regression and the resolver followed an existing Windows junction outside the project root.
+- Harness RED first failed to parse because the scoped PowerShell fallback inserted literal newline markers; the test text was corrected before behavioral evidence was accepted.
+- Behavioral RED: 2 of 7 focused tests failed because junction escape was accepted and migration-checksum rejection retained an open database handle.
+- GREEN: nearest-existing-ancestor realpath confinement rejects the junction; all startup failures close SQLite. Focused project-store integration: 7 passed. Lint and typecheck passed.
