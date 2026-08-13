@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import { LayoutTrial } from "./layout-trial.js";
+import { PixiSceneProbe } from "./pixi-scene-probe.js";
 
 const container = document.querySelector("#app");
 
@@ -13,7 +14,9 @@ const surface = new URLSearchParams(window.location.search).get("surface");
 
 createRoot(container).render(
   <StrictMode>
-    {surface === "layout-trial" ? (
+    {surface === "pixi-probe" ? (
+      <PixiSceneProbe />
+    ) : surface === "layout-trial" ? (
       <LayoutTrial />
     ) : (
       <main aria-label="CuckCode Phase 0 scaffold" data-phase="0">
