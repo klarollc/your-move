@@ -188,4 +188,12 @@ Date: 2026-08-13
 - Exact role check: 6 Candidate roles at pinned commit `ebe9c99acb5c96f9468de368d8bead775387d1a7`, `ok: true`.
 - Live evidence: owner-authorized attempt 2 passed completely with no prohibited item or external effect.
 - Limits: no visual acceptance, office-scene UX claim, production/deployment readiness claim, or Phase 4 authorization. The configured Phase 3 visual command contains no visual assertions.
-- Disposition: Task 13 complete; Owner Phase 3 gate remains open.
+- Disposition at Task 13 completion: owner review was pending; the subsequent owner-gate entry records acceptance.
+
+## Owner Phase 3 gate - accepted
+
+Date: 2026-08-13
+
+- Owner decision: approved.
+- Phase 3 evidence is accepted without correction.
+- Scope boundary: this approval closes Phase 3 only; it does not authorize Phase 4, UI implementation, visual acceptance, production deployment, or release.

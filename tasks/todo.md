@@ -76,4 +76,4 @@ Prior checklist: `tasks/phase-2-todo.md`
   - Verify: `npm.cmd run verify` plus all Phase 3 commands.
   - Dependencies: Tasks 1-12.
 
-- [ ] Owner Phase 3 gate: accept evidence or request corrections. Phase 4 remains unauthorized.
+- [x] Owner Phase 3 gate: evidence accepted by owner on 2026-08-13. Phase 4 remains unauthorized.
