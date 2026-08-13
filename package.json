@@ -23,7 +23,7 @@
     "protocol:codex:check": "node scripts/check-codex-protocol.mjs",
     "test:protocol": "node --test scripts/protocol-codex.test.mjs && npm run protocol:codex:check",
     "test:scaffold": "node --test scripts/scaffold-contract.test.mjs",
-    "test:runtime": "vitest run --project contract packages/contracts/src/runtime.contract.test.ts packages/testing/src/runtime-fake.contract.test.ts",
+    "test:runtime": "vitest run --project contract packages/contracts/src/runtime.contract.test.ts packages/testing/src/runtime-fake.contract.test.ts && vitest run --project integration packages/runtime-codex/src/supervisor.integration.test.ts",
     "test:unit": "vitest run --project unit --passWithNoTests",
     "test:integration": "vitest run --project integration --passWithNoTests",
     "test:contract": "vitest run --project contract --passWithNoTests",

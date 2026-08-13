@@ -22,7 +22,7 @@ Prior checklist: `tasks/phase-2-todo.md`
 
 - [x] Checkpoint A: runtime/contracts, format, lint, typecheck, schema/source scans, Tasks 1-3 evidence.
 
-- [ ] Task 4: Codex stdio supervisor and handshake
+- [x] Task 4: Codex stdio supervisor and handshake
   - Acceptance: direct fixed spawn, bounded JSONL, strict handshake, redacted stderr, cleanup, auth distinction.
   - Verify: fake-child integration and runtime suite.
   - Dependencies: Tasks 1-3.

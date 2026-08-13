@@ -44,3 +44,13 @@ Date: 2026-08-13
 - `npm.cmd run test:contract`: PASS, 6 files / 31 tests.
 - Secret-value scan: PASS; no `sk-`-style value of 20 or more identifier characters in production package/script sources outside the generated protocol.
 - Scope: machine/static evidence only; no browser or visual claim.
+## Task 4 - Codex stdio supervisor and handshake
+
+Date: 2026-08-13
+
+- RED: the fake-child integration suite failed because `supervisor.js` did not exist.
+- GREEN: 3 integration tests passed for fixed direct-spawn arguments, fragmented initialize response, initialized ordering, stderr redaction, distinct auth-required status, and bounded silent-handshake failure.
+- Spawn contract: exact args `app-server --stdio --strict-config`, `shell: false`, pipe stdio, hidden Windows process.
+- Protocol contract: stable initialize request contains client metadata and omits capabilities/`experimentalApi`; response must report 0.146.0 before readiness.
+- REFACTOR: Node types were scoped to `runtime-codex`; exact-optional process state was made explicit.
+- Verification: focused integration suite and `npm.cmd run typecheck` passed.
