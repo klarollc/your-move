@@ -10,7 +10,7 @@ Prior checklist: `tasks/phase-2-todo.md`
   - Verify: focused unit/contract and typecheck.
   - Dependencies: none.
 
-- [ ] Task 2: Pin Codex protocol `0.146.0`
+- [x] Task 2: Pin Codex protocol `0.146.0`
   - Acceptance: stable schemas, provenance/hash manifest, drift/wrong-version rejection.
   - Verify: `npm.cmd run protocol:codex:check`.
   - Dependencies: Task 1.
