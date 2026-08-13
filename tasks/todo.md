@@ -39,7 +39,7 @@ Prior checklist: `tasks/phase-2-todo.md`
 
 - [x] Checkpoint B: supervisor/normalization/control and full static/behavior gates, Tasks 4-6 evidence.
 
-- [ ] Task 7: Binding persistence and identity continuity
+- [x] Task 7: Binding persistence and identity continuity
   - Acceptance: versioned history, impersonation prevention, stale qualification, recovery provenance, no credentials.
   - Verify: migration/integration/canary/recovery.
   - Dependencies: Tasks 1, 5-6.

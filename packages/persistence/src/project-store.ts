@@ -13,7 +13,26 @@ CREATE TABLE IF NOT EXISTS packet_receipts(packet_id TEXT PRIMARY KEY, project_i
 CREATE TABLE IF NOT EXISTS notebook_entries(entry_id TEXT PRIMARY KEY, project_id TEXT NOT NULL, agent_id TEXT NOT NULL, version INTEGER NOT NULL, enabled INTEGER NOT NULL, content TEXT NOT NULL, classification TEXT NOT NULL, created_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS profile_entries(entry_id TEXT PRIMARY KEY, agent_id TEXT NOT NULL, version INTEGER NOT NULL, enabled INTEGER NOT NULL, content TEXT NOT NULL, promoted_by TEXT NOT NULL, created_at TEXT NOT NULL);
 `;
+const RUNTIME_TRUST_SQL = `
+CREATE TABLE IF NOT EXISTS agents(agent_id TEXT PRIMARY KEY, display_name TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS runtime_bindings(binding_id TEXT PRIMARY KEY, agent_id TEXT NOT NULL REFERENCES agents(agent_id), binding_version INTEGER NOT NULL, material_fingerprint TEXT NOT NULL, status TEXT NOT NULL, report_json TEXT NOT NULL, created_at TEXT NOT NULL, revoked_at TEXT, UNIQUE(agent_id, binding_version));
+CREATE TABLE IF NOT EXISTS provider_identities(provider_kind TEXT NOT NULL, provider_id TEXT NOT NULL, agent_id TEXT NOT NULL REFERENCES agents(agent_id), PRIMARY KEY(provider_kind, provider_id));
+CREATE TABLE IF NOT EXISTS admissions(admission_id TEXT PRIMARY KEY, agent_id TEXT NOT NULL REFERENCES agents(agent_id), binding_id TEXT NOT NULL REFERENCES runtime_bindings(binding_id), suite_version TEXT NOT NULL, status TEXT NOT NULL, evidence_hash TEXT NOT NULL, recorded_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS runtime_qualifications(qualification_id TEXT PRIMARY KEY, agent_id TEXT NOT NULL REFERENCES agents(agent_id), binding_id TEXT NOT NULL REFERENCES runtime_bindings(binding_id), role_id TEXT NOT NULL, suite_version TEXT NOT NULL, status TEXT NOT NULL, evidence_hash TEXT NOT NULL, recorded_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS qualification_exceptions(exception_id TEXT PRIMARY KEY, qualification_id TEXT NOT NULL REFERENCES runtime_qualifications(qualification_id), check_id TEXT NOT NULL, scope_json TEXT NOT NULL, residual_risk TEXT NOT NULL, compensating_control TEXT NOT NULL, owner_id TEXT NOT NULL, expires_at TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS trust_revocations(revocation_id TEXT PRIMARY KEY, agent_id TEXT NOT NULL REFERENCES agents(agent_id), binding_id TEXT, qualification_id TEXT, reason TEXT NOT NULL, recorded_at TEXT NOT NULL);
+`;
 const checksum = (text: string) => createHash("sha256").update(text).digest("hex");
+function applyMigration(db: Database.Database, id: string, sql: string, appliedAt: string): void {
+  if (id === "001_initial") db.exec(sql);
+  const expected = checksum(sql);
+  const row = db.prepare("SELECT checksum FROM schema_migrations WHERE id=?").get(id) as
+    { checksum: string } | undefined;
+  if (row && row.checksum !== expected) throw new Error("CUCKCODE_MIGRATION_CHECKSUM_MISMATCH");
+  if (row) return;
+  if (id !== "001_initial") db.exec(sql);
+  db.prepare("INSERT INTO schema_migrations VALUES(?,?,?)").run(id, expected, appliedAt);
+}
 export function resolveProjectRoomPath(projectRoot: string, relativePath: string): string {
   const root = realpathSync(resolve(projectRoot));
   if (
@@ -67,19 +86,9 @@ export function openProjectStore(
     db.pragma("foreign_keys = ON");
     db.pragma(`application_id = ${APPLICATION_ID}`);
     db.transaction(() => {
-      db.exec(INITIAL_SQL);
-      const expected = checksum(INITIAL_SQL);
-      const row = db
-        .prepare("SELECT checksum FROM schema_migrations WHERE id=?")
-        .get("001_initial") as { checksum: string } | undefined;
-      if (row && row.checksum !== expected) throw new Error("CUCKCODE_MIGRATION_CHECKSUM_MISMATCH");
-      if (!row)
-        db.prepare("INSERT INTO schema_migrations VALUES(?,?,?)").run(
-          "001_initial",
-          expected,
-          "2026-08-13T00:00:00.000Z",
-        );
-      db.pragma("user_version = 1");
+      applyMigration(db, "001_initial", INITIAL_SQL, "2026-08-13T00:00:00.000Z");
+      applyMigration(db, "002_runtime_trust", RUNTIME_TRUST_SQL, "2026-08-13T18:00:00.000Z");
+      db.pragma("user_version = 2");
     })();
     if (options.testMigrationSql) db.transaction(() => db.exec(options.testMigrationSql!))();
   } catch (error) {

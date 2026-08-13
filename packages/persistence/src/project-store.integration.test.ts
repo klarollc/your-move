@@ -18,8 +18,11 @@ describe("project store migrations", () => {
     const store = openProjectStore(root());
     expect(store.schema()).toMatchObject({
       applicationId: 1129661259,
-      userVersion: 1,
-      migrations: [{ id: "001_initial", checksum: expect.stringMatching(/^[a-f0-9]{64}$/) }],
+      userVersion: 2,
+      migrations: [
+        { id: "001_initial", checksum: expect.stringMatching(/^[a-f0-9]{64}$/) },
+        { id: "002_runtime_trust", checksum: expect.stringMatching(/^[a-f0-9]{64}$/) },
+      ],
     });
     expect(store.integrity()).toBe("ok");
     store.close();

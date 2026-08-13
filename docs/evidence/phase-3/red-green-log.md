@@ -85,3 +85,13 @@ Date: 2026-08-13
 - Full integration regression: PASS, 9 files / 26 tests.
 - Full contract regression: PASS, 6 files / 31 tests.
 - Scope: process/protocol/machine evidence only; no provider live run, browser, or visual claim.
+## Task 7 - Binding persistence and identity continuity
+
+Date: 2026-08-13
+
+- RED: the migration test expected user version 2 / `002_runtime_trust`, and the trust-store suite failed because its module did not exist.
+- GREEN: 10 focused integration tests passed across deterministic migrations, identity/binding history, provider-ID impersonation, credential rejection, staleness, and restart continuity.
+- Migration: append-only `002_runtime_trust` adds agents, runtime bindings, provider identities, admissions, qualifications, scoped exceptions, and revocations without changing `001_initial`.
+- Invariant: provider IDs can correlate only to an existing CuckCode-owned `agentId`; they cannot create or replace identity.
+- Invariant: the latest material binding remains Candidate and prior-binding qualifications project as stale.
+- Verification: focused integration suite and `npm.cmd run typecheck` passed.
