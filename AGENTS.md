@@ -13,9 +13,9 @@ If implementation and documentation disagree, stop. Update and approve the desig
 
 ## Current boundary
 
-Phase 0 is owner-approved as of 2026-08-13. Repository initialization, the approved scaffold, exact dependency installation, verification configuration, Playwright Chromium installation, and the bounded SQLite proof are authorized.
+Phase 0 was owner-accepted on 2026-08-13. Phase 1 implementation plan and tasks were owner-approved on 2026-08-13.
 
-Stop at the Phase 0 evidence gate. Do not implement Phase 1 domain behavior, connect a live runtime, import upstream agent files, or create production UI until the next phase is explicitly approved.
+Phase 1 work is limited to pure contracts, deterministic canonical truth, state machines, projectors, reciprocal collaboration contracts, and the deterministic simulator. Stop at the Phase 1 evidence gate. Do not connect a live runtime, add persistence behavior, import upstream agent files, or create production UI.
 
 ## Required delivery method
 

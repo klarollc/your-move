@@ -1,6 +1,6 @@
 # CuckCode phased implementation plan v0.1
 
-Status: **Phase 0 owner-approved 2026-08-13; Phases 1–8 remain unapproved**  
+Status: **Phase 0 owner-accepted 2026-08-13; Phase 1 implementation owner-approved 2026-08-13; Phases 2–8 remain unapproved**
 Source of truth: `docs/master-design-document-v0.1.md`, owner-approved 2026-08-12 and amended by D-26 on 2026-08-13  
 Scope: planning only; this document does not authorize scaffolding, dependency installation, role import, runtime connection, or production implementation.
 
@@ -194,4 +194,4 @@ Any production reuse begins a separate architecture review and TDD scope. Fixtur
 
 ## Approval requested
 
-Approval authorizes Phase 0 only. Each later phase begins only after the preceding gate's evidence and any named owner approval are complete.
+Phase 0 was accepted by the owner on 2026-08-13. The owner approved `tasks/plan.md` and `tasks/todo.md` for Phase 1 implementation on 2026-08-13; each later phase remains separately gated.
