@@ -14,7 +14,7 @@ body {
   overflow: hidden;
 }
 
-button {
+.office-shell button {
   min-height: 44px;
   padding: 0 14px;
   border: 1px solid #5d6063;
@@ -24,7 +24,7 @@ button {
   font: inherit;
 }
 
-button:focus-visible,
+.office-shell button:focus-visible,
 .office-skip-link:focus-visible,
 .office-outline:focus-visible {
   outline: 3px solid #242628;
