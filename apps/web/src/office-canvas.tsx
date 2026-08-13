@@ -1,5 +1,5 @@
 import { createOfficeCamera, createOfficeLayout, officeLayoutPolicy } from "@cuckcode/ui-system";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { OfficeShell, type OfficeShellState } from "./office-shell.js";
 import {
@@ -28,8 +28,12 @@ const sceneDescriptors: readonly SceneDescriptor[] = Object.freeze([
 export function OfficeWorkspace({ initialState }: Readonly<{ initialState: OfficeShellState }>) {
   const [state, setState] = useState(initialState);
   const [canvasKey, setCanvasKey] = useState(0);
+  const [selectedEntityId, setSelectedEntityId] = useState<string | undefined>(undefined);
   const showPersistedScene = !["loading", "empty", "error", "canvas-loss"].includes(state);
 
+  const handleCanvasUnavailable = useCallback((unavailable: boolean) => {
+    if (unavailable) setState("canvas-loss");
+  }, []);
   const recover = () => {
     setCanvasKey((value) => value + 1);
     setState("ready");
@@ -42,21 +46,26 @@ export function OfficeWorkspace({ initialState }: Readonly<{ initialState: Offic
         showPersistedScene ? (
           <OfficeCanvas
             key={canvasKey}
-            onCanvasUnavailable={(unavailable) => {
-              if (unavailable) setState("canvas-loss");
-            }}
+            onCanvasUnavailable={handleCanvasUnavailable}
+            onSelectEntity={setSelectedEntityId}
           />
         ) : undefined
       }
       onRecovery={recover}
       onResetView={() => setCanvasKey((value) => value + 1)}
+      selectedEntityId={selectedEntityId}
+      onSelectEntity={setSelectedEntityId}
     />
   );
 }
 
 function OfficeCanvas({
   onCanvasUnavailable,
-}: Readonly<{ onCanvasUnavailable: (unavailable: boolean) => void }>) {
+  onSelectEntity,
+}: Readonly<{
+  onCanvasUnavailable: (unavailable: boolean) => void;
+  onSelectEntity: (entityId: string) => void;
+}>) {
   const hostRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -67,7 +76,7 @@ function OfficeCanvas({
     const adapterCell: { current?: OfficeSceneAdapter } = {};
     const renderer = createPixiSceneRenderer(
       () => adapterCell.current?.contextLost(),
-      () => undefined,
+      ({ entityId }) => onSelectEntity(entityId),
     );
     const adapter = createOfficeSceneAdapter(renderer, onCanvasUnavailable);
     adapterCell.current = adapter;
@@ -77,13 +86,13 @@ function OfficeCanvas({
       .then(() => {
         if (cancelled) return;
         adapter.update(sceneDescriptors);
-        resizeScene(adapter, host.clientWidth, host.clientHeight);
+        resizeScene(adapter, host.clientWidth, host.clientHeight, host);
         observer = new ResizeObserver(([entry]) => {
           if (!entry) return;
           const width = Math.round(entry.contentRect.width);
           const height = Math.round(entry.contentRect.height);
           if (width < 1 || height < 1) return;
-          resizeScene(adapter, width, height);
+          resizeScene(adapter, width, height, host);
         });
         observer.observe(host);
       })
@@ -96,12 +105,17 @@ function OfficeCanvas({
       observer?.disconnect();
       adapter.unmount();
     };
-  }, [onCanvasUnavailable]);
+  }, [onCanvasUnavailable, onSelectEntity]);
 
   return <div className="office-canvas-host" data-office-canvas-host ref={hostRef} />;
 }
 
-function resizeScene(adapter: OfficeSceneAdapter, width: number, height: number) {
+function resizeScene(
+  adapter: OfficeSceneAdapter,
+  width: number,
+  height: number,
+  host: HTMLDivElement,
+) {
   adapter.resize(width, height);
   const camera = createOfficeCamera(
     createOfficeLayout({
@@ -118,6 +132,11 @@ function resizeScene(adapter: OfficeSceneAdapter, width: number, height: number)
       y: camera.translation.y - officeLayoutPolicy.projectBarHeight,
     },
   });
+  const implementationCenter = {
+    x: (80 + 34) * camera.zoom + camera.translation.x,
+    y: 34 * camera.zoom + camera.translation.y - officeLayoutPolicy.projectBarHeight,
+  };
+  host.dataset.agentImplementationScreen = `${implementationCenter.x},${implementationCenter.y}`;
 }
 
 function zone(

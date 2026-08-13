@@ -132,7 +132,7 @@ export function OfficeShell({
   canvas?: ReactNode;
   onRecovery?: () => void;
   onResetView?: () => void;
-  selectedEntityId?: string;
+  selectedEntityId?: string | undefined;
   onSelectEntity?: (entityId: string | undefined) => void;
 }>) {
   const outlineRef = useRef<HTMLElement>(null);
@@ -148,6 +148,11 @@ export function OfficeShell({
   const selection = selectedEntityId ?? internalSelection;
   const selectedEntity = officeShellEntities.find(({ entityId }) => entityId === selection);
 
+  useEffect(() => {
+    if (!selectedEntityId) return;
+    const entity = officeShellEntities.find(({ entityId }) => entityId === selectedEntityId);
+    setAnnouncement(`${entity?.label ?? selectedEntityId} selected`);
+  }, [selectedEntityId]);
   const selectEntity = (entityId: string, trigger: HTMLButtonElement) => {
     selectionTriggerRef.current = trigger;
     setInternalSelection(entityId);
