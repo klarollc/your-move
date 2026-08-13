@@ -44,3 +44,9 @@ Acceptance: invalid transitions remain issues without mutation, completion requi
 - GREEN: added lifecycle contracts, pure reduction, and current-knowledge selection; 2 files and 5 tests passed.
 - Invariants: provenance is required; adapter findings remain provisional; manager promotion is explicit; unauthorized, stale, rejected, and superseded records remain inspectable but not current.
 - REFACTOR verification: public exports formatted; `npm.cmd run typecheck` passed.
+## Task 6 - Collaboration, handoff, and actionable error contracts
+
+- RED: focused contract and unit suites failed to import the absent collaboration modules; zero tests ran in both suites.
+- GREEN: added participant-neutral commands, complete handoff validation, actionable errors, and shared permission authorization; contract 3 tests and unit 1 test passed.
+- Checkpoint defect: typecheck caught a widened test action literal, which blocked declaration emission and exposed a stale downstream contract boundary. The literal was narrowed without changing behavior.
+- Checkpoint B: formatting and lint passed; typecheck passed; full unit suite passed (10 files, 27 tests); full contract suite passed (1 file, 3 tests).

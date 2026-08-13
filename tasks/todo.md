@@ -37,13 +37,13 @@ For every behavioral task: record the focused command and expected RED failure b
   - Files: contracts knowledge test/source; domain knowledge reducer/test.
   - Dependencies: Tasks 1-2.
 
-- [ ] Task 6: Collaboration, handoff, and actionable error contracts
+- [x] Task 6: Collaboration, handoff, and actionable error contracts
   - Acceptance: complete structured handoffs; actionable stable errors; shared human and agent command authority.
   - Verify: contract tests and reciprocal policy tests.
   - Files: collaboration and error contract tests/sources; domain policy test.
   - Dependencies: Tasks 1-2, with Task 4 types where required.
 
-- [ ] Checkpoint B: unit and contract tests, format, lint, typecheck, and paired-contract review.
+- [x] Checkpoint B: unit and contract tests, format, lint, typecheck, and paired-contract review.
 
 - [ ] Task 7: Canonical replay reducer and snapshot
   - Acceptance: byte-equivalent snapshot replay; no invented progress; immutable deterministic inputs and outputs.
