@@ -35,3 +35,8 @@
 - GREEN: 2 focused integration tests prove synchronous SQLite snapshotting, verified project-content copying, atomic no-overwrite publication, restored database/content equivalence, deterministic manifest structure, and visible content corruption.
 - Full persistence gate: 8 integration files/21 tests, including the existing crash/WAL recovery proof. Format, lint, and typecheck passed.
 - Boundary: portable profiles are not included because they are explicitly stored outside project truth.
+## Task 11 - Cross-project shared-knowledge acceptance
+- RED: shared-knowledge scenario module absent.
+- GREEN: one contract test executes the two-project scenario twice from fresh roots and requires byte-equivalent path-independent results.
+- The scenario proves provisional contribution, contested review, manager-approved resolution, critical pre-action pause, safe-checkpoint refresh, context receipt, FTS rebuild, restart, backup/export database equivalence, project canary isolation, and deterministic packet/schema/query hashes.
+- Task gate: format, lint, and typecheck passed; unit 17 files/47 tests; integration 8 files/21 tests; contract 4 files/23 tests.

@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@cuckcode/contracts": "0.0.0",
-    "@cuckcode/domain": "0.0.0"
+    "@cuckcode/domain": "0.0.0",
+    "@cuckcode/application": "0.0.0",
+    "@cuckcode/persistence": "0.0.0"
   }
 }

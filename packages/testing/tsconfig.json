@@ -6,6 +6,19 @@
     "outDir": "dist",
     "rootDir": "src"
   },
-  "references": [{ "path": "../contracts" }, { "path": "../domain" }],
+  "references": [
+    {
+      "path": "../contracts"
+    },
+    {
+      "path": "../domain"
+    },
+    {
+      "path": "../application"
+    },
+    {
+      "path": "../persistence"
+    }
+  ],
   "include": ["src"]
 }
