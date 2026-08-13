@@ -64,7 +64,7 @@ Prior checklist: `tasks/phase-2-todo.md`
   - Verify: domain/application/persistence tests.
   - Dependencies: Tasks 7, 9-10.
 
-- [ ] Checkpoint C: qualification/import/binding/isolation/recovery/reciprocal matrices, Tasks 7-11 evidence.
+- [x] Checkpoint C: qualification/import/binding/isolation/recovery/reciprocal matrices, Tasks 7-11 evidence.
 
 - [ ] Task 12: Supervised local Codex contract run
   - Acceptance: opt-in exact version/handshake/auth/binding/bounded turn/events/shutdown; no task external effect.

@@ -139,3 +139,16 @@ Date: 2026-08-13
 - Audit: offer, agent response, and manager disposition persist as three distinct canonical events.
 - Reciprocity: manager and Candidate receive the same actionable facts with audience-specific envelopes.
 - Verification: focused unit/integration tests, full unit/integration/contract regressions, lint, and typecheck passed.
+## Checkpoint C - Binding, import, qualification, and staffing
+
+Date: 2026-08-13
+
+- Agency role provenance: PASS, 3 validator tests; 6 Candidate roles at pinned commit.
+- Qualification matrix: PASS, 2 files / 16 tests.
+- Runtime recovery matrix: PASS, 8 contract + 3 process integration + 7 unit tests.
+- Format, lint, and typecheck: PASS.
+- Full unit regression: PASS, 23 files / 79 tests.
+- Full integration regression: PASS, 11 files / 30 tests.
+- Full contract regression: PASS, 6 files / 31 tests.
+- Coverage includes binding identity, restart persistence, project isolation/recovery, role provenance, universal/role eligibility, exception controls, reciprocal offer/response/decision, vacancy, dual-role, and reviewer conflict.
+- Scope: deterministic machine evidence only; the supervised live Codex gate remains separate and has not yet run.
