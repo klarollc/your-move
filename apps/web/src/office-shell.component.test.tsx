@@ -104,6 +104,31 @@ describe("OfficeShell", () => {
     { state: "stale", cause: /freshness window/i, recovery: "Refresh workspace" },
     { state: "offline", cause: /loopback runtime is unavailable/i, recovery: "Reconnect runtime" },
     { state: "canvas-loss", cause: /webgl context is unavailable/i, recovery: "Retry canvas" },
+    { state: "rate-limit", cause: /provider rate limit/i, recovery: "Retry after limit" },
+    {
+      state: "budget-limit",
+      cause: /budget ceiling is exhausted/i,
+      recovery: "Request budget decision",
+    },
+    {
+      state: "permission-denied",
+      cause: /permission request was denied/i,
+      recovery: "Review permission boundary",
+    },
+    {
+      state: "missing-artifact",
+      cause: /required artifact is missing/i,
+      recovery: "Locate missing artifact",
+    },
+    { state: "test-failure", cause: /test evidence failed/i, recovery: "Review failed test" },
+    {
+      state: "reviewer-disagreement",
+      cause: /reviewers disagree/i,
+      recovery: "Resolve reviewer disagreement",
+    },
+    { state: "conflict", cause: /out-of-order event conflict/i, recovery: "Reconcile conflict" },
+    { state: "restart", cause: /runtime restarted/i, recovery: "Restore current state" },
+    { state: "cancelled", cause: /manager cancellation/i, recovery: "Review cancellation" },
   ])("preserves cause, outline, and manager actions in $state", ({ state, cause, recovery }) => {
     render(<OfficeShell state={state} />);
 
@@ -304,5 +329,36 @@ describe("OfficeShell spatial evidence surfaces", () => {
       "data-selected-entity-id",
       "zone_review",
     );
+  });
+});
+
+describe("OfficeShell semantic motion cue", () => {
+  it.each([
+    ["travel", "Handoff moving to Review station"],
+    ["immediate-placement", "Handoff recorded at Review station"],
+  ] as const)("renders %s without changing canonical or runtime state", (presentation, label) => {
+    render(
+      <OfficeShell
+        state="ready"
+        motion={{
+          canonicalRevision: 44,
+          presentation,
+          checkpoint: "responsibility-transferred",
+          label,
+          announcement: "Handoff moved to Review station",
+          queuedCount: 1,
+          loop: false,
+          runtimePaused: false,
+        }}
+      />,
+    );
+
+    const cue = screen.getByTestId("semantic-motion-cue");
+    expect(cue).toHaveAttribute("data-canonical-revision", "44");
+    expect(cue).toHaveAttribute("data-motion-presentation", presentation);
+    expect(cue).toHaveAttribute("data-motion-loop", "false");
+    expect(cue).toHaveAttribute("data-runtime-paused", "false");
+    expect(cue).toHaveTextContent(label);
+    expect(cue).toHaveTextContent("1 transition queued");
   });
 });

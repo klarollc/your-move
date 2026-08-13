@@ -384,3 +384,45 @@ body {
 .office-shell[data-library-open="true"] .office-outline {
   margin-right: 420px;
 }
+
+.office-motion-cue {
+  position: absolute;
+  z-index: 2;
+  bottom: 12px;
+  left: 12px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  max-width: min(520px, calc(100% - 24px));
+  padding: 8px 10px;
+  border: 1px solid #676b68;
+  background: rgb(248 248 245 / 94%);
+  font-size: 12px;
+}
+
+.office-motion-cue span {
+  color: #55585a;
+}
+
+.office-motion-cue--travel {
+  animation: office-semantic-travel 480ms ease-out 1 both;
+}
+
+@keyframes office-semantic-travel {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .office-motion-cue {
+    animation: none !important;
+    transform: none !important;
+  }
+}

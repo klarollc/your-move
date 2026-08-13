@@ -11,7 +11,34 @@ import { EvidenceLibrary } from "./evidence-library.js";
 import "./office-shell.css";
 
 export type OfficeShellState =
-  "ready" | "loading" | "empty" | "partial" | "error" | "stale" | "offline" | "canvas-loss";
+  | "ready"
+  | "loading"
+  | "empty"
+  | "partial"
+  | "error"
+  | "stale"
+  | "offline"
+  | "canvas-loss"
+  | "rate-limit"
+  | "budget-limit"
+  | "permission-denied"
+  | "missing-artifact"
+  | "test-failure"
+  | "reviewer-disagreement"
+  | "conflict"
+  | "restart"
+  | "cancelled";
+
+export type OfficeMotionCue = Readonly<{
+  canonicalRevision: number;
+  presentation: "travel" | "immediate-placement" | "persistent-label";
+  checkpoint: string;
+  label: string;
+  announcement: string;
+  queuedCount: number;
+  loop: false;
+  runtimePaused: false;
+}>;
 
 type OfficeEntity = Readonly<{
   entityId: string;
@@ -126,6 +153,51 @@ const presentations: Record<
     recovery: "Retry canvas",
     runtime: "Runtime connected; canvas unavailable",
   },
+  "rate-limit": {
+    cause: "The provider rate limit denied the current request; no work is inferred.",
+    recovery: "Retry after limit",
+    runtime: "Runtime rate limited",
+  },
+  "budget-limit": {
+    cause: "The approved provider budget ceiling is exhausted; execution is blocked.",
+    recovery: "Request budget decision",
+    runtime: "Runtime budget blocked",
+  },
+  "permission-denied": {
+    cause: "The required permission request was denied; the agent did not continue.",
+    recovery: "Review permission boundary",
+    runtime: "Runtime permission blocked",
+  },
+  "missing-artifact": {
+    cause: "A required artifact is missing; review and delivery remain unavailable.",
+    recovery: "Locate missing artifact",
+    runtime: "Runtime artifact blocked",
+  },
+  "test-failure": {
+    cause: "Current test evidence failed; completed and approved remain false.",
+    recovery: "Review failed test",
+    runtime: "Runtime verification failed",
+  },
+  "reviewer-disagreement": {
+    cause: "The visual and release reviewers disagree; no conclusion was manufactured.",
+    recovery: "Resolve reviewer disagreement",
+    runtime: "Runtime review contested",
+  },
+  conflict: {
+    cause: "An out-of-order event conflict is quarantined; canonical state did not advance.",
+    recovery: "Reconcile conflict",
+    runtime: "Runtime conflict quarantined",
+  },
+  restart: {
+    cause: "The runtime restarted; persisted truth is visible while health is revalidated.",
+    recovery: "Restore current state",
+    runtime: "Runtime restoring persisted state",
+  },
+  cancelled: {
+    cause: "Manager cancellation stopped the work; no completion is inferred.",
+    recovery: "Review cancellation",
+    runtime: "Runtime work cancelled",
+  },
 };
 
 export function OfficeShell({
@@ -138,6 +210,7 @@ export function OfficeShell({
   attention = [],
   onDisposition,
   library,
+  motion,
 }: Readonly<{
   state: OfficeShellState;
   canvas?: ReactNode;
@@ -152,6 +225,7 @@ export function OfficeShell({
     scope: Record<string, string>,
   ) => OfficeDispositionResult | Promise<OfficeDispositionResult>;
   library?: BrowserLibraryProjection;
+  motion?: OfficeMotionCue;
 }>) {
   const outlineRef = useRef<HTMLElement>(null);
   const libraryTriggerRef = useRef<HTMLButtonElement>(null);
@@ -172,6 +246,9 @@ export function OfficeShell({
   useEffect(() => {
     setAnnouncement(state === "ready" ? "Workspace current" : `Workspace ${state}`);
   }, [state]);
+  useEffect(() => {
+    if (motion) setAnnouncement(motion.announcement);
+  }, [motion]);
   const presentation = presentations[state];
   const selection = selectedEntityId ?? internalSelection;
   const selectedEntity = officeShellEntities.find(({ entityId }) => entityId === selection);
@@ -292,6 +369,22 @@ export function OfficeShell({
             <span>Office scene unavailable; use the Office outline.</span>
           </div>
         )}
+        {motion ? (
+          <div
+            className={`office-motion-cue office-motion-cue--${motion.presentation}`}
+            data-testid="semantic-motion-cue"
+            data-canonical-revision={motion.canonicalRevision}
+            data-motion-presentation={motion.presentation}
+            data-motion-checkpoint={motion.checkpoint}
+            data-motion-loop={motion.loop}
+            data-runtime-paused={motion.runtimePaused}
+          >
+            <strong>{motion.label}</strong>
+            <span>
+              {motion.queuedCount} transition{motion.queuedCount === 1 ? "" : "s"} queued
+            </span>
+          </div>
+        ) : null}
       </section>
 
       <section
