@@ -51,6 +51,41 @@ describe("OfficeShell", () => {
     expect(screen.getByRole("status")).toHaveTextContent("Workspace current");
   });
 
+  it("shares stable selection with a complete inspector and restores trigger focus", async () => {
+    const user = userEvent.setup();
+    render(<OfficeShell state="ready" />);
+    const trigger = screen.getByRole("button", { name: "Inspect Implementation Engineer" });
+
+    expect(
+      screen.queryByRole("complementary", { name: "Entity inspector" }),
+    ).not.toBeInTheDocument();
+    await user.click(trigger);
+
+    const inspector = screen.getByRole("complementary", { name: "Entity inspector" });
+    expect(inspector).toHaveAttribute("data-selected-entity-id", "agent_implementation_engineer");
+    for (const label of [
+      "State",
+      "Cause",
+      "Updated",
+      "Freshness",
+      "Current work",
+      "Blocker",
+      "Evidence",
+      "Runtime binding",
+      "Permissions",
+      "Technical trail",
+    ]) {
+      expect(inspector).toHaveTextContent(label);
+    }
+    expect(screen.getByRole("region", { name: "Office scene" })).toHaveAttribute(
+      "data-selected-entity-id",
+      "agent_implementation_engineer",
+    );
+
+    await user.keyboard("{Escape}");
+    expect(inspector).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+  });
   it.each<{
     state: Exclude<OfficeShellState, "ready">;
     cause: RegExp;

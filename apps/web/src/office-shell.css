@@ -176,6 +176,56 @@ body {
   background: #f8f8f5;
 }
 
+.office-shell[data-inspector-open="true"] .office-scene,
+.office-shell[data-inspector-open="true"] .office-outline {
+  margin-right: 320px;
+}
+
+.office-inspector {
+  position: fixed;
+  z-index: 3;
+  top: 56px;
+  right: 0;
+  bottom: 0;
+  width: 320px;
+  overflow: auto;
+  padding: 16px;
+  border-left: 1px solid #676b68;
+  background: #f4f4f0;
+}
+
+.office-inspector header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.office-inspector h2,
+.office-inspector p {
+  margin: 0;
+}
+
+.office-inspector h2 {
+  font-size: 18px;
+}
+
+.office-inspector dl {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 8px 10px;
+  margin: 20px 0;
+  font-size: 13px;
+}
+
+.office-inspector dt {
+  font-weight: 700;
+}
+
+.office-inspector dd {
+  margin: 0;
+  color: #55585a;
+}
 .office-live-region {
   position: fixed;
   width: 1px;

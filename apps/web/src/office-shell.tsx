@@ -125,13 +125,19 @@ export function OfficeShell({
   canvas,
   onRecovery,
   onResetView,
+  selectedEntityId,
+  onSelectEntity,
 }: Readonly<{
   state: OfficeShellState;
   canvas?: ReactNode;
   onRecovery?: () => void;
   onResetView?: () => void;
+  selectedEntityId?: string;
+  onSelectEntity?: (entityId: string | undefined) => void;
 }>) {
   const outlineRef = useRef<HTMLElement>(null);
+  const selectionTriggerRef = useRef<HTMLButtonElement | undefined>(undefined);
+  const [internalSelection, setInternalSelection] = useState<string | undefined>(undefined);
   const [announcement, setAnnouncement] = useState(
     state === "ready" ? "Workspace current" : `Workspace ${state}`,
   );
@@ -139,11 +145,41 @@ export function OfficeShell({
     setAnnouncement(state === "ready" ? "Workspace current" : `Workspace ${state}`);
   }, [state]);
   const presentation = presentations[state];
+  const selection = selectedEntityId ?? internalSelection;
+  const selectedEntity = officeShellEntities.find(({ entityId }) => entityId === selection);
+
+  const selectEntity = (entityId: string, trigger: HTMLButtonElement) => {
+    selectionTriggerRef.current = trigger;
+    setInternalSelection(entityId);
+    onSelectEntity?.(entityId);
+    const entity = officeShellEntities.find((candidate) => candidate.entityId === entityId);
+    setAnnouncement(`${entity?.label ?? entityId} selected`);
+  };
+
+  const closeInspector = () => {
+    setInternalSelection(undefined);
+    onSelectEntity?.(undefined);
+    setAnnouncement("Inspector closed");
+    selectionTriggerRef.current?.focus();
+  };
+
+  useEffect(() => {
+    if (!selectedEntity) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeInspector();
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  });
   const zones = officeShellEntities.filter(({ kind }) => kind === "zone");
   const people = officeShellEntities.filter(({ kind }) => kind === "person");
 
   return (
-    <main className="office-shell" aria-label="CuckCode office workspace">
+    <main
+      className="office-shell"
+      aria-label="CuckCode office workspace"
+      data-inspector-open={Boolean(selectedEntity)}
+    >
       <a
         className="office-skip-link"
         href="#office-outline"
@@ -181,6 +217,7 @@ export function OfficeShell({
         className="office-scene"
         aria-label="Office scene"
         data-scene-entity-ids={officeShellEntities.map(({ entityId }) => entityId).join(",")}
+        data-selected-entity-id={selection}
         data-testid="persistent-structure"
       >
         {canvas ?? (
@@ -227,7 +264,7 @@ export function OfficeShell({
               </div>
               <button
                 type="button"
-                onClick={() => setAnnouncement(`${zone.label} located in the office`)}
+                onClick={(event) => selectEntity(zone.entityId, event.currentTarget)}
               >
                 Locate {zone.label}
               </button>
@@ -242,7 +279,7 @@ export function OfficeShell({
                       </div>
                       <button
                         type="button"
-                        onClick={() => setAnnouncement(`${person.label} selected`)}
+                        onClick={(event) => selectEntity(person.entityId, event.currentTarget)}
                       >
                         Inspect {person.label}
                       </button>
@@ -255,6 +292,51 @@ export function OfficeShell({
         </ol>
       </section>
 
+      {selectedEntity ? (
+        <aside
+          className="office-inspector"
+          aria-label="Entity inspector"
+          data-selected-entity-id={selectedEntity.entityId}
+        >
+          <header>
+            <div>
+              <p>Selected entity</p>
+              <h2>{selectedEntity.label}</h2>
+            </div>
+            <button type="button" onClick={closeInspector}>
+              Close inspector
+            </button>
+          </header>
+          <dl>
+            <dt>State</dt>
+            <dd>{selectedEntity.state}</dd>
+            <dt>Cause</dt>
+            <dd>Canonical workspace revision 42 fixture</dd>
+            <dt>Updated</dt>
+            <dd>Revision 42</dd>
+            <dt>Freshness</dt>
+            <dd>{state === "ready" ? "Current" : state}</dd>
+            <dt>Current work</dt>
+            <dd>{selectedEntity.kind === "person" ? selectedEntity.state : "Zone operations"}</dd>
+            <dt>Blocker</dt>
+            <dd>None recorded</dd>
+            <dt>Evidence</dt>
+            <dd>Deterministic graybox fixture</dd>
+            <dt>Runtime binding</dt>
+            <dd>Loopback session · simulated</dd>
+            <dt>Permissions</dt>
+            <dd>Inspect and select only</dd>
+            <dt>Technical trail</dt>
+            <dd>workspace revision 42 · {selectedEntity.entityId}</dd>
+          </dl>
+          <button
+            type="button"
+            onClick={() => setAnnouncement(`${selectedEntity.label} located in the office`)}
+          >
+            Locate in office
+          </button>
+        </aside>
+      ) : null}
       <p className="office-live-region" role="status" aria-live="polite">
         {announcement}
       </p>
