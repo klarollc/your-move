@@ -1,6 +1,6 @@
 # Phase 2 evidence report
 
-Status: **Pending owner acceptance**
+Status: **Owner-accepted on 2026-08-13**
 Implementation commit: `04af121`
 Date: 2026-08-13
 
@@ -57,4 +57,4 @@ No live provider/runtime adapter, Agency Agents import, HTTP API, production off
 
 ## Owner gate
 
-Phase 2 is ready for owner review. Acceptance should mark the owner gate complete. Phase 3 remains unauthorized until separately planned and approved.
+The owner accepted Phase 2 on 2026-08-13 and authorized Phase 3 specification and planning. Phase 3 implementation remains unauthorized until its specification, plan, and task list are separately approved.
