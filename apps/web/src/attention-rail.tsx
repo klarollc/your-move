@@ -100,10 +100,17 @@ export function AttentionRail({
                 setFailure(undefined);
                 const result = await onDisposition(item, intent, scope);
                 if (result.ok) setReceipt(result.receipt);
-                else setFailure(`${result.code}. ${result.requiredAction ?? "No change was recorded."}`);
+                else
+                  setFailure(
+                    `${result.code}. ${result.requiredAction ?? "No change was recorded."}`,
+                  );
               }}
             />
-            <button className="office-attention-dismiss" type="button" onClick={() => onDismiss(item)}>
+            <button
+              className="office-attention-dismiss"
+              type="button"
+              onClick={() => onDismiss(item)}
+            >
               Dismiss {item.label}
             </button>
           </li>
@@ -111,7 +118,11 @@ export function AttentionRail({
       </ol>
       {failure ? <p role="alert">{failure}</p> : null}
       {receipt ? (
-        <section className="office-attention-receipt" role="status" aria-label="Disposition receipt">
+        <section
+          className="office-attention-receipt"
+          role="status"
+          aria-label="Disposition receipt"
+        >
           <h3>Disposition recorded</h3>
           <p>{receipt.receiptId}</p>
           <p>

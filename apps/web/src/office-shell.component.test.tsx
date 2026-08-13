@@ -138,10 +138,7 @@ describe("OfficeShell manager attention", () => {
     },
   ] as const;
 
-  const fixtureDisposition = (
-    item: OfficeAttentionItem,
-    intent: AttentionDisposition,
-  ) => ({
+  const fixtureDisposition = (item: OfficeAttentionItem, intent: AttentionDisposition) => ({
     ok: true as const,
     receipt: {
       receiptId: `receipt_command_${item.attentionId}_${intent}`,
@@ -156,7 +153,9 @@ describe("OfficeShell manager attention", () => {
 
   it("uses canonical order, locates the office target, and restores rail focus", async () => {
     const user = userEvent.setup();
-    render(<OfficeShell state="ready" attention={attentionItems} onDisposition={fixtureDisposition} />);
+    render(
+      <OfficeShell state="ready" attention={attentionItems} onDisposition={fixtureDisposition} />,
+    );
     const trigger = screen.getByRole("button", { name: "Manager attention (2)" });
 
     expect(screen.queryByRole("complementary", { name: "Manager attention" })).toBeNull();
@@ -183,7 +182,9 @@ describe("OfficeShell manager attention", () => {
 
   it("keeps dismissal separate from approval and exposes exact attributable receipts", async () => {
     const user = userEvent.setup();
-    render(<OfficeShell state="ready" attention={attentionItems} onDisposition={fixtureDisposition} />);
+    render(
+      <OfficeShell state="ready" attention={attentionItems} onDisposition={fixtureDisposition} />,
+    );
     await user.click(screen.getByRole("button", { name: "Manager attention (2)" }));
 
     await user.click(screen.getByRole("button", { name: "Dismiss Test evidence is blocked" }));
@@ -211,7 +212,9 @@ describe("OfficeShell manager attention", () => {
 
   it.each(["stale", "offline"] as const)("denies manager dispositions while %s", async (state) => {
     const user = userEvent.setup();
-    render(<OfficeShell state={state} attention={attentionItems} onDisposition={fixtureDisposition} />);
+    render(
+      <OfficeShell state={state} attention={attentionItems} onDisposition={fixtureDisposition} />,
+    );
     await user.click(screen.getByRole("button", { name: "Manager attention (2)" }));
     expect(screen.getAllByRole("button", { name: /^Submit / })).toSatisfy(
       (buttons: HTMLElement[]) => buttons.every((button) => button.hasAttribute("disabled")),
