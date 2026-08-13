@@ -15,7 +15,7 @@ Prior checklist: `tasks/phase-2-todo.md`
   - Verify: `npm.cmd run protocol:codex:check`.
   - Dependencies: Task 1.
 
-- [ ] Task 3: Deterministic fake and adapter conformance
+- [x] Task 3: Deterministic fake and adapter conformance
   - Acceptance: deterministic framing/correlation/lifecycle/approval/cancel/disconnect/malformed coverage without Codex.
   - Verify: `npm.cmd run test:runtime`.
   - Dependencies: Tasks 1-2.

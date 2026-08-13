@@ -23,3 +23,11 @@ Date: 2026-08-13
 - Refinement RED: the first regeneration attempt exposed nondeterministic JSON object-key order; raw-byte hashes drifted despite semantic equality.
 - REFACTOR: schema files are now canonicalized before hashing; experimental generation is rejected from manifest provenance, and stable schema definitions remain valid.
 - Verification: `npm.cmd run protocol:codex:generate` reproduced 275 files at the semantic bundle hash; `npm.cmd run protocol:codex:check` passed.
+## Task 3 - Deterministic fake and adapter conformance
+
+Date: 2026-08-13
+
+- RED: the focused contract suite failed because `runtime-fake.js` did not exist.
+- GREEN: 5 contract tests passed for fragmented/coalesced framing, deterministic replay, duplicate/unknown responses, malformed/oversized lines, stderr isolation, and post-disconnect rejection.
+- REFACTOR: formatted the three scoped fake/test/export files; focused tests remained green.
+- Verification: `npm.cmd run typecheck` passed without Codex, authentication, network, wall-clock waits, or external effects.
