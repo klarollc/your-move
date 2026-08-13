@@ -23,22 +23,22 @@ Every behavioral task records focused RED, minimal GREEN, refactor/checkpoint ve
 
 - [x] Checkpoint A: unit/integration, format, lint, typecheck, migration audit, and Tasks 1–3 RED-GREEN evidence.
 
-- [ ] Task 4: Content-addressed artifacts and evidence
+- [x] Task 4: Content-addressed artifacts and evidence
   - Acceptance: verified manifests; deduplication; visible mismatch/missing/collision errors; interruption safety.
   - Verify: focused filesystem integration tests.
   - Dependencies: Task 2.
 
-- [ ] Task 5: Rebuildable projections, knowledge repository, and FTS5
+- [x] Task 5: Rebuildable projections, knowledge repository, and FTS5
   - Acceptance: lifecycle/provenance/conflicts queryable; access-first search; byte-equivalent rebuild.
   - Verify: focused SQLite integration and access-leak tests.
   - Dependencies: Tasks 1–3.
 
-- [ ] Task 6: Deterministic context-packet assembler
+- [x] Task 6: Deterministic context-packet assembler
   - Acceptance: stable ordering/hashes; explicit omissions; conflict/stale labels; no unauthorized/rejected/superseded leak.
   - Verify: focused unit/contract tests across packet policies and budgets.
   - Dependencies: Tasks 1, 3, and 5.
 
-- [ ] Checkpoint B: unit/integration/contract, format, lint, typecheck, FTS isolation, packet hashes, and rebuild proof.
+- [x] Checkpoint B: unit/integration/contract, format, lint, typecheck, FTS isolation, packet hashes, and rebuild proof.
 
 - [ ] Task 7: Personal notebook and portable-profile isolation
   - Acceptance: versioned manager controls; forbidden fact routing; two-project canary isolation; sanitized explicit promotion/revocation.

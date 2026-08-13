@@ -1,10 +1,6 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "composite": true,
-    "declaration": true,
-    "outDir": "dist",
-    "rootDir": "src"
-  },
+  "compilerOptions": { "composite": true, "declaration": true, "outDir": "dist", "rootDir": "src" },
+  "references": [{ "path": "../contracts" }, { "path": "../domain" }],
   "include": ["src"]
 }

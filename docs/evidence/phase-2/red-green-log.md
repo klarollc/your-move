@@ -18,3 +18,9 @@
 ## Checkpoint A
 - Format and lint passed; typecheck passed after the explicit store type.
 - Unit: 15 files, 42 tests. Contract: 3 files, 22 tests. Integration: 3 files, 10 tests.
+## Tasks 4-6 and Checkpoint B
+- Task 4 RED: content store absent. GREEN: 3 tests for deduplication, tamper detection, and stable-ID collision. A partial refactor failed twice (stale helper calls, then missing import) before the focused suite returned green; both failures are retained as evidence.
+- Task 5 RED: knowledge store absent. GREEN: 2 FTS5 tests prove access/lifecycle filtering and byte-equivalent rebuild output.
+- Task 6 RED: context assembler absent. GREEN: 2 tests prove deterministic priority, explicit omissions, mandatory overflow, and no unauthorized/rejected leakage.
+- Checkpoint B typecheck rejected Node `Buffer` in the application layer and widened fixture literals. Replaced it with `TextEncoder` and typed records.
+- Final Checkpoint B: typecheck passed; unit 16 files/44 tests; contract 3 files/22 tests; integration 5 files/15 tests. Format and lint had passed before the type correction.
