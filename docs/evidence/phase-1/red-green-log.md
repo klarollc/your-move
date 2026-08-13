@@ -32,3 +32,9 @@ Acceptance: invalid transitions remain issues without mutation, completion requi
 - GREEN result: 1 file passed; 4 tests passed.
 - REFACTOR: exported the truth slice through the domain entry point.
 - Checkpoint A: full unit suite passed (5 files, 16 tests); lint passed with zero warnings; typecheck passed.
+## Task 4 - Agent, role-assignment, and qualification truth slice
+
+- RED: focused staffing suites failed to import the absent `staffing.js` and `staffing-truth.js` modules; zero tests ran.
+- GREEN: added qualification/roster contracts and the pure staffing reducer; 2 files and 5 tests passed.
+- Invariants: mandatory failures remain blocking despite exceptions; a second role or missing hard capability is rejected; disconnected active state becomes unavailable and invalidates qualification.
+- REFACTOR verification: public exports formatted; `npm.cmd run typecheck` passed.

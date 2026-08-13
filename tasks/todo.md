@@ -25,7 +25,7 @@ For every behavioral task: record the focused command and expected RED failure b
 
 - [x] Checkpoint A: unit tests, format, lint, typecheck, and RED-GREEN evidence for Tasks 1-3.
 
-- [ ] Task 4: Agent, role-assignment, and qualification truth slice
+- [x] Task 4: Agent, role-assignment, and qualification truth slice
   - Acceptance: one-role occupancy, six identities, non-waivable controls, truthful disconnected, stale, and capability-loss state.
   - Verify: focused unit tests and qualification matrix.
   - Files: contracts staffing test/source; domain staffing reducer/test.
