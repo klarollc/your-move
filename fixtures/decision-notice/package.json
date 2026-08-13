@@ -1,0 +1,9 @@
+{
+  "name": "@cuckcode/decision-notice-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b"
+  }
+}

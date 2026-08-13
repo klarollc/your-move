@@ -1,0 +1,15 @@
+{
+  "files": [],
+  "references": [
+    { "path": "apps/web" },
+    { "path": "apps/server" },
+    { "path": "packages/application" },
+    { "path": "packages/contracts" },
+    { "path": "packages/domain" },
+    { "path": "packages/persistence" },
+    { "path": "packages/runtime-codex" },
+    { "path": "packages/testing" },
+    { "path": "packages/ui-system" },
+    { "path": "fixtures/decision-notice" }
+  ]
+}
