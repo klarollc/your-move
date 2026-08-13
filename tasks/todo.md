@@ -45,7 +45,7 @@ For every behavioral task: record the focused command and expected RED failure b
 
 - [x] Checkpoint B: unit and contract tests, format, lint, typecheck, and paired-contract review.
 
-- [ ] Task 7: Canonical replay reducer and snapshot
+- [x] Task 7: Canonical replay reducer and snapshot
   - Acceptance: byte-equivalent snapshot replay; no invented progress; immutable deterministic inputs and outputs.
   - Verify: focused replay property cases and snapshot hashes.
   - Files: project-state and replay tests/sources; shared fixture.

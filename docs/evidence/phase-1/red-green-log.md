@@ -50,3 +50,10 @@ Acceptance: invalid transitions remain issues without mutation, completion requi
 - GREEN: added participant-neutral commands, complete handoff validation, actionable errors, and shared permission authorization; contract 3 tests and unit 1 test passed.
 - Checkpoint defect: typecheck caught a widened test action literal, which blocked declaration emission and exposed a stale downstream contract boundary. The literal was narrowed without changing behavior.
 - Checkpoint B: formatting and lint passed; typecheck passed; full unit suite passed (10 files, 27 tests); full contract suite passed (1 file, 3 tests).
+## Task 7 - Canonical replay reducer and snapshot
+
+- RED: the replay suite failed to import the absent `replay.js` module; zero tests ran.
+- First GREEN attempt: all four tests exposed explicit `undefined` in the fixture, correctly rejected by canonical JSON. The helper was corrected to omit absent optional fields; the serializer contract was not weakened.
+- GREEN: 1 file and 4 replay tests passed.
+- Invariants: input permutations are byte-equivalent; conflicting duplicate events are quarantined; stale revisions do not advance or regress work; caller-owned input is unchanged.
+- Refactor checks: strict indexing exposed and corrected an optional collaboration-ID guard; typecheck and focused replay tests passed.
