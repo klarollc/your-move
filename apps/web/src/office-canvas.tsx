@@ -1,5 +1,10 @@
 import { executeAttentionCommand, type BrowserLibraryProjection } from "@cuckcode/application";
-import { createOfficeCamera, createOfficeLayout, officeLayoutPolicy } from "@cuckcode/ui-system";
+import {
+  createOfficeCamera,
+  createOfficeLayout,
+  officeLayoutPolicy,
+  planSemanticMotion,
+} from "@cuckcode/ui-system";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import type {
@@ -104,10 +109,45 @@ const officeAttention: readonly OfficeAttentionItem[] = Object.freeze([
   },
 ]);
 
-export function OfficeWorkspace({ initialState }: Readonly<{ initialState: OfficeShellState }>) {
+export function OfficeWorkspace({
+  initialState,
+  motionEnabled = false,
+  motionCheckpoint = "settled",
+}: Readonly<{
+  initialState: OfficeShellState;
+  motionEnabled?: boolean;
+  motionCheckpoint?: string;
+}>) {
   const [state, setState] = useState(initialState);
   const [canvasKey, setCanvasKey] = useState(0);
   const [selectedEntityId, setSelectedEntityId] = useState<string | undefined>(undefined);
+  const reducedMotion = useReducedMotion();
+  const motionPlan = motionEnabled
+    ? planSemanticMotion({
+        canonicalRevision: 44,
+        transitions: [
+          {
+            transitionId: "transition_handoff_review",
+            semantic: "handoff",
+            entityId: "agent_implementation_engineer",
+            fromEntityId: "zone_team",
+            toEntityId: "zone_review",
+            canonicalRevision: 43,
+          },
+          {
+            transitionId: "transition_delivery_queue",
+            semantic: "delivery",
+            entityId: "artifact_graybox",
+            fromEntityId: "zone_review",
+            toEntityId: "zone_delivery",
+            canonicalRevision: 44,
+          },
+        ],
+        reducedMotion,
+        motionPaused: false,
+        clock: () => 1_723_680_000_000,
+      })
+    : undefined;
   const showPersistedScene = !["loading", "empty", "error", "canvas-loss"].includes(state);
 
   const handleCanvasUnavailable = useCallback((unavailable: boolean) => {
@@ -136,11 +176,38 @@ export function OfficeWorkspace({ initialState }: Readonly<{ initialState: Offic
       onSelectEntity={setSelectedEntityId}
       attention={officeAttention}
       library={libraryProjection}
-      onDisposition={(item, intent, scope) =>
-        executeFixtureDisposition(initialState, item, intent, scope)
-      }
+      {...(motionPlan?.lead
+        ? {
+            motion: {
+              canonicalRevision: motionPlan.canonicalState.revision,
+              presentation: motionPlan.lead.presentation,
+              checkpoint: motionCheckpoint,
+              label:
+                motionPlan.lead.presentation === "travel"
+                  ? "Handoff moving to Review station"
+                  : motionPlan.lead.persistentLabel,
+              announcement: motionPlan.lead.announcement,
+              queuedCount: motionPlan.queued.length,
+              loop: motionPlan.lead.loop,
+              runtimePaused: motionPlan.runtimePaused,
+            },
+          }
+        : {})}
+      onDisposition={(item, intent, scope) => executeFixtureDisposition(state, item, intent, scope)}
     />
   );
+}
+
+function useReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReduced(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+  return reduced;
 }
 
 function executeFixtureDisposition(

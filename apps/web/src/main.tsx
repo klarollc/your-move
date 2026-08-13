@@ -26,7 +26,11 @@ createRoot(container).render(
     ) : surface === "layout-trial" ? (
       <LayoutTrial />
     ) : (
-      <OfficeWorkspace initialState={initialState} />
+      <OfficeWorkspace
+        initialState={initialState}
+        motionEnabled={parameters.get("motion") === "handoff"}
+        motionCheckpoint={parameters.get("checkpoint") ?? "settled"}
+      />
     )}
   </StrictMode>,
 );
@@ -40,5 +44,14 @@ function isOfficeShellState(value: string | null): value is OfficeShellState {
     "stale",
     "offline",
     "canvas-loss",
+    "rate-limit",
+    "budget-limit",
+    "permission-denied",
+    "missing-artifact",
+    "test-failure",
+    "reviewer-disagreement",
+    "conflict",
+    "restart",
+    "cancelled",
   ].includes(value ?? "");
 }
