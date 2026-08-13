@@ -11,3 +11,4 @@ export * from "./accessible-outline.js";
 export * from "./agent-projection.js";
 export * from "./reciprocal-records.js";
 export * from "./runtime-trust.js";
+export * from "./runtime-controls.js";

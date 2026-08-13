@@ -32,7 +32,7 @@ Prior checklist: `tasks/phase-2-todo.md`
   - Verify: fixture contracts and replay hashes.
   - Dependencies: Tasks 1-4.
 
-- [ ] Task 6: Approval, cancellation, disconnect, recovery
+- [x] Task 6: Approval, cancellation, disconnect, recovery
   - Acceptance: deny-by-default single-use decisions, exact cancel, action prevention, reconciled resume.
   - Verify: focused domain/application and fake-process integration.
   - Dependencies: Tasks 1-5.

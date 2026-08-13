@@ -64,3 +64,13 @@ Date: 2026-08-13
 - Invariant: provider prose and completion map only to `canonicalImpact: reported_only`; they cannot create manager approval or CuckCode completion.
 - REFACTOR: provider-specific parsing is isolated in `runtime-codex`; normalized contracts flow through `@cuckcode/contracts`.
 - Verification: focused contract/unit suites and `npm.cmd run typecheck` passed.
+## Task 6 - Approval, cancellation, disconnect, and recovery
+
+Date: 2026-08-13
+
+- RED: the focused unit suite failed because `runtime-controls.js` did not exist.
+- GREEN: 3 policy tests passed for exact single-use approval, replay/stale/timeout denial, disconnect/cancel action blocking, terminal cancel correlation, and complete recovery reconciliation.
+- Invariant: missing, stale, expired, denied, mismatched, replayed, disconnected, or cancelled authority never permits a tool action.
+- Invariant: binding, capability, permission, context, and event-cursor continuity must all match before actions unblock.
+- REFACTOR: control behavior is an immutable pure domain reducer; the Codex adapter holds no manager authority.
+- Verification: focused unit suite and `npm.cmd run typecheck` passed.
