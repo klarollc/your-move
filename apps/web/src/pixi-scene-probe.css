@@ -82,6 +82,23 @@ body {
   visibility: hidden;
 }
 
+.pixi-camera-controls {
+  position: absolute;
+  z-index: 1;
+  top: 80px;
+  left: 24px;
+  width: 220px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #676b68;
+  background: rgb(244 244 240 / 94%);
+}
+
+.pixi-camera-controls button:last-child {
+  grid-column: 1 / -1;
+}
 .pixi-probe-outline {
   position: absolute;
   z-index: 1;

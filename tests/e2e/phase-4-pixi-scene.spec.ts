@@ -29,7 +29,9 @@ test("@e2e Phase 4 Pixi scene mounts WebGL, reconciles depth, and resizes", asyn
 
   await page.screenshot({ path: testInfo.outputPath("pixi-probe-ready.png") });
 
-  await canvas.click({ position: { x: 360, y: 260 } });
+  const agentCenter = await scene.getAttribute("data-agent-a-screen");
+  const [agentX, agentY] = agentCenter?.split(",").map(Number) ?? [];
+  await canvas.click({ position: { x: agentX ?? 0, y: agentY ?? 0 } });
   await expect(scene).toHaveAttribute("data-last-intent", "scene.entity.select:agent_a");
   await page.setViewportSize({ width: 1024, height: 700 });
   await expect(scene).toHaveAttribute("data-render-width", "1024");

@@ -1,3 +1,13 @@
+import {
+  applyCameraCommand,
+  createOfficeCamera,
+  createOfficeLayout,
+  officeLayoutPolicy,
+  serializeOfficeCamera,
+  worldToScreen,
+  type CameraCommand,
+  type OfficeCamera,
+} from "@cuckcode/ui-system";
 import { useEffect, useRef, useState } from "react";
 
 import {
@@ -54,6 +64,9 @@ export function PixiSceneProbe() {
   const [generation, setGeneration] = useState(0);
   const [lastIntent, setLastIntent] = useState<SceneIntent | undefined>(undefined);
   const [renderSize, setRenderSize] = useState({ width: 0, height: 0 });
+  const [camera, setCamera] = useState(createCanonicalCamera);
+  const cameraRef = useRef(camera);
+  cameraRef.current = camera;
 
   useEffect(() => {
     if (released) return;
@@ -68,13 +81,14 @@ export function PixiSceneProbe() {
     );
     const adapter = createOfficeSceneAdapter(renderer, setCanvasUnavailable);
     adapterCell.current = adapter;
-    adapterRef.current = adapter;
 
     void adapter
       .mount(host)
       .then(() => {
         if (cancelled) return;
+        adapterRef.current = adapter;
         adapter.update(descriptors);
+        adapter.setCamera(toCanvasTransform(cameraRef.current));
         observer = new ResizeObserver(([entry]) => {
           if (!entry) return;
           const width = Math.round(entry.contentRect.width);
@@ -97,6 +111,13 @@ export function PixiSceneProbe() {
     };
   }, [generation, released]);
 
+  useEffect(() => {
+    adapterRef.current?.setCamera(toCanvasTransform(camera));
+  }, [camera]);
+
+  const dispatchCamera = (command: CameraCommand) => {
+    setCamera((current) => applyCameraCommand(current, command));
+  };
   const retryCanvas = () => {
     adapterRef.current?.unmount();
     adapterRef.current = undefined;
@@ -114,21 +135,28 @@ export function PixiSceneProbe() {
     : canvasUnavailable
       ? "Canvas unavailable. Office outline remains available."
       : "Canvas ready.";
+  const agentACenter = toCanvasPoint(worldToScreen({ x: 366, y: 266 }, camera));
 
   return (
     <main
       className="pixi-probe"
       aria-label="Phase 4 Pixi scene probe"
+      data-agent-a-screen={`${agentACenter.x},${agentACenter.y}`}
+      data-camera={serializeOfficeCamera(camera)}
+      data-camera-rotation={camera.rotation}
+      data-camera-x={camera.translation.x}
+      data-camera-zoom={camera.zoom}
       data-canvas-unavailable={canvasUnavailable}
-      data-render-height={renderSize.height}
       data-last-intent={lastIntent ? `${lastIntent.type}:${lastIntent.entityId}` : undefined}
+      data-pan-min-x={camera.panClamp.minX}
+      data-render-height={renderSize.height}
       data-render-width={renderSize.width}
       data-scene-order={sceneOrder}
     >
       <header className="pixi-probe-bar">
         <div>
           <strong>Office scene adapter</strong>
-          <span>Graybox renderer lifecycle probe</span>
+          <span>Graybox camera and lifecycle probe</span>
         </div>
         <p role="status">{status}</p>
         {canvasUnavailable && !released ? (
@@ -141,6 +169,47 @@ export function PixiSceneProbe() {
         </button>
       </header>
       <div className="pixi-probe-host" ref={hostRef} aria-hidden="true" />
+      <nav className="pixi-camera-controls" aria-label="Camera controls">
+        <button
+          type="button"
+          onClick={() => dispatchCamera({ type: "camera.zoom", direction: "in" })}
+        >
+          Zoom in
+        </button>
+        <button
+          type="button"
+          onClick={() => dispatchCamera({ type: "camera.zoom", direction: "out" })}
+        >
+          Zoom out
+        </button>
+        <button
+          type="button"
+          onClick={() => dispatchCamera({ type: "camera.pan", deltaX: -64, deltaY: 0 })}
+        >
+          Pan left
+        </button>
+        <button
+          type="button"
+          onClick={() => dispatchCamera({ type: "camera.pan", deltaX: 64, deltaY: 0 })}
+        >
+          Pan right
+        </button>
+        <button
+          type="button"
+          onClick={() => dispatchCamera({ type: "camera.pan", deltaX: 0, deltaY: -64 })}
+        >
+          Pan up
+        </button>
+        <button
+          type="button"
+          onClick={() => dispatchCamera({ type: "camera.pan", deltaX: 0, deltaY: 64 })}
+        >
+          Pan down
+        </button>
+        <button type="button" onClick={() => dispatchCamera({ type: "camera.reset" })}>
+          Reset view
+        </button>
+      </nav>
       <section className="pixi-probe-outline" aria-label="Office scene outline">
         <h1>Team work area</h1>
         <p>Semantic fallback remains operable without the canvas.</p>
@@ -151,4 +220,26 @@ export function PixiSceneProbe() {
       </section>
     </main>
   );
+}
+
+function createCanonicalCamera(): OfficeCamera {
+  return createOfficeCamera(
+    createOfficeLayout({
+      width: window.innerWidth,
+      height: window.innerHeight,
+      attentionOpen: false,
+      inspectorOpen: false,
+    }),
+  );
+}
+
+function toCanvasTransform(camera: OfficeCamera) {
+  return {
+    zoom: camera.zoom,
+    translation: toCanvasPoint(camera.translation),
+  };
+}
+
+function toCanvasPoint(point: { x: number; y: number }) {
+  return { x: point.x, y: point.y - officeLayoutPolicy.projectBarHeight };
 }
