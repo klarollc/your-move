@@ -57,3 +57,9 @@ Acceptance: invalid transitions remain issues without mutation, completion requi
 - GREEN: 1 file and 4 replay tests passed.
 - Invariants: input permutations are byte-equivalent; conflicting duplicate events are quarantined; stale revisions do not advance or regress work; caller-owned input is unchanged.
 - Refactor checks: strict indexing exposed and corrected an optional collaboration-ID guard; typecheck and focused replay tests passed.
+## Task 8 - Manager attention and office scene descriptors
+
+- RED: focused scene and attention suites failed to import the absent projector modules; zero tests ran.
+- GREEN: added pure, ordered projectors; 2 files and 9 tests passed.
+- Invariants: the MDD behavior map is explicit; only canonical active state enables work motion; only active collaboration or handoff creates a shared-zone descriptor; disconnected agents are unavailable; completed work remains unapproved; causes and freshness are explicit or unavailable.
+- REFACTOR verification: public exports formatted; `npm.cmd run typecheck` passed.

@@ -51,7 +51,7 @@ For every behavioral task: record the focused command and expected RED failure b
   - Files: project-state and replay tests/sources; shared fixture.
   - Dependencies: Tasks 2-6.
 
-- [ ] Task 8: Manager attention and office scene descriptors
+- [x] Task 8: Manager attention and office scene descriptors
   - Acceptance: semantic map fidelity; no fabricated activity or collaboration; cited causes and freshness.
   - Verify: focused projector tests for every named canonical state.
   - Files: attention and scene projector tests/sources.

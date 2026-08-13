@@ -5,3 +5,5 @@ export * from "./staffing-truth.js";
 export * from "./knowledge-truth.js";
 export * from "./collaboration-policy.js";
 export * from "./replay.js";
+export * from "./attention.js";
+export * from "./office-scene.js";
