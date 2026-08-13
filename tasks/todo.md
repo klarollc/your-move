@@ -57,7 +57,7 @@ For every behavioral task: record the focused command and expected RED failure b
   - Files: attention and scene projector tests/sources.
   - Dependencies: Task 7.
 
-- [ ] Task 9: Accessible outline and reciprocal agent projection
+- [x] Task 9: Accessible outline and reciprocal agent projection
   - Acceptance: human and agent semantic parity and stable accessible ordering without UI dependencies.
   - Verify: focused parity tests across success, conflict, blocked, and approval scenarios.
   - Files: outline and agent projector tests/sources; parity test.

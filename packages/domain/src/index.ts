@@ -7,3 +7,6 @@ export * from "./collaboration-policy.js";
 export * from "./replay.js";
 export * from "./attention.js";
 export * from "./office-scene.js";
+export * from "./accessible-outline.js";
+export * from "./agent-projection.js";
+export * from "./reciprocal-records.js";

@@ -63,3 +63,9 @@ Acceptance: invalid transitions remain issues without mutation, completion requi
 - GREEN: added pure, ordered projectors; 2 files and 9 tests passed.
 - Invariants: the MDD behavior map is explicit; only canonical active state enables work motion; only active collaboration or handoff creates a shared-zone descriptor; disconnected agents are unavailable; completed work remains unapproved; causes and freshness are explicit or unavailable.
 - REFACTOR verification: public exports formatted; `npm.cmd run typecheck` passed.
+## Task 9 - Accessible outline and reciprocal agent projection
+
+- RED: focused outline and agent suites failed to import the absent projection modules; zero tests ran.
+- GREEN: introduced one shared actionable-record projection with human labels and machine-readable agent output; 2 files and 2 tests passed.
+- Parity: after removing the human-only label, both projections are structurally identical across identity, status, scope, constraints, decisions, conflicts, evidence links, and next actions.
+- REFACTOR verification: public exports and typecheck passed; domain source scan found no React, PixiJS, DOM, canvas, or window dependency.
