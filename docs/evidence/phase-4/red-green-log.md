@@ -57,3 +57,20 @@ Date: 2026-08-13
 - Verification: focused Task 4 integration 7/7; full integration 37 passed with one guarded live test skipped; formatting, ESLint, TypeScript, build, and dependency audit passed.
 - Full repository gate: `npm.cmd run verify` passed with 79 unit, 1 component, 37 integration, 35 contract, 4 browser, 2 automated accessibility, and 2 rendered harness tests; protocol, role, qualification, UI-boundary, formatting, lint, typecheck, and build gates also passed.
 - Evidence boundary: browser and rendered results remain scaffold/harness evidence. They do not prove the later graybox office, manual accessibility, comprehension, or art-direction gates.
+
+
+## Task 5 — Graybox spatial measurements and deterministic layout
+
+Date: 2026-08-13
+
+- RED 1: focused unit coverage failed with `ERR_MODULE_NOT_FOUND` because the office layout policy did not exist.
+- GREEN 1: 6 tests passed for the 2:1 projection, seven authored regions, six role anchors, both approved viewports, both-overlay resize, discrete fit zoom, pan policy, cutaway policy, 44px hit regions, and byte-equivalent serialization.
+- RED 2: the rendered layout-trial browser test failed because the web surface did not exist.
+- GREEN 2: the neutral SVG current-build trial passed at 1440×900 and 1280×800 with both overlays, clean console/network assertions, and named screenshots.
+- RED 3: canonical-reset coverage failed because the trial hard-coded both overlays open.
+- GREEN 3: URL-controlled deterministic fixtures now render canonical reset and both-overlay compositions, producing four passing captures.
+- Visual refinement: direct screenshot inspection found V1-T5-001, a collision between the team-zone label and central role anchors. Labels moved to the upper interior zone edge; four rendered tests and four focused axe scans passed after recapture.
+- Product Designer graybox sign-off: PASS for renderer work; seven regions and six roles remain legible, the office remains primary, and no V0/V1 layout discrepancy remains.
+- Accessibility sign-off: PASS for renderer work; zero axe violations in four state/viewport scans, native keyboard-first Reset view, visible focus, semantic role list, reduced motion, and 44px interaction floor.
+- Verification: focused layout unit 6/6; focused rendered 4/4; focused accessibility 4/4; existing E2E 4/4; full axe 6/6; formatting, ESLint, TypeScript, build, console/network, manifest validation, and diff checks passed.
+- Evidence boundary: measurements and captures are graybox Candidate evidence only. Manual screen reader, 200% zoom, comprehension, owner graybox acceptance, high fidelity, and art direction are not claimed.

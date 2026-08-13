@@ -25,7 +25,7 @@ Composition: `.ui-craft/spec.md`
   - Acceptance: loopback/exact-origin/CSRF/session enforcement; stale recovery; no browser authority; production fixture rejection.
   - Verify: server integration/security matrix.
 
-- [ ] Task 5: Graybox spatial measurements and deterministic layout.
+- [x] Task 5: Graybox spatial measurements and deterministic layout.
   - Acceptance: approved projection/grid/anchors/bounds/zoom/pan/cutaway/hit geometry at both viewports.
   - Verify: geometry hashes, controlled rendered trials, Product Designer/accessibility findings.
 
