@@ -74,3 +74,21 @@ Date: 2026-08-13
 - Accessibility sign-off: PASS for renderer work; zero axe violations in four state/viewport scans, native keyboard-first Reset view, visible focus, semantic role list, reduced motion, and 44px interaction floor.
 - Verification: focused layout unit 6/6; focused rendered 4/4; focused accessibility 4/4; existing E2E 4/4; full axe 6/6; formatting, ESLint, TypeScript, build, console/network, manifest validation, and diff checks passed.
 - Evidence boundary: measurements and captures are graybox Candidate evidence only. Manual screen reader, 200% zoom, comprehension, owner graybox acceptance, high fidelity, and art direction are not claimed.
+
+## Task 6 — PixiJS scene adapter and lifecycle
+
+Date: 2026-08-13
+
+- RED 1: focused unit coverage failed with `ERR_MODULE_NOT_FOUND` because the office scene adapter did not exist.
+- GREEN 1: 3 unit tests passed for immutable descriptor reconciliation, deterministic depth/entity ordering, stale-node removal, resize, context-loss signaling, and complete clear/destroy cleanup.
+- RED 2: a Strict Mode lifecycle test proved that unmount during asynchronous Pixi initialization leaked the renderer.
+- GREEN 2: the adapter now tracks idle/mounting/mounted state, defers teardown until initialization settles, suppresses the ready signal for cancelled mounts, and passes 4 focused lifecycle tests.
+- RED 3: the focused Playwright probe found no Pixi canvas because the surface did not exist.
+- GREEN 3: real PixiJS 8.19.0 WebGL mounts one canvas, consumes immutable graybox descriptors, reconciles exact `zone_team,agent_a,agent_b` depth order, resizes to the host, emits typed `scene.entity.select` intents, and fully releases its canvas, listeners, scene nodes, and renderer.
+- RED 4: tightened browser acceptance found no typed selection result and no explicit context-loss recovery action.
+- GREEN 4: pointer selection emits a typed entity intent; canvas loss exposes the equivalent DOM Office outline and Retry canvas performs a complete destroy/remount recovery before explicit release.
+- Lifecycle refinement: React Strict Mode double-mount and asynchronous cancellation are covered; React supplies descriptors and callbacks but never mutates Pixi display objects.
+- Visual QA: direct 1280 ready/fallback capture inspection found V1-T6-001, where the fallback action created an unintended full-width second header row. The four-column header correction passed recapture at 1440×900 and 1280×800; direct reinspection cleared the defect.
+- Boundary: source scans found no PixiJS or React imports in `packages/domain` or `packages/contracts`. The web project alone enables `skipLibCheck` because PixiJS 8.19.0 `@webgpu/types` declarations conflict with the installed TypeScript DOM declarations; strict application checking remains enabled and passed.
+- Verification: focused lifecycle unit 4/4; focused Pixi browser 4/4 across both approved viewports; formatting, ESLint, TypeScript, production build, pure-boundary scan, and diff checks passed.
+- Evidence boundary: captures are temporary current-build graybox QA outputs only. They do not prove Task 7 camera behavior, Task 8 shell parity, Checkpoint B, high fidelity, art direction, or owner graybox acceptance.

@@ -29,7 +29,7 @@ Composition: `.ui-craft/spec.md`
   - Acceptance: approved projection/grid/anchors/bounds/zoom/pan/cutaway/hit geometry at both viewports.
   - Verify: geometry hashes, controlled rendered trials, Product Designer/accessibility findings.
 
-- [ ] Task 6: PixiJS scene adapter and lifecycle.
+- [x] Task 6: PixiJS scene adapter and lifecycle.
   - Acceptance: immutable descriptor adapter, deterministic reconciliation, cleanup, context-loss fallback.
   - Verify: focused unit/component/browser probe.
 
