@@ -65,7 +65,7 @@ describe("planSemanticMotion", () => {
       semantic: standard.lead?.semantic,
       presentation: "immediate-placement",
       durationMs: 0,
-      persistentLabel: "Handoff recorded at revision 43",
+      persistentLabel: "Handoff recorded at Review station · revision 43",
       announcement: "Handoff moved to Review station",
       loop: false,
     });

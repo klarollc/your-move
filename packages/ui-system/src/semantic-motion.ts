@@ -78,7 +78,7 @@ function presentTransition(
     durationMs: travel ? 480 : 0,
     properties: travel ? ["transform", "opacity"] : ["opacity"],
     checkpoints: travel ? ["start", "responsibility-transferred", "settled"] : ["settled"],
-    persistentLabel: `${capitalize(transition.semantic)} recorded at revision ${transition.canonicalRevision}`,
+    persistentLabel: `${capitalize(transition.semantic)} recorded at ${entityLabel(transition.toEntityId)} · revision ${transition.canonicalRevision}`,
     announcement: `${capitalize(transition.semantic)} moved to ${entityLabel(transition.toEntityId)}`,
     loop: false,
   };

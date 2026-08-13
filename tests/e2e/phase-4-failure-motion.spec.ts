@@ -51,7 +51,7 @@ test("@e2e Phase 4 reduced motion preserves meaning with immediate placement", a
   const cue = page.getByTestId("semantic-motion-cue");
   await expect(cue).toHaveAttribute("data-canonical-revision", "44");
   await expect(cue).toHaveAttribute("data-motion-presentation", "immediate-placement");
-  await expect(cue).toContainText("Handoff recorded at revision 43");
+  await expect(cue).toContainText("Handoff recorded at Review station · revision 43");
   await expect(page.getByRole("status")).toContainText("Handoff moved to Review station");
   expect(await cue.evaluate((element) => element.getAnimations().length)).toBe(0);
   await page.screenshot({ path: testInfo.outputPath("reduced-motion-handoff.png") });
