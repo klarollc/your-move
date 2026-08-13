@@ -33,7 +33,7 @@ Composition: `.ui-craft/spec.md`
   - Acceptance: immutable descriptor adapter, deterministic reconciliation, cleanup, context-loss fallback.
   - Verify: focused unit/component/browser probe.
 
-- [ ] Task 7: Camera, depth, occlusion, and hit testing.
+- [x] Task 7: Camera, depth, occlusion, and hit testing.
   - Acceptance: fixed orientation, bounded controls, exact reset, deterministic cutaway and keyboard parity.
   - Verify: geometry/unit and two-viewport browser tests.
 

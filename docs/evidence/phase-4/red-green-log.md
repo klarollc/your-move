@@ -92,3 +92,21 @@ Date: 2026-08-13
 - Boundary: source scans found no PixiJS or React imports in `packages/domain` or `packages/contracts`. The web project alone enables `skipLibCheck` because PixiJS 8.19.0 `@webgpu/types` declarations conflict with the installed TypeScript DOM declarations; strict application checking remains enabled and passed.
 - Verification: focused lifecycle unit 4/4; focused Pixi browser 4/4 across both approved viewports; formatting, ESLint, TypeScript, production build, pure-boundary scan, and diff checks passed.
 - Evidence boundary: captures are temporary current-build graybox QA outputs only. They do not prove Task 7 camera behavior, Task 8 shell parity, Checkpoint B, high fidelity, art direction, or owner graybox acceptance.
+
+## Task 7 — Camera, depth, occlusion, and hit testing
+
+Date: 2026-08-13
+
+- RED 1: focused unit coverage failed with `ERR_MODULE_NOT_FOUND` because the office camera/geometry module did not exist.
+- GREEN 1: 6 tests passed for byte-exact canonical reset with selection preservation, discrete zoom policy, recoverable pan clamps, reversible coordinate mapping, deterministic isometric depth/tie order, visible topmost hit testing, and authored selected/attention cutaways.
+- Test refinement: the first zoom assertion incorrectly assumed the 1280 canonical stop was below `1.0`; it was changed to require the next authored stop, correctly accepting `1.125 → 1.25`.
+- RED 2: the adapter transform test failed because `setCamera` did not exist.
+- GREEN 2: a validated immutable scene-transform contract now drives the Pixi container scale/translation; 4 adapter lifecycle tests, TypeScript, and ESLint passed.
+- RED 3: focused Playwright coverage found no camera state, transformed agent coordinate, or fixed-orientation metadata.
+- GREEN 3: native 44px zoom, pan, and exact reset controls drive the real Pixi scene. Transformed pointer selection resolves `agent_a`; pointer click and keyboard Enter produce byte-equivalent camera states; reset retains the selected intent; zoom clamps to `0.625…1.25`; pan clamps to the recoverable edge; no rotation/orbit/perspective control or draggable dependency exists.
+- Lifecycle refinement: the first browser GREEN attempt exposed camera publication before async Pixi mount completion under React Strict Mode. The adapter ref is now published only after mount resolves, while closure cleanup still cancels in-flight initialization.
+- Regression refinement: the combined Task 6/7 run exposed two stale test assumptions—hard-coded pre-camera hit coordinates and Zoom in changing the already-maximal 1440 canonical view. Tests now consume the projected agent coordinate and use Zoom out for parity at both viewports.
+- Visual QA: direct 1280 canonical recapture inspection confirmed separated camera controls and DOM outline, visible agent centers, and office-primary composition. The Task 6 fallback header correction remained intact; no V0/V1 Task 7 discrepancy remained after inspection.
+- Accessibility: 4 focused axe scans passed across ready/fallback states at 1440×900 and 1280×800. Controls are native buttons with visible focus and no precision drag requirement. Manual screen reader and 200% zoom remain Task 15 gates.
+- Verification: camera unit 6/6; adapter lifecycle 4/4; combined Task 6/7 browser 8/8; camera axe 4/4; formatting, ESLint, TypeScript, production build, and diff checks passed.
+- Evidence boundary: this proves the bounded graybox camera probe only. It does not prove the Task 8 persistent shell/DOM parity, Checkpoint B, manual accessibility, high fidelity, art direction, or owner graybox acceptance.
