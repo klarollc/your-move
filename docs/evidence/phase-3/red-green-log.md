@@ -152,3 +152,15 @@ Date: 2026-08-13
 - Full contract regression: PASS, 6 files / 31 tests.
 - Coverage includes binding identity, restart persistence, project isolation/recovery, role provenance, universal/role eligibility, exception controls, reciprocal offer/response/decision, vacancy, dual-role, and reviewer conflict.
 - Scope: deterministic machine evidence only; the supervised live Codex gate remains separate and has not yet run.
+## Task 12 - Supervised live Codex contract run (open)
+
+Date: 2026-08-13
+
+- RED: the bounded stable-method integration test failed because `supervisor.request` did not exist.
+- GREEN: 4 fake-process integration tests passed, including the allowlisted `thread/start` / `turn/start` path and rejection of `account/login/start`.
+- Opt-in guard: without exact `CUCKCODE_LIVE_CODEX=1`, the live suite reported 1 skipped test and made no provider call.
+- Live attempt 1: exact flag set; installed Codex 0.146.0 initialized, existing managed authentication was present, an ephemeral read-only synthetic-root thread completed one text-only turn, exact thread/turn terminal correlation passed, output contained `CUCKCODE_LIVE_OK`, and no command/file/MCP/dynamic/collab/web/image item appeared.
+- Attempt 1 command status: FAIL after all protocol assertions, solely at Windows temporary-root deletion with `EPERM`; therefore Task 12 is not marked complete.
+- Correction: supervisor shutdown now waits for process exit and escalates to process termination within bounds; cleanup retries bounded Windows handle release. Fake-process integration, skip guard, lint, and typecheck passed after correction. No second provider call was made.
+- Recovery: the exact empty synthetic root was subsequently removed after validating it was under the system TEMP directory.
+- Required next authority: one corrective supervised provider rerun. This exceeds the originally approved single live attempt and requires owner approval.

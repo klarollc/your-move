@@ -71,4 +71,30 @@ describe("Codex stdio supervisor", () => {
     await expect(supervisor.start()).rejects.toThrow("HANDSHAKE_TIMEOUT");
     await supervisor.stop();
   });
+
+  it("allows only the bounded stable live-run methods after handshake", async () => {
+    const supervisor = new CodexStdioSupervisor({
+      executable: "codex.exe",
+      spawnProcess: fixtureSpawner(),
+    });
+    await supervisor.start();
+    const thread = await supervisor.request("thread/start", {
+      cwd: "C:/synthetic",
+      ephemeral: true,
+      sandbox: "read-only",
+      approvalPolicy: "never",
+    });
+    await supervisor.request("turn/start", {
+      threadId: "thread_fixture",
+      input: [{ type: "text", text: "Reply only CUCKCODE_LIVE_OK" }],
+    });
+    const completed = await supervisor.waitForNotification("turn/completed");
+
+    expect(thread).toEqual({ thread: { id: "thread_fixture" } });
+    expect(completed).toMatchObject({ params: { turn: { status: "completed" } } });
+    await expect(supervisor.request("account/login/start", {})).rejects.toThrow(
+      "METHOD_NOT_ALLOWED",
+    );
+    await supervisor.stop();
+  });
 });

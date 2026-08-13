@@ -30,6 +30,7 @@
     "test:runtime": "vitest run --project contract packages/contracts/src/runtime.contract.test.ts packages/testing/src/runtime-fake.contract.test.ts && vitest run --project integration packages/runtime-codex/src/supervisor.integration.test.ts && vitest run --project unit packages/runtime-codex/src/normalizer.unit.test.ts packages/domain/src/runtime-controls.unit.test.ts",
     "test:unit": "vitest run --project unit --passWithNoTests",
     "test:integration": "vitest run --project integration --passWithNoTests",
+    "test:live:codex": "vitest run --project integration packages/runtime-codex/src/codex-live.integration.test.ts",
     "test:contract": "vitest run --project contract --passWithNoTests",
     "test:e2e": "playwright test --grep @e2e --project chromium-1440 --project chromium-1280",
     "test:a11y": "playwright test --grep @a11y --project chromium-1440 --project chromium-1280",

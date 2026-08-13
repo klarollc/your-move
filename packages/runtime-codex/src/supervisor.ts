@@ -5,6 +5,13 @@ import {
 } from "node:child_process";
 
 const CODEX_ARGS = ["app-server", "--stdio", "--strict-config"] as const;
+const ALLOWED_REQUEST_METHODS = new Set([
+  "account/read",
+  "thread/start",
+  "turn/start",
+  "turn/interrupt",
+  "thread/read",
+]);
 
 type SpawnOptions = SpawnOptionsWithoutStdio & {
   shell: false;
@@ -85,6 +92,11 @@ export class CodexStdioSupervisor {
     return result;
   }
 
+  async request(method: string, params: JsonRecord, timeoutMs = 30_000): Promise<unknown> {
+    this.#assertReady();
+    if (!ALLOWED_REQUEST_METHODS.has(method)) throw new Error("METHOD_NOT_ALLOWED");
+    return await this.#request(method, params, timeoutMs);
+  }
   async readAccountStatus(): Promise<
     { ok: true; mode: "chatgpt" | "api_key_managed" } | { ok: false; code: "AUTH_REQUIRED" }
   > {
@@ -115,12 +127,15 @@ export class CodexStdioSupervisor {
     const child = this.#child;
     this.#child = undefined;
     this.#ready = false;
-    if (!child || child.exitCode !== null || child.killed) return;
-    await new Promise<void>((resolve) => {
-      child.once("exit", () => resolve());
+    if (!child || child.exitCode !== null) return;
+    child.stdin.end();
+    if (!(await waitForExit(child, 2_000)) && child.exitCode === null) {
       child.kill();
-      setTimeout(resolve, 250);
-    });
+      if (!(await waitForExit(child, 2_000)) && child.exitCode === null) {
+        child.kill("SIGKILL");
+        await waitForExit(child, 2_000);
+      }
+    }
   }
 
   #request(method: string, params: JsonRecord, timeoutMs = 5_000, timeoutCode = "REQUEST_TIMEOUT") {
@@ -188,6 +203,19 @@ function defaultSpawn(executable: string, args: readonly string[], options: Spaw
   return spawn(executable, [...args], options);
 }
 
+async function waitForExit(
+  child: ChildProcessWithoutNullStreams,
+  timeoutMs: number,
+): Promise<boolean> {
+  if (child.exitCode !== null) return true;
+  return await new Promise<boolean>((resolve) => {
+    const timer = setTimeout(() => resolve(false), timeoutMs);
+    child.once("exit", () => {
+      clearTimeout(timer);
+      resolve(true);
+    });
+  });
+}
 function withTimeout<T>(
   promise: Promise<T>,
   timeoutMs: number,

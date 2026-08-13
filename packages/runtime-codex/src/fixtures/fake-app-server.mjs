@@ -23,5 +23,16 @@ for await (const line of lines) {
     process.stdout.write('{"method":"fixture/ready","params":{}}\n');
   } else if (message.method === "account/read") {
     process.stdout.write(`${JSON.stringify({ id: message.id, result: { account: null } })}\n`);
+  } else if (message.method === "thread/start") {
+    process.stdout.write(
+      `${JSON.stringify({ id: message.id, result: { thread: { id: "thread_fixture" } } })}\n`,
+    );
+  } else if (message.method === "turn/start") {
+    process.stdout.write(
+      `${JSON.stringify({ id: message.id, result: { turn: { id: "turn_fixture" } } })}\n`,
+    );
+    process.stdout.write(
+      `${JSON.stringify({ method: "turn/completed", params: { threadId: "thread_fixture", turn: { id: "turn_fixture", status: "completed", items: [] } } })}\n`,
+    );
   }
 }
