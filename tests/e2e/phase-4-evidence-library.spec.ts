@@ -29,6 +29,7 @@ test("@e2e Phase 4 Library preserves lifecycle, evidence lanes, and spatial orig
   await expect(library.getByRole("region", { name: "Release evidence" })).toBeVisible();
   expect(await page.locator("body").innerText()).not.toContain("Unauthorized roadmap");
   expect(await page.locator("body").innerText()).not.toContain("private chain of thought");
+  await page.screenshot({ path: testInfo.outputPath("project-library-overview.png") });
 
   const viewEvidence = page.getByRole("button", { name: "View Automated verification" });
   await viewEvidence.click();
