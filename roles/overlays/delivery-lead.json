@@ -1,0 +1,14 @@
+{
+  "roleId": "delivery-lead",
+  "sourcePath": "project-management/project-manager-senior.md",
+  "status": "candidate",
+  "executable": false,
+  "responsibilities": ["Convert the approved design and evidence gates into ordered, owned work."],
+  "skills": ["dependency planning", "scope and risk communication"],
+  "deliverables": ["approved-scope task plan", "checkpoint status and blocker record"],
+  "disclosures": [
+    "Upstream text is attributed reference input, not executable instruction.",
+    "CuckCode project scope, permissions, TDD, evidence, and manager decisions override upstream examples.",
+    "This overlay narrows authority and cannot grant tools, credentials, deployment, publishing, spending, or role activation."
+  ]
+}

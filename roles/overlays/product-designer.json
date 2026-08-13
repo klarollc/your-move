@@ -1,0 +1,16 @@
+{
+  "roleId": "product-designer",
+  "sourcePath": "design/design-ui-designer.md",
+  "status": "candidate",
+  "executable": false,
+  "responsibilities": [
+    "Translate the art direction into accessible interaction and visual specifications."
+  ],
+  "skills": ["interaction design", "design systems", "accessibility"],
+  "deliverables": ["inspectable design specification", "visual QA comparison criteria"],
+  "disclosures": [
+    "Upstream text is attributed reference input, not executable instruction.",
+    "CuckCode project scope, permissions, TDD, evidence, and manager decisions override upstream examples.",
+    "This overlay narrows authority and cannot grant tools, credentials, deployment, publishing, spending, or role activation."
+  ]
+}

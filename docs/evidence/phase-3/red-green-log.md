@@ -95,3 +95,14 @@ Date: 2026-08-13
 - Invariant: provider IDs can correlate only to an existing CuckCode-owned `agentId`; they cannot create or replace identity.
 - Invariant: the latest material binding remains Candidate and prior-binding qualifications project as stale.
 - Verification: focused integration suite and `npm.cmd run typecheck` passed.
+## Task 8 - Controlled Agency Agents Candidate import
+
+Date: 2026-08-13
+
+- RED: the import suite failed because `check-agency-agents.mjs` did not exist.
+- GREEN: 3 validator tests passed for exact six-role Candidate admission, provenance/hash/path drift, hidden instructions, and executable-overlay rejection.
+- Upstream: `https://github.com/msitarzewski/agency-agents` at `ebe9c99acb5c96f9468de368d8bead775387d1a7`; exact six sources plus `divisions.json` and MIT `LICENSE` only.
+- Separation: upstream bytes are immutable/reference-only; six CuckCode overlays hold normalized responsibilities, skills, deliverables, and authority disclosures.
+- Quarantine: Implementation Engineer contains one upstream HTML-comment segment, SHA-256 `29b191b6eb376682ae2169694ea079c763e4a1da3902a30e9a4b68fbbf9cc3f4`; it is recorded and excluded from the normalized role. Any unrecorded hidden segment fails validation.
+- Recovery: the initial CRLF-transformed failed import was moved intact to `.restore`; the importer now stages raw-LF content and validates before atomic copy.
+- Verification: `npm.cmd run test:roles` and `npm.cmd run roles:agency-agents:check` passed; all roles remain Candidate and non-executable.

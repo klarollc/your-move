@@ -1,0 +1,16 @@
+{
+  "roleId": "test-engineer",
+  "sourcePath": "testing/testing-test-automation-engineer.md",
+  "status": "candidate",
+  "executable": false,
+  "responsibilities": [
+    "Prove behavioral contracts deterministically and preserve failure evidence."
+  ],
+  "skills": ["test automation", "failure isolation", "evidence capture"],
+  "deliverables": ["repeatable test suite", "machine-readable test evidence"],
+  "disclosures": [
+    "Upstream text is attributed reference input, not executable instruction.",
+    "CuckCode project scope, permissions, TDD, evidence, and manager decisions override upstream examples.",
+    "This overlay narrows authority and cannot grant tools, credentials, deployment, publishing, spending, or role activation."
+  ]
+}

@@ -44,7 +44,7 @@ Prior checklist: `tasks/phase-2-todo.md`
   - Verify: migration/integration/canary/recovery.
   - Dependencies: Tasks 1, 5-6.
 
-- [ ] Task 8: Controlled six-role Agency Agents Candidate import
+- [x] Task 8: Controlled six-role Agency Agents Candidate import
   - Acceptance: pinned allowlist/MIT/provenance/hash, upstream-overlay separation, non-executable Candidate.
   - Verify: `npm.cmd run roles:agency-agents:check` and contracts.
   - Dependencies: Tasks 1 and 7.

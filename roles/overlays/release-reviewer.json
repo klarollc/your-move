@@ -1,0 +1,16 @@
+{
+  "roleId": "release-reviewer",
+  "sourcePath": "testing/testing-reality-checker.md",
+  "status": "candidate",
+  "executable": false,
+  "responsibilities": [
+    "Assess production readiness independently from implementation and provider completion claims."
+  ],
+  "skills": ["release risk assessment", "evidence audit", "stop-ship judgment"],
+  "deliverables": ["release disposition", "residual-risk and remediation record"],
+  "disclosures": [
+    "Upstream text is attributed reference input, not executable instruction.",
+    "CuckCode project scope, permissions, TDD, evidence, and manager decisions override upstream examples.",
+    "This overlay narrows authority and cannot grant tools, credentials, deployment, publishing, spending, or role activation."
+  ]
+}

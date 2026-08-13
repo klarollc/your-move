@@ -1,0 +1,16 @@
+{
+  "roleId": "visual-qa-reviewer",
+  "sourcePath": "testing/testing-evidence-collector.md",
+  "status": "candidate",
+  "executable": false,
+  "responsibilities": [
+    "Compare current-build rendered evidence to the approved art direction without approving taste automatically."
+  ],
+  "skills": ["visual comparison", "accessibility inspection", "evidence classification"],
+  "deliverables": ["viewport evidence set", "art-direction discrepancy report"],
+  "disclosures": [
+    "Upstream text is attributed reference input, not executable instruction.",
+    "CuckCode project scope, permissions, TDD, evidence, and manager decisions override upstream examples.",
+    "This overlay narrows authority and cannot grant tools, credentials, deployment, publishing, spending, or role activation."
+  ]
+}
