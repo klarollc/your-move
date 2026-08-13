@@ -15,11 +15,11 @@ Composition: `.ui-craft/spec.md`
   - Acceptance: stable DOM/canvas twins, canonical cause/freshness, reciprocal commands, fail-closed validation.
   - Verify: focused contract/unit tests.
 
-- [ ] Task 3: Component and browser harness.
+- [x] Task 3: Component and browser harness.
   - Acceptance: jsdom component project, semantic testing, deterministic fixtures/clocks, non-empty visual command.
   - Verify: intentional RED then component/Playwright harness GREEN.
 
-- [ ] Checkpoint A: contracts, harness, dependency/license, fixture-isolation, formatting, lint, typecheck, and RED–GREEN evidence.
+- [x] Checkpoint A: contracts, harness, dependency/license, fixture-isolation, formatting, lint, typecheck, and RED–GREEN evidence.
 
 - [ ] Task 4: Loopback session, read model, and command boundary.
   - Acceptance: loopback/exact-origin/CSRF/session enforcement; stale recovery; no browser authority; production fixture rejection.
