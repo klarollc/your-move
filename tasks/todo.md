@@ -17,13 +17,13 @@ For every behavioral task: record the focused command and expected RED failure b
   - Files: contracts events test/source; domain ordering test/source.
   - Dependencies: Task 1.
 
-- [ ] Task 3: Work, evidence, and approval truth slice
+- [x] Task 3: Work, evidence, and approval truth slice
   - Acceptance: transitions are enforced; verification gates completion; explicit manager events alone create version-bound approval.
   - Verify: focused unit tests plus truthfulness invariant cases.
   - Files: domain work model/reducer/test; fixture.
   - Dependencies: Tasks 1-2.
 
-- [ ] Checkpoint A: unit tests, format, lint, typecheck, and RED-GREEN evidence for Tasks 1-3.
+- [x] Checkpoint A: unit tests, format, lint, typecheck, and RED-GREEN evidence for Tasks 1-3.
 
 - [ ] Task 4: Agent, role-assignment, and qualification truth slice
   - Acceptance: one-role occupancy, six identities, non-waivable controls, truthful disconnected, stale, and capability-loss state.
