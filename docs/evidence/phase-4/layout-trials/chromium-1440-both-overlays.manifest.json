@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "phase": 4,
+  "evidenceClass": "rendered_graybox",
+  "fidelity": "graybox",
+  "promotionStatus": "candidate",
+  "ownerDecision": "pending_graybox_review",
+  "fixtureId": "layout_trial_both_overlays",
+  "viewport": { "width": 1440, "height": 900, "deviceScaleFactor": 1 }
+}
