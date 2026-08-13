@@ -460,7 +460,8 @@ export function OfficeShell({
           onClose={() => {
             setLibraryOpen(false);
             setAnnouncement("Project Library closed");
-            libraryTriggerRef.current?.focus();
+            if (libraryTriggerRef.current) libraryTriggerRef.current.focus();
+            else outlineRef.current?.focus();
           }}
           onLocateOrigin={(entityId) => {
             setInternalSelection(entityId);

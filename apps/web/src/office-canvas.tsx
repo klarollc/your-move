@@ -1,4 +1,4 @@
-import { executeAttentionCommand } from "@cuckcode/application";
+import { executeAttentionCommand, type BrowserLibraryProjection } from "@cuckcode/application";
 import { createOfficeCamera, createOfficeLayout, officeLayoutPolicy } from "@cuckcode/ui-system";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -30,6 +30,56 @@ const sceneDescriptors: readonly SceneDescriptor[] = Object.freeze([
   zone("zone_manager", -230, 370, 240, 100, 10),
   zone("zone_delivery", 260, 370, 180, 100, 11),
 ]);
+
+const knowledgeStatuses = [
+  "authoritative",
+  "approved",
+  "provisional",
+  "contested",
+  "stale",
+  "superseded",
+  "rejected",
+] as const;
+
+const libraryProjection: BrowserLibraryProjection = {
+  knowledge: knowledgeStatuses.map((status, index) => ({
+    knowledgeId: `knowledge_${status}`,
+    status,
+    title: `${status.slice(0, 1).toUpperCase()}${status.slice(1)} project record`,
+    snippet: `Browser-safe ${status} context remains explicitly labeled.`,
+    revision: index + 1,
+    originatingEntityId: "zone_library",
+  })),
+  evidence: [
+    {
+      evidenceId: "evidence_task_11_test",
+      kind: "test",
+      status: "complete",
+      summary: "Automated verification completed; manager approval remains separate.",
+      revision: 42,
+      originatingEntityId: "agent_test_engineer",
+      approved: false,
+    },
+    {
+      evidenceId: "evidence_task_11_visual",
+      kind: "visual",
+      status: "approved",
+      summary: "Graybox composition approved for the bounded interaction gate.",
+      revision: 42,
+      originatingEntityId: "zone_review",
+      approved: true,
+    },
+    {
+      evidenceId: "evidence_task_11_release",
+      kind: "release",
+      status: "pending",
+      summary: "Release review has not started; completion is not implied.",
+      revision: 42,
+      originatingEntityId: "zone_delivery",
+      approved: false,
+    },
+  ],
+};
 
 const officeAttention: readonly OfficeAttentionItem[] = Object.freeze([
   {
@@ -85,6 +135,7 @@ export function OfficeWorkspace({ initialState }: Readonly<{ initialState: Offic
       selectedEntityId={selectedEntityId}
       onSelectEntity={setSelectedEntityId}
       attention={officeAttention}
+      library={libraryProjection}
       onDisposition={(item, intent, scope) =>
         executeFixtureDisposition(initialState, item, intent, scope)
       }
