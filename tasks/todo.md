@@ -63,7 +63,7 @@ For every behavioral task: record the focused command and expected RED failure b
   - Files: outline and agent projector tests/sources; parity test.
   - Dependencies: Tasks 7-8.
 
-- [ ] Task 10: Deterministic runtime simulator
+- [x] Task 10: Deterministic runtime simulator
   - Acceptance: ten approved scenarios emit valid deterministic event logs and exercise public replay and projector contracts.
   - Verify: contract tests, repeated byte comparison, and scenario coverage matrix.
   - Files: simulator and scenario tests/sources; package references if necessary.

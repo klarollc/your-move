@@ -69,3 +69,10 @@ Acceptance: invalid transitions remain issues without mutation, completion requi
 - GREEN: introduced one shared actionable-record projection with human labels and machine-readable agent output; 2 files and 2 tests passed.
 - Parity: after removing the human-only label, both projections are structurally identical across identity, status, scope, constraints, decisions, conflicts, evidence links, and next actions.
 - REFACTOR verification: public exports and typecheck passed; domain source scan found no React, PixiJS, DOM, canvas, or window dependency.
+## Task 10 - Deterministic runtime simulator
+
+- RED: the focused simulator contract suite failed to import the absent `simulator.js` module; zero tests ran.
+- GREEN: added ten deterministic success/failure scenarios with injected seed values and public contract events; 1 file and 14 contract tests passed.
+- Coverage: normal completion, manager question/response, permission denial, dependency wait, test failure/revision, disconnect, disconnect/recovery, stale/out-of-order input, cancellation, and reviewer disagreement.
+- Public-contract proof: every emitted event validates; repeated generation is byte-identical; replay, scene, and attention assertions pass.
+- Boundary verification: typecheck passed; source scan found no wall-clock read, randomness, provider/network call, Node process API, or UI dependency. Lockfile refresh audited 307 packages with zero vulnerabilities and ran no install scripts.
