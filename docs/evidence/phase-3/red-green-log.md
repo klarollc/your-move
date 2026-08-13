@@ -74,3 +74,14 @@ Date: 2026-08-13
 - Invariant: binding, capability, permission, context, and event-cursor continuity must all match before actions unblock.
 - REFACTOR: control behavior is an immutable pure domain reducer; the Codex adapter holds no manager authority.
 - Verification: focused unit suite and `npm.cmd run typecheck` passed.
+## Checkpoint B - Supervisor, normalization, and controls
+
+Date: 2026-08-13
+
+- Protocol drift: PASS, 275 files / Codex 0.146.0.
+- Format, lint, and typecheck: PASS.
+- Focused runtime: PASS, 8 contract + 3 integration + 7 unit tests.
+- Full unit regression: PASS, 20 files / 57 tests.
+- Full integration regression: PASS, 9 files / 26 tests.
+- Full contract regression: PASS, 6 files / 31 tests.
+- Scope: process/protocol/machine evidence only; no provider live run, browser, or visual claim.
