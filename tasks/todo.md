@@ -59,7 +59,7 @@ Prior checklist: `tasks/phase-2-todo.md`
   - Verify: six focused slices and deterministic full suite.
   - Dependencies: Tasks 8-9.
 
-- [ ] Task 11: Staffing voice and manager-final truth
+- [x] Task 11: Staffing voice and manager-final truth
   - Acceptance: complete offer, agent voice, manager-final decision, vacancy/conflict/dual-role invariants.
   - Verify: domain/application/persistence tests.
   - Dependencies: Tasks 7, 9-10.

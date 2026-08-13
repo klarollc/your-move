@@ -127,3 +127,15 @@ Date: 2026-08-13
 - Invariant: universal admission is necessary but insufficient; independent review and a passing role suite establish only manager-activation eligibility.
 - Invariant: mandatory failure cannot be waived; advisory exceptions require scope, residual risk, compensating control, owner, expiry, exact affected versions, and no parent exception.
 - Verification: `npm.cmd run test:qualification`, lint, and typecheck passed.
+## Task 11 - Staffing voice and manager-final truth
+
+Date: 2026-08-13
+
+- RED: unit tests failed because `role-offers.js` did not exist; the persistence test then failed because no evaluator/canonical staffing events existed.
+- GREEN: 6 policy tests and 1 persistence integration test passed.
+- Offer completeness: role/overlay, qualification outcome/evidence, permissions/prohibitions, workload, and conflicts are required.
+- Agent voice: accept, rank, reassignment request, and categorized decline are retained; non-acceptance leaves a visible vacancy.
+- Manager truth: assignment requires agent acceptance plus manager `assign`; dual role, reviewer conflict, unresolved conflict, stale qualification, and agent-selected replacement block assignment.
+- Audit: offer, agent response, and manager disposition persist as three distinct canonical events.
+- Reciprocity: manager and Candidate receive the same actionable facts with audience-specific envelopes.
+- Verification: focused unit/integration tests, full unit/integration/contract regressions, lint, and typecheck passed.
