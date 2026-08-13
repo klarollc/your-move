@@ -1,0 +1,25 @@
+{
+    "capturedAt":  "2026-08-13T08:25:00.7778779-07:00",
+    "timezone":  "Pacific Standard Time",
+    "os":  "Microsoft Windows NT 10.0.26200.0",
+    "architecture":  "X64",
+    "powershell":  "5.1.26100.9168",
+    "node":  "v24.18.0",
+    "npm":  "11.16.0",
+    "git":  "git version 2.53.0.windows.2",
+    "codex":  "codex-cli 0.146.0",
+    "chromeInstalled":  "151.0.7922.109",
+    "playwright":  "Version 1.62.1",
+    "playwrightChromium":  "151.0.7922.34",
+    "packageLockSha256":  "09cb65df48fd669aaca6c981e933d32e7ba07824850de783b7b4e264e37359f0",
+    "baselineCommit":  "4c4c9cde7de7ab8f75cd87b2398838397af26432",
+    "npmAuditVulnerabilities":  {
+                                    "info":  0,
+                                    "low":  0,
+                                    "moderate":  0,
+                                    "high":  0,
+                                    "critical":  0,
+                                    "total":  0
+                                },
+    "scaffoldCommit":  "a5f425c4decb402950708d8a409dc247fa9bf90e"
+}
