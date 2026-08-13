@@ -20,3 +20,4 @@ export {
   type SceneHitRegion,
   type SceneOccluder,
 } from "./office-camera.js";
+export { planSemanticMotion, type SemanticTransition } from "./semantic-motion.js";
