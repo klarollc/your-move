@@ -1,69 +1,79 @@
-# Phase 2 Task Checklist
+# Phase 3 Task Checklist
 
-Status: **Owner-approved for Phase 2 implementation on 2026-08-13**
+Status: **Proposed for owner approval**
+Specification: `docs/phase-3-runtime-and-onboarding-spec-v0.1.md`
 Plan: `tasks/plan.md`
-Prior checklist: `tasks/phase-1-todo.md`
+Prior checklist: `tasks/phase-2-todo.md`
 
-Every behavioral task records focused RED, minimal GREEN, refactor/checkpoint verification, exact files, and commit evidence under `docs/evidence/phase-2/`.
-
-- [x] Task 1: Reconcile lifecycle and define persistence contracts
-  - Acceptance: `approved` regression/correction; distinct authority; version/path/provenance/hidden-reasoning validation.
-  - Verify: focused unit/contract tests and typecheck.
+- [ ] Task 1: Provider-neutral runtime and trust contracts
+  - Acceptance: correlation/secrets/permission/qualification invariants and reciprocal projections.
+  - Verify: focused unit/contract and typecheck.
   - Dependencies: none.
 
-- [x] Task 2: Project-room paths and transactional migrations
-  - Acceptance: traversal/junction confinement; deterministic fresh/upgrade schema; rollback/checksum enforcement.
-  - Verify: focused integration tests using isolated temporary roots.
+- [ ] Task 2: Pin Codex protocol `0.146.0`
+  - Acceptance: stable schemas, provenance/hash manifest, drift/wrong-version rejection.
+  - Verify: `npm.cmd run protocol:codex:check`.
   - Dependencies: Task 1.
 
-- [x] Task 3: Append-only canonical event store
-  - Acceptance: idempotent identical events; conflicting IDs rejected; atomic ordered batches; no cross-project writes.
-  - Verify: focused integration tests and canonical hash comparisons.
+- [ ] Task 3: Deterministic fake and adapter conformance
+  - Acceptance: deterministic framing/correlation/lifecycle/approval/cancel/disconnect/malformed coverage without Codex.
+  - Verify: `npm.cmd run test:runtime`.
   - Dependencies: Tasks 1-2.
 
-- [x] Checkpoint A: unit/integration, format, lint, typecheck, migration audit, and Tasks 1-3 RED-GREEN evidence.
+- [ ] Checkpoint A: runtime/contracts, format, lint, typecheck, schema/source scans, Tasks 1-3 evidence.
 
-- [x] Task 4: Content-addressed artifacts and evidence
-  - Acceptance: verified manifests; deduplication; visible mismatch/missing/collision errors; interruption safety.
-  - Verify: focused filesystem integration tests.
-  - Dependencies: Task 2.
-
-- [x] Task 5: Rebuildable projections, knowledge repository, and FTS5
-  - Acceptance: lifecycle/provenance/conflicts queryable; access-first search; byte-equivalent rebuild.
-  - Verify: focused SQLite integration and access-leak tests.
+- [ ] Task 4: Codex stdio supervisor and handshake
+  - Acceptance: direct fixed spawn, bounded JSONL, strict handshake, redacted stderr, cleanup, auth distinction.
+  - Verify: fake-child integration and runtime suite.
   - Dependencies: Tasks 1-3.
 
-- [x] Task 6: Deterministic context-packet assembler
-  - Acceptance: stable ordering/hashes; explicit omissions; conflict/stale labels; no unauthorized/rejected/superseded leak.
-  - Verify: focused unit/contract tests across packet policies and budgets.
-  - Dependencies: Tasks 1, 3, and 5.
+- [ ] Task 5: Event normalization and correlation
+  - Acceptance: supported event correlations/freshness; provider completion remains evidence only.
+  - Verify: fixture contracts and replay hashes.
+  - Dependencies: Tasks 1-4.
 
-- [x] Checkpoint B: unit/integration/contract, format, lint, typecheck, FTS isolation, packet hashes, and rebuild proof.
+- [ ] Task 6: Approval, cancellation, disconnect, recovery
+  - Acceptance: deny-by-default single-use decisions, exact cancel, action prevention, reconciled resume.
+  - Verify: focused domain/application and fake-process integration.
+  - Dependencies: Tasks 1-5.
 
-- [x] Task 7: Personal notebook and portable-profile isolation
-  - Acceptance: versioned manager controls; forbidden fact routing; two-project canary isolation; sanitized explicit promotion/revocation.
-  - Verify: focused integration tests using separate project/profile roots.
-  - Dependencies: Tasks 1-2 and 5-6.
+- [ ] Checkpoint B: supervisor/normalization/control and full static/behavior gates, Tasks 4-6 evidence.
 
-- [x] Task 8: Knowledge propagation and critical invalidation
-  - Acceptance: affected routing; pre-action critical pause; labeled non-critical stale output; explicit refresh failure.
-  - Verify: focused state-machine unit and contract tests.
-  - Dependencies: Tasks 1, 3, and 6.
+- [ ] Task 7: Binding persistence and identity continuity
+  - Acceptance: versioned history, impersonation prevention, stale qualification, recovery provenance, no credentials.
+  - Verify: migration/integration/canary/recovery.
+  - Dependencies: Tasks 1, 5-6.
 
-- [x] Task 9: Context reuse, anti-repetition, and feedback delivery
-  - Acceptance: permitted-context lookup; safe reconnect reuse; versioned attributable feedback at checkpoints.
-  - Verify: focused unit/integration tests and redundant-request regression.
-  - Dependencies: Tasks 6-8.
+- [ ] Task 8: Controlled six-role Agency Agents Candidate import
+  - Acceptance: pinned allowlist/MIT/provenance/hash, upstream-overlay separation, non-executable Candidate.
+  - Verify: `npm.cmd run roles:agency-agents:check` and contracts.
+  - Dependencies: Tasks 1 and 7.
 
-- [x] Task 10: Backup, export, integrity, and interrupted-write recovery
-  - Acceptance: database/content integrity; no-overwrite consistent exports; crash/WAL recovery; visible corruption.
-  - Verify: focused integration tests, crash helper, and fresh-root restore comparison.
-  - Dependencies: Tasks 2-5 and 7.
+- [ ] Task 9: Universal Candidate admission
+  - Acceptance: deterministic mandatory evidence and manager disposition; no failed/expired/stale availability.
+  - Verify: `npm.cmd run test:qualification` and isolation matrices.
+  - Dependencies: Tasks 1-8.
 
-- [x] Task 11: Cross-project shared-knowledge acceptance scenario
-  - Acceptance: contribute/retrieve/conflict/resolve/refresh flow; canary isolation; reproducible migration/rebuild/restart/backup/export/packet hashes.
-  - Verify: contract scenario plus integration evidence matrix.
-  - Dependencies: Tasks 1-10.
+- [ ] Task 10: Six role-specific qualification suites
+  - Acceptance: role responsibility, exact versions, independent review, manager activation, exception rules.
+  - Verify: six focused slices and deterministic full suite.
+  - Dependencies: Tasks 8-9.
 
-- [x] Checkpoint C: run `npm.cmd run verify`; capture migration/crash/rebuild/isolation matrices, hashes, audit, source-boundary scan, and commits.
-- [ ] Owner Phase 2 gate: accept evidence or request corrections. Phase 3 remains unauthorized.
+- [ ] Task 11: Staffing voice and manager-final truth
+  - Acceptance: complete offer, agent voice, manager-final decision, vacancy/conflict/dual-role invariants.
+  - Verify: domain/application/persistence tests.
+  - Dependencies: Tasks 7, 9-10.
+
+- [ ] Checkpoint C: qualification/import/binding/isolation/recovery/reciprocal matrices, Tasks 7-11 evidence.
+
+- [ ] Task 12: Supervised local Codex contract run
+  - Acceptance: opt-in exact version/handshake/auth/binding/bounded turn/events/shutdown; no task external effect.
+  - Verify: `$env:CUCKCODE_LIVE_CODEX='1'; npm.cmd run test:live:codex`.
+  - Dependencies: Tasks 1-11 and Checkpoint C.
+
+- [ ] Task 13: Phase 3 invariant and evidence gate
+  - Acceptance: machine matrices/hashes/audits/live evidence/limits; no visual or Phase 4 claim.
+  - Verify: `npm.cmd run verify` plus all Phase 3 commands.
+  - Dependencies: Tasks 1-12.
+
+- [ ] Owner Phase 3 gate: accept evidence or request corrections. Phase 4 remains unauthorized.

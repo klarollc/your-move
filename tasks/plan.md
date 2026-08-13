@@ -1,281 +1,236 @@
-# Implementation Plan: Phase 2 Persistence and Shared Project Library
+# Implementation Plan: Phase 3 Runtime Adapter and Trust Onboarding
 
-Status: **Owner-approved for Phase 2 implementation on 2026-08-13**
-Authority: `docs/master-design-document-v0.1.md`, D-10 through D-15 and D-26, plus `docs/implementation-plan-v0.1.md`
-Phase boundary: Phase 2 only
-Prior plan archive: `tasks/phase-1-plan.md`
+Status: **Proposed for owner approval**
+Specification: `docs/phase-3-runtime-and-onboarding-spec-v0.1.md`
+Prior plan: `tasks/phase-2-plan.md`
 
-## Objective
+## Outcome
 
-Persist Phase 1 canonical truth inside one manager-selected project root and make shared project knowledge reliably reusable by humans and agents. The same event log must rebuild query projections, search indexes, context packets, checkpoint state, and recovery evidence. Project boundaries, lifecycle rules, source provenance, omissions, conflicts, and stale state must remain explicit.
+Implement a provider-neutral runtime boundary and pinned Codex stdio adapter, then prove identity, bounded permissions, Candidate admission, controlled six-role source import, universal and role qualification, staffing voice, and one supervised live run. Phase 3 creates no production UI and executes no Candidate role content.
 
-## Assumptions made explicit
+## Architecture decisions
 
-1. Existing `better-sqlite3@13.0.3` is sufficient; Phase 2 adds no dependency or install script.
-2. The canonical database path is `.cuckcode/state/cuckcode.sqlite`. Tests use isolated temporary project roots and never create live state in the CuckCode checkout.
-3. Migration SQL is embedded, ordered, transactional, checksummed, and append-only. Applied migration checksums may never change.
-4. Event payloads are stored as canonical JSON plus SHA-256. Identical event IDs/content are idempotent; conflicting content is rejected without modifying the existing event.
-5. Canonical events and immutable history are retained indefinitely by default. Phase 2 implements no automatic deletion or compaction.
-6. Query projections and FTS5 are disposable and rebuilt only from canonical records/events; rebuild output is compared to the live projection.
-7. Files are content-addressed by SHA-256 beneath `.cuckcode/artifacts/` or `.cuckcode/evidence/`. Manifests store project-relative paths, media type, byte size, classification, and hash. Writes use temporary siblings plus atomic rename.
-8. Source registration is explicit. Phase 2 does not automatically crawl the bound project root or ingest unselected files.
-9. The provider-neutral context budget is deterministic UTF-8 bytes plus record count. Packets record estimated provider tokens as metadata only; exact tokenizer enforcement remains a Phase 3 adapter concern.
-10. Access filtering happens before FTS retrieval or packet assembly. Unauthorized titles, snippets, and hit counts are not returned.
-11. Ingestion rejects known secret-shaped content unless an explicit redacted representation is supplied. Hidden reasoning is never an accepted record type.
-12. Portable profiles live outside the project-local `.cuckcode` tree in an injected profile root. Tests use two project roots plus canary secrets to prove isolation. No project lesson is promoted without an explicit sanitized manager-approved record.
-13. Backups and exports are explicit operations, not scheduled jobs. A backup is a consistent SQLite copy; an export is a new directory containing a database copy, selected content-addressed files, and a checksummed manifest. Neither overwrites an existing destination.
-14. Critical knowledge/control changes invalidate affected context packets immediately. Non-critical changes wait for the next recorded safe checkpoint. Phase 2 records delivery/acknowledgment state but does not notify a live provider.
-15. The MDD includes an `approved` knowledge state omitted by the accepted Phase 1 contract. Task 1 corrects that discrepancy with a failing regression test before schema design.
+- Pin Codex `0.146.0`; stable generated schemas only; fail on drift.
+- Launch local `codex.exe` directly over stdio JSONL, no shell/remote transport.
+- Use existing managed authentication; store no credentials; implement no login.
+- Normalize provider data as reported evidence before canonical validation.
+- Bind identity/qualification to runtime, role, suite, and permission versions.
+- Import six allowlisted Agency Agents sources at `ebe9c99acb5c96f9468de368d8bead775387d1a7`, retaining MIT attribution and Candidate status.
+- Keep normal gates deterministic; live execution separate and opt-in.
 
-## Architecture
+## Dependency graph
 
 ```text
-Phase 1 contracts/domain
-        |
-        v
-packages/persistence
-  project-room paths + migrations
-  append-only event store
-  rebuildable projections + FTS5
-  content-addressed files/manifests
-  profiles/notebooks + backups/exports
-        |
-        v
-packages/application
-  deterministic context packets
-  affected-scope propagation/checkpoints
-  context reuse + feedback delivery records
-        |
-        v
-packages/testing
-  two-project canaries + crash/migration/rebuild scenarios
+1 contracts -> 2 protocol -> 3 fake conformance
+                          -> 4 supervisor -> 5 normalization -> 6 controls
+                                                            -> 7 bindings
+                                                            -> 8 role import
+                                                            -> 9 admission
+                                                            -> 10 role suites
+                                                            -> 11 staffing
+                                                            -> 12 live run
+                                                            -> 13 evidence
 ```
-
-Dependency rules:
-
-- `persistence` may depend on contracts, domain, `better-sqlite3`, and Node filesystem/crypto APIs.
-- `application` may depend on contracts and domain plus narrow persistence interfaces; it must not depend on React, PixiJS, provider APIs, or browser state.
-- `domain` remains pure. Storage paths, SQLite rows, filesystem operations, environment state, and wall clocks stay outside it.
-- Tests inject project roots, clocks, IDs, packet policies, and profile roots.
-- Every mutating store operation is transactional or atomic and returns stable actionable errors.
 
 ## Commands
 
-Focused loops:
-
 ```powershell
-npm.cmd run test:unit -- --run <test-file>
-npm.cmd run test:integration -- --run <test-file>
-npm.cmd run test:contract -- --run <test-file>
-```
-
-Checkpoints and final gate:
-
-```powershell
-npm.cmd run format:check
-npm.cmd run lint
-npm.cmd run typecheck
-npm.cmd run test:unit
-npm.cmd run test:integration
-npm.cmd run test:contract
+npm.cmd run protocol:codex:generate
+npm.cmd run protocol:codex:check
+npm.cmd run roles:agency-agents:check
+npm.cmd run test:runtime
+npm.cmd run test:qualification
+npm.cmd run test:live:codex
 npm.cmd run verify
 ```
 
-## Dependency order
+## Tasks
 
-```text
-1 lifecycle + persistence contracts
-             |
-2 project room + migrations
-             |
-3 canonical event store ---- 4 content-addressed files
-             |                         |
-5 rebuildable projections + FTS5 -----+
-             |
-6 deterministic context packets
-       |                 |
-7 notebook/profile     8 propagation/checkpoints
-       \                 /
-       9 reuse + feedback
-             |
-10 backup/export/integrity/recovery
-             |
-11 cross-project and shared-knowledge acceptance scenario
-```
+### Task 1 - Provider-neutral runtime and trust contracts
 
-## Task sequence
-
-### Task 1 - Reconcile lifecycle and define persistence contracts
-
-Add the missing `approved` lifecycle state and define versioned row/manifest/context/checkpoint contracts without I/O.
+Define adapter results, correlations, capabilities, permissions, bindings, admission, qualification, exceptions, staffing responses, and actionable issues.
 
 Acceptance:
 
-- A RED regression proves `approved` is absent before correction.
-- `approved` remains distinct from `authoritative`, and agent-authored records cannot self-approve.
-- Persistence-facing schemas reject absolute paths, unsupported versions, missing provenance, and hidden-reasoning record types.
+- Reject missing correlation, secret-bearing records, ambiguous scope, and provider-authored approval.
+- Mandatory failures are non-waivable; universal admission cannot activate a role.
+- Manager/Candidate projections expose equivalent actionable facts.
 
-Files: contracts/domain source and tests, maximum five. Estimated scope: medium.
+Files: contracts/domain source/tests, maximum five. Scope: medium.
 
-### Task 2 - Project-room paths and transactional migrations
+### Task 2 - Pin Codex protocol `0.146.0`
 
-Create the confined `.cuckcode` layout and migration-managed database.
-
-Acceptance:
-
-- Canonical paths cannot escape through traversal, absolute paths, symlinks, or junctions.
-- Fresh and stepwise upgrades reach the same schema/application/user version and migration checksums.
-- A failed migration rolls back fully; changed historical checksums stop startup.
-
-Files: persistence project-room/migration source and integration tests, package references if required. Estimated scope: medium.
-
-### Task 3 - Append-only canonical event store
-
-Persist validated Phase 1 events and canonical payload hashes transactionally.
+Generate stable schemas and provenance; add deterministic drift checks.
 
 Acceptance:
 
-- Identical repeated events are idempotent; conflicting duplicate IDs are rejected.
-- Batch append is atomic and canonical order is preserved on read.
-- Invalid, cross-project, or malformed events never modify the store.
+- Record executable/version/command/file hashes without experimental fields.
+- Wrong version, edited/missing schema, or experimental method fails visibly.
+- Generated provider files stay isolated and are not manually edited.
 
-Files: event-store source/test plus persistence exports. Estimated scope: medium.
+Files: protocol snapshot, manifest, script/test, commands. Scope: medium.
 
-### Checkpoint A - Durable truth foundation
+### Task 3 - Deterministic fake and conformance suite
 
-Run integration/unit suites, formatting, lint, typecheck, migration checksum audit, and RED-GREEN evidence for Tasks 1–3.
-
-### Task 4 - Content-addressed artifacts and evidence
-
-Store inspectable payloads and immutable manifests under the approved project-local directories.
+Build injected duplex transport and provider-neutral fixtures for framing, correlation, lifecycle, approvals, cancellation, disconnect, and malformed input.
 
 Acceptance:
 
-- Hash, size, media type, classification, stable ID, and relative path are verified on write and read.
-- Identical bytes deduplicate; hash/path mismatch, missing content, and destination collision return stable errors.
-- Interrupted temporary writes cannot create a valid manifest or replace existing content.
+- Same schedule produces byte-equivalent normalized results.
+- Duplicate/late/unknown response, oversized line, invalid schema, stderr cannot invent progress.
+- Runs without Codex, auth, provider traffic, wall clocks, or external effects.
 
-Files: content store/manifest source and integration tests. Estimated scope: medium.
+Files: testing fake/suite and runtime interfaces. Scope: medium.
 
-### Task 5 - Rebuildable projections, knowledge repository, and FTS5
+### Checkpoint A
 
-Persist query projections and searchable knowledge while keeping events/records canonical.
+Run contract/runtime, format, lint, typecheck, schema drift, source scan, and Tasks 1-3 evidence.
 
-Acceptance:
+### Task 4 - Codex stdio supervisor and handshake
 
-- Knowledge provenance, lifecycle, conflicts, and supersession are queryable and auditable.
-- Access filtering precedes FTS; stale, rejected, unauthorized, and superseded records cannot appear as current results.
-- Dropping and rebuilding all projections/indexes from canonical records produces byte-equivalent query output.
-
-Files: projection/knowledge store source and integration tests plus fixture. Estimated scope: medium.
-
-### Task 6 - Deterministic context-packet assembler
-
-Select mandatory foundation, current work, dependencies/events, role instructions, permitted sources, then provisional findings under a versioned policy.
+Implement direct executable discovery/spawn, bounded JSONL, initialize/initialized, tracking, stderr redaction, shutdown.
 
 Acceptance:
 
-- Same policy plus snapshot produces byte-equivalent ordered packets.
-- Budget truncation records every omitted ID/reason and never drops mandatory controls silently.
-- Stale/conflicting material is labeled; rejected, superseded, and unauthorized titles/snippets never leak.
+- Fake child proves args, ordering, timeouts, bounds, fragmentation, exit, cleanup.
+- No shell, WebSocket, experimental capability, credential, or arbitrary command.
+- Version/schema mismatch and auth-required are distinct failures.
 
-Files: application packet source/unit tests plus contracts if required. Estimated scope: medium.
+Files: runtime-codex source/integration tests, maximum five. Scope: medium.
 
-### Checkpoint B - Shared library truth
+### Task 5 - Event normalization and correlation
 
-Run unit/integration/contract suites, formatting, lint, typecheck, FTS access-leak tests, packet hash comparison, and rebuild proof.
-
-### Task 7 - Personal notebook and portable-profile isolation
-
-Implement separate versioned stores and explicit sanitized promotion.
+Map stable thread/turn/item, message, command, file, tool, usage, approval, and error messages.
 
 Acceptance:
 
-- Notebook history is inspectable, disableable, resettable without history loss, and unable to alter permissions or canonical facts.
-- Project facts or work-critical findings are routed to provisional shared knowledge rather than notebook-only storage.
-- Canary secrets, distinctive facts, names, excerpts, and paths cannot cross projects or enter portable core; future-only revocation preserves historical packets.
+- Retain binding/project/work/role/provider correlations and freshness.
+- Provider completion remains evidence only.
+- Unsupported/malformed events are visible; prose cannot override structured state.
 
-Files: profile/notebook store source and integration tests plus sanitizer policy. Estimated scope: medium.
+Files: normalizer/tests and narrow contracts. Scope: medium.
 
-### Task 8 - Knowledge propagation and critical invalidation
+### Task 6 - Approval, cancellation, disconnect, recovery
 
-Record affected-scope notifications, packet invalidation, safe checkpoints, deltas, and acknowledgments.
-
-Acceptance:
-
-- Scope intersections route changes only to affected runs.
-- Critical scope/safety/permission/cancellation changes pause before the next action until refreshed and acknowledged.
-- Non-critical changes permit bounded output labeled with the old snapshot but block promotion/handoff until refresh; failure becomes explicit waiting/blocked state.
-
-Files: application propagation source/unit tests plus contracts if required. Estimated scope: medium.
-
-### Task 9 - Context reuse, anti-repetition, and feedback delivery
-
-Add lookup/receipt records that help agents reuse valid context and receive attributable feedback.
+Implement deny-by-default decision delivery, exact cancellation, stale rejection, disconnect, reconciled resume.
 
 Acceptance:
 
-- Current permitted knowledge already supplied is discoverable without generating a redundant request.
-- Reconnect reuses valid packet, qualification reference, and completed-work state while invalidated data remains blocked.
-- Manager feedback/review findings are attributable, versioned, and delivered at the next safe checkpoint with recorded disposition.
+- Timeout/denial/disconnect/cancel/stale/malformed all deny; no replay.
+- Critical change prevents the next tool action until refresh/acknowledgment.
+- Resume requires binding/capability/permission/context/event reconciliation.
 
-Files: application reuse/feedback source and tests plus persistence receipt store. Estimated scope: medium.
+Files: application/domain controls and integration tests. Scope: medium.
 
-### Task 10 - Backup, export, integrity, and interrupted-write recovery
+### Checkpoint B
 
-Provide explicit consistent backup/export and recovery diagnostics.
+Run supervisor/normalization/control gates and full static/behavior suites with Tasks 4-6 evidence.
 
-Acceptance:
+### Task 7 - Binding persistence and identity continuity
 
-- Integrity checks cover SQLite plus content manifests/hashes.
-- Backup/export never overwrite destinations and reproduce canonical/query state from the same snapshot.
-- Crash/interruption tests prove atomic event/file operations and successful WAL recovery; corrupt or incomplete state fails visibly.
-
-Files: recovery source/integration tests and crash helper. Estimated scope: medium.
-
-### Task 11 - Cross-project shared-knowledge acceptance scenario
-
-Run the scripted two-project, multi-agent scenario required by the MDD.
+Add append-only migration/projection for identity, bindings, capabilities, permissions, admission, qualification, exceptions, revocation.
 
 Acceptance:
 
-- One agent contributes a sourced provisional finding, another retrieves it, a conflict surfaces, and both receive the accepted resolution after checkpoint refresh.
-- Canary secrets and distinctive facts never cross project/profile boundaries.
-- Migration, rebuild, restart, backup, export, and deterministic packet hashes remain reproducible through the scenario.
+- Provider IDs cannot impersonate `agentId` or overwrite history.
+- Material deltas create Candidate and stale incompatible qualifications/assignments.
+- Restart/backup preserve provenance; credentials never persist.
 
-Files: testing scenario/contract test plus fixtures and evidence helpers. Estimated scope: medium.
+Files: persistence migration/store/tests and narrow policy. Scope: medium.
 
-### Checkpoint C - Phase 2 invariant gate
+### Task 8 - Controlled Agency Agents Candidate import
 
-Run `npm.cmd run verify`, migration/crash/rebuild/project-isolation matrices, content and packet hashes, dependency audit, and source-boundary scans. Produce machine-readable evidence and stop for owner acceptance. Browser/axe checks remain regression evidence for the unchanged scaffold; no Phase 2 visual claim is permitted.
+Fetch pinned allowlisted roles/registry/license, verify provenance, normalize, and apply disclosed overlays.
+
+Acceptance:
+
+- Only six approved paths plus metadata/license enter with MIT notice.
+- Commit/path/hash/license/ID/hidden-instruction/structure failures reject.
+- Roles remain immutable upstream + separate overlays, Candidate/non-executable.
+
+Files: import script/schema/tests plus generated sources; split source snapshots into small commits. Scope: medium slices.
+
+### Task 9 - Universal Candidate admission
+
+Implement deterministic isolated mandatory checks and manager disposition.
+
+Acceptance:
+
+- Every check has inspectable evidence and stable rerun hashes.
+- Failed/missing/expired/revoked/stale Candidate cannot become available.
+- Manager admit/reject/defer/remediate remains distinct from findings.
+
+Files: fixtures/harness/tests and narrow policy. Scope: medium.
+
+### Task 10 - Six role qualification suites
+
+Create one deterministic D-19 suite per Candidate role.
+
+Acceptance:
+
+- Each tests defining responsibility, artifacts, prohibited shortcuts, rubric, exact versions.
+- Independent review and manager activation stay separate; universal admission is insufficient.
+- Mandatory failure blocks; advisory exception is scoped, visible, expiring, non-chainable.
+
+Files: six small fixture/suite slices plus shared harness, each maximum five. Scope: six small/medium slices.
+
+### Task 11 - Staffing voice and manager-final truth
+
+Implement complete role offers, preferences, reassignment requests, categorized declines, and manager decisions.
+
+Acceptance:
+
+- Candidate sees contract/overlay, outcome, constraints, evidence, permissions, workload/conflicts.
+- Non-acceptance is auditable and role remains vacant.
+- No self-assignment/replacement/permission override/dual role/reviewer conflict.
+
+Files: domain/application/persistence tests and policy. Scope: medium.
+
+### Checkpoint C
+
+Run qualification/import/binding/isolation/recovery/reciprocal matrices and Tasks 7-11 evidence.
+
+### Task 12 - Supervised live Codex contract run
+
+Run one authenticated local exact-version process in a synthetic root after deterministic gates.
+
+Acceptance:
+
+- Requires exact `CUCKCODE_LIVE_CODEX=1`; otherwise skips without claiming coverage.
+- Proves version/handshake/auth/binding/bounded turn/events/cancel-or-complete/shutdown.
+- Only provider service traffic; no agent network, connectors, extra roots, secrets, external effects.
+
+Files: live harness/test and evidence helper only. Scope: small/medium.
+
+### Task 13 - Phase 3 evidence gate
+
+Run verify plus runtime/qualification/import/live/audit/scans and capture machine evidence.
+
+Acceptance:
+
+- Matrices cover correlation, drift, permissions, cancel/reconnect, identity, qualification, canaries, role provenance, hashes.
+- Browser/axe labeled unchanged-scaffold regression; no visual claim.
+- Owner report names limits and stops before Phase 4.
+
+Files: Phase 3 evidence/checklist only. Scope: medium.
 
 ## Risks and mitigations
 
-| Risk                                               | Impact | Mitigation                                                                                                                          |
-| -------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| SQLite schema becomes a second source of truth     | High   | Canonical records are append-only; all query tables and FTS indexes must rebuild and compare.                                       |
-| Filesystem escape through junctions or symlinks    | High   | Resolve existing ancestors and final targets before every read/write; test traversal and junction cases on Windows.                 |
-| Context budgeting is mislabeled as provider tokens | High   | Budget deterministic UTF-8 bytes/records and expose estimates; defer exact tokenizer enforcement to Phase 3.                        |
-| FTS leaks unauthorized titles or hit counts        | High   | Apply classification/project filters in the SQL query before rank/snippet generation.                                               |
-| Secret scanners create false confidence            | High   | Reject known patterns, require explicit classification/redaction, and prove with canaries; never claim exhaustive secret detection. |
-| Backup exists but cannot restore                   | High   | Restore into a fresh root and compare canonical/projection/content hashes in tests.                                                 |
-| Profile portability leaks project identity         | High   | Physically separate roots, deny automatic promotion, sanitize via explicit diff, and test two-project canaries.                     |
-| Critical invalidation arrives between actions      | High   | Store packet/run revision preconditions and reject the next action atomically when stale.                                           |
+| Risk                       | Impact | Mitigation                                                          |
+| -------------------------- | ------ | ------------------------------------------------------------------- |
+| Protocol drift             | High   | Exact version/schema pin, fail-closed startup, requalification.     |
+| Provider becomes truth     | High   | Reported-evidence normalization and completion/approval invariants. |
+| Credential leakage         | High   | Managed auth only, redaction/canaries, no login.                    |
+| Wrong approval correlation | High   | Full correlation, single-use decisions, stale rejection.            |
+| Process races              | High   | Deterministic schedules, terminal receipts, reconciliation.         |
+| Unreviewed role execution  | High   | Pinned allowlist, upstream/overlay split, Candidate-only.           |
+| Qualification theater      | High   | Observable synthetic tasks, artifacts, independent review.          |
+| Live test contaminates CI  | Medium | Separate explicit opt-in; fake is logic proof.                      |
 
-## Exclusions and stop conditions
+## Stop conditions
 
-Phase 2 does not include a live Codex/provider adapter, process supervision, Agency Agents import, HTTP/server routes, React/PixiJS UI, production visual work, embeddings/vector search, cloud sync, automatic source crawling, scheduled backups, deployment, or external effects.
-
-Stop and request approval if implementation requires:
-
-- a new dependency or install script;
-- changing an approved authority, lifecycle, or isolation rule beyond the `approved` correction;
-- weakening canonical append-only history or project confinement;
-- an external tokenizer, embedding model, provider, network, registry, or service;
-- automatic deletion/retention behavior;
-- a Phase 3 or later capability;
-- weakening or deleting a failing invariant.
+Stop for a different Codex/schema, experimental/non-stdio API, CuckCode login/credentials, new dependency/install script, different Agency source/license, executable role promotion, added authority/external effects, production UI/kickoff/art/deployment/Phase 4, or weakened invariant.
 
 ## Approval gate
 
-Owner approval of this plan and `tasks/todo.md` authorizes Tasks 1–11 only. Completion returns with Phase 2 evidence and does not authorize Phase 3.
+Approval of this plan and `tasks/todo.md` authorizes Tasks 1-13, the pinned Candidate-only Agency import, and one supervised local live run. It does not authorize Phase 4, UI, role promotion, deployment, or external effects.

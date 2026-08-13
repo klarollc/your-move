@@ -13,9 +13,9 @@ If implementation and documentation disagree, stop. Update and approve the desig
 
 ## Current boundary
 
-Phases 0 and 1 were owner-accepted on 2026-08-13. The Phase 2 implementation plan and tasks were owner-approved on 2026-08-13.
+Phases 0, 1, and 2 were owner-accepted on 2026-08-13. Phase 3 specification and planning are authorized; Phase 3 implementation is not authorized until the owner approves `docs/phase-3-runtime-and-onboarding-spec-v0.1.md`, `tasks/plan.md`, and `tasks/todo.md`.
 
-Phase 2 is limited to project-local persistence, shared Project Library behavior, deterministic context packets, profile/notebook isolation, knowledge propagation, and recovery. Stop at the Phase 2 evidence gate. Do not connect a live runtime, import upstream agent files, add production UI, or begin Phase 3 behavior.
+Phase 3 is limited to the provider-neutral runtime contract, pinned local Codex App Server stdio adapter, process supervision, normalized runtime events and approvals, stable runtime bindings, Candidate onboarding, controlled Agency Agents role-template import, universal and six role-specific qualification suites, staffing truth, and one explicitly supervised local live contract run. Do not add production UI, begin the collaborative kickoff, promote high-fidelity art, deploy, or begin Phase 4 behavior.
 
 ## Required delivery method
 
