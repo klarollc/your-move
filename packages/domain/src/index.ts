@@ -1,1 +1,1 @@
-export {};
+export * from "./canonical-json.js";

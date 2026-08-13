@@ -223,15 +223,15 @@ Run focused suites and then `npm.cmd run verify`. Produce a machine-readable env
 
 ## Risks and mitigations
 
-| Risk | Impact | Mitigation |
-| --- | --- | --- |
-| Event names harden too early | High | Version every event and validate discriminated payloads; keep provider translation outside domain. |
-| Ordering hides conflicting truth | High | Preserve deterministic conflict records instead of last-write-wins mutation. |
-| State slices drift apart | High | Compose through one replay reducer and cross-slice invariant fixtures. |
-| Human simplicity burdens agents | High | Require projection parity and structured error or handoff tests before gate. |
-| Simulator becomes a second domain | Medium | Simulator emits public contracts only; replay remains the sole truth engine. |
-| Overlarge files or tests | Medium | Stop and split any task that exceeds five files or one focused session. |
-| Phase 2 behavior leaks inward | High | Ban I/O, SQLite, runtime APIs, React, PixiJS, wall clocks, and randomness by dependency and source scans. |
+| Risk                              | Impact | Mitigation                                                                                                |
+| --------------------------------- | ------ | --------------------------------------------------------------------------------------------------------- |
+| Event names harden too early      | High   | Version every event and validate discriminated payloads; keep provider translation outside domain.        |
+| Ordering hides conflicting truth  | High   | Preserve deterministic conflict records instead of last-write-wins mutation.                              |
+| State slices drift apart          | High   | Compose through one replay reducer and cross-slice invariant fixtures.                                    |
+| Human simplicity burdens agents   | High   | Require projection parity and structured error or handoff tests before gate.                              |
+| Simulator becomes a second domain | Medium | Simulator emits public contracts only; replay remains the sole truth engine.                              |
+| Overlarge files or tests          | Medium | Stop and split any task that exceeds five files or one focused session.                                   |
+| Phase 2 behavior leaks inward     | High   | Ban I/O, SQLite, runtime APIs, React, PixiJS, wall clocks, and randomness by dependency and source scans. |
 
 ## Exclusions and stop conditions
 

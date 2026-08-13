@@ -5,7 +5,7 @@ Plan: `tasks/plan.md`
 
 For every behavioral task: record the focused command and expected RED failure before implementation, make the smallest GREEN change, refactor only while green, and append evidence under `docs/evidence/phase-1/`.
 
-- [ ] Task 1: Stable primitives and canonical serialization
+- [x] Task 1: Stable primitives and canonical serialization
   - Acceptance: prefixed IDs and UTC timestamps validate; stable JSON is byte-equivalent; no clock, random, or I/O leak.
   - Verify: focused unit tests, typecheck, source-boundary scan.
   - Files: contracts primitives test/source; domain canonical JSON test/source.
