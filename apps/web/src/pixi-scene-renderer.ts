@@ -82,6 +82,13 @@ export function createPixiSceneRenderer(
       app?.render();
     },
 
+    transform(zoom, translation) {
+      const target = requireScene(scene);
+      target.scale.set(zoom);
+      target.position.set(translation.x, translation.y);
+      app?.render();
+    },
+
     resize(width, height) {
       const target = requireApp(app);
       target.renderer.resize(width, height);

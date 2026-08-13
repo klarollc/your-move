@@ -9,11 +9,17 @@ export type SceneDescriptor = Readonly<{
   visible: boolean;
 }>;
 
+export type SceneTransform = Readonly<{
+  zoom: number;
+  translation: Readonly<{ x: number; y: number }>;
+}>;
+
 export type SceneRendererPort = {
   mount(host: HTMLElement): void | Promise<void>;
   upsert(descriptor: SceneDescriptor): void;
   remove(entityId: string): void;
   sort(entityIds: string[]): void;
+  transform(zoom: number, translation: SceneTransform["translation"]): void;
   resize(width: number, height: number): void;
   clear(): void;
   destroy(): void;
@@ -23,6 +29,7 @@ export type OfficeSceneAdapter = {
   mount(host: HTMLElement): Promise<void>;
   update(descriptors: readonly SceneDescriptor[]): void;
   resize(width: number, height: number): void;
+  setCamera(transform: SceneTransform): void;
   contextLost(): void;
   unmount(): void;
 };
@@ -74,6 +81,19 @@ export function createOfficeSceneAdapter(
       requireMounted(state === "mounted");
       if (width <= 0 || height <= 0) throw new RangeError("OFFICE_SCENE_SIZE_INVALID");
       renderer.resize(width, height);
+    },
+
+    setCamera(transform) {
+      requireMounted(state === "mounted");
+      if (
+        !Number.isFinite(transform.zoom) ||
+        transform.zoom <= 0 ||
+        !Number.isFinite(transform.translation.x) ||
+        !Number.isFinite(transform.translation.y)
+      ) {
+        throw new RangeError("OFFICE_SCENE_TRANSFORM_INVALID");
+      }
+      renderer.transform(transform.zoom, { ...transform.translation });
     },
 
     contextLost() {

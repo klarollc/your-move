@@ -13,6 +13,7 @@ class MemoryRenderer implements SceneRendererPort {
   height = 0;
   nodes = new Map<string, SceneDescriptor>();
   order: string[] = [];
+  transformState = { zoom: 1, translation: { x: 0, y: 0 } };
 
   mount() {
     this.mounted = true;
@@ -28,6 +29,10 @@ class MemoryRenderer implements SceneRendererPort {
 
   sort(entityIds: string[]) {
     this.order = entityIds;
+  }
+
+  transform(zoom: number, translation: { x: number; y: number }) {
+    this.transformState = { zoom, translation };
   }
 
   resize(width: number, height: number) {
@@ -109,11 +114,16 @@ describe("office scene adapter", () => {
     await adapter.mount({} as HTMLElement);
     adapter.update([node("agent_a", 1)]);
     adapter.resize(840, 744);
+    adapter.setCamera({ zoom: 1.25, translation: { x: 120, y: -40 } });
     adapter.contextLost();
     adapter.unmount();
 
     expect({ width: renderer.width, height: renderer.height }).toEqual({ width: 840, height: 744 });
     expect(fallbackStates).toEqual([false, true]);
+    expect(renderer.transformState).toEqual({
+      zoom: 1.25,
+      translation: { x: 120, y: -40 },
+    });
     expect(renderer.nodes.size).toBe(0);
     expect(renderer.destroyed).toBe(true);
   });
