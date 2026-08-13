@@ -164,3 +164,15 @@ Date: 2026-08-13
 - Correction: supervisor shutdown now waits for process exit and escalates to process termination within bounds; cleanup retries bounded Windows handle release. Fake-process integration, skip guard, lint, and typecheck passed after correction. No second provider call was made.
 - Recovery: the exact empty synthetic root was subsequently removed after validating it was under the system TEMP directory.
 - Required next authority: one corrective supervised provider rerun. This exceeds the originally approved single live attempt and requires owner approval.
+
+## Task 12 - Supervised live Codex contract run (passed)
+
+Date: 2026-08-13
+
+- Owner authorized exactly one corrective rerun under the same bounded conditions.
+- Command: `$env:CUCKCODE_LIVE_CODEX='1'; npm.cmd run test:live:codex`.
+- Result: PASS, 1 file / 1 test; exit code 0; Vitest duration 11.87 seconds; test duration 11.51 seconds.
+- Contract: installed Codex 0.146.0 initialized over direct stdio; existing managed authentication; ephemeral synthetic root; read-only sandbox; `approvalPolicy: never`; bounded text-only turn.
+- Assertions: exact completed thread/turn correlation, `CUCKCODE_LIVE_OK`, no command/file/MCP/dynamic/collaboration/web/image item, no unredacted credential-shaped stderr, clean supervisor shutdown and temporary-root cleanup.
+- External-effect boundary: no requested tool, connector, subagent, file mutation, network tool, or approval path.
+- Disposition: Task 12 complete. Attempt 1 remains preserved as failed cleanup evidence; attempt 2 is the authoritative passing live gate.

@@ -66,7 +66,7 @@ Prior checklist: `tasks/phase-2-todo.md`
 
 - [x] Checkpoint C: qualification/import/binding/isolation/recovery/reciprocal matrices, Tasks 7-11 evidence.
 
-- [ ] Task 12: Supervised local Codex contract run
+- [x] Task 12: Supervised local Codex contract run
   - Acceptance: opt-in exact version/handshake/auth/binding/bounded turn/events/shutdown; no task external effect.
   - Verify: `$env:CUCKCODE_LIVE_CODEX='1'; npm.cmd run test:live:codex`.
   - Dependencies: Tasks 1-11 and Checkpoint C.
