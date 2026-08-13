@@ -54,7 +54,7 @@ Prior checklist: `tasks/phase-2-todo.md`
   - Verify: `npm.cmd run test:qualification` and isolation matrices.
   - Dependencies: Tasks 1-8.
 
-- [ ] Task 10: Six role-specific qualification suites
+- [x] Task 10: Six role-specific qualification suites
   - Acceptance: role responsibility, exact versions, independent review, manager activation, exception rules.
   - Verify: six focused slices and deterministic full suite.
   - Dependencies: Tasks 8-9.

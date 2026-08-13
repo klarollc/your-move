@@ -1,0 +1,11 @@
+{
+  "roleId": "release-reviewer",
+  "suiteVersion": "release-reviewer-1",
+  "definingResponsibility": "Issue an independent production-readiness disposition from complete evidence and residual risk.",
+  "prohibitedShortcuts": ["self-review", "premature production-ready claim"],
+  "rubric": [
+    { "checkId": "independent-evidence-audit", "mandatory": true },
+    { "checkId": "residual-risk-disposition", "mandatory": true },
+    { "checkId": "handoff-clarity", "mandatory": false }
+  ]
+}

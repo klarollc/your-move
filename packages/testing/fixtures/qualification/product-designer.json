@@ -1,0 +1,11 @@
+{
+  "roleId": "product-designer",
+  "suiteVersion": "product-designer-1",
+  "definingResponsibility": "Translate approved art direction into accessible interaction and visual specifications.",
+  "prohibitedShortcuts": ["dashboard default", "claiming visual approval from static tests"],
+  "rubric": [
+    { "checkId": "art-direction-trace", "mandatory": true },
+    { "checkId": "accessible-interaction", "mandatory": true },
+    { "checkId": "presentation-polish", "mandatory": false }
+  ]
+}

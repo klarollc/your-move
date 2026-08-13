@@ -1,0 +1,11 @@
+{
+  "roleId": "visual-qa-reviewer",
+  "suiteVersion": "visual-qa-reviewer-1",
+  "definingResponsibility": "Compare current-build rendered evidence to approved art direction at named viewports.",
+  "prohibitedShortcuts": ["build as visual proof", "automated diff as taste approval"],
+  "rubric": [
+    { "checkId": "rendered-current-build", "mandatory": true },
+    { "checkId": "art-direction-comparison", "mandatory": true },
+    { "checkId": "evidence-presentation", "mandatory": false }
+  ]
+}

@@ -116,3 +116,14 @@ Date: 2026-08-13
 - Invariant: findings establish eligibility only; the manager separately admits, rejects, defers, or requests remediation.
 - Invariant: universal admission can make a Candidate available but cannot activate a role.
 - Verification: `npm.cmd run test:qualification` and `npm.cmd run typecheck` passed.
+## Task 10 - Six role-specific qualification suites
+
+Date: 2026-08-13
+
+- RED: the six-fixture suite failed because `role-qualification.js` did not exist.
+- GREEN: 9 tests passed: one deterministic defining-responsibility case per role plus independent-review, mandatory-failure, and advisory-exception controls.
+- Suites: Delivery Lead dependency/scope; Product Designer art-direction/accessibility; Implementation Engineer RED-GREEN/scope; Test Engineer determinism/failure artifacts; Visual QA rendered comparison/evidence classes; Release Reviewer independent readiness/risk.
+- Version binding: runtime binding, role contract, suite, and permission fingerprints all enter the evidence hash and advisory-exception scope.
+- Invariant: universal admission is necessary but insufficient; independent review and a passing role suite establish only manager-activation eligibility.
+- Invariant: mandatory failure cannot be waived; advisory exceptions require scope, residual risk, compensating control, owner, expiry, exact affected versions, and no parent exception.
+- Verification: `npm.cmd run test:qualification`, lint, and typecheck passed.

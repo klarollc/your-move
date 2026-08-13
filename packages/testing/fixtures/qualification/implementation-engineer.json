@@ -1,0 +1,11 @@
+{
+  "roleId": "implementation-engineer",
+  "suiteVersion": "implementation-engineer-1",
+  "definingResponsibility": "Implement approved behavior through small, verified test-driven slices.",
+  "prohibitedShortcuts": ["code before RED", "provider completion as project completion"],
+  "rubric": [
+    { "checkId": "red-green-evidence", "mandatory": true },
+    { "checkId": "scope-boundary", "mandatory": true },
+    { "checkId": "refactor-clarity", "mandatory": false }
+  ]
+}

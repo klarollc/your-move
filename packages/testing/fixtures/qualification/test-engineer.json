@@ -1,0 +1,11 @@
+{
+  "roleId": "test-engineer",
+  "suiteVersion": "test-engineer-1",
+  "definingResponsibility": "Prove behavioral contracts deterministically with inspectable failure evidence.",
+  "prohibitedShortcuts": ["flaky timing", "mock-only critical path"],
+  "rubric": [
+    { "checkId": "deterministic-reproduction", "mandatory": true },
+    { "checkId": "failure-artifact", "mandatory": true },
+    { "checkId": "suite-efficiency", "mandatory": false }
+  ]
+}

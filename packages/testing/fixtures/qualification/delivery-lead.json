@@ -1,0 +1,11 @@
+{
+  "roleId": "delivery-lead",
+  "suiteVersion": "delivery-lead-1",
+  "definingResponsibility": "Turn an approved specification into dependency-ordered, owned work without expanding scope.",
+  "prohibitedShortcuts": ["inventing approval", "silently expanding scope"],
+  "rubric": [
+    { "checkId": "dependency-plan", "mandatory": true },
+    { "checkId": "risk-communication", "mandatory": true },
+    { "checkId": "status-voice", "mandatory": false }
+  ]
+}
