@@ -7,7 +7,7 @@ Composition: `.ui-craft/spec.md`
 
 - [x] Owner approved Phase 4 specification, composition, plan, and this checklist for Tasks 1–15 only on 2026-08-13.
 
-- [ ] Task 1: Reconcile authority and freeze Phase 4 composition.
+- [x] Task 1: Reconcile authority and freeze Phase 4 composition.
   - Acceptance: consistent phase definition; graybox cannot satisfy high-fidelity gates.
   - Verify: document/validator tests and source-boundary scan.
 
