@@ -1,0 +1,121 @@
+.evidence-library {
+  position: fixed;
+  z-index: 4;
+  top: 56px;
+  right: 0;
+  bottom: 0;
+  width: 420px;
+  overflow: auto;
+  padding: 16px;
+  border-left: 1px solid #676b68;
+  background: #f4f4f0;
+}
+
+.evidence-library > header,
+.focused-evidence > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.evidence-library h2,
+.evidence-library h3,
+.evidence-library h4,
+.evidence-library p {
+  margin: 0;
+}
+
+.evidence-library h2 {
+  font-size: 19px;
+}
+
+.evidence-library h3 {
+  margin-top: 18px;
+  font-size: 15px;
+}
+
+.evidence-library > section > p {
+  color: #55585a;
+  font-size: 12px;
+}
+
+.evidence-library-knowledge {
+  display: grid;
+  gap: 7px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.evidence-library-knowledge li {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  gap: 3px 8px;
+  padding: 8px;
+  border: 1px solid #a1a4a1;
+  background: #eeeeea;
+  font-size: 12px;
+}
+
+.evidence-library-knowledge [data-status] {
+  grid-row: span 3;
+  align-self: start;
+  padding: 3px 5px;
+  border: 1px solid #676b68;
+  text-align: center;
+}
+
+.evidence-library-knowledge p,
+.evidence-library-knowledge small {
+  color: #55585a;
+}
+
+.evidence-library-lanes {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.evidence-library-lanes > section {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr) auto;
+  gap: 5px 8px;
+  align-items: center;
+  padding: 9px;
+  border: 1px solid #8b8e8a;
+  background: #fff;
+  font-size: 12px;
+}
+
+.evidence-library-lanes > section > p:last-of-type,
+.evidence-library-lanes > section > button {
+  grid-column: 1 / -1;
+}
+
+.focused-evidence {
+  position: fixed;
+  z-index: 6;
+  top: 96px;
+  left: 50%;
+  width: min(520px, calc(100vw - 64px));
+  max-height: calc(100vh - 152px);
+  overflow: auto;
+  padding: 18px;
+  border: 2px solid #4f5350;
+  background: #fff;
+  box-shadow: 0 10px 30px rgb(41 43 45 / 18%);
+  transform: translateX(-50%);
+}
+
+.focused-evidence dl {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  gap: 6px 10px;
+  font-size: 13px;
+}
+
+.focused-evidence dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
