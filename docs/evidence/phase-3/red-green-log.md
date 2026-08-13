@@ -106,3 +106,13 @@ Date: 2026-08-13
 - Quarantine: Implementation Engineer contains one upstream HTML-comment segment, SHA-256 `29b191b6eb376682ae2169694ea079c763e4a1da3902a30e9a4b68fbbf9cc3f4`; it is recorded and excluded from the normalized role. Any unrecorded hidden segment fails validation.
 - Recovery: the initial CRLF-transformed failed import was moved intact to `.restore`; the importer now stages raw-LF content and validates before atomic copy.
 - Verification: `npm.cmd run test:roles` and `npm.cmd run roles:agency-agents:check` passed; all roles remain Candidate and non-executable.
+## Task 9 - Universal Candidate admission
+
+Date: 2026-08-13
+
+- RED: after correcting test syntax, the focused suite failed because `qualification.js` did not exist.
+- GREEN: 7 tests passed for exact ten-check coverage, deterministic evidence hashes, manager/findings separation, and missing/failed/expired/revoked/stale rejection.
+- Mandatory checks: handshake, identity, correlation, cancellation, permission denial/escalation, root/secret isolation, context disclosure, health/recovery, knowledge citation, and deterministic synthetic completion.
+- Invariant: findings establish eligibility only; the manager separately admits, rejects, defers, or requests remediation.
+- Invariant: universal admission can make a Candidate available but cannot activate a role.
+- Verification: `npm.cmd run test:qualification` and `npm.cmd run typecheck` passed.

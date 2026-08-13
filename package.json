@@ -26,6 +26,7 @@
     "protocol:codex:check": "node scripts/check-codex-protocol.mjs",
     "test:protocol": "node --test scripts/protocol-codex.test.mjs && npm run protocol:codex:check",
     "test:scaffold": "node --test scripts/scaffold-contract.test.mjs",
+    "test:qualification": "vitest run --project unit packages/testing/src/qualification.unit.test.ts",
     "test:runtime": "vitest run --project contract packages/contracts/src/runtime.contract.test.ts packages/testing/src/runtime-fake.contract.test.ts && vitest run --project integration packages/runtime-codex/src/supervisor.integration.test.ts && vitest run --project unit packages/runtime-codex/src/normalizer.unit.test.ts packages/domain/src/runtime-controls.unit.test.ts",
     "test:unit": "vitest run --project unit --passWithNoTests",
     "test:integration": "vitest run --project integration --passWithNoTests",
@@ -34,7 +35,7 @@
     "test:a11y": "playwright test --grep @a11y --project chromium-1440 --project chromium-1280",
     "test:visual": "playwright test --grep @visual --pass-with-no-tests --project chromium-1440 --project chromium-1280",
     "build": "npm run typecheck && npm run build --workspace @cuckcode/web",
-    "verify": "npm run test:protocol && npm run test:roles && npm run test:scaffold && npm run format:check && npm run lint && npm run typecheck && npm run test:unit && npm run test:integration && npm run test:contract && npm run build && npm run test:e2e && npm run test:a11y && npm run test:visual"
+    "verify": "npm run test:protocol && npm run test:roles && npm run test:qualification && npm run test:scaffold && npm run format:check && npm run lint && npm run typecheck && npm run test:unit && npm run test:integration && npm run test:contract && npm run build && npm run test:e2e && npm run test:a11y && npm run test:visual"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

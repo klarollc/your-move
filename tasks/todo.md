@@ -49,7 +49,7 @@ Prior checklist: `tasks/phase-2-todo.md`
   - Verify: `npm.cmd run roles:agency-agents:check` and contracts.
   - Dependencies: Tasks 1 and 7.
 
-- [ ] Task 9: Universal Candidate admission
+- [x] Task 9: Universal Candidate admission
   - Acceptance: deterministic mandatory evidence and manager disposition; no failed/expired/stale availability.
   - Verify: `npm.cmd run test:qualification` and isolation matrices.
   - Dependencies: Tasks 1-8.
