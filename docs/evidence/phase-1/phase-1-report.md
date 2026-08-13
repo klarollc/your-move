@@ -1,6 +1,6 @@
 # Phase 1 evidence report
 
-Status: **Implementation and machine gate complete; owner acceptance pending**
+Status: **Owner-accepted on 2026-08-13**
 
 ## Delivered
 
@@ -47,4 +47,4 @@ The full gate's Chromium and axe tests cover the unchanged Phase 0 scaffold. Pha
 
 ## Owner gate
 
-The owner may accept Phase 1 or request corrections. Acceptance authorizes no Phase 2 work by itself.
+The owner accepted Phase 1 on 2026-08-13 and separately authorized Phase 2 planning. This record does not authorize Phase 3.

@@ -1,73 +1,69 @@
-# Phase 1 Task Checklist
+# Phase 2 Task Checklist
 
-Status: **Tasks complete; Phase 1 owner acceptance pending**
+Status: **Owner-approved for Phase 2 implementation on 2026-08-13**
 Plan: `tasks/plan.md`
+Prior checklist: `tasks/phase-1-todo.md`
 
-For every behavioral task: record the focused command and expected RED failure before implementation, make the smallest GREEN change, refactor only while green, and append evidence under `docs/evidence/phase-1/`.
+Every behavioral task records focused RED, minimal GREEN, refactor/checkpoint verification, exact files, and commit evidence under `docs/evidence/phase-2/`.
 
-- [x] Task 1: Stable primitives and canonical serialization
-  - Acceptance: prefixed IDs and UTC timestamps validate; stable JSON is byte-equivalent; no clock, random, or I/O leak.
-  - Verify: focused unit tests, typecheck, source-boundary scan.
-  - Files: contracts primitives test/source; domain canonical JSON test/source.
+- [ ] Task 1: Reconcile lifecycle and define persistence contracts
+  - Acceptance: `approved` regression/correction; distinct authority; version/path/provenance/hidden-reasoning validation.
+  - Verify: focused unit/contract tests and typecheck.
   - Dependencies: none.
 
-- [x] Task 2: Versioned event envelope and canonical ordering
-  - Acceptance: invalid or unsupported events are rejected; duplicates are idempotent or conflicting; permutation order is stable.
-  - Verify: focused unit tests with malformed, duplicate, conflict, and permutation fixtures.
-  - Files: contracts events test/source; domain ordering test/source.
+- [ ] Task 2: Project-room paths and transactional migrations
+  - Acceptance: traversal/junction confinement; deterministic fresh/upgrade schema; rollback/checksum enforcement.
+  - Verify: focused integration tests using isolated temporary roots.
   - Dependencies: Task 1.
 
-- [x] Task 3: Work, evidence, and approval truth slice
-  - Acceptance: transitions are enforced; verification gates completion; explicit manager events alone create version-bound approval.
-  - Verify: focused unit tests plus truthfulness invariant cases.
-  - Files: domain work model/reducer/test; fixture.
-  - Dependencies: Tasks 1-2.
+- [ ] Task 3: Append-only canonical event store
+  - Acceptance: idempotent identical events; conflicting IDs rejected; atomic ordered batches; no cross-project writes.
+  - Verify: focused integration tests and canonical hash comparisons.
+  - Dependencies: Tasks 1–2.
 
-- [x] Checkpoint A: unit tests, format, lint, typecheck, and RED-GREEN evidence for Tasks 1-3.
+- [ ] Checkpoint A: unit/integration, format, lint, typecheck, migration audit, and Tasks 1–3 RED-GREEN evidence.
 
-- [x] Task 4: Agent, role-assignment, and qualification truth slice
-  - Acceptance: one-role occupancy, six identities, non-waivable controls, truthful disconnected, stale, and capability-loss state.
-  - Verify: focused unit tests and qualification matrix.
-  - Files: contracts staffing test/source; domain staffing reducer/test.
-  - Dependencies: Tasks 1-2.
+- [ ] Task 4: Content-addressed artifacts and evidence
+  - Acceptance: verified manifests; deduplication; visible mismatch/missing/collision errors; interruption safety.
+  - Verify: focused filesystem integration tests.
+  - Dependencies: Task 2.
 
-- [x] Task 5: Knowledge lifecycle truth slice
-  - Acceptance: provenance and lifecycle stay visible; provisional findings do not self-promote; unusable records do not appear current.
-  - Verify: focused unit tests over promotion, rejection, conflict, staleness, and supersession.
-  - Files: contracts knowledge test/source; domain knowledge reducer/test.
-  - Dependencies: Tasks 1-2.
+- [ ] Task 5: Rebuildable projections, knowledge repository, and FTS5
+  - Acceptance: lifecycle/provenance/conflicts queryable; access-first search; byte-equivalent rebuild.
+  - Verify: focused SQLite integration and access-leak tests.
+  - Dependencies: Tasks 1–3.
 
-- [x] Task 6: Collaboration, handoff, and actionable error contracts
-  - Acceptance: complete structured handoffs; actionable stable errors; shared human and agent command authority.
-  - Verify: contract tests and reciprocal policy tests.
-  - Files: collaboration and error contract tests/sources; domain policy test.
-  - Dependencies: Tasks 1-2, with Task 4 types where required.
+- [ ] Task 6: Deterministic context-packet assembler
+  - Acceptance: stable ordering/hashes; explicit omissions; conflict/stale labels; no unauthorized/rejected/superseded leak.
+  - Verify: focused unit/contract tests across packet policies and budgets.
+  - Dependencies: Tasks 1, 3, and 5.
 
-- [x] Checkpoint B: unit and contract tests, format, lint, typecheck, and paired-contract review.
+- [ ] Checkpoint B: unit/integration/contract, format, lint, typecheck, FTS isolation, packet hashes, and rebuild proof.
 
-- [x] Task 7: Canonical replay reducer and snapshot
-  - Acceptance: byte-equivalent snapshot replay; no invented progress; immutable deterministic inputs and outputs.
-  - Verify: focused replay property cases and snapshot hashes.
-  - Files: project-state and replay tests/sources; shared fixture.
-  - Dependencies: Tasks 2-6.
+- [ ] Task 7: Personal notebook and portable-profile isolation
+  - Acceptance: versioned manager controls; forbidden fact routing; two-project canary isolation; sanitized explicit promotion/revocation.
+  - Verify: focused integration tests using separate project/profile roots.
+  - Dependencies: Tasks 1–2 and 5–6.
 
-- [x] Task 8: Manager attention and office scene descriptors
-  - Acceptance: semantic map fidelity; no fabricated activity or collaboration; cited causes and freshness.
-  - Verify: focused projector tests for every named canonical state.
-  - Files: attention and scene projector tests/sources.
-  - Dependencies: Task 7.
+- [ ] Task 8: Knowledge propagation and critical invalidation
+  - Acceptance: affected routing; pre-action critical pause; labeled non-critical stale output; explicit refresh failure.
+  - Verify: focused state-machine unit and contract tests.
+  - Dependencies: Tasks 1, 3, and 6.
 
-- [x] Task 9: Accessible outline and reciprocal agent projection
-  - Acceptance: human and agent semantic parity and stable accessible ordering without UI dependencies.
-  - Verify: focused parity tests across success, conflict, blocked, and approval scenarios.
-  - Files: outline and agent projector tests/sources; parity test.
-  - Dependencies: Tasks 7-8.
+- [ ] Task 9: Context reuse, anti-repetition, and feedback delivery
+  - Acceptance: permitted-context lookup; safe reconnect reuse; versioned attributable feedback at checkpoints.
+  - Verify: focused unit/integration tests and redundant-request regression.
+  - Dependencies: Tasks 6–8.
 
-- [x] Task 10: Deterministic runtime simulator
-  - Acceptance: ten approved scenarios emit valid deterministic event logs and exercise public replay and projector contracts.
-  - Verify: contract tests, repeated byte comparison, and scenario coverage matrix.
-  - Files: simulator and scenario tests/sources; package references if necessary.
-  - Dependencies: Tasks 2 and 7-9.
+- [ ] Task 10: Backup, export, integrity, and interrupted-write recovery
+  - Acceptance: database/content integrity; no-overwrite consistent exports; crash/WAL recovery; visible corruption.
+  - Verify: focused integration tests, crash helper, and fresh-root restore comparison.
+  - Dependencies: Tasks 2–5 and 7.
 
-- [x] Checkpoint C: run `npm.cmd run verify`; capture environment, invariant matrix, RED-GREEN record, hashes, source-boundary scan, and commits.
-- [ ] Owner Phase 1 gate: accept evidence or request corrections. Phase 2 remains unauthorized.
+- [ ] Task 11: Cross-project shared-knowledge acceptance scenario
+  - Acceptance: contribute/retrieve/conflict/resolve/refresh flow; canary isolation; reproducible migration/rebuild/restart/backup/export/packet hashes.
+  - Verify: contract scenario plus integration evidence matrix.
+  - Dependencies: Tasks 1–10.
+
+- [ ] Checkpoint C: run `npm.cmd run verify`; capture migration/crash/rebuild/isolation matrices, hashes, audit, source-boundary scan, and commits.
+- [ ] Owner Phase 2 gate: accept evidence or request corrections. Phase 3 remains unauthorized.

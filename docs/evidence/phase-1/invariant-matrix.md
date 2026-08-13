@@ -1,6 +1,6 @@
 # Phase 1 invariant matrix
 
-Status: **Machine-verified; owner acceptance pending**
+Status: **Machine-verified and owner-accepted on 2026-08-13**
 
 | Invariant | Evidence | Result |
 | --- | --- | --- |

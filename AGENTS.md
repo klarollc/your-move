@@ -13,9 +13,9 @@ If implementation and documentation disagree, stop. Update and approve the desig
 
 ## Current boundary
 
-Phase 0 was owner-accepted on 2026-08-13. Phase 1 implementation and its machine gate completed on 2026-08-13; owner acceptance is pending.
+Phases 0 and 1 were owner-accepted on 2026-08-13. The Phase 2 implementation plan and tasks were owner-approved on 2026-08-13.
 
-Phase 1 work is limited to pure contracts, deterministic canonical truth, state machines, projectors, reciprocal collaboration contracts, and the deterministic simulator. Stop at the Phase 1 evidence gate. Do not connect a live runtime, add persistence behavior, import upstream agent files, or create production UI.
+Phase 2 is limited to project-local persistence, shared Project Library behavior, deterministic context packets, profile/notebook isolation, knowledge propagation, and recovery. Stop at the Phase 2 evidence gate. Do not connect a live runtime, import upstream agent files, add production UI, or begin Phase 3 behavior.
 
 ## Required delivery method
 
