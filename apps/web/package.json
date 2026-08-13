@@ -8,6 +8,7 @@
     "build": "vite build"
   },
   "dependencies": {
+    "@cuckcode/ui-system": "0.0.0",
     "pixi.js": "8.19.0",
     "react": "19.2.8",
     "react-dom": "19.2.8"
