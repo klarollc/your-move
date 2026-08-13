@@ -6,6 +6,9 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "dependencies": {
+    "@cuckcode/contracts": "0.0.0"
+  },
   "scripts": {
     "build": "tsc -b"
   }

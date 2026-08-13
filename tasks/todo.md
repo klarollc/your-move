@@ -27,7 +27,7 @@ Prior checklist: `tasks/phase-2-todo.md`
   - Verify: fake-child integration and runtime suite.
   - Dependencies: Tasks 1-3.
 
-- [ ] Task 5: Event normalization and correlation
+- [x] Task 5: Event normalization and correlation
   - Acceptance: supported event correlations/freshness; provider completion remains evidence only.
   - Verify: fixture contracts and replay hashes.
   - Dependencies: Tasks 1-4.

@@ -19,6 +19,13 @@ describe("runtime trust contracts", () => {
   it("rejects an event without the required runtime correlation", () => {
     expect(runtimeCorrelationSchema.safeParse({ bindingId: "binding_1" }).success).toBe(false);
     expect(runtimeCorrelationSchema.safeParse(correlation).success).toBe(true);
+    expect(
+      runtimeCorrelationSchema.safeParse({
+        bindingId: "binding_1",
+        providerRunId: "run_1",
+        providerRequestId: "notification_1",
+      }).success,
+    ).toBe(true);
   });
 
   it("rejects secret-bearing runtime records", () => {

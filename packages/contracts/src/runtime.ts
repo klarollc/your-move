@@ -19,9 +19,9 @@ export const runtimeCorrelationSchema = z
     bindingId: id,
     providerRunId: id,
     providerRequestId: id,
-    threadId: id,
-    turnId: id,
-    itemId: id,
+    threadId: id.optional(),
+    turnId: id.optional(),
+    itemId: id.optional(),
   })
   .strict();
 

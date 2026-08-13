@@ -54,3 +54,13 @@ Date: 2026-08-13
 - Protocol contract: stable initialize request contains client metadata and omits capabilities/`experimentalApi`; response must report 0.146.0 before readiness.
 - REFACTOR: Node types were scoped to `runtime-codex`; exact-optional process state was made explicit.
 - Verification: focused integration suite and `npm.cmd run typecheck` passed.
+## Task 5 - Event normalization and correlation
+
+Date: 2026-08-13
+
+- RED: lifecycle-level correlation failed because thread/turn/item were globally required; the normalizer suite also failed because `normalizer.js` did not exist.
+- GREEN: scoped correlation passed and 4 normalizer tests passed for lifecycle/project linkage, item categories, malformed/unsupported visibility, reported-only provider completion, and deterministic evidence hashes.
+- Invariant: binding/run/request IDs are always required; thread/turn/item IDs are retained when their protocol level exists and are never fabricated.
+- Invariant: provider prose and completion map only to `canonicalImpact: reported_only`; they cannot create manager approval or CuckCode completion.
+- REFACTOR: provider-specific parsing is isolated in `runtime-codex`; normalized contracts flow through `@cuckcode/contracts`.
+- Verification: focused contract/unit suites and `npm.cmd run typecheck` passed.
