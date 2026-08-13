@@ -24,3 +24,9 @@
 - Task 6 RED: context assembler absent. GREEN: 2 tests prove deterministic priority, explicit omissions, mandatory overflow, and no unauthorized/rejected leakage.
 - Checkpoint B typecheck rejected Node `Buffer` in the application layer and widened fixture literals. Replaced it with `TextEncoder` and typed records.
 - Final Checkpoint B: typecheck passed; unit 16 files/44 tests; contract 3 files/22 tests; integration 5 files/15 tests. Format and lint had passed before the type correction.
+## Tasks 7-9
+- Task 7 RED: profile store absent. GREEN: 2 integration tests prove project notebook controls, provisional shared-fact routing, separate portable-profile storage, explicit revocation history, and rejection of forbidden project facts and local paths.
+- Task 8 RED: propagation module absent. GREEN: 3 unit tests prove affected-work routing, critical pause/invalidation, non-critical stale labeling, checkpoint refresh, and explicit waiting state on refresh failure.
+- Task 9 RED: receipt store absent. GREEN: 2 integration tests prove current-context lookup, snapshot-bound reconnect reuse, and once-only attributable versioned feedback delivery at a safe checkpoint.
+- Refactor gate: exact-optional typecheck rejected explicit undefined cleanup fields in refreshed runs. The implementation now omits stale optional fields structurally.
+- Combined gate: typecheck passed; unit 17 files/47 tests; integration 7 files/19 tests.

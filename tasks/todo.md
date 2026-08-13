@@ -19,9 +19,9 @@ Every behavioral task records focused RED, minimal GREEN, refactor/checkpoint ve
 - [x] Task 3: Append-only canonical event store
   - Acceptance: idempotent identical events; conflicting IDs rejected; atomic ordered batches; no cross-project writes.
   - Verify: focused integration tests and canonical hash comparisons.
-  - Dependencies: Tasks 1–2.
+  - Dependencies: Tasks 1â€“2.
 
-- [x] Checkpoint A: unit/integration, format, lint, typecheck, migration audit, and Tasks 1–3 RED-GREEN evidence.
+- [x] Checkpoint A: unit/integration, format, lint, typecheck, migration audit, and Tasks 1â€“3 RED-GREEN evidence.
 
 - [x] Task 4: Content-addressed artifacts and evidence
   - Acceptance: verified manifests; deduplication; visible mismatch/missing/collision errors; interruption safety.
@@ -31,7 +31,7 @@ Every behavioral task records focused RED, minimal GREEN, refactor/checkpoint ve
 - [x] Task 5: Rebuildable projections, knowledge repository, and FTS5
   - Acceptance: lifecycle/provenance/conflicts queryable; access-first search; byte-equivalent rebuild.
   - Verify: focused SQLite integration and access-leak tests.
-  - Dependencies: Tasks 1–3.
+  - Dependencies: Tasks 1â€“3.
 
 - [x] Task 6: Deterministic context-packet assembler
   - Acceptance: stable ordering/hashes; explicit omissions; conflict/stale labels; no unauthorized/rejected/superseded leak.
@@ -40,30 +40,30 @@ Every behavioral task records focused RED, minimal GREEN, refactor/checkpoint ve
 
 - [x] Checkpoint B: unit/integration/contract, format, lint, typecheck, FTS isolation, packet hashes, and rebuild proof.
 
-- [ ] Task 7: Personal notebook and portable-profile isolation
+- [x] Task 7: Personal notebook and portable-profile isolation
   - Acceptance: versioned manager controls; forbidden fact routing; two-project canary isolation; sanitized explicit promotion/revocation.
   - Verify: focused integration tests using separate project/profile roots.
-  - Dependencies: Tasks 1–2 and 5–6.
+  - Dependencies: Tasks 1â€“2 and 5â€“6.
 
-- [ ] Task 8: Knowledge propagation and critical invalidation
+- [x] Task 8: Knowledge propagation and critical invalidation
   - Acceptance: affected routing; pre-action critical pause; labeled non-critical stale output; explicit refresh failure.
   - Verify: focused state-machine unit and contract tests.
   - Dependencies: Tasks 1, 3, and 6.
 
-- [ ] Task 9: Context reuse, anti-repetition, and feedback delivery
+- [x] Task 9: Context reuse, anti-repetition, and feedback delivery
   - Acceptance: permitted-context lookup; safe reconnect reuse; versioned attributable feedback at checkpoints.
   - Verify: focused unit/integration tests and redundant-request regression.
-  - Dependencies: Tasks 6–8.
+  - Dependencies: Tasks 6â€“8.
 
 - [ ] Task 10: Backup, export, integrity, and interrupted-write recovery
   - Acceptance: database/content integrity; no-overwrite consistent exports; crash/WAL recovery; visible corruption.
   - Verify: focused integration tests, crash helper, and fresh-root restore comparison.
-  - Dependencies: Tasks 2–5 and 7.
+  - Dependencies: Tasks 2â€“5 and 7.
 
 - [ ] Task 11: Cross-project shared-knowledge acceptance scenario
   - Acceptance: contribute/retrieve/conflict/resolve/refresh flow; canary isolation; reproducible migration/rebuild/restart/backup/export/packet hashes.
   - Verify: contract scenario plus integration evidence matrix.
-  - Dependencies: Tasks 1–10.
+  - Dependencies: Tasks 1â€“10.
 
 - [ ] Checkpoint C: run `npm.cmd run verify`; capture migration/crash/rebuild/isolation matrices, hashes, audit, source-boundary scan, and commits.
 - [ ] Owner Phase 2 gate: accept evidence or request corrections. Phase 3 remains unauthorized.
