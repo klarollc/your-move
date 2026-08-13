@@ -5,7 +5,7 @@ Specification: `docs/phase-3-runtime-and-onboarding-spec-v0.1.md`
 Plan: `tasks/plan.md`
 Prior checklist: `tasks/phase-2-todo.md`
 
-- [ ] Task 1: Provider-neutral runtime and trust contracts
+- [x] Task 1: Provider-neutral runtime and trust contracts
   - Acceptance: correlation/secrets/permission/qualification invariants and reciprocal projections.
   - Verify: focused unit/contract and typecheck.
   - Dependencies: none.
