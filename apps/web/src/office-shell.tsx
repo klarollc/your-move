@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
+import {
+  AttentionRail,
+  type AttentionDisposition,
+  type OfficeAttentionItem,
+  type OfficeDispositionResult,
+} from "./attention-rail.js";
 import "./office-shell.css";
 
 export type OfficeShellState =
@@ -127,6 +133,8 @@ export function OfficeShell({
   onResetView,
   selectedEntityId,
   onSelectEntity,
+  attention = [],
+  onDisposition,
 }: Readonly<{
   state: OfficeShellState;
   canvas?: ReactNode;
@@ -134,8 +142,19 @@ export function OfficeShell({
   onResetView?: () => void;
   selectedEntityId?: string | undefined;
   onSelectEntity?: (entityId: string | undefined) => void;
+  attention?: readonly OfficeAttentionItem[];
+  onDisposition?: (
+    item: OfficeAttentionItem,
+    intent: AttentionDisposition,
+    scope: Record<string, string>,
+  ) => OfficeDispositionResult | Promise<OfficeDispositionResult>;
 }>) {
   const outlineRef = useRef<HTMLElement>(null);
+  const attentionTriggerRef = useRef<HTMLButtonElement>(null);
+  const [attentionOpen, setAttentionOpen] = useState(false);
+  const [dismissedAttentionIds, setDismissedAttentionIds] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
   const selectionTriggerRef = useRef<HTMLButtonElement | undefined>(undefined);
   const [internalSelection, setInternalSelection] = useState<string | undefined>(undefined);
   const [announcement, setAnnouncement] = useState(
@@ -147,6 +166,10 @@ export function OfficeShell({
   const presentation = presentations[state];
   const selection = selectedEntityId ?? internalSelection;
   const selectedEntity = officeShellEntities.find(({ entityId }) => entityId === selection);
+  const visibleAttention = attention.filter(
+    ({ attentionId }) => !dismissedAttentionIds.has(attentionId),
+  );
+  const dispositionsAvailable = state === "ready" || state === "partial";
 
   useEffect(() => {
     if (!selectedEntityId) return;
@@ -176,6 +199,21 @@ export function OfficeShell({
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
   });
+
+  const closeAttention = () => {
+    setAttentionOpen(false);
+    setAnnouncement("Manager attention closed");
+    attentionTriggerRef.current?.focus();
+  };
+
+  useEffect(() => {
+    if (!attentionOpen || selectedEntity) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeAttention();
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  });
   const zones = officeShellEntities.filter(({ kind }) => kind === "zone");
   const people = officeShellEntities.filter(({ kind }) => kind === "person");
 
@@ -184,6 +222,7 @@ export function OfficeShell({
       className="office-shell"
       aria-label="CuckCode office workspace"
       data-inspector-open={Boolean(selectedEntity)}
+      data-attention-open={attentionOpen}
     >
       <a
         className="office-skip-link"
@@ -207,6 +246,19 @@ export function OfficeShell({
         </div>
         <span>{presentation.runtime}</span>
         <span>Local session · revision 42</span>
+        {visibleAttention.length > 0 ? (
+          <button
+            ref={attentionTriggerRef}
+            type="button"
+            aria-expanded={attentionOpen}
+            onClick={() => {
+              setAttentionOpen(true);
+              setAnnouncement(`${visibleAttention.length} manager attention items opened`);
+            }}
+          >
+            Manager attention ({visibleAttention.length})
+          </button>
+        ) : null}
         <button
           type="button"
           onClick={() => {
@@ -297,6 +349,30 @@ export function OfficeShell({
         </ol>
       </section>
 
+      {attentionOpen && visibleAttention.length > 0 ? (
+        <AttentionRail
+          items={visibleAttention}
+          available={dispositionsAvailable}
+          onClose={closeAttention}
+          onLocate={(item) => {
+            setInternalSelection(item.entityId);
+            onSelectEntity?.(item.entityId);
+            setAnnouncement(`${item.label} located in the office`);
+          }}
+          onDismiss={(item) => {
+            setDismissedAttentionIds((current) => new Set([...current, item.attentionId]));
+            setAnnouncement(`${item.label} dismissed from this view; no disposition was recorded`);
+          }}
+          onDisposition={
+            onDisposition ??
+            (() => ({
+              ok: false,
+              code: "ATTENTION_COMMAND_UNAVAILABLE",
+              requiredAction: "Connect the canonical command handler before retrying.",
+            }))
+          }
+        />
+      ) : null}
       {selectedEntity ? (
         <aside
           className="office-inspector"

@@ -56,7 +56,7 @@ body {
 
 .office-project-bar {
   display: grid;
-  grid-template-columns: 1fr auto auto auto;
+  grid-template-columns: 1fr auto auto auto auto;
   align-items: center;
   gap: 20px;
   padding: 6px 16px;
@@ -251,4 +251,128 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+.office-shell[data-attention-open="true"] .office-scene,
+.office-shell[data-attention-open="true"] .office-outline {
+  margin-left: 280px;
+}
+
+.office-attention {
+  position: fixed;
+  z-index: 3;
+  top: 56px;
+  bottom: 0;
+  left: 0;
+  width: 280px;
+  overflow: auto;
+  padding: 14px;
+  border-right: 1px solid #676b68;
+  background: #f4f4f0;
+}
+
+.office-attention > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: start;
+}
+
+.office-attention h2,
+.office-attention h3,
+.office-attention p {
+  margin: 0;
+}
+
+.office-attention h2 {
+  font-size: 18px;
+}
+
+.office-attention h3 {
+  font-size: 15px;
+}
+
+.office-attention-summary,
+.office-attention-denial {
+  margin-top: 10px !important;
+  color: #55585a;
+  font-size: 12px;
+}
+
+.office-attention-denial {
+  padding: 8px;
+  border: 1px dashed #676b68;
+}
+
+.office-attention > ol {
+  display: grid;
+  gap: 12px;
+  margin: 12px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.office-attention > ol > li {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid #8b8e8a;
+  border-left: 4px solid #5d6063;
+  background: #eeeeea;
+}
+
+.office-attention-kicker,
+.office-attention details,
+.office-attention label {
+  color: #55585a;
+  font-size: 12px;
+}
+
+.office-attention details dl {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  gap: 4px;
+  margin: 6px 0;
+}
+
+.office-attention details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.office-attention form {
+  display: grid;
+  gap: 7px;
+  padding-top: 8px;
+  border-top: 1px solid #b0b2ae;
+}
+
+.office-attention label {
+  display: grid;
+  gap: 3px;
+}
+
+.office-attention select,
+.office-attention input {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid #676b68;
+  border-radius: 3px;
+  background: #fff;
+  color: #292b2d;
+  font: inherit;
+}
+
+.office-attention-dismiss {
+  border-style: dashed !important;
+  background: transparent !important;
+}
+
+.office-attention-receipt {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border: 2px solid #4f5350;
+  background: #fff;
+  font-size: 12px;
 }
