@@ -176,3 +176,15 @@ Date: 2026-08-13
 - Assertions: exact completed thread/turn correlation, `CUCKCODE_LIVE_OK`, no command/file/MCP/dynamic/collaboration/web/image item, no unredacted credential-shaped stderr, clean supervisor shutdown and temporary-root cleanup.
 - External-effect boundary: no requested tool, connector, subagent, file mutation, network tool, or approval path.
 - Disposition: Task 12 complete. Attempt 1 remains preserved as failed cleanup evidence; attempt 2 is the authoritative passing live gate.
+## Task 13 - Phase 3 invariant and evidence gate
+
+Date: 2026-08-13
+
+- Result: PASS, ready for owner review.
+- `npm.cmd run verify`: exit code 0 across provenance, qualification, scaffold, static checks, unit/integration/contract suites, build, browser smoke, automated accessibility, and configured visual command.
+- Explicit runtime matrix: 8 contract, 4 process-integration, and 7 unit tests passed.
+- Exact protocol check: 275 files at Codex 0.146.0, `ok: true`.
+- Exact role check: 6 Candidate roles at pinned commit `ebe9c99acb5c96f9468de368d8bead775387d1a7`, `ok: true`.
+- Live evidence: owner-authorized attempt 2 passed completely with no prohibited item or external effect.
+- Limits: no visual acceptance, office-scene UX claim, production/deployment readiness claim, or Phase 4 authorization. The configured Phase 3 visual command contains no visual assertions.
+- Disposition: Task 13 complete; Owner Phase 3 gate remains open.

@@ -71,7 +71,7 @@ Prior checklist: `tasks/phase-2-todo.md`
   - Verify: `$env:CUCKCODE_LIVE_CODEX='1'; npm.cmd run test:live:codex`.
   - Dependencies: Tasks 1-11 and Checkpoint C.
 
-- [ ] Task 13: Phase 3 invariant and evidence gate
+- [x] Task 13: Phase 3 invariant and evidence gate
   - Acceptance: machine matrices/hashes/audits/live evidence/limits; no visual or Phase 4 claim.
   - Verify: `npm.cmd run verify` plus all Phase 3 commands.
   - Dependencies: Tasks 1-12.
