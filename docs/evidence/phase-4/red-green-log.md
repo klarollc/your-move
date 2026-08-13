@@ -139,3 +139,16 @@ Date: 2026-08-13
 - Browser: 16 E2E, 10 axe, and 6 rendered current-build tests passed across Chromium 1440×900 and 1280×800, including reduced motion, clean application console/request inventory, real context-loss recovery, camera parity, and semantic outline access.
 - Evidence-integrity refinement: full verify revealed Task 8's unscoped global button padding changed all four Task 5 screenshot bytes. Shell button/focus rules were scoped to `.office-shell`; the four Task 5 captures were rerun and returned exactly to their registered SHA-256 values, while 8 focused shell component/E2E/axe/visual checks remained green.
 - Evidence boundary: Checkpoint B proves deterministic foundational graybox behavior only. Manual screen reader, 200% zoom, comprehension study, Tasks 9–15, owner graybox acceptance, high fidelity, and art direction remain open.
+## Task 9 — Shared selection, focus, and contextual inspector
+
+Date: 2026-08-13
+
+- RED 1: the focused component test selected the Implementation Engineer but found no selected entity ID or inspector.
+- GREEN 1: 9 component tests passed. Outline selection opens one contextual inspector keyed by the stable canvas/DOM entity ID; the inspector includes state, cause, update, freshness, current work, blocker, evidence, runtime binding, permissions, and technical trail; Escape closes it and restores trigger focus.
+- RED 2: the browser parity test proved outline selection/320px resize/focus restoration already worked, while the production canvas exposed no transformed hit coordinate or selection callback.
+- GREEN 2: Pixi typed intents now update the same `OfficeWorkspace` selection consumed by the outline and inspector. The production host publishes the deterministic transformed Implementation Engineer center; canvas and outline open the same inspector and update the same scene selected ID.
+- State refinement: controlled canvas selection initially opened the correct inspector but left the live region at `Workspace current`. Controlled selection changes now announce the selected canonical entity through the shared state seam.
+- Resize/focus: opening the inspector reduces scene/outline width by exactly 320 CSS pixels at both viewports; ResizeObserver recomputes the camera; closing restores the prior width and outline trigger focus. Canvas selection has no fabricated DOM trigger to restore.
+- Visual QA: direct 1280 current-build inspection passed for office-primary composition, contextual inspector hierarchy, complete truth fields, and reachable outline actions; no V0/V1 Task 9 discrepancy remained. Captures remain non-baseline test outputs.
+- Verification: component 9/9; selection/inspector E2E 4/4 across 1440×900 and 1280×800; default-office axe 2/2; formatting, ESLint, TypeScript, and diff checks passed.
+- Evidence boundary: Task 9 does not prove attention actions, evidence surfaces, motion/failure equivalence, manual accessibility, comprehension, high fidelity, art direction, or owner graybox acceptance.

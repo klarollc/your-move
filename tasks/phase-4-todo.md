@@ -43,7 +43,7 @@ Composition: `.ui-craft/spec.md`
 
 - [x] Checkpoint B: foundational office behavior, two viewports, reduced motion, console/network, and full regressions.
 
-- [ ] Task 9: Shared selection, focus, and contextual inspector.
+- [x] Task 9: Shared selection, focus, and contextual inspector.
   - Acceptance: one selection model; complete truthfulness answers; deterministic resize; focus restoration.
   - Verify: component/E2E parity matrix.
 
