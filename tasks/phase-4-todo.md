@@ -61,7 +61,7 @@ Composition: `.ui-craft/spec.md`
 
 - [x] Checkpoint C: complete graybox manager workspace and named capture matrix at both viewports.
 
-- [ ] Task 13: D-25 kickoff domain and command workflow.
+- [x] Task 13: D-25 kickoff domain and command workflow.
   - Acceptance: equal briefing; six contributions; attributable disagreement; bounded revision; manager charter; no pre-charter work.
   - Verify: unit/contract/integration kickoff matrix.
 

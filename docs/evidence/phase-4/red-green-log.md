@@ -204,3 +204,13 @@ Date: 2026-08-13
 - Browser: 34 E2E, 12 axe, and 6 rendered regression tests passed across Chromium 1440x900 and 1280x800. A separate 6-case named capture supplement passed for permission-blocked, offline, reconnect, and keyboard focus at both viewports.
 - Capture matrix: default, selection, attention, permission-blocked/offline, review, complete-not-approved, reconnect, keyboard focus, and reduced-motion outputs now exist at both approved viewports. Captures remain ephemeral current-build evidence and are not promoted visual baselines.
 - Evidence boundary: Checkpoint C proves the complete deterministic graybox manager workspace through Task 12. It does not authorize live kickoff, promote Candidate roles, prove manual accessibility/comprehension, or approve high-fidelity art direction.
+## Task 13 — D-25 kickoff domain and command workflow
+
+Date: 2026-08-13
+
+- RED 1: 3 contract checks failed to import the absent kickoff contract. GREEN: 3 passed for one versioned equal briefing, exactly six unique active roles, secret rejection, attributable complete contribution fields, and exact briefing-version binding.
+- RED 2: 4 domain checks failed to import the absent kickoff aggregate. GREEN: 4 passed for six initial entries, complete synthesis inclusion, preserved disagreement/evidence gaps, one revision per role, silence remaining absent, complete manager charter requirements, pre-charter execution denial, and single-round redirect/reject preservation.
+- RED 3: 2 persistence checks failed to import the absent kickoff store. GREEN: 2 integration tests passed for immutable attributable record persistence, restart recovery, conflict rejection, dissent preservation, manager disposition, and project isolation through migration 003.
+- RED 4: 2 application checks failed to import the absent command handler. GREEN: 2 passed for exact revisioned receipts, attribution, manager/agent authority, stale denial, and implementationAllowed remaining false before charter.
+- Verification: kickoff contract 3/3; domain/application unit 6/6; persistence integration 2/2; formatting, ESLint, and TypeScript passed after removing one unused type-only runtime value.
+- Evidence boundary: Task 13 proves deterministic canonical kickoff mechanics only. It does not execute Candidate roles, call a provider, approve a live kickoff, prove Task 14 UI/parity, or select a real initial charter.
