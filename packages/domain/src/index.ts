@@ -13,3 +13,4 @@ export * from "./reciprocal-records.js";
 export * from "./runtime-trust.js";
 export * from "./runtime-controls.js";
 export * from "./role-offers.js";
+export * from "./kickoff.js";
