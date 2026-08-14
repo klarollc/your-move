@@ -193,3 +193,14 @@ Date: 2026-08-13
 - Visual QA refinement: the first reduced-motion capture named revision 43 but omitted the destination. The persistent label now reads `Handoff recorded at Review station · revision 43`; both viewport captures and direct inspection passed. The cue remains subordinate to the office and does not fabricate activity.
 - Broader regression: production build and TypeScript passed; 29 unit files / 110 tests, 3 component files / 30 tests, 34 E2E tests, 12 axe scans, and 6 rendered visual tests passed.
 - Evidence boundary: Task 12 proves graybox state/motion semantic equivalence and deterministic browser checkpoints only. It does not prove Checkpoint C, manual accessibility, comprehension, high fidelity, art direction, or owner graybox acceptance.
+## Checkpoint C — Complete graybox manager workspace
+
+Date: 2026-08-13
+
+- Result: PASS.
+- Full repository gate: `npm.cmd run verify` passed after one isolated formatter-only correction in the Task 10 application handler.
+- Static/contracts: exact Codex 0.146.0 protocol 4 tests / 275 schemas; Agency Agents 3 tests / 6 Candidate non-executable roles; qualification 16; graybox evidence 3; workspace contract 4; scaffold 2; formatting, ESLint, TypeScript, and production build passed.
+- Behavior: 29 unit files / 110 tests; 3 component files / 30 tests; 12 integration files / 38 tests plus one guarded live test skipped; 7 contract files / 35 tests.
+- Browser: 34 E2E, 12 axe, and 6 rendered regression tests passed across Chromium 1440x900 and 1280x800. A separate 6-case named capture supplement passed for permission-blocked, offline, reconnect, and keyboard focus at both viewports.
+- Capture matrix: default, selection, attention, permission-blocked/offline, review, complete-not-approved, reconnect, keyboard focus, and reduced-motion outputs now exist at both approved viewports. Captures remain ephemeral current-build evidence and are not promoted visual baselines.
+- Evidence boundary: Checkpoint C proves the complete deterministic graybox manager workspace through Task 12. It does not authorize live kickoff, promote Candidate roles, prove manual accessibility/comprehension, or approve high-fidelity art direction.

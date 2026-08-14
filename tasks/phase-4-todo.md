@@ -59,7 +59,7 @@ Composition: `.ui-craft/spec.md`
   - Acceptance: no false state degradation; canonical-first motion; no ambient loops; reduced-motion semantics.
   - Verify: deterministic motion/failure matrix and reduced-motion E2E.
 
-- [ ] Checkpoint C: complete graybox manager workspace and named capture matrix at both viewports.
+- [x] Checkpoint C: complete graybox manager workspace and named capture matrix at both viewports.
 
 - [ ] Task 13: D-25 kickoff domain and command workflow.
   - Acceptance: equal briefing; six contributions; attributable disagreement; bounded revision; manager charter; no pre-charter work.
