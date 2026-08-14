@@ -1,14 +1,7 @@
 import type { ProjectStore } from "./project-store.js";
 
-const kinds = [
-  "briefing",
-  "contribution",
-  "synthesis",
-  "revision",
-  "charter",
-  "disposition",
-] as const;
-type KickoffRecordKind = (typeof kinds)[number];
+type KickoffRecordKind =
+  "briefing" | "contribution" | "synthesis" | "revision" | "charter" | "disposition";
 
 export type StoredKickoffRecord = Readonly<{
   recordId: string;
