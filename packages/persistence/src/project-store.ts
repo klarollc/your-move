@@ -22,6 +22,10 @@ CREATE TABLE IF NOT EXISTS runtime_qualifications(qualification_id TEXT PRIMARY 
 CREATE TABLE IF NOT EXISTS qualification_exceptions(exception_id TEXT PRIMARY KEY, qualification_id TEXT NOT NULL REFERENCES runtime_qualifications(qualification_id), check_id TEXT NOT NULL, scope_json TEXT NOT NULL, residual_risk TEXT NOT NULL, compensating_control TEXT NOT NULL, owner_id TEXT NOT NULL, expires_at TEXT NOT NULL, created_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS trust_revocations(revocation_id TEXT PRIMARY KEY, agent_id TEXT NOT NULL REFERENCES agents(agent_id), binding_id TEXT, qualification_id TEXT, reason TEXT NOT NULL, recorded_at TEXT NOT NULL);
 `;
+const KICKOFF_SQL = `
+CREATE TABLE IF NOT EXISTS kickoff_records(record_id TEXT PRIMARY KEY, kickoff_id TEXT NOT NULL, project_id TEXT NOT NULL, kind TEXT NOT NULL, revision INTEGER NOT NULL, canonical_json TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS kickoff_records_project_kickoff ON kickoff_records(project_id,kickoff_id,kind,record_id);
+`;
 const checksum = (text: string) => createHash("sha256").update(text).digest("hex");
 function applyMigration(db: Database.Database, id: string, sql: string, appliedAt: string): void {
   if (id === "001_initial") db.exec(sql);
@@ -88,7 +92,8 @@ export function openProjectStore(
     db.transaction(() => {
       applyMigration(db, "001_initial", INITIAL_SQL, "2026-08-13T00:00:00.000Z");
       applyMigration(db, "002_runtime_trust", RUNTIME_TRUST_SQL, "2026-08-13T18:00:00.000Z");
-      db.pragma("user_version = 2");
+      applyMigration(db, "003_kickoff", KICKOFF_SQL, "2026-08-13T23:00:00.000Z");
+      db.pragma("user_version = 3");
     })();
     if (options.testMigrationSql) db.transaction(() => db.exec(options.testMigrationSql!))();
   } catch (error) {
