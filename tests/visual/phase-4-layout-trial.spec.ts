@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import { evidenceOutputPath } from "../support/evidence-output.js";
+
 const roleNames = [
   "Delivery Lead",
   "Product Designer",
@@ -36,7 +38,10 @@ test("@visual Phase 4 layout trial renders the canonical reset without overlays"
   await expect(page.getByText("Delivery area", { exact: true })).toBeVisible();
 
   await page.screenshot({
-    path: `docs/evidence/phase-4/layout-trials/${testInfo.project.name}-canonical-reset.png`,
+    path: evidenceOutputPath(
+      testInfo,
+      `phase-4/layout-trials/${testInfo.project.name}-canonical-reset.png`,
+    ),
     fullPage: true,
   });
   expect(browserFailures).toEqual([]);
@@ -60,7 +65,10 @@ test("@visual Phase 4 layout trial keeps the whole office legible with both over
   }
 
   await page.screenshot({
-    path: `docs/evidence/phase-4/layout-trials/${testInfo.project.name}-both-overlays.png`,
+    path: evidenceOutputPath(
+      testInfo,
+      `phase-4/layout-trials/${testInfo.project.name}-both-overlays.png`,
+    ),
     fullPage: true,
   });
   expect(browserFailures).toEqual([]);

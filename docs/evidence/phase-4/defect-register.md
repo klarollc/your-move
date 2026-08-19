@@ -10,7 +10,7 @@ Open defects must be dispositioned before Task 15 graybox acceptance.
 ### D4-V2-001 — Unscoped global stylesheet rules collide across web surfaces
 
 - Severity: **V2 Medium** (noticeable token inconsistency).
-- Status: **Open — deferred to Task 15 disposition by owner decision on 2026-08-18.**
+- Status: **Fixed 2026-08-18. Verified by full `npm.cmd run verify` on the owner's Windows environment.**
 - Discovered: 2026-08-18, while explaining the modified Phase 0 rendered evidence.
 - Surfaces: `apps/web/src/office-shell.css`, `apps/web/src/layout-trial.css`.
 
@@ -102,7 +102,7 @@ and the inner-loop cost is measurable.
 
 ### D4-P-003 — Visual capture commands overwrite committed Task 5 evidence in place
 
-- Severity: process. **Open — needs disposition before Task 15.**
+- Severity: process. **Fixed 2026-08-18. Verified by full `verify` leaving the committed layout-trial PNGs unmodified.**
 - Discovered: 2026-08-18, during the first `capture:graybox` run.
 
 `tests/visual/phase-4-layout-trial.spec.ts` writes its screenshots directly to
@@ -169,3 +169,67 @@ Both D4-P-002 and this defect are gates that were recorded as satisfied by a nar
 than the gate describes. The durable fix is not more review. A task that changes shared schema
 must run the whole project that covers it, and the evidence line must name the exact command
 rather than a summary count. That rule is executable and belongs in `AGENTS.md`.
+
+## Resolutions — 2026-08-18
+
+### D4-V2-001 resolved: one global stylesheet, enforced
+
+Owner decision on 2026-08-18 was to fix rather than dispose, before the Task 15 gate.
+
+Investigation found the defect was worse than first reported. Beyond the `:root` collision:
+
+- `layout-trial.css` declared **unscoped `button` and `button:focus-visible` rules**, so a
+  diagnostic surface was styling every button in the product, including the office's.
+- The three reduced-motion resets were **not identical**. `layout-trial.css` used
+  `animation: none !important`; `office-shell.css` and `pixi-scene-probe.css` used
+  `animation-duration: 0.01ms !important`. Both were global and `!important`, so bundle order
+  decided the winner — and layout-trial's won. **The office's reduced-motion behaviour was being
+  set by a diagnostic stylesheet, not its own.** Reduced motion is a Phase 4 acceptance
+  requirement with passing browser evidence behind it; that evidence was real, but it was
+  produced under a rule the office did not own.
+
+Fix: `apps/web/src/global.css` is now the single document-wide stylesheet, imported once by
+`main.tsx`. Every surface stylesheet is scoped. The stricter reduced-motion form was kept,
+because MDD acceptance requires immediate placement and zero animations, and because it is what
+the passing evidence was actually produced under.
+
+Safety check before changing anything: the built CSS bundle was captured, the change applied, and
+the bundles compared rule by rule. **136 rules after versus 137 before, nothing added, one rule
+removed** — the dead `animation-duration: 0.01ms` variant that was already being overridden.
+`:root` and the global reduced-motion block are byte-identical. No rendered output changed, which
+is why the committed layout-trial captures remained valid.
+
+Enforcement: `scripts/css-scope.test.mjs` fails on any escaping selector in any stylesheet other
+than `global.css`, and asserts `global.css` owns the backdrop. Wired into `test:ui-contract`, so
+it runs inside `verify`. A browser test additionally asserts `html` computes to
+`rgb(227, 227, 223)` and that reduced motion yields zero animations.
+
+Process note: the first RED for this fix was invalid. The test failed on a regular-expression
+syntax error — an unescaped `{` under the `u` flag — rather than on an assertion. It was repaired
+and re-run to produce a genuine RED listing all 14 violations before any fix was written. A test
+that does not parse is not evidence.
+
+### D4-P-003 resolved: committed evidence is immutable by default
+
+Fix: captures route through `tests/support/evidence-output.ts`, which returns the ephemeral
+per-test output directory unless `CUCKCODE_REGENERATE_EVIDENCE=1` is set. Regenerating
+owner-reviewed artifacts is now a deliberate act with a reviewable diff rather than a side effect
+of running the suite. Deliberate regeneration is `npm run capture:layout-trials` with that
+variable set, following the same convention as the gated live kickoff.
+
+Enforcement: `scripts/evidence-immutability.test.mjs` walks every spec under `tests/` and fails if
+any file other than the sanctioned helper references `docs/evidence`, and separately asserts the
+helper defaults to ephemeral output and gates regeneration explicitly. Wired into
+`test:ui-contract`.
+
+Verification: a full `verify` was run, including all 12 `@visual` tests and both layout-trial
+specs. `git status --short` afterwards listed only the intended source changes; the four committed
+layout-trial PNGs were **not** modified. Before this fix the same run rewrote them on every pass.
+
+### Governance note
+
+Three rules from this session are now executable rather than remembered: the schema/pragma
+invariant (D4-P-004), stylesheet scoping (D4-V2-001), and evidence immutability (D4-P-003). Each
+replaced a rule that had already been violated at least once. This is the durable form of the
+lesson recorded under D4-P-002 — a gate that only exists in prose is a gate that eventually does
+not run.

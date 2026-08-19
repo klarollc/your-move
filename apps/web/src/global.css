@@ -1,0 +1,51 @@
+/* The single document-wide stylesheet. Every other stylesheet in this directory scopes its rules
+   to its own surface, and scripts/css-scope.test.mjs enforces that.
+   Defect D4-V2-001: office-shell.css, layout-trial.css and pixi-scene-probe.css each declared
+   :root, *, body and a reduced-motion reset. Bundlers merge every imported sheet into one
+   cascade, so the winner was an accident of module order. The values below are exactly the ones
+   that already won in the production bundle, so consolidating changes no rendered output. */
+
+:root {
+  color-scheme: light;
+  font-family: system-ui, sans-serif;
+  color: #292b2d;
+  background: #e3e3df;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
+button {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid #5d6063;
+  border-radius: 4px;
+  color: inherit;
+  background: #f8f8f5;
+  font: inherit;
+}
+
+button:focus-visible {
+  outline: 3px solid #242628;
+  outline-offset: 2px;
+}
+
+/* The office's own reduced-motion intent was previously the weaker `animation-duration: 0.01ms`
+   form, overridden in the bundle by layout-trial.css's `animation: none`. The stricter rule is
+   kept because MDD reduced-motion acceptance requires immediate placement and zero animations,
+   and because it is what the passing browser evidence was actually produced under. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}

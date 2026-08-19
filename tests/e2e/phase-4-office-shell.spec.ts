@@ -62,3 +62,17 @@ test("@e2e Phase 4 office preserves causes, actions, and canvas-loss recovery", 
   await expect(canvas).toHaveCount(1);
   await expect(page.getByRole("status")).toContainText("Workspace current");
 });
+
+test("@e2e Phase 4 office backdrop is deterministic and not decided by stylesheet order", async ({
+  page,
+}) => {
+  await page.goto("/");
+  // Defect D4-V2-001: three surface stylesheets each declared :root, so the office backdrop was
+  // whichever one the bundler happened to place last. It is now owned by global.css alone.
+  await expect(page.locator("html")).toHaveCSS("background-color", "rgb(227, 227, 223)");
+
+  // The same accident set the reduced-motion reset. Assert the strict form actually applies.
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.reload();
+  expect(await page.locator("html").evaluate((element) => element.getAnimations().length)).toBe(0);
+});
