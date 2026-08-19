@@ -8,3 +8,4 @@ export * from "./receipt-store.js";
 export * from "./recovery.js";
 export * from "./runtime-trust-store.js";
 export * from "./kickoff-store.js";
+export * from "./open-question-store.js";

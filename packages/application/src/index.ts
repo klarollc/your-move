@@ -4,3 +4,5 @@ export * from "./context-packet.js";
 export * from "./propagation.js";
 export * from "./kickoff-commands.js";
 export * from "./kickoff-read-model.js";
+export * from "./open-question-commands.js";
+export * from "./open-question-read-model.js";

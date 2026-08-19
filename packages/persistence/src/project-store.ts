@@ -26,6 +26,12 @@ const KICKOFF_SQL = `
 CREATE TABLE IF NOT EXISTS kickoff_records(record_id TEXT PRIMARY KEY, kickoff_id TEXT NOT NULL, project_id TEXT NOT NULL, kind TEXT NOT NULL, revision INTEGER NOT NULL, canonical_json TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS kickoff_records_project_kickoff ON kickoff_records(project_id,kickoff_id,kind,record_id);
 `;
+const OPEN_QUESTION_SQL = `
+CREATE TABLE IF NOT EXISTS open_questions(question_id TEXT PRIMARY KEY, project_id TEXT NOT NULL, subject_kind TEXT NOT NULL, subject_id TEXT NOT NULL, author_kind TEXT NOT NULL, author_id TEXT NOT NULL, blocks_work INTEGER NOT NULL, canonical_json TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS open_questions_project_subject ON open_questions(project_id,subject_kind,subject_id);
+CREATE TABLE IF NOT EXISTS question_dispositions(disposition_id TEXT PRIMARY KEY, question_id TEXT NOT NULL REFERENCES open_questions(question_id), project_id TEXT NOT NULL, sequence INTEGER NOT NULL, canonical_json TEXT NOT NULL, UNIQUE(question_id,sequence));
+CREATE INDEX IF NOT EXISTS question_dispositions_project_question ON question_dispositions(project_id,question_id,sequence);
+`;
 const checksum = (text: string) => createHash("sha256").update(text).digest("hex");
 function applyMigration(db: Database.Database, id: string, sql: string, appliedAt: string): void {
   if (id === "001_initial") db.exec(sql);
@@ -93,7 +99,8 @@ export function openProjectStore(
       applyMigration(db, "001_initial", INITIAL_SQL, "2026-08-13T00:00:00.000Z");
       applyMigration(db, "002_runtime_trust", RUNTIME_TRUST_SQL, "2026-08-13T18:00:00.000Z");
       applyMigration(db, "003_kickoff", KICKOFF_SQL, "2026-08-13T23:00:00.000Z");
-      db.pragma("user_version = 3");
+      applyMigration(db, "004_open_question", OPEN_QUESTION_SQL, "2026-08-18T20:00:00.000Z");
+      db.pragma("user_version = 4");
     })();
     if (options.testMigrationSql) db.transaction(() => db.exec(options.testMigrationSql!))();
   } catch (error) {
