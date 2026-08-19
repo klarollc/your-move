@@ -5,25 +5,44 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { openProjectStore, resolveProjectRoomPath } from "./project-store.js";
 const roots: string[] = [];
+const openStores: { close(): void }[] = [];
 const root = () => {
   const value = mkdtempSync(join(tmpdir(), "cuckcode-p2-"));
   roots.push(value);
   return value;
 };
+// Close every store before removing its directory. An assertion that throws before an inline
+// close() would otherwise leave SQLite holding the file, and Windows reports the leak as an
+// EPERM in cleanup instead of the assertion that actually failed.
 afterEach(() => {
+  for (const store of openStores.splice(0)) {
+    try {
+      store.close();
+    } catch {
+      // Already closed by the test body.
+    }
+  }
   for (const value of roots.splice(0)) rmSync(value, { recursive: true, force: true });
 });
 describe("project store migrations", () => {
   it("creates the canonical project room and deterministic schema", () => {
     const store = openProjectStore(root());
-    expect(store.schema()).toMatchObject({
+    openStores.push(store);
+    const schema = store.schema();
+    // The enumeration is deliberate. Adding a migration must be a conscious update to this list,
+    // so unintended schema drift fails here.
+    expect(schema).toMatchObject({
       applicationId: 1129661259,
-      userVersion: 2,
+      userVersion: 3,
       migrations: [
         { id: "001_initial", checksum: expect.stringMatching(/^[a-f0-9]{64}$/) },
         { id: "002_runtime_trust", checksum: expect.stringMatching(/^[a-f0-9]{64}$/) },
+        { id: "003_kickoff", checksum: expect.stringMatching(/^[a-f0-9]{64}$/) },
       ],
     });
+    // Structural invariant: the pragma and the applied migration list cannot drift apart, even
+    // if a future migration is added without updating the enumeration above.
+    expect(schema.userVersion).toBe(schema.migrations.length);
     expect(store.integrity()).toBe("ok");
     store.close();
   });
