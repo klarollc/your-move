@@ -56,3 +56,15 @@ Checked: 2026-08-12
 - [SQLite application ID pragma](https://www.sqlite.org/pragma.html#pragma_application_id) — candidate database identification mechanism to evaluate during schema design.
 
 These references establish architectural suitability. The Node binding, SQLite build features, schema, migrations, and exact integrity/backup commands remain implementation-time decisions and tests.
+## Comparable products
+
+Checked: 2026-08-18
+
+The "agents rendered as office workers" concept is an existing product category, not a novel
+CuckCode invention. Entrants, adoption figures, and the findings that bear on CuckCode
+requirements are recorded in [`docs/competitive-landscape.md`](competitive-landscape.md).
+
+Interpretation boundary: these products are recorded as market evidence about the metaphor's
+appeal and about failure modes observed in shipped implementations. None is a source of
+architecture, role content, or visual direction, and no code, asset, or design from any of them
+may be imported. Their adoption does not satisfy any CuckCode acceptance gate.

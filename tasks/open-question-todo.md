@@ -1,0 +1,64 @@
+# Checklist: canonical open-question record
+
+Status: **Tasks 1-4 owner-accepted 2026-08-18. Task 5 and the kickoff-unification decision remain open.**
+Specification: `docs/proposals/2026-08-18-open-question-record.md`
+Plan: `tasks/open-question-plan.md`
+
+- [x] Owner approved the specification on 2026-08-18.
+- [x] Owner settled the authority question on 2026-08-18: **interstitial**, Phase 4 paused,
+      Task 14 resumes after Tasks 1-4.
+- [x] Owner approved this plan and checklist for Tasks 1-4 only on 2026-08-18.
+
+- [x] Task 1: Contract and validation. **GREEN, verified on Windows.**
+  - Acceptance: pinned schema version; closed enums; `wouldBeResolvedBy` required non-empty;
+    explicit `blocksWork`; `superseded` requires a successor id; `deferred` requires `reviewBy`;
+    secret rejection on every free-text field.
+  - Verify: intentional RED, then focused contract test GREEN.
+  - Result: RED on absent module, then 9 contract tests passing; Prettier, ESLint, and tsc
+    clean. Evidence: `docs/evidence/open-question/red-green-log.md`.
+
+- [x] Task 2: Domain aggregate and disposition rules. **GREEN, verified on Windows.**
+  - Acceptance: silence never resolves; all dispositions retained; no overwrite; manager-only
+    `accepted_risk`/`rejected`; any participant may answer; reopening is a new superseding record.
+  - Verify: intentional RED, then focused unit test GREEN.
+  - Result: RED on absent module, then 10 unit tests passing; full container unit+contract
+    regression 42 files / 175 tests; Prettier, ESLint, and tsc clean.
+
+- [x] Task 3: Persistence. **GREEN, verified on Windows by the owner.**
+  - Acceptance: immutable attributable records; restart recovery; conflict rejection; project
+    isolation; disposition order preserved; additive migration 004.
+  - Verify: intentional RED, then integration test GREEN.
+  - Result: RED on absent module, then integration project at 45 passed / 1 skipped, up from
+    40 / 1. Preceded by the D4-P-004 corrective commit that returned main to green.
+
+- [x] Task 4: Commands and reciprocal read model. **GREEN, verified on Windows in full verify.**
+  - Acceptance: exact revisioned receipts; authority enforced at the command boundary; manager
+    and agent projections identical on identity, subject, confidence, evidence, disposition;
+    agent can answer the three discovery questions without inferring from failure; no secrets,
+    hidden reasoning, or paths cross the boundary.
+  - Verify: intentional RED, then unit and reciprocal contract tests GREEN.
+  - Result: RED on two absent modules, then 32 open-question tests passing; container full
+    unit+contract regression 44 files / 188 tests; tsc, ESLint, Prettier clean.
+
+- [x] Checkpoint: full `npm.cmd run verify` PASS on Windows; every Phase 4 suite green; all four
+      committed layout-trial PNGs verified byte-identical to HEAD after the visual run.
+
+- [x] Owner gate: **accepted 2026-08-18, no changes requested.**
+
+## Separately gated
+
+The approval above does not authorize the following.
+
+- [ ] Owner separately authorizes Task 5 after reviewing the Tasks 1-4 evidence.
+
+- [ ] Task 5: Attention integration.
+  - Acceptance: `question_open` at priority 35; `blocksWork` escalation; `neededBy` surfacing;
+    Task 10 rail and Checkpoint C evidence re-verified or re-captured with recorded owner
+    disposition.
+  - Verify: attention projector unit tests, Task 10 component and browser regression, and a
+    recorded decision on any changed capture.
+
+- [ ] Owner decides specification §4 kickoff unification: leave alone, emit additionally, or
+      reference. Recommendation is emit additionally, deferred until the base record is proven.
+
+- [ ] Office representation and spatial anchor: unauthorized, pending a D-02 composition decision.

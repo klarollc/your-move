@@ -1,0 +1,13 @@
+{
+  "dispositionId": "disposition_migration_assertion_001_a",
+  "questionId": "question_migration_assertion_001",
+  "authorKind": "manager",
+  "authorId": "manager_nate",
+  "disposition": "answered",
+  "reason": "Confirmed by running npm.cmd run test:integration on the Windows authority environment. project-store.integration.test.ts failed with both predicted mismatches: an extra 003_kickoff migration entry and userVersion 3 against an expected 2. Result was 1 failed, 39 passed, 1 skipped across 14 files.",
+  "evidenceRefs": [
+    "owner terminal output 2026-08-18T17:31:27",
+    "docs/evidence/open-question/red-green-log.md",
+    "docs/evidence/phase-4/defect-register.md"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "questionId": "question_migration_assertion_001",
+  "projectId": "project_cuckcode",
+  "subject": { "kind": "artifact", "id": "packages/persistence/src/project-store.integration.test.ts" },
+  "authorKind": "agent",
+  "authorId": "claude_cowork",
+  "roleId": "test",
+  "raisedByEventId": "session_20260818_task3_scoping",
+  "question": "Does the project-store migrations integration test currently fail, because Task 13 added migration 003_kickoff and set user_version = 3 while the test still asserts userVersion 2 and a two-element migrations array?",
+  "whyItMatters": "If it fails, npm run verify is red on main, the Task 13 evidence overstates its verification, and Task 3 must not add migration 004 on top of an unresolved failure.",
+  "confidence": "likely",
+  "wouldBeResolvedBy": [
+    "Running npm.cmd run test:integration on the owner's Windows environment",
+    "Reading the pass or fail result for project-store.integration.test.ts"
+  ],
+  "evidenceRefs": [
+    "packages/persistence/src/project-store.ts:96",
+    "packages/persistence/src/project-store.integration.test.ts:21",
+    "docs/evidence/open-question/red-green-log.md"
+  ],
+  "blocksWork": true,
+  "neededBy": "2026-08-19T00:00:00.000Z"
+}
