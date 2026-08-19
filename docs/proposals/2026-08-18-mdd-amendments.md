@@ -122,12 +122,69 @@ than assuming.
 
 ---
 
+## Amendment C — §20 comprehension study for a single operator
+
+### Status
+
+Design approved by the owner on 2026-08-18. The MDD text itself still requires amendment, because
+§20 currently specifies a population this project does not have.
+
+### Problem
+
+§20 requires "at least 4 of 5 representative non-technical evaluators" to satisfy six criteria.
+The owner confirmed on 2026-08-18 that CuckCode is a personal tool with a single operator. The
+population under test is one person, so a five-evaluator panel measures a population that does
+not exist and cannot be assembled without inventing one.
+
+§20 already anticipates this: "Thresholds are provisional until the owner approves the study
+design."
+
+### Proposed replacement for the §20 threshold paragraph
+
+> With no more than a short orientation, the single operator must satisfy every criterion below,
+> answering from the interface alone.
+>
+> The operator designed the interface, so an immediate run measures recall rather than
+> comprehension. The study is therefore run **cold, after a deliberate gap of at least three days**
+> from the last substantive work on the interface, without re-reading the design documents. A run
+> inside that window is recorded as void, not as a pass.
+>
+> A criterion passes only if the written answer is correct **and** the operator does not record
+> that it was answered from memory of having built the interface. Six of six is met. Five of six
+> is met with the failure recorded as a named finding. Four or fewer does not pass the graybox
+> comprehension gate.
+>
+> Protocol, answer key, and response sheet: `docs/evidence/phase-4/comprehension/`.
+
+### What this preserves and what it gives up
+
+Preserved: the six criteria are unchanged, the study can still fail, and failure still blocks the
+gate. The delay requirement and the "answered from memory" disqualifier are added precisely so
+that a single-operator study is not automatically self-passing.
+
+Given up: genuine evaluator naivety. A three-day gap is a weaker control than a person who has
+never seen the product, and no amount of protocol design closes that fully. If the tool ever
+acquires a second user, the original five-evaluator design is the better instrument and this
+amendment should be revisited rather than treated as settled.
+
+### Argument against this amendment
+
+A study the subject cannot fail honestly is worse than no study, because it produces a signed
+artifact that looks like evidence. If the delay is not actually observed, or if the operator
+scores generously, this becomes ceremony with an owner signature attached. The alternative —
+deleting the study and resting the gate on accessibility evidence alone — is more honest than a
+study run badly. The protocol's void condition and its "answered from memory" line exist to make
+that failure mode visible, but they depend on the operator reporting against his own interest.
+
+---
+
 ## Not proposed here
 
 The owner declined, deferred, or did not select the following on 2026-08-18. Recorded so the
 options are not silently lost:
 
 - Splitting the §20 comprehension study into an appeal study and an operability study.
+  Superseded by Amendment C above, which replaces the panel with an n=1 delayed protocol.
 - Adding an executable-governance rule to `AGENTS.md` requiring that any governance requirement
   expressible as a test become one.
 - Adding a standing D-26 reciprocal-parity harness to `docs/test-plan-v0.1.md`.
