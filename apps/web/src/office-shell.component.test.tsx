@@ -5,6 +5,9 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 
 import type { AttentionDisposition, OfficeAttentionItem } from "./attention-rail.js";
+import { projectKickoffReadModel } from "@cuckcode/application";
+import { createKickoff, recordKickoffContribution } from "@cuckcode/domain";
+import type { KickoffBriefing, KickoffContribution } from "@cuckcode/contracts";
 import { OfficeShell, officeShellEntities, type OfficeShellState } from "./office-shell.js";
 
 const zones = [
@@ -27,6 +30,47 @@ const people = [
   "Visual QA Reviewer",
   "Release Reviewer",
 ];
+
+const kickoffRoleIds = ["delivery", "design", "implementation", "test", "visual", "release"];
+
+function kickoffModel() {
+  const briefing: KickoffBriefing = {
+    schemaVersion: 1,
+    kickoffId: "kickoff_1",
+    projectId: "project_graybox",
+    briefingVersion: 3,
+    goal: "Choose the first project goal collaboratively.",
+    constraints: ["No pre-charter implementation"],
+    permissions: ["project.read"],
+    evidenceFloor: ["test"],
+    knowledgeSnapshotId: "snapshot_42",
+    managerNonNegotiables: ["Six attributable roles"],
+    activeRoleIds: kickoffRoleIds,
+  };
+  let state = createKickoff(briefing);
+  for (const roleId of kickoffRoleIds.slice(0, 3)) {
+    const next = recordKickoffContribution(state, {
+      schemaVersion: 1,
+      contributionId: `contribution_${roleId}`,
+      kickoffId: "kickoff_1",
+      briefingVersion: 3,
+      roleId,
+      agentId: `agent_${roleId}`,
+      kind: "proposal",
+      goal: `${roleId} goal`,
+      value: `${roleId} value`,
+      risk: `${roleId} risk`,
+      dependencies: [],
+      acceptanceCriteria: [`${roleId} criterion`],
+      evidenceNeeds: [],
+      uncertainties: [],
+      disagreements: [],
+    } as KickoffContribution);
+    if (!next.ok) throw new Error(next.code);
+    state = next.state;
+  }
+  return projectKickoffReadModel(state);
+}
 
 describe("OfficeShell", () => {
   it("keeps the office primary while exposing an equivalent keyboard-first outline", async () => {
@@ -360,5 +404,61 @@ describe("OfficeShell semantic motion cue", () => {
     expect(cue).toHaveAttribute("data-runtime-paused", "false");
     expect(cue).toHaveTextContent(label);
     expect(cue).toHaveTextContent("1 transition queued");
+  });
+  it("offers the collaborative kickoff from both of its approved spatial anchors", async () => {
+    const user = userEvent.setup();
+    render(<OfficeShell state="ready" kickoff={kickoffModel()} />);
+
+    for (const [entityId, label] of [
+      ["zone_collaboration", "Collaboration table"],
+      ["zone_manager", "Manager desk"],
+    ] as const) {
+      await user.click(screen.getByRole("button", { name: `Locate ${label}` }));
+      expect(
+        screen.getByRole("button", { name: "Open collaborative kickoff" }),
+      ).toBeInTheDocument();
+      expect(screen.getByRole("complementary", { name: "Entity inspector" })).toHaveAttribute(
+        "data-selected-entity-id",
+        entityId,
+      );
+    }
+  });
+
+  it("does not offer the kickoff from an unrelated entity", async () => {
+    const user = userEvent.setup();
+    render(<OfficeShell state="ready" kickoff={kickoffModel()} />);
+    await user.click(screen.getByRole("button", { name: "Locate Review station" }));
+    expect(
+      screen.queryByRole("button", { name: "Open collaborative kickoff" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("keeps the office outline present while the kickoff is open and restores trigger focus", async () => {
+    const user = userEvent.setup();
+    render(<OfficeShell state="ready" kickoff={kickoffModel()} />);
+    await user.click(screen.getByRole("button", { name: "Locate Collaboration table" }));
+    const trigger = screen.getByRole("button", { name: "Open collaborative kickoff" });
+    await user.click(trigger);
+
+    expect(screen.getByRole("region", { name: "Collaborative kickoff" })).toBeInTheDocument();
+    // The office is never replaced by the workflow; the equivalent outline stays reachable.
+    expect(screen.getByRole("region", { name: "Office outline" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Close kickoff" }));
+    expect(screen.queryByRole("region", { name: "Collaborative kickoff" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Open collaborative kickoff" })).toHaveFocus();
+  });
+
+  it("shows the kickoff round state truthfully from canonical records", async () => {
+    const user = userEvent.setup();
+    render(<OfficeShell state="ready" kickoff={kickoffModel()} />);
+    await user.click(screen.getByRole("button", { name: "Locate Collaboration table" }));
+    await user.click(screen.getByRole("button", { name: "Open collaborative kickoff" }));
+
+    expect(screen.getByTestId("kickoff-briefing")).toHaveTextContent("Briefing version 3");
+    expect(screen.getByTestId("kickoff-decision-impact")).toHaveTextContent(
+      "No work is authorised yet",
+    );
+    expect(screen.getByTestId("kickoff-synthesis-blocked")).toHaveTextContent("Release Reviewer");
   });
 });

@@ -1,4 +1,4 @@
-import type { BrowserLibraryProjection } from "@cuckcode/application";
+import type { BrowserLibraryProjection, projectKickoffReadModel } from "@cuckcode/application";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import {
@@ -8,6 +8,7 @@ import {
   type OfficeDispositionResult,
 } from "./attention-rail.js";
 import { EvidenceLibrary } from "./evidence-library.js";
+import { KickoffPanel } from "./kickoff-panel.js";
 import "./office-shell.css";
 
 export type OfficeShellState =
@@ -47,6 +48,21 @@ type OfficeEntity = Readonly<{
   state: string;
   relationship?: string;
 }>;
+
+type KickoffReadModel = ReturnType<typeof projectKickoffReadModel>;
+
+// The kickoff is anchored to exactly the two regions the composition approves: the collaboration
+// table where the round happens, and the manager desk where it is decided.
+const kickoffAnchors = ["zone_collaboration", "zone_manager"];
+
+const kickoffRoleLabels: Readonly<Record<string, string>> = {
+  delivery: "Delivery Lead",
+  design: "Product Designer",
+  implementation: "Implementation Engineer",
+  test: "Test Engineer",
+  visual: "Visual QA Reviewer",
+  release: "Release Reviewer",
+};
 
 export const officeShellEntities: readonly OfficeEntity[] = Object.freeze([
   { entityId: "zone_reception", label: "Reception", kind: "zone", state: "Candidate intake" },
@@ -211,6 +227,7 @@ export function OfficeShell({
   onDisposition,
   library,
   motion,
+  kickoff,
 }: Readonly<{
   state: OfficeShellState;
   canvas?: ReactNode;
@@ -226,10 +243,13 @@ export function OfficeShell({
   ) => OfficeDispositionResult | Promise<OfficeDispositionResult>;
   library?: BrowserLibraryProjection;
   motion?: OfficeMotionCue;
+  kickoff?: KickoffReadModel;
 }>) {
   const outlineRef = useRef<HTMLElement>(null);
   const libraryTriggerRef = useRef<HTMLButtonElement>(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
+  const kickoffTriggerRef = useRef<HTMLButtonElement>(null);
+  const [kickoffOpen, setKickoffOpen] = useState(false);
   const [initialEvidenceKind, setInitialEvidenceKind] = useState<
     "test" | "visual" | "release" | undefined
   >(undefined);
@@ -278,7 +298,7 @@ export function OfficeShell({
   };
 
   useEffect(() => {
-    if (!selectedEntity || libraryOpen) return;
+    if (!selectedEntity || libraryOpen || kickoffOpen) return;
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") closeInspector();
     };
@@ -293,7 +313,7 @@ export function OfficeShell({
   };
 
   useEffect(() => {
-    if (!attentionOpen || selectedEntity || libraryOpen) return;
+    if (!attentionOpen || selectedEntity || libraryOpen || kickoffOpen) return;
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") closeAttention();
     };
@@ -310,6 +330,7 @@ export function OfficeShell({
       data-inspector-open={Boolean(selectedEntity)}
       data-attention-open={attentionOpen}
       data-library-open={libraryOpen}
+      data-kickoff-open={kickoffOpen}
     >
       <a
         className="office-skip-link"
@@ -543,7 +564,31 @@ export function OfficeShell({
                   : "Open Project Library"}
             </button>
           ) : null}
+          {kickoff && kickoffAnchors.includes(selectedEntity.entityId) ? (
+            <button
+              ref={kickoffTriggerRef}
+              type="button"
+              onClick={() => {
+                setKickoffOpen(true);
+                setAnnouncement(`Collaborative kickoff opened from ${selectedEntity.label}`);
+              }}
+            >
+              Open collaborative kickoff
+            </button>
+          ) : null}
         </aside>
+      ) : null}
+      {kickoffOpen && kickoff ? (
+        <KickoffPanel
+          model={kickoff}
+          roleLabels={kickoffRoleLabels}
+          onClose={() => {
+            setKickoffOpen(false);
+            setAnnouncement("Collaborative kickoff closed");
+            if (kickoffTriggerRef.current) kickoffTriggerRef.current.focus();
+            else outlineRef.current?.focus();
+          }}
+        />
       ) : null}
       {libraryOpen && library ? (
         <EvidenceLibrary

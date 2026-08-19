@@ -213,4 +213,71 @@ Date: 2026-08-13
 - RED 3: 2 persistence checks failed to import the absent kickoff store. GREEN: 2 integration tests passed for immutable attributable record persistence, restart recovery, conflict rejection, dissent preservation, manager disposition, and project isolation through migration 003.
 - RED 4: 2 application checks failed to import the absent command handler. GREEN: 2 passed for exact revisioned receipts, attribution, manager/agent authority, stale denial, and implementationAllowed remaining false before charter.
 - Verification: kickoff contract 3/3; domain/application unit 6/6; persistence integration 2/2; formatting, ESLint, and TypeScript passed after removing one unused type-only runtime value.
-- Evidence boundary: Task 13 proves deterministic canonical kickoff mechanics only. It does not execute Candidate roles, call a provider, approve a live kickoff, prove Task 14 UI/parity, or select a real initial charter.
+- Evidence boundary: Task 13 proves deterministic canonical kickoff mechanics only. It does not execute Candidate roles, call a provider, approve a live kickoff, prove Task 14 UI/parity, or select a real initial charter.## Task 14 — Kickoff UI and reciprocal parity
+
+Date: 2026-08-18
+
+Phase 4 resumed here after the interstitial open-question work stream. The first slice of this
+task, `packages/application/src/kickoff-read-model.ts`, had landed in commit `bd184b3` before the
+pause and was not re-done.
+
+- RED 1: the focused component suite failed to import the absent `./kickoff-panel.js`.
+- GREEN 1: 8 component tests passed. The shared briefing version is stated rather than implied;
+  all six roles are named and every entry is attributed to both a role and an agent; an
+  attributed disagreement is preserved rather than merged; an unanswered role renders as
+  "No response recorded" and is asserted **not** to match /agreed|affirmed/; an incomplete round
+  names the missing roles instead of inferring consensus; the decision impact states plainly that
+  no work is authorised before a charter; the manager edit diff shows before and after; and a
+  further test asserts the **absence** of any transcript surface — no `role="log"`, no text
+  matching /transcript/i.
+- RED 2: 4 new shell tests failed while the existing 27 continued to pass, isolating the wiring.
+- GREEN 2: 31 shell tests passed. The kickoff opens from exactly its two approved anchors, the
+  collaboration table and the manager desk; a test asserts the review station does **not** offer
+  it, so the anchoring is enforced rather than incidental; focus returns to the trigger on close;
+  and the Office outline is asserted present **while the kickoff is open**, which is the MDD rule
+  that opening a surface cannot hide the office, expressed as a test rather than a principle.
+- RED 3: 10 browser journeys and 6 axe scans failed across both viewports because no kickoff
+  fixture existed. The existing 34 E2E and 12 axe tests continued to pass.
+- GREEN 3: 44 E2E and 18 axe tests passed across chromium-1440x900 and chromium-1280x800.
+  Coverage: clean console, no failed requests, and no non-loopback requests on the primary
+  journey; the office outline and Pixi canvas remain present with `data-kickoff-open="true"`;
+  attribution, dissent, and unanswered roles survive into the real build; keyboard-only open and
+  close with focus restored to the trigger; the kickoff stays truthful while the runtime is
+  offline; reduced motion preserves meaning with zero animations; and axe reports no violations
+  for an incomplete round, a synthesised round with dissent, or at 200% zoom.
+- Static gates: Prettier, ESLint at `--max-warnings 0`, `tsc -b` across every package, and the
+  production Vite build all clean.
+
+### Design decisions recorded
+
+- **Two spatial anchors only.** `kickoffAnchors` is `zone_collaboration` and `zone_manager`,
+  matching the composition in `.ui-craft/spec.md`. A negative test keeps the set closed.
+- **Scoped stylesheet.** `kickoff-panel.css` declares nothing outside `.kickoff-panel` — no
+  `:root`, no bare element selectors, no universal selector — with a comment naming D4-V2-001.
+  That defect exists because two surface stylesheets each declared global rules; this is not a
+  third.
+- **Fixtures are built by running the real reducers** over a real briefing rather than by
+  hand-writing the projected shape, so a change to the kickoff aggregate changes the fixture
+  instead of letting it drift into fiction. The fixture carries a comment stating that these are
+  graybox records: no role promoted, no provider called, no charter approved.
+
+### Two test corrections during GREEN
+
+Both were wrong selectors in newly written tests, not weakened assertions. The entity inspector
+is `role="complementary"`, not `region`; and zone triggers read `Locate <label>` while person
+triggers read `Inspect <label>`. The implementation was not adjusted in either case.
+
+### Evidence boundary and a named weakness
+
+Task 14 proves the deterministic graybox kickoff surface and its browser and automated
+accessibility behavior. It does **not** prove the recorded screen-reader walkthrough, the
+comprehension study, high fidelity, art direction, or owner graybox acceptance; those are Task 15.
+No kickoff state was added to the Checkpoint C capture matrix, which Task 15 must address.
+
+**Named weakness in the offline assertion.** The offline journey asserts that the decision impact
+still reads "No work is authorised yet". That property holds today, but it would also hold if the
+panel never rendered an authorised state under any condition, because no fixture approves a
+charter. The assertion guards the right property and is not vacuous, but it does not yet prove
+that a *degraded runtime specifically* cannot promote a kickoff to authorised. Closing that
+requires a chartered fixture to contrast against, which belongs to the separately gated live
+kickoff rather than to Task 14. Recorded so this is not later read as stronger evidence than it is.

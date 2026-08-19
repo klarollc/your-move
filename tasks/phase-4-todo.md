@@ -65,9 +65,12 @@ Composition: `.ui-craft/spec.md`
   - Acceptance: equal briefing; six contributions; attributable disagreement; bounded revision; manager charter; no pre-charter work.
   - Verify: unit/contract/integration kickoff matrix.
 
-- [ ] Task 14: Kickoff UI and reciprocal parity.
+- [x] Task 14: Kickoff UI and reciprocal parity. **Complete 2026-08-18; verified on Windows.**
   - Acceptance: manager-comprehensible workflow and equivalent agent records across success/failure/reconnect.
   - Verify: component, reciprocal contract, accessibility, and E2E journey.
+  - Result: 8 panel + 31 shell component tests, 44 E2E and 18 axe across both viewports, all
+    green. Evidence: `docs/evidence/phase-4/red-green-log.md`. Manual screen-reader walkthrough
+    and the kickoff capture matrix remain for Task 15.
 
 - [ ] Task 15: Graybox visual, accessibility, and comprehension gate.
   - Acceptance: both viewports; rendered manifests; clean console/network; axe/keyboard/screen-reader/zoom/reduced-motion; 4-of-5 comprehension; V0/V1 zero; V2 disposition; owner graybox acceptance.

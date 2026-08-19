@@ -1,4 +1,15 @@
-import { executeAttentionCommand, type BrowserLibraryProjection } from "@cuckcode/application";
+import {
+  executeAttentionCommand,
+  projectKickoffReadModel,
+  type BrowserLibraryProjection,
+} from "@cuckcode/application";
+import type { KickoffBriefing, KickoffContribution } from "@cuckcode/contracts";
+import {
+  createKickoff,
+  recordKickoffContribution,
+  recordKickoffSynthesis,
+  type KickoffState,
+} from "@cuckcode/domain";
 import {
   createOfficeCamera,
   createOfficeLayout,
@@ -109,14 +120,84 @@ const officeAttention: readonly OfficeAttentionItem[] = Object.freeze([
   },
 ]);
 
+// Deterministic kickoff fixtures. These are graybox records, not a live kickoff: no role is
+// promoted, no provider is called, and no charter is approved.
+const kickoffRoleIds = ["delivery", "design", "implementation", "test", "visual", "release"];
+
+const kickoffBriefing: KickoffBriefing = {
+  schemaVersion: 1,
+  kickoffId: "kickoff_graybox",
+  projectId: "project_graybox",
+  briefingVersion: 3,
+  goal: "Choose the first project goal collaboratively.",
+  constraints: ["No pre-charter implementation"],
+  permissions: ["project.read", "collaboration.contribute"],
+  evidenceFloor: ["test", "visual", "release"],
+  knowledgeSnapshotId: "snapshot_42",
+  managerNonNegotiables: ["Six attributable roles", "One revision maximum"],
+  activeRoleIds: kickoffRoleIds,
+};
+
+function kickoffContribution(roleId: string): KickoffContribution {
+  return {
+    schemaVersion: 1,
+    contributionId: `contribution_${roleId}`,
+    kickoffId: "kickoff_graybox",
+    briefingVersion: 3,
+    roleId,
+    agentId: `agent_${roleId}`,
+    kind: "proposal",
+    goal: `${roleId} goal`,
+    value: `${roleId} value`,
+    risk: `${roleId} risk`,
+    dependencies: [],
+    acceptanceCriteria: [`${roleId} criterion`],
+    evidenceNeeds: [`${roleId} evidence`],
+    uncertainties: [],
+    disagreements:
+      roleId === "release" ? ["Independent review must stay separate from delivery"] : [],
+  };
+}
+
+function buildKickoffState(roleCount: number, synthesised: boolean): KickoffState {
+  let state = createKickoff(kickoffBriefing);
+  for (const roleId of kickoffRoleIds.slice(0, roleCount)) {
+    const next = recordKickoffContribution(state, kickoffContribution(roleId));
+    if (!next.ok) throw new Error(next.code);
+    state = next.state;
+  }
+  if (!synthesised) return state;
+  const withSynthesis = recordKickoffSynthesis(state, {
+    synthesisId: "synthesis_graybox",
+    authorRoleId: "delivery",
+    proposedGoal: "Build the Decision Notice as the first isolated slice.",
+    includedContributionIds: kickoffRoleIds.map((roleId) => `contribution_${roleId}`),
+    disagreementRegister: [
+      { roleId: "release", statement: "Independent review must stay separate from delivery" },
+    ],
+    unresolvedEvidenceGaps: ["No rendered evidence exists yet"],
+  });
+  if (!withSynthesis.ok) throw new Error(withSynthesis.code);
+  return withSynthesis.state;
+}
+
+export const kickoffFixtures = {
+  round: projectKickoffReadModel(buildKickoffState(3, false)),
+  revision: projectKickoffReadModel(buildKickoffState(6, true)),
+} as const;
+
+export type KickoffFixtureId = keyof typeof kickoffFixtures;
+
 export function OfficeWorkspace({
   initialState,
   motionEnabled = false,
   motionCheckpoint = "settled",
+  kickoffFixture,
 }: Readonly<{
   initialState: OfficeShellState;
   motionEnabled?: boolean;
   motionCheckpoint?: string;
+  kickoffFixture?: KickoffFixtureId | undefined;
 }>) {
   const [state, setState] = useState(initialState);
   const [canvasKey, setCanvasKey] = useState(0);
@@ -174,6 +255,7 @@ export function OfficeWorkspace({
       onResetView={() => setCanvasKey((value) => value + 1)}
       selectedEntityId={selectedEntityId}
       onSelectEntity={setSelectedEntityId}
+      {...(kickoffFixture ? { kickoff: kickoffFixtures[kickoffFixture] } : {})}
       attention={officeAttention}
       library={libraryProjection}
       {...(motionPlan?.lead

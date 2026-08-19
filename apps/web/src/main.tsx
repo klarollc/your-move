@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import { LayoutTrial } from "./layout-trial.js";
-import { OfficeWorkspace } from "./office-canvas.js";
+import { OfficeWorkspace, type KickoffFixtureId } from "./office-canvas.js";
 import type { OfficeShellState } from "./office-shell.js";
 import { PixiSceneProbe } from "./pixi-scene-probe.js";
 
@@ -15,6 +15,7 @@ if (!(container instanceof HTMLElement)) {
 const parameters = new URLSearchParams(window.location.search);
 const surface = parameters.get("surface");
 const requestedState = parameters.get("state");
+const requestedKickoff = parameters.get("kickoff");
 const initialState: OfficeShellState = isOfficeShellState(requestedState)
   ? requestedState
   : "ready";
@@ -28,6 +29,7 @@ createRoot(container).render(
     ) : (
       <OfficeWorkspace
         initialState={initialState}
+        {...(isKickoffFixture(requestedKickoff) ? { kickoffFixture: requestedKickoff } : {})}
         motionEnabled={parameters.get("motion") === "handoff"}
         motionCheckpoint={parameters.get("checkpoint") ?? "settled"}
       />
@@ -54,4 +56,8 @@ function isOfficeShellState(value: string | null): value is OfficeShellState {
     "restart",
     "cancelled",
   ].includes(value ?? "");
+}
+
+function isKickoffFixture(value: string | null): value is KickoffFixtureId {
+  return value === "round" || value === "revision";
 }
