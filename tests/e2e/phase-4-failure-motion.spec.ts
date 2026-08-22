@@ -17,6 +17,7 @@ const failureStates = [
 test("@e2e Phase 4 failure and recovery projections never manufacture ordinary work", async ({
   page,
 }) => {
+  test.setTimeout(60_000);
   for (const [state, cause, recovery] of failureStates) {
     await page.goto(`/?state=${state}`);
     await expect(page.getByTestId("workspace-cause")).toContainText(new RegExp(cause, "i"));

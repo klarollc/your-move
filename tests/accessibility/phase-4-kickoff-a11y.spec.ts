@@ -17,6 +17,12 @@ for (const [name, query] of [
 }
 
 test("@a11y Phase 4 kickoff remains operable and violation-free at 200% zoom", async ({ page }) => {
+  const consoleErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") consoleErrors.push(message.text());
+  });
+  page.on("pageerror", (error) => consoleErrors.push(error.message));
+
   await page.goto("/?kickoff=revision");
   await page.getByRole("button", { name: "Locate Collaboration table" }).click();
   await page.getByRole("button", { name: "Open collaborative kickoff" }).click();
@@ -31,6 +37,7 @@ test("@a11y Phase 4 kickoff remains operable and violation-free at 200% zoom", a
 
   await expect(page.getByTestId("kickoff-decision-impact")).toBeVisible();
   await expect(page.getByRole("button", { name: "Close kickoff" })).toBeVisible();
+  expect(consoleErrors).toEqual([]);
 
   const results = await new AxeBuilder({ page }).analyze();
   expect(results.violations).toEqual([]);

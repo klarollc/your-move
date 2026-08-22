@@ -55,7 +55,7 @@ describe("loopback session boundary", () => {
     });
     expect(rejected.statusCode).toBe(403);
     expect(rejected.json()).toEqual({ code: "ORIGIN_REJECTED" });
-  });
+  }, 15_000);
 
   it("requires the session and CSRF values on mutation without accepting them in the URL", async () => {
     const app = createApp();

@@ -398,14 +398,23 @@ function resizeScene(
   host: HTMLDivElement,
 ) {
   adapter.resize(width, height);
-  const camera = createOfficeCamera(
-    createOfficeLayout({
+  let layout;
+  try {
+    layout = createOfficeLayout({
       width,
       height: height + officeLayoutPolicy.projectBarHeight,
       attentionOpen: false,
       inspectorOpen: false,
-    }),
-  );
+    });
+  } catch (error) {
+    if (error instanceof RangeError && error.message === "OFFICE_VIEWPORT_BELOW_APPROVED_MINIMUM") {
+      host.dataset.officeViewportStatus = "below-approved-minimum";
+      return;
+    }
+    throw error;
+  }
+  host.dataset.officeViewportStatus = "approved";
+  const camera = createOfficeCamera(layout);
   adapter.setCamera({
     zoom: camera.zoom,
     translation: {
