@@ -89,4 +89,59 @@ describe("kickoff canonical persistence", () => {
     });
     expect(listKickoffRecords(store, "project_alpha", "kickoff_1")).toHaveLength(1);
   });
+
+  it("treats key order as insignificant when detecting record conflicts", () => {
+    const root = mkdtempSync(join(tmpdir(), "cuckcode-kickoff-"));
+    store = openProjectStore(root);
+    const base = {
+      recordId: "briefing_order",
+      kickoffId: "kickoff_order",
+      projectId: "project_order",
+      kind: "briefing" as const,
+      revision: 1,
+    };
+
+    storeKickoffRecord(store, {
+      ...base,
+      payload: { briefingVersion: 1, roleIds: ["delivery", "release"], title: "Decision Notice" },
+    });
+
+    // Same values, different key order. This is the same record, so re-storing it must be
+    // idempotent rather than reported as a conflict — the behaviour event-store and
+    // open-question-store already have via stableStringify.
+    expect(() =>
+      storeKickoffRecord(store!, {
+        ...base,
+        payload: { title: "Decision Notice", roleIds: ["delivery", "release"], briefingVersion: 1 },
+      }),
+    ).not.toThrow();
+
+    expect(listKickoffRecords(store, "project_order", "kickoff_order")).toHaveLength(1);
+
+    // A genuine value change must still conflict.
+    expect(() =>
+      storeKickoffRecord(store!, {
+        ...base,
+        payload: { title: "Decision Notice", roleIds: ["delivery"], briefingVersion: 1 },
+      }),
+    ).toThrow("KICKOFF_RECORD_CONFLICT");
+  });
+
+  it("orders array elements significantly, unlike object keys", () => {
+    const root = mkdtempSync(join(tmpdir(), "cuckcode-kickoff-"));
+    store = openProjectStore(root);
+    const base = {
+      recordId: "briefing_array",
+      kickoffId: "kickoff_array",
+      projectId: "project_array",
+      kind: "briefing" as const,
+      revision: 1,
+    };
+
+    storeKickoffRecord(store, { ...base, payload: { roleIds: ["delivery", "release"] } });
+
+    expect(() =>
+      storeKickoffRecord(store!, { ...base, payload: { roleIds: ["release", "delivery"] } }),
+    ).toThrow("KICKOFF_RECORD_CONFLICT");
+  });
 });

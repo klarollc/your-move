@@ -4,13 +4,19 @@ Status: **PROPOSED. Not applied. Requires owner approval before any document is 
 Author: Claude (Cowork), at owner request on 2026-08-18.
 Evidence: `docs/competitive-landscape.md`, `docs/evidence/defect-register.md`.
 
-Amendments B and D were **applied on 2026-09-08**. Amendment A is being rebuilt on solo-builder
-grounds at owner request (2026-09-08) and is not applied.
+Amendments B and D were **applied on 2026-09-08**. Amendment A's rationale was rebuilt on solo-builder grounds on 2026-09-08; its proposed text is
+unchanged and it remains **unapplied, awaiting owner decision**.
 Amendment C is **superseded by Amendment D** and should not be approved on its own.
 
 ---
 
 ## Amendment A — Differentiation statement in §2 Confirmed intent
+
+**Rationale rebuilt on solo-builder grounds 2026-09-08 at owner request.** The original argument
+rested on competitor comparison; [[cuckcode-intent]] establishes that market evidence is dead
+weight for this project. The proposed §2 text is unchanged. Only the justification is replaced,
+because a rationale a reader will reject is worse than no rationale — it invites dismissing the
+amendment along with its argument.
 
 ### Problem
 
@@ -19,14 +25,33 @@ MDD §2 currently states the Outcome as:
 > Create a visual multi-agent orchestration product that presents real agent work as a familiar,
 > interactive office environment.
 
-As of 2026-08-18 that sentence describes Pixel Agents (~8.9k stars), Munder Difflin, and
-Agents in the Office. It is an accurate description of an existing product category rather than
-a statement of what CuckCode uniquely claims. See `docs/competitive-landscape.md` F-1 and F-2.
+The Outcome is the sentence a reader protects when scope is cut. That reader is one person, under
+time pressure, cutting his own scope, months from now, with no colleague to object. As written,
+what survives that cut is **the office metaphor** — the pixel scene, the zones, the avatars.
 
-The document's actual differentiators — the binding truthfulness constraint and D-26 reciprocal
-usability — appear later in §2, §4, and §9, but not in the Outcome. This matters operationally.
-The Outcome is what a reader protects when scope is cut under pressure. As written, it protects
-the metaphor. The metaphor is the commodity part.
+That is the wrong survivor. The metaphor is the most visible part of the product and the least
+load-bearing. A version of CuckCode with fewer zones, cruder art, or four roles instead of six is
+still CuckCode. A version whose scene shows plausible activity it cannot substantiate is a
+different product, and a worse one than not building it — it is a machine for producing false
+confidence about work you did not check.
+
+The document's actual load-bearing commitments — the truthfulness constraint and D-26 reciprocal
+usability — appear in §2, §4 and §9, but not in the Outcome. Under pressure they will be read as
+principles, and principles lose to the sentence labelled Outcome.
+
+### The evidence that this pressure is real
+
+This is not hypothetical, and the evidence is from this project rather than from any competitor:
+
+- On 2026-09-08 the owner waived the comprehension study with three criteria unrun and waived the
+  screen-reader walkthrough entirely. Both waivers were legitimate and both were about scope
+  under fatigue. What they removed was, specifically, **every human check on truthfulness**.
+- Twice — D4-P-002 and D4-P-004 — an evidence line claimed a gate that a narrower command
+  satisfied. Both were unintentional. Both were the same drift, toward claiming more than was
+  shown.
+
+The failure mode is demonstrated. When this project is cut, it cuts verification of truthfulness
+first, because truthfulness is invisible when it holds and the metaphor is visible always.
 
 ### Proposed replacement for the §2 Outcome block
 
@@ -37,16 +62,15 @@ the metaphor. The metaphor is the commodity part.
 >
 > ### Differentiation
 >
-> Rendering agents as office workers is an existing product category, not CuckCode's claim
-> (`docs/competitive-landscape.md`). CuckCode's claim is narrower and harder:
+> Rendering agents as office workers is the visible part of this product and the least
+> load-bearing. What the product actually claims is narrower and harder:
 >
-> 1. **The office is operable, not observational.** Comparable products render what agents are
->    doing. CuckCode's office is where the manager assigns outcomes, answers escalations,
->    inspects evidence, and approves or redirects deliverables. No observed competitor makes the
->    scene a control surface.
+> 1. **The office is operable, not observational.** The scene is where the manager assigns
+>    outcomes, answers escalations, inspects evidence, and approves or redirects deliverables —
+>    not a display of what agents are doing.
 > 2. **The office is truthful.** Every meaningful visual behavior is backed by an inspectable
->    canonical event. Simulated or fallback animation is a V0 defect, not a shortcut. At least one
->    competitor currently ships synthetic avatar motion where real event hooks are unavailable.
+>    canonical event. Simulated or fallback animation is a V0 defect, not a shortcut. An office
+>    that shows plausible activity it cannot substantiate is worse than no office.
 > 3. **Both participants are first-class.** Human and agent interfaces are equal projections of
 >    the same canonical state (D-26). Human simplicity is never purchased with agent complexity.
 >
@@ -55,17 +79,21 @@ the metaphor. The metaphor is the commodity part.
 
 ### Consequential updates if approved
 
-- `README.md` opening paragraph — same commodity framing.
-- `.ui-craft/brief.md` §1 "Product identity" — same commodity framing.
-- Both are descriptive restatements of §2 and should follow it, not lead it.
+- `README.md` opening paragraph, and `.ui-craft/brief.md` §1 "Product identity" — both currently
+  lead with the metaphor. Both are descriptive restatements of §2 and should follow it.
 
 ### Argument against this amendment
 
-The current Outcome is not wrong, and §4's principles already carry the differentiators. A reader
-who reads the whole document reaches the right conclusion. If you believe scope pressure will
-never force a triage decision, this amendment is unnecessary ceremony.
+Writing "protect the important things" into a document does not make anyone protect them; the
+2026-09-08 waivers happened while §4 and §8 already said all of this, and a fourth restatement
+would not have stopped them. If the triage sentence is going to be ignored under pressure, adding
+it is ceremony, and this project's governance overhead is already heavy for one person.
 
----
+The stronger version of that objection points somewhere better: this repository's stated
+preference is to convert a governance rule into a test rather than add another line of prose.
+A rule that truthfulness verification cannot be waived without an explicit recorded consequence
+is now partly executable — Amendment D's waiver clause does exactly that. Amendment A is the
+prose half. If only one of the two is worth having, D is the one, and it is already applied.
 
 ## Amendment B — New decision gate D-28: event rate and presentation-queue bound
 
