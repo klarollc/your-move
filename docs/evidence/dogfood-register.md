@@ -241,3 +241,44 @@ prose rule that a future reviewer will also read past.
 Not addressed: the same question should be asked of `QuestionDisposition`, which also carries no
 timestamp. Recorded as open rather than fixed in passing, because it was not in scope and no
 consumer has yet demanded it — which is exactly the condition under which this defect survived.
+
+### DF-008 — A binding report cannot say how the model was configured
+
+- Observed: 2026-09-08, while recording the owner's model decisions into the Task 16 packet.
+- D-26 clauses implicated: canonical records must be attributable. Same family as DF-007.
+
+`runtimeBindingReportSchema` carries `adapterId`, `adapterVersion`, `protocolVersion`, `authMode`,
+`model`, `capabilityIds`, `toolIds`, `permissionCeiling`, and `materialFingerprint`. It has no
+field for reasoning effort or any other model configuration parameter.
+
+The owner selected `medium` deliberately, and an earlier proposal used `xhigh` for one role. Two
+runs of the same model at different efforts would produce identical binding reports. **The record
+can name what ran but not how it was configured**, so a run is not reproducible in a dimension the
+manager explicitly chose.
+
+The immediate impact is nil — effort is held constant across all six roles for this kickoff, so
+nothing is confounded. It is recorded because the gap is real and the next configuration decision
+may not be uniform.
+
+## The pattern this makes explicit
+
+This is the third instance in one day of the same shape:
+
+- **DF-007** — `OpenQuestion` could not say when it was raised.
+- Still open — `QuestionDisposition` cannot say when it was recorded.
+- **DF-008** — `RuntimeBindingReport` cannot say how the model was configured.
+
+Each record type is internally consistent and passes its own validation. Each omission became
+visible only when a *different* component tried to consume the record for something its author had
+not imagined. Reading the specifications did not find any of them; attempting to use them did.
+
+The three are not the same missing field, so a rule about timestamps would have caught only two.
+The general shape is: **a canonical record omits a property that is not needed to construct it and
+is required to interpret it later.** Construction-time review cannot see that class, because at
+construction time the property is genuinely unnecessary.
+
+Proposed and not authorized: rather than a fourth prose rule, a review question applied when any
+canonical record type is specified — *what would a future reader need in order to reproduce or
+attribute this, that the author does not need in order to write it?* Converting it to a test is
+harder here than for DF-007's timestamps, because the missing property differs per record type.
+Recorded as an open problem rather than a solved one.

@@ -4,7 +4,9 @@ Status: **DECISION PACKET. Nothing is promoted. No provider call has been made.*
 Prepared 2026-09-08 against `ba30926`, updated the same day with the owner's decisions.
 Authorized 2026-09-08, scoped to producing this packet only.
 
-**One blank remains: the two model names (§2).** Everything else is settled and recorded below.
+**APPROVED BY THE OWNER 2026-09-08.** All decisions recorded. Approval covers §1–§6 and
+authorizes Task 17 once the work in §7 exists. It does not authorize Phase 5, high-fidelity art,
+visual baseline promotion, deployment, or any external effect.
 
 Approving this packet authorizes Task 17: one bounded live kickoff. Approving it does **not**
 authorize Phase 5, high-fidelity art, visual baseline promotion, deployment, or any external
@@ -68,10 +70,32 @@ the import quarantine does anything.
   one model on one briefing are correlated by construction — if it never dissents, the record
   cannot distinguish "nothing to dissent about" from "same model, same conclusion." Two models
   within one provider buys partial decorrelation at the cost of one extra binding.
-- **The two model names are not yet recorded.** The pinned protocol treats `model` as a free
-  string and enumerates no values, so the available names come from the account rather than from
-  the pin. They must be written here before Task 17, because "which model produced this" belongs
-  in every attributable record afterwards.
+**Owner decision 2026-09-08 — the exact configuration:**
+
+| Role | Model | Reasoning effort |
+| --- | --- | --- |
+| Delivery Lead | `gpt-5.6-luna` | `medium` |
+| Product Designer | `gpt-5.6-luna` | `medium` |
+| Implementation Engineer | `gpt-5.6-luna` | `medium` |
+| Test Engineer | `gpt-5.6-luna` | `medium` |
+| Visual QA Reviewer | `gpt-5.6-luna` | `medium` |
+| **Release Reviewer** | **`gpt-5.6-sol`** | `medium` |
+
+**Effort is held constant so the model is the only variable.** An earlier pairing varied model and
+effort together (`luna`/xhigh against `sol`/medium); that reintroduces the confound the split
+exists to remove, because dissent could then be explained by either. Effort is a quality dial and
+cannot decorrelate anything — the same model reasoning harder reaches correlated conclusions more
+carefully. Only the model can make the Release Reviewer's agreement informative.
+
+`medium` rather than `xhigh` because Task 17 tests machinery — attribution, dissent preservation,
+unanswered roles, the turn ceiling, no fabricated consensus — not advice quality. It is also the
+more realistic condition: an office that stays truthful over mediocre contributions is the case
+that matters. A second kickoff at higher effort is a better experiment than mixing efforts now.
+
+**Neither model name can be verified from this repository.** The pinned protocol treats `model` as
+a free string and enumerates no values. This is why §3's read-back rule matters: the names above
+are the *request*, and the binding report records what `system/init` reports the session actually
+used. A mismatch is drift and stops the run.
 
 A cross-vendor split was considered and rejected on 2026-09-08: it requires a second runtime
 adapter, which is now blocked by deliberate decision. See
@@ -129,15 +153,25 @@ The goal is the DF-007 corrective, already recorded as proposed-and-unauthorized
 exist, `QuestionDisposition` is a known second offender, and six roles have genuinely different
 things to say about it. It is a goal the owner would actually charter.
 
-## 6. What remains
+## 6. Decision record
 
-**One blank, then approval of the packet as a whole.**
+Every item is settled as of 2026-09-08 and recorded in place above rather than left as a question:
 
-1. **The two model names**, and confirmation that the second belongs to the Release Reviewer.
+| Decision | Outcome | Section |
+| --- | --- | --- |
+| Promotion scope | Until revoked, not per-kickoff | §1 |
+| Quarantined segment | Exclusion confirmed | §1 |
+| `authMode` | `chatgpt` — subscription auth | §2 |
+| Provider | Codex only; cross-vendor split blocked by the C-1 finding | §2 |
+| Models and effort | `gpt-5.6-luna`/medium ×5, `gpt-5.6-sol`/medium for the Release Reviewer | §2 |
+| Briefing | Graybox structure, goal replaced with the DF-007 corrective | §5 |
 
-Settled on 2026-09-08 and recorded above rather than left as open questions: promotion scope
-(until revoked, §1), the quarantined segment (exclusion confirmed, §1), `authMode` (`chatgpt`,
-§2), the two-model approach (§2), and the briefing (§5).
+**Reasoning effort has nowhere truthful to live.** `runtimeBindingReportSchema` carries `model`,
+`capabilityIds`, `toolIds` and `permissionCeiling`, and no field for how the model was configured.
+Two runs of the same model at different efforts are indistinguishable in the record. Because
+effort is held constant here it does not affect this run's comparability, but it does mean the
+record cannot state a parameter that was deliberately chosen. Recorded as DF-008 in
+`docs/evidence/dogfood-register.md`; not fixed, and not a blocker for Task 17.
 
 ## 7. What is not built yet
 
