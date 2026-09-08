@@ -4,7 +4,14 @@ Status: Draft v0.1 — confirmed product intent, spatial model, and visual thesi
 
 ## 1. Product identity
 
-CuckCode turns a real multi-agent workflow into an office scene. The user is the manager. Connected agents occupy role templates and appear as employees whose location, posture, actions, conversations, and requests make otherwise technical work understandable.
+CuckCode makes an office scene the primary surface for directing a real multi-agent workflow. The
+user is the manager. Connected agents occupy role templates and appear as employees whose
+location, posture, actions, conversations, and requests make otherwise technical work
+understandable.
+
+The scene is a control surface, not a view of one. Under design pressure, reduce scene fidelity,
+zone count, or role count before reducing operability, truthfulness, or reciprocity — those three
+are the product, and the office metaphor is not (MDD §2).
 
 This is an operational interface, not a management game and not a decorative visualization over a conventional dashboard.
 

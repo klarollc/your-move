@@ -15,7 +15,25 @@ Changes to a confirmed requirement must be made here before implementation. A pa
 
 ### Outcome
 
-Create a visual multi-agent orchestration product that presents real agent work as a familiar, interactive office environment.
+Create a visual multi-agent orchestration product in which a familiar office environment is the
+primary surface through which a non-technical manager directs real agent work.
+
+### Differentiation
+
+Rendering agents as office workers is the visible part of this product and the least load-bearing.
+What the product actually claims is narrower and harder:
+
+1. **The office is operable, not observational.** The scene is where the manager assigns outcomes,
+   answers escalations, inspects evidence, and approves or redirects deliverables — not a display
+   of what agents are doing.
+2. **The office is truthful.** Every meaningful visual behavior is backed by an inspectable
+   canonical event. Simulated or fallback animation is a V0 defect, not a shortcut. An office that
+   shows plausible activity it cannot substantiate is worse than no office.
+3. **Both participants are first-class.** Human and agent interfaces are equal projections of the
+   same canonical state (D-26). Human simplicity is never purchased with agent complexity.
+
+If scope must be reduced, reduce scene fidelity, zone count, or role count before reducing
+operability, truthfulness, or reciprocity. Those three are the product.
 
 ### User
 

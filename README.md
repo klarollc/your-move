@@ -1,6 +1,15 @@
 # CuckCode
 
-CuckCode is a visual multi-agent orchestration product that represents real agent work as a familiar office environment. It is designed to let non-technical managers assign outcomes, observe work, answer escalations, inspect evidence, and approve deliverables without learning an agent framework.
+CuckCode is a visual multi-agent orchestration product in which a familiar office environment is
+the primary surface through which a non-technical manager directs real agent work: assigning
+outcomes, answering escalations, inspecting evidence, and approving or redirecting deliverables
+without learning an agent framework.
+
+Rendering agents as office workers is the visible part and the least load-bearing. The claim is
+that the office is **operable** rather than observational, **truthful** — every meaningful visual
+behavior backed by an inspectable canonical event, with simulated or fallback animation treated as
+a defect rather than a shortcut — and **reciprocal**, with human and agent interfaces as equal
+projections of the same canonical state. See MDD §2.
 
 ## Current status
 

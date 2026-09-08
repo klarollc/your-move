@@ -4,15 +4,16 @@ Status: **PROPOSED. Not applied. Requires owner approval before any document is 
 Author: Claude (Cowork), at owner request on 2026-08-18.
 Evidence: `docs/competitive-landscape.md`, `docs/evidence/defect-register.md`.
 
-Amendments B and D were **applied on 2026-09-08**. Amendment A's rationale was rebuilt on solo-builder grounds on 2026-09-08; its proposed text is
-unchanged and it remains **unapplied, awaiting owner decision**.
+Amendments B and D were **applied on 2026-09-08**. **Amendments A, B and D are all applied to the MDD as of 2026-09-08.** C is superseded by D.
+Nothing in this file is outstanding.
 Amendment C is **superseded by Amendment D** and should not be approved on its own.
 
 ---
 
 ## Amendment A — Differentiation statement in §2 Confirmed intent
 
-**Rationale rebuilt on solo-builder grounds 2026-09-08 at owner request.** The original argument
+**APPLIED to the MDD on 2026-09-08 with owner approval.** Rationale rebuilt on solo-builder
+grounds the same day at owner request. The original argument
 rested on competitor comparison; [[cuckcode-intent]] establishes that market evidence is dead
 weight for this project. The proposed §2 text is unchanged. Only the justification is replaced,
 because a rationale a reader will reject is worse than no rationale — it invites dismissing the
