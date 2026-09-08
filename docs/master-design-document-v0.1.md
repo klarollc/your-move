@@ -1151,6 +1151,32 @@ V0/V1 block the gate. V2 requires owner disposition. V3 may be scheduled with ex
 - Touch targets are at least 44×44 CSS pixels if touch is in approved scope.
 - Avatar appearance and role must not encode stereotypes tied to gender, race, age, disability, or job hierarchy.
 
+### Manual screen-reader walkthrough
+
+A recorded manual screen-reader walkthrough is required for any build presented as meeting this
+section. Automated accessibility scans are evidence and are not a substitute; the walkthrough
+covers precisely what those scans cannot perform.
+
+The owner may waive the walkthrough for a given build. A waived build **does not meet §19**, and
+no statement that it does may appear in any evidence document, release note, or summary. The
+waiver is recorded against the build with the date and the properties left unverified.
+
+### Owner waivers — applies to §19 and §20
+
+An owner waiver closes a gate on authority. It never converts an unperformed check into a passed
+one, and it never becomes evidence about the product. Any document that records a waiver must
+also record what remains unknown because of it.
+
+Waivers accumulate visibly. Where two or more waivers leave a single invariant with no
+verification of any kind, that condition is stated wherever the invariant is claimed.
+
+**Standing waivers as of 2026-09-08, build `d260594`:** the manual screen-reader walkthrough
+(§19) and comprehension criteria T3, T5 and T6 (§20) are waived and were never performed. The V0
+truthfulness invariants — silence must never read as assent, and nothing may imply progress that
+is not happening — therefore have no human verification of any kind, and rest entirely on
+automated assertions over deterministic fixtures. Recorded in
+`docs/evidence/phase-4/red-green-log.md`.
+
 ## 20. Observability and product measures
 
 ### Operational measures
@@ -1173,7 +1199,8 @@ V0/V1 block the gate. V2 requires owner disposition. V3 may be scheduled with ex
 
 ### Comprehension-study success criteria
 
-With no more than a short orientation, at least 4 of 5 representative non-technical evaluators must:
+With no more than a short orientation, the single operator must satisfy every criterion below,
+answering from the interface alone:
 
 - identify each agent's assignment and state;
 - locate the item needing manager attention;
@@ -1182,7 +1209,25 @@ With no more than a short orientation, at least 4 of 5 representative non-techni
 - inspect evidence and take the correct next action;
 - explain that the office represents real workflow state, not simulated productivity.
 
-Thresholds are provisional until the owner approves the study design.
+The operator designed the interface, so an immediate run measures recall rather than
+comprehension. The study is therefore run **cold, after a deliberate gap of at least three days**
+from the last substantive work on the interface, without re-reading the design documents. A run
+inside that window is recorded as void, not as a pass.
+
+A criterion passes only if the written answer is correct **and** the operator does not record that
+it was answered from memory of having built the interface. Six of six is met. Five of six is met
+with the failure recorded as a named finding. Four or fewer does not pass the graybox
+comprehension gate.
+
+The response sheet must record, per task, whether the task was **actually performed**. A task that
+was not attempted is recorded as not performed and is never scored as a failure; the interface
+cannot fail a criterion it was not shown. Unperformed criteria do not count toward the threshold
+in either direction, and a run in which any criterion was not performed is recorded as
+**incomplete**, not as a score.
+
+Waiver of any criterion is governed by the owner-waiver clause in §19.
+
+Protocol, answer key, and response sheets: `docs/evidence/phase-4/comprehension/`.
 
 ## 21. Failure and recovery requirements
 

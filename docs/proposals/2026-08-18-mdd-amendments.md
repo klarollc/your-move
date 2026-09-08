@@ -4,7 +4,8 @@ Status: **PROPOSED. Not applied. Requires owner approval before any document is 
 Author: Claude (Cowork), at owner request on 2026-08-18.
 Evidence: `docs/competitive-landscape.md`, `docs/evidence/defect-register.md`.
 
-Two amendments are proposed. They are independent; either may be approved without the other.
+Amendments A, B and D are proposed and independent; any may be approved without the others.
+Amendment C is **superseded by Amendment D** and should not be approved on its own.
 
 ---
 
@@ -126,6 +127,10 @@ than assuming.
 
 ### Status
 
+**SUPERSEDED by Amendment D on 2026-09-08.** Retained for the record. Its n=1 substitution is
+carried forward into D unchanged; what D adds is the §19 half and a waiver mechanism, both of
+which this amendment lacked and which the 2026-09-08 run proved were needed.
+
 Design approved by the owner on 2026-08-18. The MDD text itself still requires amendment, because
 §20 currently specifies a population this project does not have.
 
@@ -175,6 +180,107 @@ scores generously, this becomes ceremony with an owner signature attached. The a
 deleting the study and resting the gate on accessibility evidence alone — is more honest than a
 study run badly. The protocol's void condition and its "answered from memory" line exist to make
 that failure mode visible, but they depend on the operator reporting against his own interest.
+
+---
+
+## Amendment D — §19 and §20: single-operator verification, and an explicit waiver mechanism
+
+**APPLIED to the MDD on 2026-09-08 with owner approval.** Supersedes Amendment C, which it
+contains. Amendments A and B remain proposed and unapplied.
+
+### Problem
+
+Two MDD sections now require human verification that Phase 4 did not produce, and the gap was
+closed by owner waiver rather than by meeting them.
+
+- **§20** specifies "at least 4 of 5 representative non-technical evaluators." CuckCode is a
+  single-operator personal tool; that panel measures a population which does not exist. This is
+  Amendment C's problem statement and it is unchanged.
+- **§19** requires a recorded manual screen-reader walkthrough. On 2026-09-08 the owner waived it
+  and it was never run. No screen reader has ever been attached to this interface.
+
+On the same day the comprehension study was closed with three of its six criteria never
+performed. Both waivers are recorded in `docs/evidence/phase-4/red-green-log.md` and neither is
+recorded as a pass.
+
+The document therefore states two requirements that the project has decided not to meet. Under
+the authority-order rule — code and document disagreement means stop and fix the document — that
+is the condition this amendment exists to resolve.
+
+### The wrong way to resolve it
+
+Deleting or softening §19 and §20 so that what happened satisfies them. That converts "we chose
+not to verify this" into "verification was never required," and a later reader — including the
+owner — would find a document that had quietly rewritten its own standard to match its conduct.
+It is the same failure as an evidence line claiming a gate a narrower command satisfied (D4-P-002,
+D4-P-004), applied to requirements instead of evidence.
+
+**This amendment does not lower either bar.** It fixes the one requirement that is genuinely
+impossible, and makes waiving the others legitimate, bounded, and permanently visible.
+
+### D-1 — §20 threshold paragraph
+
+Replace with Amendment C's proposed text verbatim: single operator, cold run after a gap of at
+least three days, void inside that window, a criterion passes only if correct and not flagged as
+answered from memory, 6/6 met, 5/6 met with a named finding, 4 or fewer not met.
+
+Add one paragraph, which the 2026-09-08 run showed to be necessary:
+
+> The response sheet must record, per task, whether the task was actually performed. A task that
+> was not attempted is recorded as **not performed** and is never scored as a failure; the
+> interface cannot fail a criterion it was not shown. Unperformed criteria do not count toward
+> the threshold in either direction, and a run in which any criterion was not performed is
+> recorded as **incomplete**, not as a score.
+
+### D-2 — §19 walkthrough requirement
+
+Keep the requirement. Add its standing and its escape:
+
+> The manual screen-reader walkthrough is required for any build presented as meeting §19.
+> Automated accessibility scans are evidence and are not a substitute; the walkthrough covers
+> precisely what those scans cannot perform.
+>
+> The owner may waive the walkthrough for a given build. A waived build does not meet §19, and no
+> statement that it does may appear in any evidence document, release note, or summary. The
+> waiver is recorded against the build with the date and the properties left unverified.
+
+### D-3 — New §19/§20 shared clause: what a waiver is
+
+> An owner waiver closes a gate on authority. It never converts an unperformed check into a
+> passed one, and it never becomes evidence about the product. Any document that records a waiver
+> must also record what remains unknown because of it.
+>
+> Waivers accumulate visibly. Where two or more waivers leave a single invariant with no
+> verification of any kind, that condition is stated wherever the invariant is claimed.
+
+### Immediate consequence if approved
+
+Phase 4's V0 truthfulness invariants — silence must never read as assent, and nothing may imply
+progress that is not happening — currently have **no human verification of any kind**. The two
+places they were to be checked were T5/T6 of the comprehension study and W5/W6 of the
+walkthrough, and all four are waived. Under D-3 that condition would have to be stated wherever
+those invariants are claimed, including §8 and any Phase 5 acceptance material.
+
+That sentence is uncomfortable, which is the argument for the clause rather than against it.
+
+### What this gives up
+
+Nothing about the standards. What it gives up is the ability to close Phase 4 cleanly: approving
+this amendment means the record permanently says §19 was not met for build `d260594` and that
+§20 was closed incomplete. A softer amendment would let the phase read as fully verified.
+
+### Argument against this amendment
+
+A personal tool with one user may not need a formal waiver mechanism at all. The owner already
+decides everything; writing down that he is allowed to decide adds ceremony to a project whose
+governance overhead is already heavy for its size, and the clause in D-3 requiring waivers to be
+restated "wherever the invariant is claimed" creates an ongoing documentation burden that will be
+forgotten and then violated — producing exactly the doc/reality gap it was written to prevent.
+
+The counter is that this project has already twice shipped an evidence line claiming more than
+was verified, that the 2026-09-08 run produced two incorrect write-ups before the facts were
+established, and that the failure mode is therefore demonstrated rather than hypothetical. A rule
+that is forgotten can be converted into a test, which is this repository's stated preference.
 
 ---
 
