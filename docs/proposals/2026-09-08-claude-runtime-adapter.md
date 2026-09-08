@@ -1,6 +1,7 @@
 # Specification — second runtime adapter: Claude Code
 
-Status: **PROPOSED. Not approved. No code written.**
+Status: **C-1 COMPLETE 2026-09-08. C-2 onward superseded by the C-1 finding and awaiting owner
+decision. No code written.**
 Author: Claude (Cowork), at owner request on 2026-09-08.
 Authority: MDD D-26 reciprocal usability; Phase 3 provider-neutral runtime contracts.
 Triggers the Phase 4 spec stop condition **"provider/tool/external-effect expansion"**, which is
@@ -118,10 +119,12 @@ observations; they are never evidence of anything.
 
 Sized to be individually gated, as usual.
 
-1. **C-1 Contract review.** Determine what, if anything, `RuntimeAdapter`, `authMode`, and
-   `RuntimeCorrelation` need in order to admit a non-Codex provider. Output is a finding, not
-   code. **If nothing needs to change, that is the strongest possible evidence the neutrality
-   claim was real, and it should be recorded as such.**
+1. **C-1 Contract review.** ~~Determine what, if anything, `RuntimeAdapter`, `authMode`, and
+   `RuntimeCorrelation` need in order to admit a non-Codex provider.~~ **DONE 2026-09-08.**
+   Finding: `docs/evidence/runtime/c1-provider-neutrality-review.md`. `RuntimeAdapter` has no
+   implementation and no consumer, and omits the operation an adapter exists to perform, so the
+   neutrality claim is unexercised rather than untested. **C-2 through C-6 below are superseded
+   pending an owner decision on C-2a and C-2b named in that finding.**
 2. **C-2 Supervisor.** Spawn, handshake, NDJSON framing, line-size limits, stderr isolation,
    post-disconnect rejection, SIGINT versus SIGTERM (143), exit-code handling.
 3. **C-3 Normalizer.** `system/init`, `assistant`, `result`, `system/api_retry` → typed events.
