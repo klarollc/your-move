@@ -282,3 +282,48 @@ canonical record type is specified — *what would a future reader need in order
 attribute this, that the author does not need in order to write it?* Converting it to a test is
 harder here than for DF-007's timestamps, because the missing property differs per record type.
 Recorded as an open problem rather than a solved one.
+
+### DF-009 — A verification run's inputs are not attributable to a known state of the tree
+
+- Observed: 2026-09-08, during Task 17a.
+- D-26 clauses implicated: canonical records must be attributable. Distinct family from DF-005
+  through DF-008 — this one is about evidence, not about a record type.
+
+The agent finished writing `packages/runtime-codex/src/binding.ts` and asked the owner to run the
+GREEN. The owner's run started at 15:00:43 local; the file finished writing at 15:01:40. The run
+executed the deliberate stub, and the output — eight failures, all `FACTS_INCOMPLETE` — was
+returned as a post-implementation result.
+
+It looked exactly like a real, catastrophic failure of the implementation. It was distinguishable
+from one only by comparing file modification times against the timestamp vitest prints in its own
+header, which the agent did on a hunch rather than by procedure.
+
+**The general shape: the agent cannot attest which state of the tree a verification ran against.**
+The agent writes files through one channel and the owner runs tests through another. Nothing in
+between carries an identity. A test result arrives as text with no statement of what produced it,
+so a stale run, a partially-written file, an un-saved editor buffer and a genuine failure all
+present identically. The evidence the whole governance model rests on — RED before GREEN, verify
+green at each step — is unattributable at the point it is produced.
+
+The near miss is the interesting part. Had the stale run been read at face value, the correct
+response would have been to *change working code* to satisfy a failure that did not exist. The
+failure mode is not "wasted a run"; it is "corrupted a working implementation in response to
+fabricated evidence, with an owner-approved RED/GREEN log entry recording it as legitimate."
+
+## Why this is not the same as DF-006
+
+DF-006 was an agent action that damaged the environment and left no record. This is an agent
+*observation* that cannot be tied to a cause. DF-006 argues for a preflight check; this argues that
+evidence needs provenance. A toolchain check cannot detect it, because nothing about the toolchain
+is wrong.
+
+## Product response
+
+Not authorized and not designed. The obvious mechanism is that a verification result should carry
+the tree state it ran against — a commit or a working-tree digest emitted by the run itself and
+compared against what the agent believes it wrote. That is the same join-checking shape used for
+promotion digests and binding fingerprints: two records that each look valid alone, correct only
+in their relationship.
+
+Recorded here as an open problem. The immediate mitigation applied in Task 17a was manual and does
+not generalise: check mtimes before trusting a surprising result.
