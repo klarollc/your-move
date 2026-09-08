@@ -356,3 +356,45 @@ evidence base that is complete on the automated side and partial on the human si
 **Task 15 is complete. Phase 4 Tasks 1–15 are done.** Tasks 16–18 — role promotion, live kickoff,
 and the final gate — remain unauthorized and require explicit owner approval before any work
 begins.
+
+## Correctness fix — kickoff-store canonical serialization
+
+Found while reviewing open items, fixed 2026-09-08. Not a Phase 4 task; recorded here because
+this is the active log.
+
+`storeKickoffRecord` used raw `JSON.stringify` for conflict detection while `event-store` and
+`open-question-store` both used `stableStringify`. Two records with identical values in a
+different key order were therefore reported as `KICKOFF_RECORD_CONFLICT` instead of being
+idempotent.
+
+**RED, on the owner's Windows machine:** `treats key order as insignificant when detecting record
+conflicts` failed with `expected [Function] to not throw an error but 'Error:
+KICKOFF_RECORD_CONFLICT' was thrown`. Three of four tests in the file passed, including the new
+`orders array elements significantly, unlike object keys` guard — that one is a guard against
+over-canonicalising, not RED evidence, and passed both before and after.
+
+**GREEN:** 4/4 after switching to `stableStringify`. Full `npm run verify` green on Windows:
+toolchain 10, protocol 4, roles 3, qualification 16, scaffold 2, ui-contract 3+2+2+4, unit 133,
+component 42, integration 47 (1 skipped: live Codex), contract 55, build, e2e 46, a11y 18,
+visual 22.
+
+### Migration decision — none, and why
+
+This changes a persistence canonicalization format. Rows written before it hold raw-JSON
+`canonical_json`, so re-storing such a record would compare a `stableStringify` result against a
+raw-JSON string and could report the very conflict this fixes.
+
+No migration is written, on the following evidence rather than on assumption:
+
+- No `.sqlite` file exists anywhere in the repository or in any reachable path. The store writes
+  to `<projectRoot>/.cuckcode/state/cuckcode.sqlite`, and no such file was found.
+- Every existing `kickoff_records` row is created by tests in `mkdtempSync` temp directories and
+  does not survive the run.
+- No live kickoff has ever executed and no charter record exists.
+- `event-store` and `open-question-store` were never affected; only `kickoff_records` used raw
+  serialization.
+
+If a project database is later found predating 2026-09-08 with kickoff records in it, this
+decision is wrong for that database and a migration reserialising `kickoff_records.canonical_json`
+is required. `schema_migrations` and `user_version = 4` provide the mechanism. Recorded so the
+absence of a migration is a decision on record rather than an omission.

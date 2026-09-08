@@ -1,3 +1,5 @@
+import { stableStringify } from "@cuckcode/domain";
+
 import type { ProjectStore } from "./project-store.js";
 
 type KickoffRecordKind =
@@ -12,8 +14,13 @@ export type StoredKickoffRecord = Readonly<{
   payload: unknown;
 }>;
 
+/**
+ * Canonical serialization, not raw JSON.stringify. Two records with identical values but
+ * different key order are the same record, and re-storing one must be idempotent rather than
+ * reported as a conflict. Matches event-store and open-question-store.
+ */
 export function storeKickoffRecord(store: ProjectStore, record: StoredKickoffRecord): void {
-  const canonicalJson = JSON.stringify(record.payload);
+  const canonicalJson = stableStringify(record.payload);
   const existing = store.database
     .prepare("SELECT canonical_json FROM kickoff_records WHERE record_id=?")
     .get(record.recordId) as { canonical_json: string } | undefined;
