@@ -7,6 +7,6 @@
     "rootDir": "src",
     "types": ["node"]
   },
-  "references": [{ "path": "../contracts" }],
+  "references": [{ "path": "../contracts" }, { "path": "../domain" }],
   "include": ["src"]
 }

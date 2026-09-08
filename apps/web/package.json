@@ -9,6 +9,8 @@
   },
   "dependencies": {
     "@cuckcode/application": "0.0.0",
+    "@cuckcode/contracts": "0.0.0",
+    "@cuckcode/domain": "0.0.0",
     "@cuckcode/ui-system": "0.0.0",
     "pixi.js": "8.19.0",
     "react": "19.2.8",
