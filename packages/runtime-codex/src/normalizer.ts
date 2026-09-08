@@ -1,37 +1,14 @@
 import { createHash } from "node:crypto";
 
-import { runtimeCorrelationSchema, type RuntimeCorrelation } from "@cuckcode/contracts";
+import {
+  runtimeCorrelationSchema,
+  type NormalizationContext,
+  type NormalizedRuntimeEvent,
+} from "@cuckcode/contracts";
 
-export type NormalizationContext = {
-  bindingId: string;
-  providerRunId: string;
-  providerRequestId: string;
-  projectId: string;
-  workItemId: string;
-  roleId: string;
-  sequence: number;
-};
-
-export type NormalizedRuntimeEvent = {
-  kind:
-    | "runtime.lifecycle"
-    | "runtime.message"
-    | "runtime.command"
-    | "runtime.file"
-    | "runtime.tool"
-    | "runtime.artifact"
-    | "runtime.usage"
-    | "runtime.approval"
-    | "runtime.error";
-  phase: string;
-  canonicalImpact: "reported_only";
-  correlation: RuntimeCorrelation;
-  projectId: string;
-  workItemId: string;
-  roleId: string;
-  sequence: number;
-  evidenceHash: string;
-};
+// The event vocabulary is the contract's, not this package's. A second adapter must be able to
+// produce these without depending on the Codex package (C-1 finding F2).
+export type { NormalizationContext, NormalizedRuntimeEvent };
 
 export function normalizeCodexEvent(
   input: unknown,

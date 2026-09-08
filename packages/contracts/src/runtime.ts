@@ -38,23 +38,58 @@ export const runtimeIssueSchema = z
 
 export type RuntimeIssue = z.infer<typeof runtimeIssueSchema>;
 
+/**
+ * The provider-independent record vocabulary. Declared once, here, and derived from by every
+ * adapter. It previously existed twice — as this enum and again inside the Codex package's
+ * normalizer — with nothing keeping the two equal (C-1 finding F2).
+ */
+export const runtimeRecordKinds = [
+  "runtime.lifecycle",
+  "runtime.message",
+  "runtime.command",
+  "runtime.file",
+  "runtime.tool",
+  "runtime.artifact",
+  "runtime.usage",
+  "runtime.approval",
+  "runtime.error",
+] as const;
+
+export type RuntimeRecordKind = (typeof runtimeRecordKinds)[number];
+
 export const runtimeRecordSchema = z
   .object({
     correlation: runtimeCorrelationSchema,
-    kind: z.enum([
-      "runtime.lifecycle",
-      "runtime.message",
-      "runtime.command",
-      "runtime.file",
-      "runtime.tool",
-      "runtime.artifact",
-      "runtime.usage",
-      "runtime.approval",
-      "runtime.error",
-    ]),
+    kind: z.enum(runtimeRecordKinds),
     summary: safeText,
   })
   .strict();
+
+/**
+ * What every adapter normalizes provider output into. Provider-neutral by construction: the
+ * `kind` union is the schema's, not a copy of it.
+ */
+export type NormalizationContext = {
+  bindingId: string;
+  providerRunId: string;
+  providerRequestId: string;
+  projectId: string;
+  workItemId: string;
+  roleId: string;
+  sequence: number;
+};
+
+export type NormalizedRuntimeEvent = {
+  kind: RuntimeRecordKind;
+  phase: string;
+  canonicalImpact: "reported_only";
+  correlation: RuntimeCorrelation;
+  projectId: string;
+  workItemId: string;
+  roleId: string;
+  sequence: number;
+  evidenceHash: string;
+};
 
 export const permissionDecisionSchema = z
   .object({

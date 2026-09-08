@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   permissionDecisionSchema,
   runtimeCorrelationSchema,
+  runtimeRecordKinds,
   runtimeRecordSchema,
 } from "./runtime.js";
 
@@ -46,6 +47,42 @@ describe("runtime trust contracts", () => {
         decision: "allow_once",
         decidedBy: { kind: "provider", id: "codex" },
         decidedAt: "2026-08-13T17:00:00.000Z",
+      }).success,
+    ).toBe(false);
+  });
+});
+
+describe("runtime record vocabulary", () => {
+  it("declares the nine provider-independent kinds exactly once", () => {
+    expect([...runtimeRecordKinds]).toEqual([
+      "runtime.lifecycle",
+      "runtime.message",
+      "runtime.command",
+      "runtime.file",
+      "runtime.tool",
+      "runtime.artifact",
+      "runtime.usage",
+      "runtime.approval",
+      "runtime.error",
+    ]);
+  });
+
+  it("accepts every declared kind and rejects anything outside the vocabulary", () => {
+    for (const kind of runtimeRecordKinds) {
+      expect(
+        runtimeRecordSchema.safeParse({
+          correlation: { bindingId: "b1", providerRunId: "r1", providerRequestId: "q1" },
+          kind,
+          summary: "normalized provider output",
+        }).success,
+      ).toBe(true);
+    }
+
+    expect(
+      runtimeRecordSchema.safeParse({
+        correlation: { bindingId: "b1", providerRunId: "r1", providerRequestId: "q1" },
+        kind: "runtime.claude_specific",
+        summary: "a provider inventing its own kind",
       }).success,
     ).toBe(false);
   });
