@@ -126,3 +126,61 @@ a process complaint.
 
 Product response: `docs/proposals/2026-08-18-open-question-record.md` proposes a canonical
 `OpenQuestion` record. Proposed, not authorized.
+
+### DF-006 — An agent action damaged the owner's environment with no record anywhere
+
+- Observed: 2026-08-25, when `npm run dev:web` failed at the start of a gated study.
+- Cause dated: 2026-08-22 03:54 UTC, three seconds of filesystem writes.
+- D-26 clauses implicated: see the classification note below. This entry is **partly** in the
+  DF-004 excluded class and says so rather than claiming more than it earns.
+
+An install run from a Linux shell against the mounted Windows working copy replaced three
+platform-optional packages in place — `@rolldown/binding-win32-x64-msvc`, `@esbuild/win32-x64`,
+and `lightningcss-win32-x64-msvc` — with their `linux-x64` equivalents. The owner's development
+server could not start from that moment. Nothing recorded that this had happened.
+
+Four properties made it worse than the damage itself:
+
+- **Invisible to canonical state.** `node_modules` is gitignored, so `git status` was clean
+  throughout. The repository reported a healthy tree for three days.
+- **Invisible to the gate.** `npm run check:toolchain` — added on 2026-08-21 for exactly this
+  class of problem — compared two version strings and printed `Toolchain OK`. It would have
+  passed the corrupted tree every time it ran.
+- **Misattributed by the tool that failed.** Rolldown reported "npm has a bug related to
+  optional dependencies" and recommended deleting `package-lock.json`. The cause was not npm and
+  the recommended repair would have modified a tracked file without fixing anything.
+- **Latent across a boundary the owner cannot see.** The damage was done by an agent's shell,
+  discovered by the owner, and diagnosable only by reading modification timestamps inside
+  `node_modules`.
+
+## Classification
+
+The corruption itself is environmental — a property of the bridge between this agent and this
+machine — and under DF-004 it is **not** D-26 evidence. That exclusion is correct and is not
+being relitigated here.
+
+What is not excluded is the shape. An actor took a consequential action; the action left no
+attributable record; canonical state continued to report health; the failure surfaced days later
+to a different actor, at the worst available moment, wearing someone else's name. CuckCode's
+entire thesis is that a manager should be able to read real state and never be shown a healthy
+office over stopped work. This is that failure, executed against the owner, by the development
+process, and it went undetected for three days.
+
+Severity of signal: medium. The environmental half is excluded. The half that remains is a
+concrete instance of the failure mode the product exists to prevent, which is worth more than
+another process complaint.
+
+## Product response
+
+Two changes, both executable rather than prose:
+
+- `checkNativePlatform` and `readInstalledPackageNames` in `scripts/check-toolchain.mjs` now
+  assert that every family of platform-tagged packages in `node_modules` contains a build that
+  can run on the host, and name what is installed when one cannot. Seven tests in
+  `scripts/check-toolchain.test.mjs`, one of which reconstructs the 2026-08-22 tree by name.
+- `scripts/check-toolchain.test.mjs` was not executed by any script in the repository. It is now
+  `npm run test:toolchain`, and `verify` runs it before `check:toolchain` — a check whose own
+  tests never run is the same category of claim as the one this entry records.
+
+Not addressed: nothing prevents the next cross-platform install. The check reports the damage
+after the fact; it does not stop it. Recorded as open.
