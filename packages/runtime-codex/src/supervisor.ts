@@ -4,8 +4,10 @@ import {
   type SpawnOptionsWithoutStdio,
 } from "node:child_process";
 
-const CODEX_ARGS = ["app-server", "--stdio", "--strict-config"] as const;
-const ALLOWED_REQUEST_METHODS = new Set([
+// Exported so the kickoff policy asserts against the values the supervisor actually uses rather
+// than a copy of them. A second declaration is how an allow-list and its guard drift apart.
+export const CODEX_ARGS = ["app-server", "--stdio", "--strict-config"] as const;
+export const ALLOWED_REQUEST_METHODS: ReadonlySet<string> = new Set([
   "account/read",
   "thread/start",
   "turn/start",
