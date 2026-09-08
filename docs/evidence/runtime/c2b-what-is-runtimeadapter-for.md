@@ -1,6 +1,6 @@
 # C-2b — What is `RuntimeAdapter` for? A recommendation
 
-Status: **Recommendation. Awaiting owner decision. Nothing deleted.**
+Status: **APPROVED and applied 2026-09-08.** The closed cluster is deleted.
 Prepared 2026-09-08. Follows `c1-provider-neutrality-review.md`.
 
 ## The precise shape of the problem
@@ -64,8 +64,21 @@ Not F3 (`RuntimeCorrelation` carrying Codex's thread/turn/item hierarchy) and no
 normalizer's inability to express a retryable failure). Both are only answerable once a real
 consumer defines what it needs from the boundary. They stay open in the C-1 finding.
 
-## If approved
+## Applied 2026-09-08
 
-One commit: delete the three symbols, update the C-1 finding to record the decision, and note in
-the Claude-adapter proposal that C-2b is closed and C-3 onward remain unauthorized. No behavior
-changes; `verify` must stay green on its own.
+`RuntimeAdapter`, `AdapterResult`, `RuntimeIssue` **and `runtimeIssueSchema`** removed from
+`packages/contracts/src/runtime.ts`, replaced by a tombstone comment naming what went, why, and
+where the reasoning lives.
+
+**Scope note.** The recommendation named three symbols; four were removed. `RuntimeIssue` is
+`z.infer<typeof runtimeIssueSchema>`, so the schema existed only to produce the deleted type and
+nothing else referenced it. Leaving an exported schema whose sole purpose was typing a deleted
+interface would be the same false affordance in smaller form. Recorded rather than folded in
+silently, because it is a wider deletion than was approved.
+
+Full `npm run verify` green on Windows afterwards, with no behavior change: unit 137, component
+42, integration 47, contract 60, e2e 46, a11y 18, visual 22 with no capture changed.
+
+One incidental finding: the web bundle dropped from 428.24 kB to 427.68 kB and its content hash
+changed. **The unreachable interface was being shipped to the browser.** Small, but it means dead
+contract surface was not merely inert in the repository — it was in the client build.

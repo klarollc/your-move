@@ -27,17 +27,6 @@ export const runtimeCorrelationSchema = z
 
 export type RuntimeCorrelation = z.infer<typeof runtimeCorrelationSchema>;
 
-export const runtimeIssueSchema = z
-  .object({
-    code: id,
-    summary: safeText,
-    retryable: z.boolean(),
-    remediation: safeText.optional(),
-  })
-  .strict();
-
-export type RuntimeIssue = z.infer<typeof runtimeIssueSchema>;
-
 /**
  * The provider-independent record vocabulary. Declared once, here, and derived from by every
  * adapter. It previously existed twice — as this enum and again inside the Codex package's
@@ -120,12 +109,9 @@ export const runtimeBindingReportSchema = z
 
 export type RuntimeBindingReport = z.infer<typeof runtimeBindingReportSchema>;
 
-export type AdapterResult<T> =
-  | { ok: true; value: T; correlation: RuntimeCorrelation }
-  | { ok: false; issue: RuntimeIssue; retryable: boolean };
-
-export interface RuntimeAdapter {
-  connect(input: { agentId: string }): Promise<AdapterResult<RuntimeBindingReport>>;
-  cancel(input: { correlation: RuntimeCorrelation }): Promise<AdapterResult<{ terminal: boolean }>>;
-  disconnect(): Promise<void>;
-}
+// RuntimeAdapter, AdapterResult and RuntimeIssue were removed on 2026-09-08. They formed a closed
+// cluster that referred only to itself: no implementation, no consumer, and no way to start a turn
+// or receive events, so the operation an adapter exists to perform lived outside the interface.
+// The runtime boundary is defined when the first real consumer needs one, derived from what that
+// consumer requires rather than from one provider's shape.
+// See docs/evidence/runtime/c1-provider-neutrality-review.md and c2b-what-is-runtimeadapter-for.md.

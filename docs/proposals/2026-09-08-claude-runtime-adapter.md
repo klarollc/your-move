@@ -1,7 +1,8 @@
 # Specification — second runtime adapter: Claude Code
 
-Status: **C-1 COMPLETE 2026-09-08. C-2 onward superseded by the C-1 finding and awaiting owner
-decision. No code written.**
+Status: **C-1 and C-2 complete 2026-09-08. C-3 onward UNAUTHORIZED and now blocked on a
+prerequisite that does not exist: there is no runtime boundary to write a second adapter against,
+by deliberate decision. Revisit when the first real consumer defines one.**
 Author: Claude (Cowork), at owner request on 2026-09-08.
 Authority: MDD D-26 reciprocal usability; Phase 3 provider-neutral runtime contracts.
 Triggers the Phase 4 spec stop condition **"provider/tool/external-effect expansion"**, which is
