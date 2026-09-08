@@ -452,3 +452,65 @@ that the live path works.
 One test was tightened after failing: `planRevocation` returns `NOT_PROMOTED` with the offending
 `roleId`, matching the other failure shapes, where the test had asserted the bare object. The
 assertion is stronger than written, not weaker.
+
+## Task 17 — The first live kickoff path (in progress)
+
+Two of three parts are complete. **Nothing here has touched a provider.** 17c, the supervised live
+run, has not happened, and no agent binding exists.
+
+| Part | Unit | RED | Tests | Commit |
+| --- | --- | --- | --- | --- |
+| 17b | `packages/application/src/kickoff-run.ts` | 7 of 9 | 9 | `7364e6e` |
+| 17a | `packages/runtime-codex/src/binding.ts` | 8 of 9, one invalid | 9 | this commit |
+| 17c | supervised live run | — | — | not started |
+
+Unit total moved 162 → 171 → 180. A full `npm run verify` was green on Windows after each part.
+
+### One RED in 17a is not valid evidence
+
+`binding.unit.test.ts` has nine tests. Eight failed against the deliberate stub. The ninth —
+"rejects incomplete handshake facts rather than defaulting them" — passed, because the stub
+returned `FACTS_INCOMPLETE`, which is exactly the code that test asserts. A test that passes
+against a stub has proved nothing about the implementation that replaced it.
+
+Recorded rather than papered over: eight tests carry RED evidence, one does not. The stub should
+have returned a code no test asserts. That is the general rule and it was broken here.
+
+### What 17b establishes
+
+The orchestrator spends the turn budget before it can be exceeded, not after: the budget is
+projected for the turn about to be taken, and `turnsUsed` increments even when the turn fails, so
+a failing turn still costs. Observed-event policy is applied to what came back before the turn is
+recorded, so a turn that produced an external effect never becomes part of the round. Silent roles
+are derived from the roster minus those that responded, never accumulated, so the set cannot drift
+from the roster it describes.
+
+**A single failed contribution stops the whole run.** That follows the spec, and it is a real
+design decision rather than a fallback: one flaky turn at role two ends the round and leaves four
+roles silent, against a 13-turn budget that is not cheaply repeatable. The alternative — continue
+and mark the gap — is defensible and would produce a round that says truthfully that five of six
+roles contributed. **This is unresolved and the owner has not ruled on it. The cheapest moment to
+decide is before the live run, not after it burns a budget.**
+
+### What 17a establishes
+
+The report is built from facts the runtime reported, never from what was requested. Model, auth
+mode and protocol version are read back and compared; a difference stops the binding before a turn
+is spent, because "which model produced this" has to be answerable for every record afterwards.
+
+`toolIds: []` in a returned report means the session was observed to expose none. The
+`TOOL_SURFACE_PRESENT` branch is what gives the empty list that meaning — without it, an empty
+list is indistinguishable from nobody having looked. This is the same V0 truthfulness invariant the
+office is held to, applied to a trust record: silence must not read as assent.
+
+The material fingerprint covers the promoted contract digests as well as the session facts. A
+binding must not survive a promotion change it was never approved against, and that correctness
+lives in the relationship between two records that each look valid alone — the same join-checking
+shape as Task 16's promoted set and qualification version check.
+
+### Process failure worth recording
+
+The 17a RED was requested and run 57 seconds before the implementation finished writing to disk.
+The resulting output was a full stub RED presented as a post-implementation result, and it was
+only distinguishable from a genuine failure by comparing file mtimes against the test start time.
+Nothing in the loop makes a run's inputs attributable to a known state of the tree.
