@@ -1,7 +1,8 @@
 # Checklist: canonical open-question record
 
-Status: **Tasks 1-4 owner-accepted 2026-08-18. Task 5 AUTHORIZED 2026-09-08. The
-kickoff-unification decision remains open.**
+Status: **Tasks 1-5 complete and owner-accepted. Task 5 delivered 2026-09-08 and required a
+contract change beyond its authorized scope (see below). The kickoff-unification decision
+remains open.**
 Specification: `docs/proposals/2026-08-18-open-question-record.md`
 Plan: `tasks/open-question-plan.md`
 
@@ -52,12 +53,21 @@ The approval above does not authorize the following.
 
 - [x] Owner authorized Task 5 on 2026-09-08 after reviewing the Tasks 1-4 evidence.
 
-- [ ] Task 5: Attention integration.
-  - Acceptance: `question_open` at priority 35; `blocksWork` escalation; `neededBy` surfacing;
-    Task 10 rail and Checkpoint C evidence re-verified or re-captured with recorded owner
-    disposition.
-  - Verify: attention projector unit tests, Task 10 component and browser regression, and a
-    recorded decision on any changed capture.
+- [x] Task 5: Attention integration. **Complete 2026-09-08.**
+  - Acceptance as authorized: `question_open` at priority 35; `blocksWork` escalation;
+    `neededBy` surfacing; Task 10 rail and Checkpoint C evidence re-verified or re-captured with
+    recorded owner disposition.
+  - **Scope actually required, larger than authorized:** the acceptance could not be met without
+    adding `raisedAt` to the `OpenQuestion` contract. `ManagerAttentionItem` requires `updatedAt`
+    and no timestamp existed on a question, so there was no truthful value to project. The owner
+    chose the contract change over the alternatives on 2026-09-08. This amended line records what
+    the task became; the original acceptance did not anticipate it.
+  - Verified: attention projector unit tests 5/5, contract 12/12, full `npm run verify` green on
+    Windows. Task 10 rail evidence **re-verified, not re-captured** — visual 22/22 with no
+    committed capture changed, so no owner disposition on a changed capture was required.
+  - Reason stays `question_open` when escalated. Owner-agreed 2026-09-08: raising the priority
+    but not renaming the reason avoids asserting a work state canonical state does not hold,
+    which is the substitution the whole record type exists to remove.
 
 - [ ] Owner decides specification §4 kickoff unification: leave alone, emit additionally, or
       reference. Recommendation is emit additionally, deferred until the base record is proven.

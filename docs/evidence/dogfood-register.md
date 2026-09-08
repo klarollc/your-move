@@ -184,3 +184,60 @@ Two changes, both executable rather than prose:
 
 Not addressed: nothing prevents the next cross-platform install. The check reports the damage
 after the fact; it does not stop it. Recorded as open.
+
+### DF-007 — The record type for uncertainty could not say when it became uncertain
+
+- Observed: 2026-09-08, while implementing Task 5 of the open-question work stream.
+- D-26 clauses implicated: agents may "flag missing or contradictory context" and "ask clarifying
+  questions"; and canonical records must be attributable. This entry is squarely inside D-26 and,
+  unlike DF-006, is not partly excluded under DF-004 — nothing here is environmental.
+
+`OpenQuestion` was specified, reviewed, approved, implemented, persisted, projected to both
+participants, and accepted by the owner across four tasks — carrying no timestamp. Not
+`raisedAt`, not `recordedAt`, nothing. `neededBy` and `reviewBy` exist but are future deadlines,
+not occurrence times.
+
+The gap was invisible for three weeks because nothing consumed the record in a context that
+needed one. It surfaced the moment the attention projector, an unrelated Phase 1 component,
+demanded `updatedAt` and there was no truthful value to supply. The workaround available at that
+moment — using read time — would have made the projection return different values on every call
+and quietly destabilised the committed visual captures.
+
+## Why this is worth more than a missing-field bug
+
+The record exists to fix DF-005: an agent has no canonical way to say *what it is unsure about*.
+The record built to carry that could not say **when** it became unsure. The same class of defect,
+one level down, inside its own remedy.
+
+Three separate reviews did not catch it — the specification, the owner's approval of Tasks 1–4,
+and the implementation of four tasks against it. It was not caught by reading. It was caught by
+an attempt to consume the record for something its author had not imagined, which is the only
+kind of pressure that finds an omission rather than an error.
+
+Two properties of the failure are worth naming:
+
+- **A missing field is invisible to every check that looks at what is present.** Validation,
+  tests, and review all confirm that the declared fields behave. Nothing asks what was never
+  declared. Contrast DF-006, which at least produced a loud, if misattributed, error.
+- **The consumer was the discovery mechanism.** The gap became visible only across a boundary,
+  when a component written by different reasoning tried to use the record. Within the
+  open-question work stream everything was self-consistent.
+
+Severity of signal: high, and unusually cheap to act on — the corrective is a review question,
+not a system.
+
+## Product response
+
+`raisedAt` is now a required, `parseUtcTimestamp`-validated field on `OpenQuestion`, applied
+2026-09-08 with owner approval. RED–GREEN in `docs/evidence/open-question/red-green-log.md`.
+
+**Proposed and not authorized:** a standing review question for any new canonical record — *can
+this record say when it happened, who caused it, and what event caused it?* Every canonical
+record in this repository already answers all three; `OpenQuestion` was specified without anyone
+noticing it answered only two. Per this repository's stated preference, the stronger version is a
+test that asserts every canonical record type carries a validated timestamp, rather than a fourth
+prose rule that a future reviewer will also read past.
+
+Not addressed: the same question should be asked of `QuestionDisposition`, which also carries no
+timestamp. Recorded as open rather than fixed in passing, because it was not in scope and no
+consumer has yet demanded it — which is exactly the condition under which this defect survived.

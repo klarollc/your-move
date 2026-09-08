@@ -11,6 +11,7 @@ const question = {
   authorId: "agent_test",
   roleId: "test",
   raisedByEventId: "event_108",
+  raisedAt: "2026-08-18T09:00:00.000Z",
   question: "Were the Phase 0 rendered files re-captured under a later build?",
   whyItMatters: "Their recorded hashes no longer match the accepted evidence manifest.",
   confidence: "likely",
@@ -122,5 +123,29 @@ describe("open-question contracts", () => {
       ok: false,
       code: "QUESTION_DISPOSITION_INCOMPLETE",
     });
+  });
+});
+
+describe("open question provenance timestamp", () => {
+  it("rejects a question that cannot say when it was raised", () => {
+    const withoutRaisedAt: Record<string, unknown> = { ...question };
+    delete withoutRaisedAt.raisedAt;
+
+    expect(validateOpenQuestion(withoutRaisedAt)).toEqual({
+      ok: false,
+      code: "QUESTION_INVALID",
+    });
+  });
+
+  it("rejects a raisedAt that is not a UTC timestamp", () => {
+    expect(validateOpenQuestion({ ...question, raisedAt: "yesterday" }).ok).toBe(false);
+    expect(validateOpenQuestion({ ...question, raisedAt: "2026-08-18" }).ok).toBe(false);
+    expect(validateOpenQuestion({ ...question, raisedAt: "" }).ok).toBe(false);
+  });
+
+  it("accepts a UTC timestamp", () => {
+    expect(validateOpenQuestion({ ...question, raisedAt: "2026-08-18T09:00:00.000Z" }).ok).toBe(
+      true,
+    );
   });
 });

@@ -298,3 +298,55 @@ because it modifies an owner-accepted Phase 1 projector that Phase 4 Task 10 dep
 
 Total new coverage across the work stream: 32 tests over four files, plus the D4-P-004 corrective
 commit that returned `main` to green before any of it began.
+
+## Task 5 — Attention integration (2026-09-08)
+
+Authorized 2026-09-08. Delivered the same day. **The task was larger than its acceptance line.**
+
+### The blocker the specification did not anticipate
+
+Spec §2.3 asked for `question_open` at priority 35 with escalation on `blocksWork` and `neededBy`.
+Implementing it revealed that `ManagerAttentionItem` requires `updatedAt` and **an `OpenQuestion`
+carried no timestamp of any kind** — `neededBy` and `reviewBy` are future deadlines, not
+occurrence times. The causing event was no help either: `raisedByEventId` names it, but
+`CanonicalProjectSnapshot` keeps only `eventIds` and discards event timestamps.
+
+Three options were put to the owner: add `raisedAt` to the contract; use read time as `updatedAt`;
+or make `updatedAt` optional. The second lies and makes the projection non-deterministic per call,
+which would destabilise the Checkpoint C captures. The third is likely barred by the workspace
+contract, which rejects attention items missing freshness. **The owner chose the contract change
+on 2026-09-08.**
+
+### RED and GREEN, both on the owner's Windows machine
+
+Two behavioural REDs, each preceded by a deliberate stub so the first failure was an assertion
+rather than a compile error.
+
+1. **Contract.** `raisedAt` added to the type and to every fixture, with no validation. RED: 2 of
+   3 new tests failed — a question with no `raisedAt` validated successfully, and `"yesterday"`
+   was accepted. GREEN after validating with `parseUtcTimestamp`, the same check `events.ts`
+   applies to `occurredAt`. 12/12.
+2. **Projector.** Union and priority table extended, second parameter accepted and ignored. RED:
+   3 of 4 new tests failed, all with the question absent from the projection. GREEN after reading
+   `questionsRequiringDisposition`. 5/5.
+
+In both cases one new test passed before and after. Those are guards against over-correction —
+"accepts a UTC timestamp", and "projects nothing for questions when no register is supplied" —
+and are recorded as guards, not as RED evidence.
+
+**Full `npm run verify` green on Windows**: unit 133 → 137, contract 55 → 58, component 42,
+integration 47, e2e 46, a11y 18, **visual 22 with no committed capture changed**. The rail renders
+identically, so Task 10 evidence was re-verified rather than re-captured and no owner disposition
+on a changed capture was required.
+
+`tsc` caught one defect neither ESLint nor Prettier could: a second construction site in
+`open-question-store.integration.test.ts` that rebuilds a question field-by-field — deliberately,
+to prove key order does not matter to the store — and so did not receive `raisedAt` from the
+fixture edit. Typecheck cannot run from the agent side; the owner's run found it.
+
+### Design decision recorded
+
+An escalated question keeps `reason: "question_open"` and only its priority moves to 10. Renaming
+it `blocked` would sort more simply and would assert a work state canonical state does not hold —
+precisely the substitution agents are forced into today, and the reason this record type exists.
+Owner-agreed 2026-09-08.

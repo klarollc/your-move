@@ -1,3 +1,5 @@
+import { parseUtcTimestamp } from "./primitives.js";
+
 export const questionSubjectKinds = [
   "work_item",
   "knowledge",
@@ -40,6 +42,7 @@ export type OpenQuestion = Readonly<{
   authorId: string;
   roleId?: string;
   raisedByEventId: string;
+  raisedAt: string;
   question: string;
   whyItMatters: string;
   confidence: QuestionConfidence;
@@ -80,6 +83,9 @@ export function validateOpenQuestion(input: unknown): Validation<OpenQuestion> {
     !nonEmpty(input.authorId) ||
     !optionalNonEmpty(input.roleId) ||
     !nonEmpty(input.raisedByEventId) ||
+    // Every canonical record can say when it happened. A question that cannot is not
+    // attributable in time, and anything projecting it has no truthful freshness to show.
+    !utcTimestamp(input.raisedAt) ||
     !nonEmpty(input.question) ||
     !nonEmpty(input.whyItMatters) ||
     !isMember(input.confidence, questionConfidences) ||
@@ -164,6 +170,10 @@ function optionalNonEmpty(value: unknown): boolean {
 
 function optionalString(value: unknown): boolean {
   return value === undefined || typeof value === "string";
+}
+
+function utcTimestamp(value: unknown): value is string {
+  return typeof value === "string" && parseUtcTimestamp(value).ok;
 }
 
 function nonEmpty(value: unknown): value is string {

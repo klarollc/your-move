@@ -14,6 +14,7 @@ const question: OpenQuestion = {
   authorId: "agent_test",
   roleId: "test",
   raisedByEventId: "event_108",
+  raisedAt: "2026-08-18T09:00:00.000Z",
   question: "Is the layout evidence rewritten on every visual run?",
   whyItMatters: "It backs an approved measurement decision.",
   confidence: "likely",
