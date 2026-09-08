@@ -398,3 +398,57 @@ If a project database is later found predating 2026-09-08 with kickoff records i
 decision is wrong for that database and a migration reserialising `kickoff_records.canonical_json`
 is required. `schema_migrations` and `user_version = 4` provide the mechanism. Recorded so the
 absence of a migration is a decision on record rather than an omission.
+
+## Task 16 — Exact role promotion and live kickoff preflight
+
+Complete 2026-09-08. The decision packet is owner-approved; this records the executable half.
+**No provider call was made and nothing is promoted.**
+
+Three units, each RED against deliberate stubs before implementation, each GREEN after, and a full
+`npm run verify` green on Windows at each step. Unit total moved 137 → 151 → 162.
+
+| Unit | RED | Tests |
+| --- | --- | --- |
+| `scripts/promote-roles.mjs` | 9 of 9 | 9 |
+| `packages/runtime-codex/src/kickoff-policy.ts` | 8 of 14 | 14 |
+| `packages/domain/src/kickoff-preflight.ts` | 9 of 11 | 11 |
+
+The tests that passed before and after are guards against over-correction — that allowed methods
+stay allowed, that a qualification exactly at the age limit is not stale, that an under-filled
+round is legal — and are recorded as guards rather than as RED evidence.
+
+### The three properties that carry the acceptance
+
+**Promotion is all-or-nothing, and the promoted set is derived rather than stored.**
+`promotedRoleIds` recomputes from the manifest on every call, so a role stops counting the moment
+its digests no longer match what was approved. A contract version that changed after promotion was
+never the version the owner promoted, and nothing has to remember to revoke it. That property is
+what makes promote-until-revoked safe rather than merely convenient.
+
+**The text-only policy watches what came back, not what was configured.** Any observed
+`runtime.command`, `runtime.file`, `runtime.tool` or `runtime.artifact` stops the run, because
+seeing one means the configuration meant to prevent it did not. Spawn arguments compare as an exact
+sequence rather than a set, since a set comparison accepts a reordering and position is how an
+unexpected flag takes effect.
+
+**Compatibility is checked in the join, not in either record.** A binding qualified against a
+contract version other than the promoted one is refused. Both records look correct alone; only
+their relationship is wrong. Same shape as the derived promoted set.
+
+### Reuse rather than restatement
+
+Each unit asserts against the definition it guards rather than a copy: the policy imports
+`CODEX_ARGS` and `ALLOWED_REQUEST_METHODS` from the supervisor, the preflight delegates roster
+checking to `validateSixRoleRoster` in contracts, and `contractVersionOf` formats the version
+string in one place. A guard carrying its own copy of what it guards is the C-1 F2 defect: the two
+drift and the test keeps passing while proving nothing.
+
+### What this does not establish
+
+The mechanisms are built and unit-tested. **None has run against a real binding, because no agent
+bindings exist.** Task 17 is where they are first exercised, and a green unit suite is not evidence
+that the live path works.
+
+One test was tightened after failing: `planRevocation` returns `NOT_PROMOTED` with the offending
+`roleId`, matching the other failure shapes, where the test had asserted the bare object. The
+assertion is stronger than written, not weaker.

@@ -89,9 +89,16 @@ The initial approval does not authorize the following tasks.
 - [x] Owner authorized **Task 16 only** on 2026-09-08, scoped to producing the preflight packet.
       Task 17 remains gated behind owner approval of that packet's four items.
 
-- [ ] Task 16: Exact role promotion and live kickoff preflight. **AUTHORIZED 2026-09-08.**
-      Deliverable is the packet naming exact role promotion, six agent bindings, provider-turn
-      ceiling (spec caps at 13 live turns), and fixture manifest. **No provider calls.**
+- [x] Task 16: Exact role promotion and live kickoff preflight. **Complete 2026-09-08.**
+      Packet approved: `docs/evidence/phase-4/live-kickoff/task-16-preflight-packet.md`.
+      Executable half built and tested, no provider calls made:
+      `scripts/promote-roles.mjs` (all-or-nothing promotion, derived promoted set, explicit
+      revoke), `packages/runtime-codex/src/kickoff-policy.ts` (exact spawn args, request
+      allow-list, observed-effect stop, 13-turn D-25 budget), and
+      `packages/domain/src/kickoff-preflight.ts` (six distinct identities, promotion join,
+      qualification pass/freshness/version-compatibility, exception expiry, all failures
+      reported together). 34 tests across the three, full verify green.
+      **Not yet exercised against real bindings, because none exist** — that is Task 17.
   - Acceptance: six exact reviewed role versions, six qualified distinct identities, bounded permissions, shared briefing, max 13 turns, no tools/effects.
   - Verify: promotion/preflight matrix and owner decision record.
 
