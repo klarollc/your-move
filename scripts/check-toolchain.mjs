@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 function normalizeVersion(version) {
@@ -77,6 +78,118 @@ export function checkToolchain(engines, versions) {
   return { ok: errors.length === 0, errors };
 }
 
+const NATIVE_PLATFORMS = new Set([
+  "aix",
+  "android",
+  "darwin",
+  "freebsd",
+  "linux",
+  "openbsd",
+  "openharmony",
+  "sunos",
+  "win32",
+]);
+
+const NATIVE_ARCHITECTURES = new Set([
+  "arm",
+  "arm64",
+  "ia32",
+  "loong64",
+  "mips64el",
+  "ppc64",
+  "riscv64",
+  "s390x",
+  "x64",
+]);
+
+// A platform-tagged package name looks like "@esbuild/win32-x64",
+// "@rolldown/binding-win32-x64-msvc", or "lightningcss-win32-x64-msvc". The family is everything
+// before the platform token; the remainder carries the platform and, usually, the architecture.
+export function parsePlatformPackage(name) {
+  const scoped = name.startsWith("@");
+  const separator = scoped ? name.indexOf("/") : -1;
+  const scope = scoped ? name.slice(0, separator) : "";
+  const bare = scoped ? name.slice(separator + 1) : name;
+
+  const tokens = bare.split("-");
+  const platformIndex = tokens.findIndex((token) => NATIVE_PLATFORMS.has(token));
+  if (platformIndex === -1) {
+    return null;
+  }
+
+  const prefix = tokens.slice(0, platformIndex).join("-");
+  const family = [scope, prefix].filter(Boolean).join(scoped && prefix ? "/" : "");
+
+  return {
+    family: family || name,
+    platform: tokens[platformIndex],
+    arch: tokens.slice(platformIndex + 1).find((token) => NATIVE_ARCHITECTURES.has(token)) ?? null,
+  };
+}
+
+// Verifies that every family of platform-specific packages present in the tree includes a build
+// this machine can actually execute. Defect: on 2026-08-22 an install run from a Linux shell
+// against the Windows working copy replaced three win32 builds with linux ones. The engine
+// version check passed, and the failure surfaced days later as an unrelated-looking npm bug.
+export function checkNativePlatform(packageNames, host) {
+  const families = new Map();
+
+  for (const name of packageNames) {
+    const parsed = parsePlatformPackage(name);
+    if (!parsed) {
+      continue;
+    }
+
+    const entry = families.get(parsed.family) ?? { installed: [], satisfied: false };
+    entry.installed.push(name);
+    if (parsed.platform === host.platform && (parsed.arch === null || parsed.arch === host.arch)) {
+      entry.satisfied = true;
+    }
+    families.set(parsed.family, entry);
+  }
+
+  const errors = [];
+  for (const [family, entry] of families) {
+    if (entry.satisfied) {
+      continue;
+    }
+    errors.push(
+      `${family} has no build for ${host.platform}-${host.arch}; installed: ${entry.installed.join(", ")}.`,
+    );
+  }
+
+  return { ok: errors.length === 0, errors };
+}
+
+export function readInstalledPackageNames(nodeModulesDir) {
+  let entries;
+  try {
+    entries = readdirSync(nodeModulesDir, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+
+  const names = [];
+  for (const entry of entries) {
+    if (!entry.isDirectory() || entry.name.startsWith(".")) {
+      continue;
+    }
+
+    if (!entry.name.startsWith("@")) {
+      names.push(entry.name);
+      continue;
+    }
+
+    for (const scoped of readdirSync(join(nodeModulesDir, entry.name), { withFileTypes: true })) {
+      if (scoped.isDirectory() && !scoped.name.startsWith(".")) {
+        names.push(`${entry.name}/${scoped.name}`);
+      }
+    }
+  }
+
+  return names;
+}
+
 function currentNpmVersion() {
   const userAgent = process.env.npm_config_user_agent;
   const userAgentMatch = userAgent?.match(/npm\/(\d+\.\d+\.\d+)/u);
@@ -94,20 +207,36 @@ function main() {
     node: process.versions.node,
     npm: currentNpmVersion(),
   };
-  const result = checkToolchain(engines, versions);
+  const host = { platform: process.platform, arch: process.arch };
+  const nodeModulesDir = join(
+    dirname(fileURLToPath(new URL("../package.json", import.meta.url))),
+    "node_modules",
+  );
 
-  if (!result.ok) {
+  const result = checkToolchain(engines, versions);
+  const native = checkNativePlatform(readInstalledPackageNames(nodeModulesDir), host);
+
+  if (!result.ok || !native.ok) {
     console.error("Toolchain check failed:");
-    for (const error of result.errors) {
+    for (const error of [...result.errors, ...native.errors]) {
       console.error(`- ${error}`);
     }
-    console.error(
-      "Use the Node/npm versions declared in package.json before running project verification.",
-    );
+    if (!result.ok) {
+      console.error(
+        "Use the Node/npm versions declared in package.json before running project verification.",
+      );
+    }
+    if (!native.ok) {
+      console.error(
+        `Installed native builds do not match ${host.platform}-${host.arch}. Reinstall from this machine; an install run from another platform against this working copy replaces optional builds in place.`,
+      );
+    }
     process.exit(1);
   }
 
-  console.log(`Toolchain OK: Node ${versions.node}, npm ${versions.npm}`);
+  console.log(
+    `Toolchain OK: Node ${versions.node}, npm ${versions.npm}, native builds match ${host.platform}-${host.arch}`,
+  );
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
