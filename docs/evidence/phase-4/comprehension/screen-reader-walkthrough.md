@@ -1,6 +1,17 @@
 # Manual screen-reader walkthrough script
 
-Status: **Script only. Not yet run.**
+Status: **WAIVED BY OWNER, 2026-09-08. Never run.**
+
+No screen reader was ever attached to this interface. Nothing below was performed, and no
+finding — empty or otherwise — may be cited from this file. The script is retained so the
+walkthrough can be run later against any build.
+
+Waived properties of note: **W5** (an unanswered kickoff role announced as anything that could be
+heard as agreement — V0) and **W6** (anything announced implying work is progressing in a
+degraded state — V0). Both remain asserted by automated axe scans and Playwright assertions and
+unverified by any human listener. MDD §19 requires this walkthrough; the requirement is not met,
+and the Task 15 gate closes on owner authority instead. An empty findings table below would be a
+valid result only if every step had actually been performed — none were.
 Required by MDD §19 and the Task 15 gate. Automated axe scans are evidence, not certification;
 this walkthrough is the part axe cannot perform.
 

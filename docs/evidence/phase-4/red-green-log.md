@@ -281,3 +281,78 @@ charter. The assertion guards the right property and is not vacuous, but it does
 that a *degraded runtime specifically* cannot promote a kickoff to authorised. Closing that
 requires a chartered fixture to contrast against, which belongs to the separately gated live
 kickoff rather than to Task 14. Recorded so this is not later read as stronger evidence than it is.
+
+## Task 15 — Comprehension study
+
+Run 2026-09-08 at 1280x800, build `d260594`, gap 18 days from the last commit touching interface
+source and 20 from the last behavioural one. Full sheet: `comprehension/run-2026-09-08.md`.
+
+**Closed by owner waiver on 2026-09-08 with three of six criteria never run.**
+
+| Criterion | Outcome |
+| --- | --- |
+| T1 assignment and state | pass |
+| T2 attention | pass |
+| T3 waiting versus blocked | waived — not performed, no evidence |
+| T4 completed versus approved | pass by owner disposition |
+| T5 evidence and next action | waived — not performed, no evidence |
+| T6 truthfulness | waived — not performed, no evidence |
+
+Three criteria exercised, three waived. No criterion was flagged as answered from memory of
+building the interface, so the two clean passes are uncontaminated.
+
+**This is not a comprehension pass and must not be cited as one.** The MDD §20 criteria are not
+met; the owner exercised his authority to close the item without meeting them. T5 and T6 guard
+the V0 truthfulness properties — silence must never read as assent, and nothing may imply
+progress that is not happening — and both remain unexamined by a human reader, asserted only by
+automated tests.
+
+Two write-ups of this run were produced and retracted before the facts were established: the
+first scored three unperformed tasks as interface failures, the second scored two. Both were
+corrected by asking the operator what he had actually opened. The instrument could not
+distinguish an unattempted task from a failed one, because "no idea" and a genuine "cannot tell"
+went into the same field. A per-task opened/did-not-open mark is required before any future run.
+
+Still outstanding for Task 15: the screen-reader walkthrough and the owner graybox gate.
+
+## Task 15 — Screen-reader walkthrough
+
+**Waived by owner on 2026-09-08. Never run.** No screen reader was attached to this interface at
+any point. `comprehension/screen-reader-walkthrough.md` retains the seven-step script, marked
+waived.
+
+MDD §19 requires a recorded manual walkthrough. That requirement is **not met**. Automated axe
+scans are evidence but not certification, and the walkthrough is the part axe cannot perform —
+notably W5 (an unanswered kickoff role announced as anything resembling agreement, V0) and W6
+(anything announced implying work is progressing while degraded, V0).
+
+Combined effect with the comprehension waiver recorded above: the V0 truthfulness properties —
+silence must never read as assent, and nothing may imply progress that is not happening — now
+have **no human verification of any kind**, visual or auditory. They rest entirely on automated
+assertions over deterministic fixtures. This is a known and accepted position, not an oversight.
+
+Task 15 now has one item left: the owner graybox gate.
+
+## Task 15 — Owner graybox gate
+
+**Accepted by the owner on 2026-09-08.** Behavior and composition accepted; no corrections
+requested.
+
+The acceptance rests on:
+
+- automated evidence — the 22-test capture matrix, clean console and network, zero axe
+  violations, and keyboard, focus, reduced-motion and 200%-zoom coverage, all previously green;
+- both D4-V2 defects fixed rather than disposed;
+- three of six comprehension criteria, two passing clean and one passing by owner disposition.
+
+It does **not** rest on any human verification of the truthfulness properties. The comprehension
+study was closed by waiver with T3, T5 and T6 never performed, and the screen-reader walkthrough
+was waived and never run. No record exists of `?state=permission-denied`, `?state=offline`,
+`?kickoff=revision` or `?kickoff=round` being reviewed during this gate.
+
+Stating that plainly is the point of recording it. The gate is closed on owner authority over an
+evidence base that is complete on the automated side and partial on the human side.
+
+**Task 15 is complete. Phase 4 Tasks 1–15 are done.** Tasks 16–18 — role promotion, live kickoff,
+and the final gate — remain unauthorized and require explicit owner approval before any work
+begins.
