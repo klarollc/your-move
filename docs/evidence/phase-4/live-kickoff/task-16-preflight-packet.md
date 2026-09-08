@@ -1,8 +1,10 @@
 # Task 16 — Role promotion and live kickoff preflight packet
 
 Status: **DECISION PACKET. Nothing is promoted. No provider call has been made.**
-Prepared 2026-09-08 against `ba30926`. Authorized by the owner on 2026-09-08, scoped to producing
-this packet only.
+Prepared 2026-09-08 against `ba30926`, updated the same day with the owner's decisions.
+Authorized 2026-09-08, scoped to producing this packet only.
+
+**One blank remains: the two model names (§2).** Everything else is settled and recorded below.
 
 Approving this packet authorizes Task 17: one bounded live kickoff. Approving it does **not**
 authorize Phase 5, high-fidelity art, visual baseline promotion, deployment, or any external
@@ -27,21 +29,53 @@ Vendored at `roles/upstream/agency-agents/ebe9c99a…/`. Manifest: `roles/manife
 Full digests are in `roles/manifest.json`; the abbreviations above are for reading, and the
 preflight check compares full values.
 
-**Every role is currently `"status": "candidate", "executable": false`.** That is what your
-approval changes, and it changes it for these six contract versions only.
+**Every role is currently `"status": "candidate", "executable": false`.** That is what approval
+changes, and it changes it for these six contract versions only.
 
-`implementation-engineer` carries one **quarantined segment**, sha256 `29b191b6…bf9cc3f4`,
-treatment `excluded_from_normalized_role`. It is excluded from the normalized role and will not
-reach the provider. Flagged because it is the one role whose promoted contract is not simply its
-upstream source.
+**Owner decision 2026-09-08 — promotion scope: promote until revoked, not per-kickoff.** These six
+contract versions become executable and stay executable until explicitly revoked. Consequence,
+accepted deliberately: there is no automatic reversion after the run, so an explicit revoke path
+is required and is part of Task 16's executable half. Digest accuracy is not a manual check —
+`npm run roles:agency-agents:check` asserts these digests, source drift and path allowlisting on
+every `verify`, and was green at `ba30926`. What approval changes is the executable flag, not the
+identity.
+
+`implementation-engineer` carries one **quarantined segment**, treatment
+`excluded_from_normalized_role`. The excluded content is a single line:
+
+```html
+<!-- You create sophisticated component combinations -->
+```
+
+Harmless in content. Not harmless in category: an instruction invisible to anyone reading the
+rendered markdown and fully present in the text a provider would receive. The import test named
+"rejects hidden instructions and executable overlays" fired on a benign instance in an upstream
+repository with no bad intent.
+
+**Owner decision 2026-09-08: exclusion confirmed.** The promoted `implementation-engineer`
+therefore differs from its upstream source; the manifest records the segment hash and treatment,
+so the difference stays attributable. Recorded because this is the only evidence in existence that
+the import quarantine does anything.
 
 ## 2. Runtime
 
 - Codex App Server, local direct-spawn stdio. Installed version **0.146.0**, pinned protocol
   bundle at `packages/runtime-codex/protocol/0.146.0/`.
 - Transport is loopback only. Non-loopback transport is a spec stop condition.
-- **Model is not recorded anywhere in this repository.** Phase 3's live evidence records the
-  Codex version and nothing about the model. See §6 — this is the first item you must supply.
+- **`authMode`: `chatgpt`.** Owner decision 2026-09-08 — subscription auth, not an API key.
+- **Two models, one provider.** Owner decision 2026-09-08. Five roles on one model; the Release
+  Reviewer on a second. Rationale: D-25 gives that role independent dissent, and six instances of
+  one model on one briefing are correlated by construction — if it never dissents, the record
+  cannot distinguish "nothing to dissent about" from "same model, same conclusion." Two models
+  within one provider buys partial decorrelation at the cost of one extra binding.
+- **The two model names are not yet recorded.** The pinned protocol treats `model` as a free
+  string and enumerates no values, so the available names come from the account rather than from
+  the pin. They must be written here before Task 17, because "which model produced this" belongs
+  in every attributable record afterwards.
+
+A cross-vendor split was considered and rejected on 2026-09-08: it requires a second runtime
+adapter, which is now blocked by deliberate decision. See
+`docs/evidence/runtime/c1-provider-neutrality-review.md`.
 
 ## 3. Bindings
 
@@ -70,18 +104,40 @@ current, compatible admission and qualification evidence.
 ## 5. Fixture root and briefing
 
 The graybox fixtures under `?kickoff=revision` and `?kickoff=round` are deterministic and are
-**not** the live briefing. The shared briefing for a live run does not exist yet and must be
-written and approved before Task 17.
+**not** the live briefing.
 
-## 6. What you must supply before Task 17 can start
+**Owner decision 2026-09-08: keep the graybox briefing's structure, replace only its goal.**
+Structure is preserved so the live output stays comparable to `?kickoff=revision`; the goal is
+replaced because the fixture's — "Choose the first project goal collaboratively" — is deliberately
+vague and would produce output no manager would charter. That matters more than it sounds:
+**Task 17 ends in a charter decision, and a chartered fixture is what closes the named weak
+assertion** in §8. A run ending in rejection leaves that assertion open.
 
-These are genuine gaps, not formalities. Each one blocks.
+Proposed briefing, for approval with the packet:
 
-1. **The model.** Nothing in the repo names it. It must be recorded in the packet before the run,
-   because "which model produced this" is part of every attributable record afterwards.
-2. **The shared briefing text.** The one thing all six roles respond to.
-3. **Confirmation that promotion is limited to these six contract versions**, digests as listed.
-4. **Disposition on the `implementation-engineer` quarantined segment** — confirm exclusion.
+```
+goal:                  "Assert that every canonical record type carries a validated timestamp."
+constraints:           ["No pre-charter implementation"]
+permissions:           ["project.read", "collaboration.contribute"]
+evidenceFloor:         ["test", "visual", "release"]
+managerNonNegotiables: ["Six attributable roles", "One revision maximum"]
+activeRoleIds:         [delivery, design, implementation, test, visual, release]
+```
+
+The goal is the DF-007 corrective, already recorded as proposed-and-unauthorized in
+`docs/evidence/dogfood-register.md`. It is small, concrete, the owner already believes it should
+exist, `QuestionDisposition` is a known second offender, and six roles have genuinely different
+things to say about it. It is a goal the owner would actually charter.
+
+## 6. What remains
+
+**One blank, then approval of the packet as a whole.**
+
+1. **The two model names**, and confirmation that the second belongs to the Release Reviewer.
+
+Settled on 2026-09-08 and recorded above rather than left as open questions: promotion scope
+(until revoked, §1), the quarantined segment (exclusion confirmed, §1), `authMode` (`chatgpt`,
+§2), the two-model approach (§2), and the briefing (§5).
 
 ## 7. What is not built yet
 
