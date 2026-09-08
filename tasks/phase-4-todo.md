@@ -72,23 +72,31 @@ Composition: `.ui-craft/spec.md`
     green. Evidence: `docs/evidence/phase-4/red-green-log.md`. Manual screen-reader walkthrough
     and the kickoff capture matrix remain for Task 15.
 
-- [ ] Task 15: Graybox visual, accessibility, and comprehension gate.
+- [x] Task 15: Graybox visual, accessibility, and comprehension gate. **Complete 2026-09-08.**
+      Comprehension study closed by owner waiver with T3/T5/T6 never performed; screen-reader
+      walkthrough waived and never run. MDD §19 and §20 are **not met** — see
+      `docs/evidence/phase-4/red-green-log.md`. Neither waiver is a pass.
   - Acceptance: both viewports; rendered manifests; clean console/network; axe/keyboard/screen-reader/zoom/reduced-motion; 4-of-5 comprehension; V0/V1 zero; V2 disposition; owner graybox acceptance.
   - Verify: `npm.cmd run verify`, all Phase 4 deterministic commands, manual evidence, and owner record.
 
-- [ ] Owner graybox gate: accept behavior/composition or request bounded corrections. No art promotion.
+- [x] Owner graybox gate: **accepted by owner 2026-09-08**, no corrections requested. No art
+      promotion. Acceptance rests on complete automated evidence and partial human evidence.
 
 ## Separately gated live kickoff
 
 The initial approval does not authorize the following tasks.
 
-- [ ] Owner separately authorizes Tasks 16–17 after reviewing Task 15 evidence.
+- [x] Owner authorized **Task 16 only** on 2026-09-08, scoped to producing the preflight packet.
+      Task 17 remains gated behind owner approval of that packet's four items.
 
-- [ ] Task 16: Exact role promotion and live kickoff preflight.
+- [ ] Task 16: Exact role promotion and live kickoff preflight. **AUTHORIZED 2026-09-08.**
+      Deliverable is the packet naming exact role promotion, six agent bindings, provider-turn
+      ceiling (spec caps at 13 live turns), and fixture manifest. **No provider calls.**
   - Acceptance: six exact reviewed role versions, six qualified distinct identities, bounded permissions, shared briefing, max 13 turns, no tools/effects.
   - Verify: promotion/preflight matrix and owner decision record.
 
-- [ ] Task 17: Bounded live kickoff and manager charter.
+- [ ] Task 17: Bounded live kickoff and manager charter. **UNAUTHORIZED** — requires owner
+      approval of the Task 16 packet first.
   - Acceptance: six contributions, one synthesis, six explicit revisions/affirmations, full attribution, no prohibited effect, manager disposition.
   - Verify: exact `CUCKCODE_LIVE_KICKOFF=1` supervised run and canonical evidence.
 

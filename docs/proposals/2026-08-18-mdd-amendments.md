@@ -4,7 +4,8 @@ Status: **PROPOSED. Not applied. Requires owner approval before any document is 
 Author: Claude (Cowork), at owner request on 2026-08-18.
 Evidence: `docs/competitive-landscape.md`, `docs/evidence/defect-register.md`.
 
-Amendments A, B and D are proposed and independent; any may be approved without the others.
+Amendments B and D were **applied on 2026-09-08**. Amendment A is being rebuilt on solo-builder
+grounds at owner request (2026-09-08) and is not applied.
 Amendment C is **superseded by Amendment D** and should not be approved on its own.
 
 ---
@@ -67,6 +68,8 @@ never force a triage decision, this amendment is unnecessary ceremony.
 ---
 
 ## Amendment B — New decision gate D-28: event rate and presentation-queue bound
+
+**APPLIED to the MDD on 2026-09-08 with owner approval.**
 
 ### Problem
 

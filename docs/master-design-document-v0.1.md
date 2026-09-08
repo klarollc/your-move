@@ -88,6 +88,7 @@ These are not silent assumptions. Work stops at the named gate until the owner a
 | D-25 | **Approved 2026-08-12:** collaborative kickoff uses one attributable role-specific round, Delivery Lead synthesis preserving disagreements, one team revision, and final manager selection or redirection | Approve MDD v0.1 for implementation planning | Definition gate |
 | D-26 | **Approved 2026-08-13:** reciprocal usability—human and agent interfaces are equal projections of canonical state; the product must reduce avoidable friction for both and support structured, truthful collaboration | Carry reciprocal-usability acceptance through every phase | Cross-cutting architecture and UX |
 | D-27 | **Approved 2026-08-13:** the newer phased implementation sequence controls numbering; Phase 4 is graybox office and collaborative kickoff, while art-direction candidates and high fidelity remain later separately gated phases | Execute the approved Phase 4 Tasks 1–15 and stop at the graybox owner gate | Phase 4 implementation |
+| D-28 | **Open:** the deterministic presentation queue can represent real agent event rates without strobing or trailing canonical state | Measure canonical transitions per role per minute during a supervised live runtime run; set a maximum acceptable presentation lag and a truthful degradation behavior when it is exceeded | Phase 5 live office |
 
 ## 4. Product principles
 
@@ -1230,6 +1231,14 @@ Waiver of any criterion is governed by the owner-waiver clause in §19.
 Protocol, answer key, and response sheets: `docs/evidence/phase-4/comprehension/`.
 
 ## 21. Failure and recovery requirements
+
+### Presentation lag and backlog (D-28)
+
+When queued presentation would exceed the approved maximum lag behind canonical state, the office
+must collapse or skip intermediate transitions and place avatars at current canonical position,
+rather than continue playing a backlog. A scene that is behind canonical state must disclose that
+it is behind. Presentation backlog is never allowed to become the displayed account of work.
+
 
 The product must explicitly represent:
 

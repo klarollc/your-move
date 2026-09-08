@@ -1,6 +1,7 @@
 # Checklist: canonical open-question record
 
-Status: **Tasks 1-4 owner-accepted 2026-08-18. Task 5 and the kickoff-unification decision remain open.**
+Status: **Tasks 1-4 owner-accepted 2026-08-18. Task 5 AUTHORIZED 2026-09-08. The
+kickoff-unification decision remains open.**
 Specification: `docs/proposals/2026-08-18-open-question-record.md`
 Plan: `tasks/open-question-plan.md`
 
@@ -49,7 +50,7 @@ Plan: `tasks/open-question-plan.md`
 
 The approval above does not authorize the following.
 
-- [ ] Owner separately authorizes Task 5 after reviewing the Tasks 1-4 evidence.
+- [x] Owner authorized Task 5 on 2026-09-08 after reviewing the Tasks 1-4 evidence.
 
 - [ ] Task 5: Attention integration.
   - Acceptance: `question_open` at priority 35; `blocksWork` escalation; `neededBy` surfacing;

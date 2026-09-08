@@ -1,5 +1,10 @@
 # Phase 3 Task Checklist
 
+**Superseded for current status.** Phase 3 is complete and its owner gate closed 2026-08-13.
+Phase 4 was subsequently authorized and Tasks 1-15 are complete as of 2026-09-08; the live
+kickoff sequence is tracked in `tasks/phase-4-todo.md`, which is the current authority. The
+closing line below is preserved as the Phase 3 record and no longer describes the project.
+
 Status: **Owner-approved for Phase 3 implementation on 2026-08-13**
 Specification: `docs/phase-3-runtime-and-onboarding-spec-v0.1.md`
 Plan: `tasks/plan.md`
