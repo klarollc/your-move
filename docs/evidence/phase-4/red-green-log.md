@@ -514,3 +514,72 @@ The 17a RED was requested and run 57 seconds before the implementation finished 
 The resulting output was a full stub RED presented as a post-implementation result, and it was
 only distinguishable from a genuine failure by comparing file mtimes against the test start time.
 Nothing in the loop makes a run's inputs attributable to a known state of the tree.
+
+
+## Task 17b amendment — a failed contribution no longer ends the round
+
+Owner ruling 2026-09-09, applied 2026-09-10. RED 6 of 11 against the original behaviour, then a
+second RED of 4 after the first implementation was wrong. GREEN 12 of 12 and a full `npm run
+verify` green on Windows. Unit total moved 180 → 183.
+
+### What changed
+
+A turn that fails is now that role's failure, not the round's. The run carries on and the result
+carries a `failures` list of every turn that was spent and produced nothing usable, each naming its
+kind, role, code and turn index.
+
+`silentRoleIds` narrowed to mean what it says. Silence is a role that was never asked. A role that
+was asked, cost a turn and produced nothing is a different fact, and reporting it as silent would
+lose that the turn was spent. The V0 invariant is that silence must never read as assent; the
+converse — that a failure must never read as silence — is the same invariant from the other side.
+
+Three conditions still end the whole run, and this was decided explicitly rather than inherited:
+
+- **The turn budget.** Unchanged.
+- **An observed external effect.** Not a per-role failure. Seeing a `runtime.command`, `file`,
+  `tool` or `artifact` event means the containment meant to prevent it did not hold, so further
+  turns would be spent against a runtime already known to be uncontained.
+- **A failed synthesis.** Revisions are revisions *of* the synthesis. Continuing without one would
+  ask six roles to respond to a document that does not exist.
+
+A failed turn still costs. `turnsUsed` increments whether or not the turn produced anything, so a
+run that fails repeatedly cannot exceed its budget while appearing not to.
+
+### The first implementation was wrong and the domain caught it
+
+The initial implementation carried on past a failed contribution and then attempted synthesis over
+five contributions. `recordKickoffSynthesis` refused it with `KICKOFF_SYNTHESIS_NOT_READY`.
+
+The cause is not incidental. `recordKickoffContribution` sets `phase: "ready_for_synthesis"` only
+when `Object.keys(contributions).length === activeRoleIds.length`. **D-25 defines a synthesis as
+standing over every active role, and the domain enforces it.** A five-of-six round can never be
+synthesised, by design.
+
+This is the invariant working. The orchestrator tried to produce a synthesis over a discussion that
+was missing a participant, and the domain stopped it. Had the domain been permissive, the round
+would have produced a document that reads as a complete discussion with one role quietly absent —
+exactly the substitution the V0 truthfulness clauses exist to prevent.
+
+Two alternatives were rejected by the owner in favour of the third:
+
+- Narrowing `activeRoleIds` to the roles that answered. Rejected: it rewrites the briefing
+  mid-round, so any charter downstream would rest on a roster the manager never approved.
+- Amending D-25 so a synthesis is legal over a quorum. Not rejected on merit — deferred, because it
+  changes what a kickoff means and should not be decided to unblock a test.
+
+### The resolution
+
+Every role is asked. If fewer roles contributed than the roster holds, the run stops before
+synthesis with `ROUND_UNDER_FILLED`, naming the count. `NO_CONTRIBUTIONS` remains the more specific
+stop for a round where nothing came back at all.
+
+The owner's ruling holds in the sense that motivated it: a failure at role three no longer silences
+roles four through six, and the record names which role failed rather than leaving four roles
+indistinguishable from roles that declined to speak. What it does not do is produce a synthesis
+over an incomplete round, and it should not.
+
+### Recorded honestly
+
+The first design was mine and it was wrong. It was caught by a domain invariant rather than by
+review, which is the second time in this task that a guard found something reading the
+specification did not. Amending D-25 to permit a quorum synthesis remains open and unauthorised.
