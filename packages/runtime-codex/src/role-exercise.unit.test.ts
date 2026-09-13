@@ -87,6 +87,7 @@ describe("role exercise runner", () => {
         model: "gpt-5.6-luna",
         sandbox: "read-only",
         approvalPolicy: "never",
+        baseInstructions: STANDARD_ROLE_EXERCISE_PROMPT,
         config: { model_reasoning_effort: "medium" },
       },
     });
@@ -94,9 +95,14 @@ describe("role exercise runner", () => {
       method: "turn/start",
       params: {
         threadId: "thread_1",
-        input: [{ type: "text", text: STANDARD_ROLE_EXERCISE_PROMPT }],
+        input: [{ type: "text", text: "Begin the bounded role exercise." }],
       },
     });
+  });
+
+  it("uses a shared prompt that exposes each role's responsibility and refusal for owner review", () => {
+    expect(STANDARD_ROLE_EXERCISE_PROMPT).toMatch(/responsib/i);
+    expect(STANDARD_ROLE_EXERCISE_PROMPT).toMatch(/refus/i);
   });
 
   it("refuses before a turn when another instruction source participates", async () => {

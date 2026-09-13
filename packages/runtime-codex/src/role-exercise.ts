@@ -8,7 +8,7 @@ import { buildBindingReport, collectHandshakeFacts, type BindingExpectation } fr
  * the reviewed artifact.
  */
 export const STANDARD_ROLE_EXERCISE_PROMPT =
-  "Reply exactly EXERCISE_OK. Do not call tools, access files, use network tools, connectors, subagents, or perform any external effect.";
+  "State briefly, in your own words, the responsibility this role holds in CuckCode and what it refuses to do. Do not call tools, access files, use network tools, connectors, subagents, or perform any external effect.";
 
 export type ExerciseSupervisor = Readonly<{
   start: () => Promise<{
@@ -132,7 +132,7 @@ export async function runRoleExercise(input: {
       "turn/start",
       {
         threadId,
-        input: [{ type: "text", text: STANDARD_ROLE_EXERCISE_PROMPT }],
+        input: [{ type: "text", text: "Begin the bounded role exercise." }],
       },
       30_000,
     );
@@ -172,6 +172,9 @@ export function exerciseThreadStartParams(
     sandbox: "read-only",
     approvalPolicy: "never",
     approvalsReviewer: "user",
+    // The role's identity comes only from its controlled home; this common task contract is
+    // deliberately attached at thread/start, as the approved channel split requires.
+    baseInstructions: STANDARD_ROLE_EXERCISE_PROMPT,
     config: { model_reasoning_effort: expected.expectedReasoningEffort },
   };
 }
