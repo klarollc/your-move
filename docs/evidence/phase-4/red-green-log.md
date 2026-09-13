@@ -675,3 +675,58 @@ missing field, enforced by the compiler rather than by anyone remembering it.
 No binding has been built from a live handshake. `HandshakeFacts` is still populated by fixtures in
 every test, and nothing yet collects it from a running session. The contract can now hold the truth;
 nothing has yet put the truth in it.
+
+---
+
+## `composeRole` — a promoted role becomes an instruction (2026-09-12)
+
+Authorized by the owner's decisions recorded in
+`docs/evidence/phase-4/live-kickoff/decision-record-2026-09-12-roles-and-exercise.md`.
+
+### RED
+
+The first RED was `Cannot find module './role-composition.js'` — nine tests, none of them run.
+That is a real first failure but a weak one: it establishes the import is wrong, not that the tests
+would catch wrong behaviour. A stub returning `{ ok: true, text: "" }` was added to force the
+failures to be behavioural, and six of nine then failed on assertions.
+
+**Three passed against that stub, and that is the finding worth recording.** "Is deterministic"
+passed because two empty strings are byte-identical. "Orders output by the schema" passed for the
+same reason. "Emits nothing that did not come from the brief" passed because an empty composition
+has no unaccounted lines. All three were true of a composer that emits nothing at all.
+
+This is the shape the register already tracks — a guard that is exact inside a boundary nobody
+examined — occurring in the tests written to enforce it. Each now asserts the mandate is present
+before comparing, so none can pass against an empty composition. Verified by re-running against the
+stub: three failures became six, then nine.
+
+### GREEN
+
+Nine tests pass. One failure on the way there was substantive rather than mechanical: with only the
+first disclosure supplied, `find` reported the *second* missing while the test asserted on the
+*third*. Fixed in the implementation rather than the test — `AUTHORITY_DISCLOSURES.filter` now names
+every missing disclosure, matching `checkBindingPreconditions`, which already collects every failure
+rather than returning the first.
+
+`npm run typecheck`, `npm run lint --max-warnings 0`, `npm run format:check`, and the full unit
+project (39 files, 197 tests) are green.
+
+### Two deliberate departures from the approved proposal
+
+**`composeRole` returns text, not text and a digest.** `2026-09-12-roles-as-competence-briefs.md` §5
+said both. `@cuckcode/domain` has no `node:` imports and depends only on `@cuckcode/contracts`;
+hashing belongs at the edge that already has a platform. Determinism is what the caller needs to
+digest safely, and determinism is tested here.
+
+**The function takes the brief and nothing else.** There is no parameter for upstream role text, so
+"no upstream instruction leaks into a composed role" is a fact about what the function can see
+rather than a check that could regress. This is the §8 rule applied as written: give the guard
+nothing it can get wrong.
+
+### What this does not establish
+
+No role has been composed from a file on disk, none has been promoted, and no composed role has
+been handed to a runtime. `composeRole` is pure and its input is a value; nothing yet reads
+`roles/authored/`, and the six briefs do not exist as artifacts. No live turn has been run, so
+whether a model actually treats a composed brief as its operating constraint remains untested — that
+is what the exercise gate is for.

@@ -44,6 +44,18 @@ retaining them means the promoted set stays derived on every read rather than tr
 binding: no identity statement, no tone or persona direction, no mandatory step-by-step process, no
 claim of memory the session does not have, no stack assumptions.
 
+### Q4 — the six briefs → **OWNER REVIEWED AND APPROVED 2026-09-12**
+
+The owner approved the six briefs explicitly on 2026-09-12, after the agent declined the initial
+blanket delegation and asked for a direct statement. `ownerReviewed: true`.
+
+The history below is preserved because it records why a second, explicit approval was sought rather
+than inferred from the first.
+
+---
+
+*Original entry, superseded by the ruling above:*
+
 ### Q4 — the six briefs → **NOT RULED. Proceeding as drafted, marked owner-unreviewed.**
 
 The owner delegated this to the agent's recommendation. The agent's recommendation was that the
@@ -174,9 +186,12 @@ controlled Codex home for kickoff threads.
 It does not authorize promotion (owner-run, Q15), the live kickoff run itself, Phase 5,
 high-fidelity art, visual-baseline promotion, deployment, or any external effect.
 
-## Carried weakness
+## Carried weakness — closed 2026-09-12
 
-Q4 is unresolved by design. Six role briefs describing the owner's professional practice are
-proceeding without the owner having read them, on the strength of a delegation that did not
-distinguish this item from the other fifteen. The mitigation is the exercise gate; the flag is
-`ownerReviewed: false`; and this paragraph exists so the gap is not discovered later as a finding.
+Q4 was initially recorded as unresolved: six briefs describing the owner's professional practice
+were proceeding on the strength of a blanket delegation that did not distinguish this item from the
+other fifteen. The agent declined that delegation and asked for a direct statement; the owner gave
+one the same day and the briefs are approved with `ownerReviewed: true`.
+
+The exercise gate (Q10–Q12) still applies to them. Owner approval of a brief's content and a
+recorded live exercise of that brief are different checks, and neither substitutes for the other.

@@ -17,3 +17,4 @@ export * from "./kickoff.js";
 export * from "./open-question.js";
 export * from "./kickoff-preflight.js";
 export * from "./kickoff-policy.js";
+export * from "./role-composition.js";
