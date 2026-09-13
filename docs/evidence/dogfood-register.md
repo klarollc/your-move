@@ -400,3 +400,77 @@ Not authorized and not designed. Three directions, in rough order of how much th
   guarantee weaker than the documents claim.
 
 The owner has not ruled. The file has not been read.
+
+
+### DF-011 — Every import guard passed on six roles that cannot run here
+
+- Observed: 2026-09-13, on first reading the upstream role files, five weeks after importing them.
+- D-26 clauses implicated: a role is exactly its promoted contract. Same shape as DF-010.
+
+The six upstream role files were imported at commit `ebe9c99`, digested, path-allowlisted, checked
+for hidden instructions and executable overlays, field-validated, and made promotable. Three import
+tests pass, including one named *"rejects hidden instructions and executable overlays"*. Promotion
+would have succeeded. Nothing in the system objected.
+
+Reading the files shows that two of the six instruct the agent to run shell commands as its first
+action — `STEP 1: Reality Check Commands (ALWAYS RUN FIRST)`, with a bash block invoking a capture
+script, `ls`, `grep -r` and `cat`. The kickoff is text-only and any observed `runtime.command` stops
+the entire run. Two of six assume Laravel, Livewire, FluxUI and Alpine.js, reference a component
+index file that does not exist in this repository, and link to documentation unreachable from a
+sandbox with no network. All six claim persistent identity and memory that ephemeral threads do not
+provide.
+
+> **Correction, 2026-09-12.** This entry first recorded "Four of six" for the stack assumption. An
+> independent audit counted occurrences of `laravel|livewire|fluxui|alpine` in each upstream file at
+> commit `ebe9c99`: `engineering-senior-developer.md` 22, `project-manager-senior.md` 8,
+> `testing-reality-checker.md` 1, and zero in `design-ui-designer.md`,
+> `testing-test-automation-engineer.md` and `testing-evidence-collector.md`. The single hit in
+> `testing-reality-checker.md` reads "Verify what was actually built (Laravel or Simple stack)",
+> which is a conditional rather than an assumption. The verified figure is **two** files that
+> substantively assume the stack, one incidental mention, three with none. The finding stands; the
+> count did not. Recorded here rather than silently amended, because an evidence register that
+> quietly corrects itself is the thing DF-009 is about.
+
+## What the guards actually checked
+
+Every check was about **fidelity**: that the bytes match the upstream, that the path is allowlisted,
+that the overlay is not executable, that no instruction was injected during import. All of those
+passed, correctly. The imported text is a faithful copy of what it claims to copy.
+
+No check asked whether the content is **compatible with the constraints the role will run under**.
+That question was not asked because nothing in the design admitted it could have an answer: the
+import's job was defined as faithful acquisition, and it did that job exactly.
+
+So a role can be digest-pinned, drift-checked, joinable against a qualification, and refused unless
+its promoted contract version matches — while instructing the agent to do the one thing that aborts
+the run it is promoted for.
+
+## Why this is the DF-010 shape and not a new one
+
+DF-010: a guard is rigorous within a boundary that was drawn by assumption. There the boundary was
+"instructions are the files we digest," and a second instruction source sat outside it. Here the
+boundary is "correctness is fidelity," and suitability sits outside it.
+
+Both were found by asking a question the guards were never designed to answer. Neither was
+detectable by running the guards more carefully.
+
+The register now holds three shapes:
+
+- DF-005 through DF-008: a canonical record cannot say something.
+- DF-009: evidence cannot be attributed to what produced it.
+- DF-010, DF-011: a guard is exact inside a boundary nobody examined.
+
+The third is the one that keeps recurring, and it is the one no test finds, because a test is
+written inside the same boundary as the guard it protects.
+
+## Product response
+
+Not authorized. The immediate consequence is recorded in
+`docs/proposals/2026-09-13-task-17c-2b-role-composition.md`: composing role instructions from the
+upstream text is withdrawn as a recommendation, in favour of composing from the CuckCode-authored
+overlay alone.
+
+The unanswered question is what `status: candidate` should mean for these roles now. It currently
+records that they were faithfully imported and are not yet promoted. It does not record that four of
+six describe a stack this project does not use, which is a different kind of not-ready and is not
+fixed by promoting them.
