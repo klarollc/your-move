@@ -117,8 +117,10 @@ Phase 4 gate below remain unauthorized.
       `docs/evidence/phase-4/live-kickoff/decision-packet-2026-09-12-composition-and-exercise.md`
       §0, confirms the packet governs and the condition is met. **Correction, 2026-09-12:** this
       line previously read UNAUTHORIZED; amended under that ruling — see `AGENTS.md`. The run still
-      cannot happen: role composition (17c-2b), the promotion CLI (17c-2), `collectHandshakeFacts`
-      (17c-4), and the kickoff harness (17c-5) do not exist.
+      cannot happen: `collectHandshakeFacts` (17c-4) and the kickoff harness (17c-5) do not
+      exist. Role composition, a controlled Codex home, the owner-gated promotion CLI, and the
+      performed/not-performed exercise gate were completed in `35596d8` through `1c6f620`; all six
+      exercise records remain not performed, so promotion is correctly refused.
   - Acceptance: six contributions, one synthesis, six explicit revisions/affirmations, full attribution, no prohibited effect, manager disposition.
   - Verify: exact `CUCKCODE_LIVE_KICKOFF=1` supervised run and canonical evidence.
 

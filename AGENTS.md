@@ -21,7 +21,7 @@ The owner approved the Task 16 preflight packet on 2026-09-08 (`docs/evidence/ph
 
 On 2026-09-12 the owner ruled, Decision 0(a) in `docs/evidence/phase-4/live-kickoff/decision-packet-2026-09-12-composition-and-exercise.md` §0, that the packet governs, that Task 17's §7 condition is satisfied, and that this document was stale on that point. **Correction, amended 2026-09-12 under that ruling** — the line this replaces read Tasks 16–17 as unauthorized; `tasks/phase-4-todo.md` is amended the same day for the same reason.
 
-Task 17 authorization is narrow: one bounded, text-only, no-tool, no-external-effect live kickoff under the Task 16 packet's preflight and turn-budget limits. It does not authorize Phase 5 behavior, high-fidelity art, final visual tokens/assets, visual-baseline promotion, deployment, or any external effect, all of which remain unauthorized pending separate explicit approval. It does not by itself authorize role composition or promotion — 17c-2b (role composition) and 17c-2 (the promotion CLI) are open owner decisions in the 2026-09-12 packet. The live kickoff cannot run yet regardless of authorization: role composition, the promotion CLI, `collectHandshakeFacts`, and the kickoff harness do not exist.
+Task 17 authorization is narrow: one bounded, text-only, no-tool, no-external-effect live kickoff under the Task 16 packet's preflight and turn-budget limits. It does not authorize Phase 5 behavior, high-fidelity art, final visual tokens/assets, visual-baseline promotion, deployment, or any external effect, all of which remain unauthorized pending separate explicit approval. Role composition and the owner-gated promotion CLI now exist (`35596d8` through `1c6f620`); promotion remains owner-run and cannot proceed until all six exact authored-role exercises are recorded as performed. The live kickoff cannot run yet: `collectHandshakeFacts` and the kickoff harness do not exist, and the owner must give a fresh go/no-go before the one provider run.
 
 ## Required delivery method
 
@@ -52,4 +52,3 @@ Task 17 authorization is narrow: one bounded, text-only, no-tool, no-external-ef
 - Never expose credentials, hidden prompts, or private chain-of-thought in the office UI or audit log.
 - Require explicit approval for destructive operations, external publishing, production deployment, financial transactions, or changes outside the active project.
 - Preserve audit events and artifacts; do not rewrite history to make a run appear successful.
-
