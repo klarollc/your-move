@@ -31,6 +31,12 @@ export async function buildAgencyManifest({ root }) {
       originalRoleId: role.sourcePath.replace(/\.md$/u, ""),
       status: "candidate",
       executable: false,
+      compatibility: {
+        assessed: "unassessed",
+        by: "unassessed",
+        verdict: "unassessed",
+        notes: "A future promotion must record a suitability assessment.",
+      },
     });
   }
   return {
@@ -97,6 +103,15 @@ export async function checkAgencyImport({ root }) {
       recorded.originalRoleId !== expected.sourcePath.replace(/\.md$/u, "")
     )
       return failure("ALLOWLIST_MISMATCH");
+    if (!validCompatibility(recorded.compatibility)) return failure("COMPATIBILITY_REQUIRED");
+    if (
+      recorded.status !== "candidate" &&
+      (typeof recorded.supersededAt !== "string" ||
+        recorded.supersededAt.length === 0 ||
+        typeof recorded.supersededReason !== "string" ||
+        recorded.supersededReason.length === 0)
+    )
+      return failure("IMPORT_STATUS_INVALID");
     if (
       recorded.sourceSha256 !== computed.sourceSha256 ||
       recorded.overlaySha256 !== computed.overlaySha256
@@ -136,7 +151,11 @@ export async function checkAgencyImport({ root }) {
     )
       return failure("HIDDEN_INSTRUCTION");
   }
-  return { ok: true, commit: AGENCY_COMMIT, roleCount: 6, status: "candidate" };
+  const statuses = new Set(manifest.roles.map((role) => role.status));
+  if (statuses.size !== 1 || !["candidate", "superseded"].includes(manifest.roles[0]?.status)) {
+    return failure("IMPORT_STATUS_INVALID");
+  }
+  return { ok: true, commit: AGENCY_COMMIT, roleCount: 6, status: manifest.roles[0].status };
 }
 
 function resolveInside(root, path) {
@@ -164,6 +183,20 @@ function nonEmptyStrings(value) {
     Array.isArray(value) &&
     value.length > 0 &&
     value.every((item) => typeof item === "string" && item.length > 0)
+  );
+}
+
+function validCompatibility(value) {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    typeof value.assessed === "string" &&
+    value.assessed.length > 0 &&
+    typeof value.by === "string" &&
+    value.by.length > 0 &&
+    ["compatible", "incompatible", "unassessed"].includes(value.verdict) &&
+    typeof value.notes === "string" &&
+    value.notes.length > 0
   );
 }
 

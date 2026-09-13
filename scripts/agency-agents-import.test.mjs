@@ -65,6 +65,31 @@ test("accepts exactly six attributed non-executable Candidate roles", async () =
   });
 });
 
+test("accepts retained imported roles only when supersession and compatibility are explicit", async () => {
+  const root = await fixture();
+  const manifestPath = join(root, "manifest.json");
+  const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+  for (const role of manifest.roles) {
+    role.status = "superseded";
+    role.supersededAt = "2026-09-12";
+    role.supersededReason = "Replaced by the owner-reviewed authored competence brief.";
+    role.compatibility = {
+      assessed: "2026-09-12",
+      by: "owner",
+      verdict: "unassessed",
+      notes: "Retained for attribution; it is not a promotion target.",
+    };
+  }
+  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+
+  assert.deepEqual(await checkAgencyImport({ root }), {
+    ok: true,
+    commit: AGENCY_COMMIT,
+    roleCount: 6,
+    status: "superseded",
+  });
+});
+
 test("rejects source drift and non-allowlisted paths", async () => {
   const driftRoot = await fixture();
   const source = join(

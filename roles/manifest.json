@@ -1,1 +1,127 @@
-{   "schema": "cuckcode.agency-agents-import.v1",   "upstreamRepository": "https://github.com/msitarzewski/agency-agents",   "commit": "ebe9c99acb5c96f9468de368d8bead775387d1a7",   "license": "MIT",   "licensePath": "LICENSE",   "licenseSha256": "9a45258434d5cedf0af73c9ad4771373701225038d246c49219026c33677f66f",   "registryPath": "divisions.json",   "registrySha256": "15136bcf43ff95dd2ef827519c96cfee3fa3ebe35057d69ff1cd49a1a9e48add",   "importedAt": "2026-08-13T00:00:00.000Z",   "roles": [     {       "roleId": "delivery-lead",       "sourcePath": "project-management/project-manager-senior.md",       "sourceSha256": "70fb27cab174c97375293311211d5563c5ac257fba274450d1ca9c05b540ef2d",       "overlayPath": "overlays/delivery-lead.json",       "overlaySha256": "0827049007d95baf6a17df27865e3b4b1ba5b7f77797977eb8f59849eef6e802",       "originalRoleId": "project-management/project-manager-senior",       "status": "candidate",       "executable": false     },     {       "roleId": "product-designer",       "sourcePath": "design/design-ui-designer.md",       "sourceSha256": "3130768958d3b3d38178aaec91cf789e01ecca4984c8674d4aaea446b6cba240",       "overlayPath": "overlays/product-designer.json",       "overlaySha256": "c6ab5dda875fa49095f705132548f15a91c09b129f63aff84f4b88232cdf3f31",       "originalRoleId": "design/design-ui-designer",       "status": "candidate",       "executable": false     },     {       "roleId": "implementation-engineer",       "sourcePath": "engineering/engineering-senior-developer.md",       "sourceSha256": "63b8da6c12b95f54bbdbcd0666abeb9519a98b35395233e1b1d8e5c102c82599",       "overlayPath": "overlays/implementation-engineer.json",       "overlaySha256": "23a5a0142366573cbbe4a9520365511cc25812676ff5f230000da100472b912e",       "originalRoleId": "engineering/engineering-senior-developer",       "status": "candidate",       "executable": false,       "quarantinedSegments": [         {           "sha256": "29b191b6eb376682ae2169694ea079c763e4a1da3902a30e9a4b68fbbf9cc3f4",           "treatment": "excluded_from_normalized_role"         }       ]     },     {       "roleId": "test-engineer",       "sourcePath": "testing/testing-test-automation-engineer.md",       "sourceSha256": "479ba12efa5c19e87b60e3b154170c124ac38c46b95c342f0e3b62537113c0a7",       "overlayPath": "overlays/test-engineer.json",       "overlaySha256": "4ce050d57de66416e7140961e49b9416fd85e21aaa4f09b8d83fe032012d5f99",       "originalRoleId": "testing/testing-test-automation-engineer",       "status": "candidate",       "executable": false     },     {       "roleId": "visual-qa-reviewer",       "sourcePath": "testing/testing-evidence-collector.md",       "sourceSha256": "d7e95b64033230aa07c386546d24fca68e4f606c47be1a7698cafc09d4ef5b12",       "overlayPath": "overlays/visual-qa-reviewer.json",       "overlaySha256": "db362629a55fe3d0e80329ff049a321b48a98f5da5eaf300439987d53a886442",       "originalRoleId": "testing/testing-evidence-collector",       "status": "candidate",       "executable": false     },     {       "roleId": "release-reviewer",       "sourcePath": "testing/testing-reality-checker.md",       "sourceSha256": "6d32fcdb114233e13902ec6372d50293b120e85d490b5e81d372c29808f988a1",       "overlayPath": "overlays/release-reviewer.json",       "overlaySha256": "c16186ff695ab92ed317f78f4ae564fda64448d60d5132c7777e7eef86c3c51b",       "originalRoleId": "testing/testing-reality-checker",       "status": "candidate",       "executable": false     }   ] } 
+{
+  "schema": "cuckcode.agency-agents-import.v1",
+  "upstreamRepository": "https://github.com/msitarzewski/agency-agents",
+  "commit": "ebe9c99acb5c96f9468de368d8bead775387d1a7",
+  "license": "MIT",
+  "licensePath": "LICENSE",
+  "licenseSha256": "9a45258434d5cedf0af73c9ad4771373701225038d246c49219026c33677f66f",
+  "registryPath": "divisions.json",
+  "registrySha256": "15136bcf43ff95dd2ef827519c96cfee3fa3ebe35057d69ff1cd49a1a9e48add",
+  "importedAt": "2026-08-13T00:00:00.000Z",
+  "roles": [
+    {
+      "roleId": "delivery-lead",
+      "sourcePath": "project-management/project-manager-senior.md",
+      "sourceSha256": "70fb27cab174c97375293311211d5563c5ac257fba274450d1ca9c05b540ef2d",
+      "overlayPath": "overlays/delivery-lead.json",
+      "overlaySha256": "0827049007d95baf6a17df27865e3b4b1ba5b7f77797977eb8f59849eef6e802",
+      "originalRoleId": "project-management/project-manager-senior",
+      "status": "superseded",
+      "supersededAt": "2026-09-12",
+      "supersededReason": "Replaced by the owner-reviewed authored competence brief under Decision A(ii).",
+      "executable": false,
+      "compatibility": {
+        "assessed": "2026-09-12",
+        "by": "owner",
+        "verdict": "incompatible",
+        "notes": "Assumes Laravel and Livewire, not CuckCode's approved stack."
+      }
+    },
+    {
+      "roleId": "product-designer",
+      "sourcePath": "design/design-ui-designer.md",
+      "sourceSha256": "3130768958d3b3d38178aaec91cf789e01ecca4984c8674d4aaea446b6cba240",
+      "overlayPath": "overlays/product-designer.json",
+      "overlaySha256": "c6ab5dda875fa49095f705132548f15a91c09b129f63aff84f4b88232cdf3f31",
+      "originalRoleId": "design/design-ui-designer",
+      "status": "superseded",
+      "supersededAt": "2026-09-12",
+      "supersededReason": "Replaced by the owner-reviewed authored competence brief under Decision A(ii).",
+      "executable": false,
+      "compatibility": {
+        "assessed": "2026-09-12",
+        "by": "owner",
+        "verdict": "unassessed",
+        "notes": "Retained for attribution; superseded imports are not promotion targets."
+      }
+    },
+    {
+      "roleId": "implementation-engineer",
+      "sourcePath": "engineering/engineering-senior-developer.md",
+      "sourceSha256": "63b8da6c12b95f54bbdbcd0666abeb9519a98b35395233e1b1d8e5c102c82599",
+      "overlayPath": "overlays/implementation-engineer.json",
+      "overlaySha256": "23a5a0142366573cbbe4a9520365511cc25812676ff5f230000da100472b912e",
+      "originalRoleId": "engineering/engineering-senior-developer",
+      "status": "superseded",
+      "supersededAt": "2026-09-12",
+      "supersededReason": "Replaced by the owner-reviewed authored competence brief under Decision A(ii).",
+      "executable": false,
+      "compatibility": {
+        "assessed": "2026-09-12",
+        "by": "owner",
+        "verdict": "incompatible",
+        "notes": "Assumes Laravel, Livewire, FluxUI, and Alpine rather than CuckCode's approved stack."
+      },
+      "quarantinedSegments": [
+        {
+          "sha256": "29b191b6eb376682ae2169694ea079c763e4a1da3902a30e9a4b68fbbf9cc3f4",
+          "treatment": "excluded_from_normalized_role"
+        }
+      ]
+    },
+    {
+      "roleId": "test-engineer",
+      "sourcePath": "testing/testing-test-automation-engineer.md",
+      "sourceSha256": "479ba12efa5c19e87b60e3b154170c124ac38c46b95c342f0e3b62537113c0a7",
+      "overlayPath": "overlays/test-engineer.json",
+      "overlaySha256": "4ce050d57de66416e7140961e49b9416fd85e21aaa4f09b8d83fe032012d5f99",
+      "originalRoleId": "testing/testing-test-automation-engineer",
+      "status": "superseded",
+      "supersededAt": "2026-09-12",
+      "supersededReason": "Replaced by the owner-reviewed authored competence brief under Decision A(ii).",
+      "executable": false,
+      "compatibility": {
+        "assessed": "2026-09-12",
+        "by": "owner",
+        "verdict": "unassessed",
+        "notes": "Retained for attribution; superseded imports are not promotion targets."
+      }
+    },
+    {
+      "roleId": "visual-qa-reviewer",
+      "sourcePath": "testing/testing-evidence-collector.md",
+      "sourceSha256": "d7e95b64033230aa07c386546d24fca68e4f606c47be1a7698cafc09d4ef5b12",
+      "overlayPath": "overlays/visual-qa-reviewer.json",
+      "overlaySha256": "db362629a55fe3d0e80329ff049a321b48a98f5da5eaf300439987d53a886442",
+      "originalRoleId": "testing/testing-evidence-collector",
+      "status": "superseded",
+      "supersededAt": "2026-09-12",
+      "supersededReason": "Replaced by the owner-reviewed authored competence brief under Decision A(ii).",
+      "executable": false,
+      "compatibility": {
+        "assessed": "2026-09-12",
+        "by": "owner",
+        "verdict": "unassessed",
+        "notes": "Retained for attribution; superseded imports are not promotion targets."
+      }
+    },
+    {
+      "roleId": "release-reviewer",
+      "sourcePath": "testing/testing-reality-checker.md",
+      "sourceSha256": "6d32fcdb114233e13902ec6372d50293b120e85d490b5e81d372c29808f988a1",
+      "overlayPath": "overlays/release-reviewer.json",
+      "overlaySha256": "c16186ff695ab92ed317f78f4ae564fda64448d60d5132c7777e7eef86c3c51b",
+      "originalRoleId": "testing/testing-reality-checker",
+      "status": "superseded",
+      "supersededAt": "2026-09-12",
+      "supersededReason": "Replaced by the owner-reviewed authored competence brief under Decision A(ii).",
+      "executable": false,
+      "compatibility": {
+        "assessed": "2026-09-12",
+        "by": "owner",
+        "verdict": "unassessed",
+        "notes": "Retained for attribution; superseded imports are not promotion targets."
+      }
+    }
+  ]
+}
