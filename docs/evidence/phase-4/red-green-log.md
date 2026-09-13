@@ -730,3 +730,53 @@ been handed to a runtime. `composeRole` is pure and its input is a value; nothin
 `roles/authored/`, and the six briefs do not exist as artifacts. No live turn has been run, so
 whether a model actually treats a composed brief as its operating constraint remains untested — that
 is what the exercise gate is for.
+
+---
+
+## The six authored roles become artifacts (2026-09-12)
+
+`roles/authored/<id>.json` for each of the six roles D-16 fixes, holding the corrected briefs from
+`docs/proposals/2026-09-12-roles-as-competence-briefs.md` §4. Checked by
+`tests/roles/authored-roles.integration.test.ts`, which reads the real files and composes them.
+`@cuckcode/domain` stays free of `node:` imports; the filesystem is the test's business, not the
+composer's.
+
+### This had no RED, and mutation testing was used instead
+
+The artifacts were written before the test, so a first run passed trivially. A test that has never
+failed is not evidence, so each assertion was checked by breaking an artifact and confirming the
+suite caught it:
+
+| Mutation | Result |
+| --- | --- |
+| Paraphrase one authority disclosure | 4 failed |
+| Typo a field name (`mandat`) | 1 failed |
+| Wrong `roleId` inside a correctly-named file | 2 failed |
+| **Copy one role's substance under another's name** | **7 passed — not caught** |
+
+### The fourth mutation found a defect in the test
+
+"Gives each role a distinct composed instruction" collected whole composed texts into a `Set` and
+asserted the size was six. Copying Delivery Lead's entire substance into `product-designer.json`
+and changing only `roleId` produced texts differing by one line, so the set still held six entries
+and the suite reported everything fine.
+
+That is the six-anonymous-agents failure this whole line of work exists to prevent, and the test
+written to catch it was blind to it. Any two roles counted as distinct as long as they had different
+names — which is true by construction, since the filename supplies the name.
+
+The check now strips the role name before comparing and names the colliding pair. Re-running the
+same mutation fails it. The other three mutations were re-confirmed against the corrected suite, and
+the artifacts were diffed against a pre-mutation backup to prove no residue was left behind.
+
+This is the second time in one session that a test written to enforce a boundary had the defect it
+was meant to catch — the first being three `composeRole` tests that passed against a composer
+emitting an empty string. Both were found by asking what the test would do if the code were wrong,
+rather than by reading it.
+
+### What this does not establish
+
+Nothing promotes these roles, no `roles/promotion-request.json` exists, and no composed role has
+reached a runtime. The manifest still carries the six imported roles as `candidate` rather than
+`superseded`. Whether a model treats a composed brief as its operating constraint is untested and
+remains what the exercise gate is for.
