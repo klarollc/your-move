@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   checkBindingPreconditions,
+  contractVersionOf,
   type BindingCandidate,
   type PromotedContract,
 } from "./kickoff-preflight.js";
@@ -54,6 +55,15 @@ function codes(result: ReturnType<typeof run>) {
 }
 
 describe("kickoff binding preconditions", () => {
+  it("versions an authored promotion by its single reviewed content digest", () => {
+    const contract = {
+      roleId: "delivery-lead",
+      contentSha256: "reviewed-authored-brief",
+    } as PromotedContract;
+
+    expect(contractVersionOf(contract)).toBe("content:reviewed-authored-brief");
+  });
+
   it("accepts six distinct, promoted, qualified, current bindings", () => {
     expect(run(bindings())).toEqual({ ok: true });
   });

@@ -1,10 +1,20 @@
 import { validateSixRoleRoster } from "@cuckcode/contracts";
 
-export type PromotedContract = Readonly<{
+type ImportedPromotedContract = Readonly<{
   roleId: string;
   sourceSha256: string;
   overlaySha256: string;
+  contentSha256?: never;
 }>;
+
+type AuthoredPromotedContract = Readonly<{
+  roleId: string;
+  contentSha256: string;
+  sourceSha256?: never;
+  overlaySha256?: never;
+}>;
+
+export type PromotedContract = ImportedPromotedContract | AuthoredPromotedContract;
 
 export type BindingCandidate = Readonly<{
   roleId: string;
@@ -29,6 +39,9 @@ export type PreflightFailure = Readonly<{
 
 /** The version a qualification must have been evaluated against to be compatible with a promotion. */
 export function contractVersionOf(contract: PromotedContract): string {
+  if ("contentSha256" in contract) {
+    return `content:${contract.contentSha256}`;
+  }
   return `${contract.sourceSha256}:${contract.overlaySha256}`;
 }
 
