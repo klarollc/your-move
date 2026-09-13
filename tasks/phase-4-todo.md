@@ -84,10 +84,18 @@ Composition: `.ui-craft/spec.md`
 
 ## Separately gated live kickoff
 
-The initial approval does not authorize the following tasks.
+The initial approval does not authorize the following tasks, except where a later owner approval is
+recorded against one. **Corrected 2026-09-12** under Decision 0(a): this header previously made a
+blanket claim that no task below was authorized, which stopped being true when the Task 16 packet
+was approved on 2026-09-08 and Task 17 with it. Read each entry's own status line; Task 18 and the
+Phase 4 gate below remain unauthorized.
 
-- [x] Owner authorized **Task 16 only** on 2026-09-08, scoped to producing the preflight packet.
-      Task 17 remains gated behind owner approval of that packet's four items.
+- [x] Owner authorized **Task 16** on 2026-09-08, scoped to producing the preflight packet. That
+      same approval authorized Task 17 (one bounded live kickoff), conditional on the packet's §7
+      work existing. **Correction, 2026-09-12:** this line previously read "Task 16 only" and
+      "Task 17 remains gated" — both misleading once the condition below was met. See the Task 17
+      entry and Decision 0(a) in
+      `docs/evidence/phase-4/live-kickoff/decision-packet-2026-09-12-composition-and-exercise.md`.
 
 - [x] Task 16: Exact role promotion and live kickoff preflight. **Complete 2026-09-08.**
       Packet approved: `docs/evidence/phase-4/live-kickoff/task-16-preflight-packet.md`.
@@ -102,8 +110,15 @@ The initial approval does not authorize the following tasks.
   - Acceptance: six exact reviewed role versions, six qualified distinct identities, bounded permissions, shared briefing, max 13 turns, no tools/effects.
   - Verify: promotion/preflight matrix and owner decision record.
 
-- [ ] Task 17: Bounded live kickoff and manager charter. **UNAUTHORIZED** — requires owner
-      approval of the Task 16 packet first.
+- [ ] Task 17: Bounded live kickoff and manager charter. **AUTHORIZED, not yet runnable.** Owner
+      approval of the Task 16 packet on 2026-09-08 authorized Task 17 conditional on §7
+      (machine-enforced preflight and promotion checks); `e994188` completed §7. Owner ruling
+      2026-09-12, Decision 0(a) in
+      `docs/evidence/phase-4/live-kickoff/decision-packet-2026-09-12-composition-and-exercise.md`
+      §0, confirms the packet governs and the condition is met. **Correction, 2026-09-12:** this
+      line previously read UNAUTHORIZED; amended under that ruling — see `AGENTS.md`. The run still
+      cannot happen: role composition (17c-2b), the promotion CLI (17c-2), `collectHandshakeFacts`
+      (17c-4), and the kickoff harness (17c-5) do not exist.
   - Acceptance: six contributions, one synthesis, six explicit revisions/affirmations, full attribution, no prohibited effect, manager disposition.
   - Verify: exact `CUCKCODE_LIVE_KICKOFF=1` supervised run and canonical evidence.
 
