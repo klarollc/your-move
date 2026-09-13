@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { buildBindingReport, type BindingExpectation, type HandshakeFacts } from "./binding.js";
+import {
+  buildBindingReport,
+  collectHandshakeFacts,
+  type BindingExpectation,
+  type HandshakeFacts,
+} from "./binding.js";
 
 const posture = {
   type: "readOnly",
@@ -35,6 +40,27 @@ function facts(overrides: Partial<HandshakeFacts> = {}): HandshakeFacts {
 }
 
 describe("codex binding report", () => {
+  it("collects facts only from observed handshake responses", () => {
+    expect(
+      collectHandshakeFacts({
+        agentId: "agent_0",
+        bindingId: "binding_0",
+        roleId: "delivery-lead",
+        userAgent: "codex-cli 0.146.0 (windows)",
+        auth: { ok: true, mode: "chatgpt" },
+        threadStart: {
+          model: "gpt-5.6-luna",
+          reasoningEffort: "medium",
+          sandbox: { type: "readOnly", networkAccess: false },
+          approvalPolicy: "never",
+          multiAgentMode: "explicitRequestOnly",
+          instructionSources: ["C:/controlled/AGENTS.md"],
+        },
+      }),
+    ).toEqual(
+      facts({ toolIds: null }),
+    );
+  });
   it("builds a candidate report when every fact matches what was approved", () => {
     const result = buildBindingReport(facts(), expected);
 

@@ -43,6 +43,58 @@ export type BindingFailure = Readonly<{
 }>;
 
 /**
+ * Narrows observed App Server handshake responses into the facts a binding needs. Requested model
+ * or effort are intentionally absent from this input: a missing runtime report must fail here,
+ * rather than making a later comparison read the request back to itself.
+ */
+export function collectHandshakeFacts(input: {
+  agentId: string;
+  bindingId: string;
+  roleId: string;
+  userAgent: string;
+  auth: { ok: true; mode: "chatgpt" | "api_key_managed" } | { ok: false; code: "AUTH_REQUIRED" };
+  threadStart: unknown;
+}): HandshakeFacts {
+  const start = record(input.threadStart);
+  const sandbox = record(start?.sandbox);
+  const model = text(start?.model);
+  const effort = nullableText(start?.reasoningEffort);
+  const sandboxType = text(sandbox?.type);
+  const approvalPolicy = text(start?.approvalPolicy);
+  const multiAgentMode = text(start?.multiAgentMode);
+  if (
+    input.auth.ok === false ||
+    !model ||
+    effort === undefined ||
+    !sandboxType ||
+    typeof sandbox?.networkAccess !== "boolean" ||
+    !approvalPolicy ||
+    !multiAgentMode
+  ) {
+    throw new Error("HANDSHAKE_FACTS_INCOMPLETE");
+  }
+  return {
+    agentId: input.agentId,
+    bindingId: input.bindingId,
+    roleId: input.roleId,
+    userAgent: input.userAgent,
+    authMode: input.auth.mode,
+    reportedModel: model,
+    reportedReasoningEffort: effort,
+    // The observed Codex protocol names no tool enumeration. null preserves that fact; [] would
+    // falsely claim the adapter looked and found nothing.
+    toolIds: null,
+    permissionCeiling: [],
+    sandboxPosture: {
+      type: sandboxType,
+      networkAccess: sandbox.networkAccess,
+      approvalPolicy,
+      multiAgentMode,
+    },
+  };
+}
+
+/**
  * Builds the trust report for one agent binding from facts the runtime actually reported.
  *
  * Nothing here echoes what was requested. The model, the auth mode and the protocol version are
@@ -179,4 +231,19 @@ export function buildBindingReport(
 
 function versionOf(userAgent: string): string | undefined {
   return /\d+\.\d+\.\d+/u.exec(userAgent)?.[0];
+}
+
+function record(value: unknown): Record<string, unknown> | undefined {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined;
+}
+
+function text(value: unknown): string | undefined {
+  return typeof value === "string" && value.trim().length > 0 ? value : undefined;
+}
+
+function nullableText(value: unknown): string | null | undefined {
+  if (value === null) return null;
+  return text(value);
 }
