@@ -22,14 +22,28 @@ export type HandshakeFacts = Readonly<{
   sandboxPosture: SandboxPosture;
 }>;
 
-export type BindingExpectation = Readonly<{
+type BindingExpectationCore = Readonly<{
   requestedModel: string;
   expectedReasoningEffort: string | null;
   expectedAuthMode: "chatgpt" | "api_key_managed" | "none";
   protocolVersion: string;
+}>;
+
+type ImportedBindingExpectation = BindingExpectationCore &
+  Readonly<{
   promotedSourceSha256: string;
   promotedOverlaySha256: string;
-}>;
+    promotedContentSha256?: never;
+  }>;
+
+type AuthoredBindingExpectation = BindingExpectationCore &
+  Readonly<{
+    promotedContentSha256: string;
+    promotedSourceSha256?: never;
+    promotedOverlaySha256?: never;
+  }>;
+
+export type BindingExpectation = ImportedBindingExpectation | AuthoredBindingExpectation;
 
 export type BindingFailure = Readonly<{
   code:
@@ -113,6 +127,7 @@ export function buildBindingReport(
   facts: HandshakeFacts,
   expected: BindingExpectation,
 ): { ok: true; report: RuntimeBindingReport } | { ok: false; failure: BindingFailure } {
+  const promotedContract = contractMaterial(expected);
   const required = [
     facts.agentId,
     facts.bindingId,
@@ -121,8 +136,7 @@ export function buildBindingReport(
     facts.reportedModel,
     expected.requestedModel,
     expected.protocolVersion,
-    expected.promotedSourceSha256,
-    expected.promotedOverlaySha256,
+    ...Object.values(promotedContract),
   ];
   if (required.some((value) => typeof value !== "string" || value.trim().length === 0)) {
     return {
@@ -194,8 +208,7 @@ export function buildBindingReport(
     bindingId: facts.bindingId,
     model: facts.reportedModel,
     permissionCeiling: [...facts.permissionCeiling],
-    promotedOverlaySha256: expected.promotedOverlaySha256,
-    promotedSourceSha256: expected.promotedSourceSha256,
+    promotedContract,
     protocolVersion: expected.protocolVersion,
     // How the model was configured and what the session was confined to are part of what was
     // approved. A binding must not survive a change to either with an unchanged fingerprint.
@@ -231,6 +244,18 @@ export function buildBindingReport(
 
 function versionOf(userAgent: string): string | undefined {
   return /\d+\.\d+\.\d+/u.exec(userAgent)?.[0];
+}
+
+function contractMaterial(
+  expected: BindingExpectation,
+): Readonly<{ contentSha256: string } | { sourceSha256: string; overlaySha256: string }> {
+  if ("promotedContentSha256" in expected) {
+    return { contentSha256: expected.promotedContentSha256 };
+  }
+  return {
+    sourceSha256: expected.promotedSourceSha256,
+    overlaySha256: expected.promotedOverlaySha256,
+  };
 }
 
 function record(value: unknown): Record<string, unknown> | undefined {

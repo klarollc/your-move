@@ -75,6 +75,26 @@ describe("codex binding report", () => {
     expect(result.report.materialFingerprint).toMatch(/^[a-f0-9]{64}$/u);
   });
 
+  it("builds a binding from an authored role's reviewed content digest", () => {
+    const authored = {
+      requestedModel: "gpt-5.6-luna",
+      expectedReasoningEffort: "medium",
+      expectedAuthMode: "chatgpt",
+      protocolVersion: "0.146.0",
+      promotedContentSha256: "authored-delivery-lead-v1",
+    } satisfies BindingExpectation;
+
+    const result = buildBindingReport(facts(), authored);
+    const changed = buildBindingReport(facts(), {
+      ...authored,
+      promotedContentSha256: "authored-delivery-lead-v2",
+    });
+
+    expect(result.ok && changed.ok).toBe(true);
+    if (!result.ok || !changed.ok) return;
+    expect(result.report.materialFingerprint).not.toBe(changed.report.materialFingerprint);
+  });
+
   it("records the model the runtime reported, not the one requested", () => {
     // Same requested model, different reported one. The report must never echo the request.
     const drifted = buildBindingReport(facts({ reportedModel: "gpt-5.6-sol" }), expected);
