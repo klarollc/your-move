@@ -57,9 +57,7 @@ describe("codex binding report", () => {
           instructionSources: ["C:/controlled/AGENTS.md"],
         },
       }),
-    ).toEqual(
-      facts({ toolIds: null }),
-    );
+    ).toEqual(facts({ toolIds: null }));
   });
   it("builds a candidate report when every fact matches what was approved", () => {
     const result = buildBindingReport(facts(), expected);

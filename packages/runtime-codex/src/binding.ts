@@ -31,8 +31,8 @@ type BindingExpectationCore = Readonly<{
 
 type ImportedBindingExpectation = BindingExpectationCore &
   Readonly<{
-  promotedSourceSha256: string;
-  promotedOverlaySha256: string;
+    promotedSourceSha256: string;
+    promotedOverlaySha256: string;
     promotedContentSha256?: never;
   }>;
 
