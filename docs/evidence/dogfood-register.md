@@ -327,3 +327,76 @@ in their relationship.
 
 Recorded here as an open problem. The immediate mitigation applied in Task 17a was manual and does
 not generalise: check mtimes before trusting a surprising result.
+
+
+### DF-008 addendum — the impact is no longer nil (2026-09-11)
+
+DF-008 was recorded with the note that effort was held constant across all six roles, so nothing
+was confounded and the gap was theoretical.
+
+The Task 17c-1 live probe shows that was wrong on the facts. `thread/start` reports
+`reasoningEffort` directly, and a default thread runs at `high` while the owner approved `medium`.
+So the runtime *does* tell us how the model was configured, the configuration it defaults to is not
+the one that was approved, and `RuntimeBindingReport` still has nowhere to put it.
+
+A binding report produced today would name the model, be checked for model drift, and be silent
+about a parameter the runtime volunteered and the owner explicitly chose. The record would be
+internally valid and would not say the thing that distinguishes an approved run from an unapproved
+one.
+
+The original entry's reasoning was sound and its conclusion about impact was an assumption. It took
+one live turn to falsify it. Recorded here rather than by editing DF-008, because the register is a
+record of what was believed when.
+
+### DF-010 — Six pinned role contracts share one unpinned instruction source
+
+- Observed: 2026-09-11, by the Task 17c-1 probe, while looking for something else.
+- D-26 clauses implicated: a role is exactly its promoted contract. Same family as DF-006 in that
+  the system had no way to see it.
+
+`thread/start` reports `instructionSources`, and for every thread the value is
+`["C:\\Users\\nater\\.codex\\AGENTS.md"]` — a file in the owner's Codex home.
+
+**Its contents have not been examined.** It lives outside the folder connected to this session, in
+a directory that also holds provider credentials, and access was not requested. Nothing here is a
+claim about what the file says.
+
+The problem is structural. Role promotion pins exactly what instructions a role runs under: a
+source digest and an overlay digest, promoted all-or-nothing, re-derived on every read so drift
+revokes automatically, and folded into the binding's material fingerprint so a binding cannot
+survive a contract change it was never approved against. That machinery is the most carefully built
+thing in the project.
+
+It governs one of the two instruction inputs. The other one is a file the system does not know
+exists, that applies identically to all six roles, that no digest covers, and that can change
+between two runs whose binding reports would be byte-identical.
+
+Six roles intended as six distinct contracts would share one uncontrolled input. Whether that
+currently matters depends on the file's contents; whether the system can *tell* does not.
+
+## Why the promotion machinery could not catch this
+
+Promotion checks the digests of the files it was given. It has no way to ask "what else is
+instructing this agent," because nothing in the design admitted that a second source could exist.
+The guard is exact about its own scope and blind one inch outside it.
+
+That is a third distinct shape, alongside the two the register already names:
+
+- DF-005 through DF-008: a canonical record cannot say something.
+- DF-009: evidence cannot be attributed to what produced it.
+- DF-010: a guard is rigorous within a boundary that was drawn by assumption.
+
+The first two were found by trying to use a record. This one was found by asking a live runtime what
+it thought it was doing, which is a question the project had never put to it.
+
+## Product response
+
+Not authorized and not designed. Three directions, in rough order of how much they cost:
+
+- Point threads at a controlled Codex home so no unpinned instructions load at all.
+- Digest whatever instruction sources the runtime reports and fold them into the material
+  fingerprint, so an unpinned input at least cannot change silently.
+- Accept it and document it as a known uncontrolled input, which is honest but leaves the pinning
+  guarantee weaker than the documents claim.
+
+The owner has not ruled. The file has not been read.
