@@ -583,3 +583,95 @@ over an incomplete round, and it should not.
 The first design was mine and it was wrong. It was caught by a domain invariant rather than by
 review, which is the second time in this task that a guard found something reading the
 specification did not. Amending D-25 to permit a quorum synthesis remains open and unauthorised.
+
+
+## Task 17c-1 and 17c-1b — two probes, no RED/GREEN
+
+Run 2026-09-11. Neither is TDD evidence and neither is recorded as such. They are instruments: each
+asserts only that a session came up, because a probe that asserts its own conclusion is not a probe.
+
+**17c-1** answered whether the runtime reports the model (yes, at `thread/start`, alongside
+`reasoningEffort`) and whether anything enumerates a tool surface (no). Cost one turn. It also
+found, without looking for it, that every thread loads an instruction source from the owner's Codex
+home — recorded as DF-010 — and that the approved model and effort are not what a default thread
+gets.
+
+**17c-1b** answered whether `CODEX_HOME` is honoured. It is: `initialize.codexHome` echoed the
+controlled directory and `instructionSources` contained exactly the marker file, nothing outside
+it. Cost zero model tokens, because `instructionSources` is reported at `thread/start` and no turn
+was needed.
+
+Full detail in `docs/evidence/phase-4/live-kickoff/probe-2026-09-11-codex-facts.md`.
+
+## Task 17c-2a — the binding report says how the model was configured and what bounded it
+
+Complete 2026-09-13. Three suites, RED against deliberate stubs, GREEN after, full `npm run verify`
+green on Windows. Unit total moved 183 → 188; contract total moved 60 → 65.
+
+- `packages/runtime-codex/src/binding.ts` — RED 3 of 14, 14 tests.
+- `packages/contracts/src/runtime.ts` — RED 3 of the 5 new tests, 10 in the file.
+- `packages/runtime-codex/src/supervisor.ts` — RED 1 of 5, 5 tests.
+
+### The first contract RED was invalid and was thrown away
+
+The first run of the contract block reported 2 failures where 4 were predicted. The two "refuses a
+report that cannot say X" tests passed — but not because the schema enforced anything. The shared
+fixture carried `toolIds: null`, which the stub's `z.array(id)` rejected, so **every** parse of
+that object failed, including the two tests that were supposed to be exercising a different field.
+
+They passed for a reason unrelated to what they assert. That is the same defect as Task 17a's stub
+collision wearing different clothes: there, the stub returned a code a test expected; here, a
+fixture depended on behaviour the stub did not yet have. Both produce a green tick that means
+nothing.
+
+The fixture was decoupled — base `toolIds: []`, valid before and after the change — and the block
+re-run, giving 3 failures each on its own assertion. **Only the second RED is evidence.** The first
+is recorded because a discarded run is part of what happened.
+
+### What changed and why
+
+**`reasoningEffort` is required and nullable.** DF-008 recorded that a binding report could not say
+how the model was configured, and judged the impact nil because effort was constant. The probe
+falsified that: the runtime reports effort, and its default (`high`) is not what the owner approved
+(`medium`). Nullable rather than optional, because `null` is a statement that the runtime reported
+nothing, while an absent field is a record that cannot say — which is the gap itself.
+
+**`toolIds` is nullable, and the two empties are different.** `null` means this adapter does not
+enumerate a tool surface. `[]` means one was enumerated and found empty. The Codex handshake names
+no tool anywhere, so claiming `[]` would assert an observation nobody made — exactly what the
+existing test "never reports an empty tool list it did not observe" was written to prevent. The
+test was right and the type was not.
+
+**`sandboxPosture` is new, and it is not a permission ceiling.** What `thread/start` reports is
+`sandbox.type`, `networkAccess`, `approvalPolicy` and `multiAgentMode` — *bounds*, not exposures.
+`permissionCeiling` means the opposite: capability beyond baseline. Populating the ceiling from the
+posture would have refused every binding; leaving the ceiling empty with nothing else recorded
+would have made an empty claim. Both are recorded, meaning different things.
+
+**The fingerprint was thinner than it looked.** `materialFingerprint` covered adapter, agent, auth
+mode, binding id, model, the two promoted digests, protocol version, role and user agent — and
+neither `toolIds` nor `permissionCeiling`. Nothing exploited that, because a binding with a
+non-empty surface is refused before a report exists, but the fingerprint was claiming to cover
+material it did not. All four of surface, ceiling, effort and posture are now in it.
+
+**The supervisor can be given an instruction environment.** `codexHome` sets `CODEX_HOME` on the
+child. Unconfigured, no `env` is passed at all rather than a copy of this process's environment,
+because a copy is a second version that can drift from the first.
+
+### What `verify` caught that the focused runs could not
+
+Five fixtures in `runtime-trust-store.integration.test.ts` and a type error in the new supervisor
+test. Both are the class recorded after the `raisedAt` change: a contract change breaks constructors
+elsewhere, and `tsc` is the only check that sees it.
+
+The supervisor one is worth keeping. The test recorded spawn options as `{ env?: ProcessEnv }`, and
+under `exactOptionalPropertyTypes` an absent key and a key set to `undefined` are different things —
+so the type could not express "no env was passed", which is the fact the test exists to assert.
+`{ env: ProcessEnv | undefined }` says it. That is the same distinction as `toolIds: null` versus a
+missing field, enforced by the compiler rather than by anyone remembering it.
+
+### What this does not establish
+
+No binding has been built from a live handshake. `HandshakeFacts` is still populated by fixtures in
+every test, and nothing yet collects it from a running session. The contract can now hold the truth;
+nothing has yet put the truth in it.

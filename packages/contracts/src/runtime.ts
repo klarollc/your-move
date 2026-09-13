@@ -90,6 +90,26 @@ export const permissionDecisionSchema = z
   })
   .strict();
 
+/**
+ * What the runtime reported the session is confined to. These are bounds, not exposures: a
+ * read-only sandbox with no network is the safe state, not a capability the session holds. The
+ * distinction matters because `permissionCeiling` means the opposite — things exposed beyond the
+ * baseline — and conflating the two would either refuse every binding or quietly loosen later.
+ *
+ * Observed at thread/start by the Task 17c-1 probe. See
+ * docs/evidence/phase-4/live-kickoff/probe-2026-09-11-codex-facts.md.
+ */
+export const sandboxPostureSchema = z
+  .object({
+    type: id,
+    networkAccess: z.boolean(),
+    approvalPolicy: id,
+    multiAgentMode: id,
+  })
+  .strict();
+
+export type SandboxPosture = z.infer<typeof sandboxPostureSchema>;
+
 export const runtimeBindingReportSchema = z
   .object({
     bindingId: id,
@@ -99,9 +119,15 @@ export const runtimeBindingReportSchema = z
     protocolVersion: id,
     authMode: z.enum(["chatgpt", "api_key_managed", "none"]),
     model: id,
+    // Required, and nullable rather than optional. null is a statement that the runtime reported
+    // no effort; an absent field would be a report that cannot say, which is the DF-008 gap.
+    reasoningEffort: id.nullable(),
     capabilityIds: z.array(id),
-    toolIds: z.array(id),
+    // null means this adapter does not enumerate a tool surface. [] means it enumerated one and
+    // found it empty. Collapsing them would let "nobody looked" read as "nothing is exposed".
+    toolIds: z.array(id).nullable(),
     permissionCeiling: z.array(id),
+    sandboxPosture: sandboxPostureSchema,
     materialFingerprint: z.string().regex(/^[a-f0-9]{64}$/u),
     status: z.literal("candidate"),
   })

@@ -25,9 +25,16 @@ const binding = {
   protocolVersion: "0.146.0",
   authMode: "chatgpt" as const,
   model: "configured-model",
+  reasoningEffort: "medium",
   capabilityIds: ["edit"],
   toolIds: ["apply_patch"],
   permissionCeiling: ["project.read", "project.write"],
+  sandboxPosture: {
+    type: "readOnly",
+    networkAccess: false,
+    approvalPolicy: "never",
+    multiAgentMode: "explicitRequestOnly",
+  },
   materialFingerprint: "a".repeat(64),
   status: "candidate" as const,
 };

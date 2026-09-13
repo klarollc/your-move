@@ -2,8 +2,16 @@ import { describe, expect, it } from "vitest";
 
 import { buildBindingReport, type BindingExpectation, type HandshakeFacts } from "./binding.js";
 
+const posture = {
+  type: "readOnly",
+  networkAccess: false,
+  approvalPolicy: "never",
+  multiAgentMode: "explicitRequestOnly",
+} as const;
+
 const expected: BindingExpectation = {
   requestedModel: "gpt-5.6-luna",
+  expectedReasoningEffort: "medium",
   expectedAuthMode: "chatgpt",
   protocolVersion: "0.146.0",
   promotedSourceSha256: "source-delivery-lead",
@@ -18,8 +26,10 @@ function facts(overrides: Partial<HandshakeFacts> = {}): HandshakeFacts {
     userAgent: "codex-cli 0.146.0 (windows)",
     authMode: "chatgpt",
     reportedModel: "gpt-5.6-luna",
+    reportedReasoningEffort: "medium",
     toolIds: [],
     permissionCeiling: [],
+    sandboxPosture: posture,
     ...overrides,
   };
 }
@@ -34,6 +44,8 @@ describe("codex binding report", () => {
     expect(result.report.model).toBe("gpt-5.6-luna");
     expect(result.report.authMode).toBe("chatgpt");
     expect(result.report.protocolVersion).toBe("0.146.0");
+    expect(result.report.reasoningEffort).toBe("medium");
+    expect(result.report.sandboxPosture).toEqual(posture);
     expect(result.report.materialFingerprint).toMatch(/^[a-f0-9]{64}$/u);
   });
 
@@ -113,5 +125,71 @@ describe("codex binding report", () => {
     // Same live session, different promoted contract. If the fingerprint ignored the contract, a
     // binding could survive a promotion change that it was never approved against.
     expect(first.report.materialFingerprint).not.toBe(differentContract.report.materialFingerprint);
+  });
+  it("records how the model was configured, not only which model it was", () => {
+    // DF-008: two runs of the same model at different efforts produced identical reports. The
+    // runtime volunteers the effort at thread/start, and the owner chose it deliberately, so a
+    // record that cannot express it cannot distinguish an approved run from an unapproved one.
+    const drifted = buildBindingReport(facts({ reportedReasoningEffort: "high" }), expected);
+
+    expect(drifted.ok).toBe(false);
+    if (drifted.ok) return;
+    expect(drifted.failure.code).toBe("EFFORT_DRIFT");
+    expect(drifted.failure.detail).toContain("high");
+  });
+
+  it("accepts a runtime that reports no effort without inventing one", () => {
+    const result = buildBindingReport(facts({ reportedReasoningEffort: null }), {
+      ...expected,
+      expectedReasoningEffort: null,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    // null is a statement that the runtime said nothing, which is different from a default.
+    expect(result.report.reasoningEffort).toBeNull();
+  });
+
+  it("distinguishes a tool surface it could not enumerate from one observed to be empty", () => {
+    const unenumerable = buildBindingReport(facts({ toolIds: null }), expected);
+    const observedEmpty = buildBindingReport(facts({ toolIds: [] }), expected);
+
+    expect(unenumerable.ok && observedEmpty.ok).toBe(true);
+    if (!unenumerable.ok || !observedEmpty.ok) return;
+    // The Codex adapter enumerates nothing anywhere in its handshake, so claiming [] would assert
+    // an observation nobody made. null says so; [] keeps meaning "looked, found none".
+    expect(unenumerable.report.toolIds).toBeNull();
+    expect(observedEmpty.report.toolIds).toEqual([]);
+  });
+
+  it("records what the session was confined to, not only what it exposed", () => {
+    const result = buildBindingReport(facts(), expected);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    // permissionCeiling means capability beyond baseline; the posture means the bounds the runtime
+    // reported. An empty ceiling is only meaningful next to a posture that says what was enforced.
+    expect(result.report.permissionCeiling).toEqual([]);
+    expect(result.report.sandboxPosture.networkAccess).toBe(false);
+    expect(result.report.sandboxPosture.type).toBe("readOnly");
+  });
+
+  it("binds the fingerprint to the effort and the posture, not only to the model", () => {
+    const base = buildBindingReport(facts(), expected);
+    const looserPosture = buildBindingReport(
+      facts({ sandboxPosture: { ...posture, networkAccess: true } }),
+      expected,
+    );
+    const otherEffort = buildBindingReport(facts({ reportedReasoningEffort: "low" }), {
+      ...expected,
+      expectedReasoningEffort: "low",
+    });
+
+    expect(base.ok && looserPosture.ok && otherEffort.ok).toBe(true);
+    if (!base.ok || !looserPosture.ok || !otherEffort.ok) return;
+    // A session granted network access is not the session that was approved, and a binding must
+    // not survive that change with an unchanged fingerprint.
+    expect(base.report.materialFingerprint).not.toBe(looserPosture.report.materialFingerprint);
+    expect(base.report.materialFingerprint).not.toBe(otherEffort.report.materialFingerprint);
   });
 });

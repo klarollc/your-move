@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   permissionDecisionSchema,
+  runtimeBindingReportSchema,
   runtimeCorrelationSchema,
   runtimeRecordKinds,
   runtimeRecordSchema,
@@ -84,6 +85,74 @@ describe("runtime record vocabulary", () => {
         kind: "runtime.claude_specific",
         summary: "a provider inventing its own kind",
       }).success,
+    ).toBe(false);
+  });
+});
+
+/** Drops one key, so a test can show a report that cannot say a particular thing. */
+function without(value: Record<string, unknown>, key: string): Record<string, unknown> {
+  const remaining = { ...value };
+  delete remaining[key];
+  return remaining;
+}
+
+describe("runtime binding report", () => {
+  const report = {
+    bindingId: "binding_1",
+    agentId: "agent_1",
+    adapterId: "codex-app-server",
+    adapterVersion: "0.146.0",
+    protocolVersion: "0.146.0",
+    authMode: "chatgpt",
+    model: "gpt-5.6-luna",
+    reasoningEffort: "medium",
+    capabilityIds: ["thread/start"],
+    // Deliberately the enumerable-and-empty case: valid before and after this change, so the
+    // tests below fail on the field each one is about rather than on this one.
+    toolIds: [],
+    permissionCeiling: [],
+    sandboxPosture: {
+      type: "readOnly",
+      networkAccess: false,
+      approvalPolicy: "never",
+      multiAgentMode: "explicitRequestOnly",
+    },
+    materialFingerprint: "a".repeat(64),
+    status: "candidate",
+  };
+
+  it("accepts a report that says how the model was configured and what bounded it", () => {
+    // A guard, not RED evidence: this shape parses before and after the change.
+    expect(runtimeBindingReportSchema.safeParse(report).success).toBe(true);
+  });
+
+  it("refuses a report that cannot say how the model was configured", () => {
+    // DF-008. The runtime reports reasoningEffort and the owner chooses it, so a report without
+    // the field describes a run that cannot be told apart from one at a different effort.
+    expect(runtimeBindingReportSchema.safeParse(without(report, "reasoningEffort")).success).toBe(
+      false,
+    );
+  });
+
+  it("refuses a report that cannot say what the session was confined to", () => {
+    expect(runtimeBindingReportSchema.safeParse(without(report, "sandboxPosture")).success).toBe(
+      false,
+    );
+  });
+
+  it("lets a tool list be unenumerable, but not absent or malformed", () => {
+    expect(runtimeBindingReportSchema.safeParse({ ...report, toolIds: null }).success).toBe(true);
+    expect(runtimeBindingReportSchema.safeParse({ ...report, toolIds: [] }).success).toBe(true);
+    expect(runtimeBindingReportSchema.safeParse(without(report, "toolIds")).success).toBe(false);
+    expect(runtimeBindingReportSchema.safeParse({ ...report, toolIds: "none" }).success).toBe(
+      false,
+    );
+  });
+
+  it("refuses a posture that is missing the bound it is there to state", () => {
+    const partial = without(report.sandboxPosture, "networkAccess");
+    expect(
+      runtimeBindingReportSchema.safeParse({ ...report, sandboxPosture: partial }).success,
     ).toBe(false);
   });
 });

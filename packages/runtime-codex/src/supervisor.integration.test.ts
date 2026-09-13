@@ -97,4 +97,38 @@ describe("Codex stdio supervisor", () => {
     );
     await supervisor.stop();
   });
+  it("runs a session in the instruction environment it was configured with", async () => {
+    // Not an optional property: an absent env is the fact under test, so it must be storable
+    // rather than indistinguishable from a key that was never set.
+    const seen: { env: NodeJS.ProcessEnv | undefined }[] = [];
+    const recordingSpawner: SpawnRuntimeProcess = (_executable, _args, options) => {
+      seen.push({ env: options.env });
+      return spawn(process.execPath, [fixture], {
+        stdio: ["pipe", "pipe", "pipe"],
+        windowsHide: true,
+        env: { ...process.env, CUCKCODE_FAKE_MODE: "normal" },
+      });
+    };
+
+    const configured = new CodexStdioSupervisor({
+      executable: "codex.exe",
+      spawnProcess: recordingSpawner,
+      codexHome: "C:/synthetic/role-home",
+    });
+    await configured.start();
+    await configured.stop();
+
+    const inherited = new CodexStdioSupervisor({
+      executable: "codex.exe",
+      spawnProcess: recordingSpawner,
+    });
+    await inherited.start();
+    await inherited.stop();
+
+    // A role runs under exactly its own contract only if the session's instruction environment is
+    // chosen rather than inherited. Unconfigured, the child inherits this process's environment,
+    // and that is stated by passing no env at all rather than by copying one.
+    expect(seen[0]?.env?.CODEX_HOME).toBe("C:/synthetic/role-home");
+    expect(seen[1]?.env).toBeUndefined();
+  });
 });

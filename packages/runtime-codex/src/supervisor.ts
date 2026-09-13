@@ -33,6 +33,7 @@ export class CodexStdioSupervisor {
   readonly #executable: string;
   readonly #spawnProcess: SpawnRuntimeProcess;
   readonly #handshakeTimeoutMs: number;
+  readonly #codexHome: string | undefined;
   readonly #maxLineBytes: number;
   readonly #pending = new Map<
     number,
@@ -51,8 +52,15 @@ export class CodexStdioSupervisor {
     spawnProcess?: SpawnRuntimeProcess;
     handshakeTimeoutMs?: number;
     maxLineBytes?: number;
+    /**
+     * The instruction environment this session runs in. Proved honoured by the Task 17c-1b probe:
+     * setting it replaces the default instruction sources entirely, which is what lets a role run
+     * under exactly its own contract rather than under whatever the machine's Codex home holds.
+     */
+    codexHome?: string;
   }) {
     this.#executable = options.executable;
+    this.#codexHome = options.codexHome;
     this.#spawnProcess = options.spawnProcess ?? defaultSpawn;
     this.#handshakeTimeoutMs = options.handshakeTimeoutMs ?? 5_000;
     this.#maxLineBytes = options.maxLineBytes ?? 1_048_576;
@@ -65,10 +73,17 @@ export class CodexStdioSupervisor {
     userAgent: string;
   }> {
     if (this.#child) throw new Error("PROCESS_ALREADY_STARTED");
+    // Unconfigured, no env is passed at all, so the child inherits this process's environment.
+    // That is deliberate: copying the environment here would create a second version of it that
+    // could drift from the real one.
+    const environment =
+      this.#codexHome === undefined ? {} : { env: { ...process.env, CODEX_HOME: this.#codexHome } };
+
     this.#child = this.#spawnProcess(this.#executable, CODEX_ARGS, {
       shell: false,
       stdio: ["pipe", "pipe", "pipe"],
       windowsHide: true,
+      ...environment,
     });
     this.#child.stdout.setEncoding("utf8");
     this.#child.stderr.setEncoding("utf8");

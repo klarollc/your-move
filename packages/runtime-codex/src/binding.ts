@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import type { RuntimeBindingReport } from "@cuckcode/contracts";
+import type { RuntimeBindingReport, SandboxPosture } from "@cuckcode/contracts";
 import { stableStringify } from "@cuckcode/domain";
 
 import { ALLOWED_REQUEST_METHODS } from "./supervisor.js";
@@ -14,12 +14,17 @@ export type HandshakeFacts = Readonly<{
   userAgent: string;
   authMode: "chatgpt" | "api_key_managed" | "none";
   reportedModel: string;
-  toolIds: readonly string[];
+  /** null means the runtime reported no effort, not that nobody asked. */
+  reportedReasoningEffort: string | null;
+  /** null means this adapter does not enumerate a tool surface. [] means it enumerated none. */
+  toolIds: readonly string[] | null;
   permissionCeiling: readonly string[];
+  sandboxPosture: SandboxPosture;
 }>;
 
 export type BindingExpectation = Readonly<{
   requestedModel: string;
+  expectedReasoningEffort: string | null;
   expectedAuthMode: "chatgpt" | "api_key_managed" | "none";
   protocolVersion: string;
   promotedSourceSha256: string;
@@ -29,6 +34,7 @@ export type BindingExpectation = Readonly<{
 export type BindingFailure = Readonly<{
   code:
     | "MODEL_DRIFT"
+    | "EFFORT_DRIFT"
     | "AUTH_MODE_DRIFT"
     | "PROTOCOL_DRIFT"
     | "TOOL_SURFACE_PRESENT"
@@ -106,7 +112,19 @@ export function buildBindingReport(
     };
   }
 
-  const surface = [...facts.toolIds, ...facts.permissionCeiling];
+  if (facts.reportedReasoningEffort !== expected.expectedReasoningEffort) {
+    return {
+      ok: false,
+      failure: {
+        code: "EFFORT_DRIFT",
+        detail: `runtime ran at ${facts.reportedReasoningEffort ?? "an unreported effort"}; ${
+          expected.expectedReasoningEffort ?? "an unreported effort"
+        } was approved for ${facts.roleId}`,
+      },
+    };
+  }
+
+  const surface = [...(facts.toolIds ?? []), ...facts.permissionCeiling];
   if (surface.length > 0) {
     return {
       ok: false,
@@ -123,10 +141,16 @@ export function buildBindingReport(
     authMode: facts.authMode,
     bindingId: facts.bindingId,
     model: facts.reportedModel,
+    permissionCeiling: [...facts.permissionCeiling],
     promotedOverlaySha256: expected.promotedOverlaySha256,
     promotedSourceSha256: expected.promotedSourceSha256,
     protocolVersion: expected.protocolVersion,
+    // How the model was configured and what the session was confined to are part of what was
+    // approved. A binding must not survive a change to either with an unchanged fingerprint.
+    reasoningEffort: facts.reportedReasoningEffort,
     roleId: facts.roleId,
+    sandboxPosture: facts.sandboxPosture,
+    toolIds: facts.toolIds === null ? null : [...facts.toolIds],
     userAgent: facts.userAgent,
   };
 
@@ -143,8 +167,10 @@ export function buildBindingReport(
       // The methods this binding is permitted to call, taken from the supervisor's own allow-list
       // rather than restated here.
       capabilityIds: [...ALLOWED_REQUEST_METHODS].sort(),
-      toolIds: [...facts.toolIds],
+      reasoningEffort: facts.reportedReasoningEffort,
+      toolIds: facts.toolIds === null ? null : [...facts.toolIds],
       permissionCeiling: [...facts.permissionCeiling],
+      sandboxPosture: facts.sandboxPosture,
       materialFingerprint: createHash("sha256").update(stableStringify(material)).digest("hex"),
       status: "candidate",
     },
