@@ -24,6 +24,7 @@
     "roles:agency-agents:import": "node scripts/import-agency-agents.mjs",
     "roles:agency-agents:check": "node scripts/check-agency-agents.mjs",
     "roles:promote": "node scripts/promote-authored-roles.mjs",
+    "roles:exercise": "tsx scripts/run-role-exercises.ts",
     "test:roles": "node --test scripts/agency-agents-import.test.mjs scripts/promote-roles.test.mjs scripts/promote-authored-roles.test.mjs && npm run roles:agency-agents:check",
     "roles:promotion:status": "node scripts/promote-roles.mjs",
     "protocol:codex:generate": "node scripts/generate-codex-protocol.mjs",
