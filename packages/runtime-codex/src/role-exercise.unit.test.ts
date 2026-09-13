@@ -77,7 +77,12 @@ describe("role exercise runner", () => {
       expected,
     });
 
-    expect(result).toMatchObject({ performed: true, threadId: "thread_1", turnId: "turn_1" });
+    expect(result).toMatchObject({
+      performed: true,
+      threadId: "thread_1",
+      turnId: "turn_1",
+      responseText: "EXERCISE_OK",
+    });
     expect(fake.calls).toHaveLength(2);
     expect(fake.calls[0]).toMatchObject({
       method: "thread/start",

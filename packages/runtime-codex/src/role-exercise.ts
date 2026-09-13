@@ -35,6 +35,7 @@ export type RoleExerciseResult =
       binding: RuntimeBindingReport;
       threadId: string;
       turnId: string;
+      responseText: string;
     }>
   | Readonly<{
       performed: false;
@@ -148,7 +149,13 @@ export async function runRoleExercise(input: {
     const completed = await input.supervisor.waitForNotification("turn/completed", 90_000);
     const checked = checkCompletedTurn(completed, threadId, turnId);
     if (!checked.ok) return checked.result;
-    return { performed: true, binding: binding.report, threadId, turnId };
+    return {
+      performed: true,
+      binding: binding.report,
+      threadId,
+      turnId,
+      responseText: checked.responseText,
+    };
   } catch {
     return {
       performed: false,
@@ -192,7 +199,9 @@ function checkCompletedTurn(
   completed: Record<string, unknown>,
   expectedThreadId: string,
   expectedTurnId: string,
-): { ok: true } | { ok: false; result: Extract<RoleExerciseResult, { performed: false }> } {
+):
+  | { ok: true; responseText: string }
+  | { ok: false; result: Extract<RoleExerciseResult, { performed: false }> } {
   const params = record(completed.params);
   const turn = record(params?.turn);
   if (
@@ -234,7 +243,23 @@ function checkCompletedTurn(
       },
     };
   }
-  return { ok: true };
+  const responseTexts = turn.items
+    .map((item) => record(item))
+    .map((item) => (item?.type === "agentMessage" ? text(item.text) : undefined))
+    .filter((item): item is string => item !== undefined);
+  if (responseTexts.length !== 1) {
+    return {
+      ok: false,
+      result: {
+        performed: false,
+        code: "TURN_COMPLETION_INVALID",
+        detail: "the text-only turn did not carry exactly one non-empty agent message",
+      },
+    };
+  }
+  const responseText = responseTexts[0];
+  if (responseText === undefined) throw new Error("RESPONSE_TEXT_MISSING");
+  return { ok: true, responseText };
 }
 
 const EXTERNAL_EFFECT_ITEM_TYPES = new Set([
