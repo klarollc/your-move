@@ -14,7 +14,7 @@ export function emptyPromotionRecord() {
  * refused whole. Partial promotion would leave some roles executable under an approval that was
  * never given for that combination.
  */
-export function planPromotion({ manifest, requested, record, now, packetRef }) {
+export function planPromotion({ manifest, requested, record, now, packetRef, exerciseRecord }) {
   const known = new Map(manifest.roles.map((role) => [role.roleId, role]));
 
   for (const entry of requested) {
@@ -28,10 +28,50 @@ export function planPromotion({ manifest, requested, record, now, packetRef }) {
     return { ok: false, code: "PROMOTION_INCOMPLETE" };
   }
 
+  // Imported material must carry an explicit suitability conclusion. `candidate` describes the
+  // promotion lifecycle, not whether an upstream prompt fits this project's runtime and stack.
+  // Missing is treated as unassessed: an import cannot inherit silence as compatibility.
+  const unassessed = manifest.roles
+    .filter((role) => role.sourceSha256 !== undefined)
+    .filter(
+      (role) =>
+        role.compatibility?.verdict === undefined || role.compatibility.verdict === "unassessed",
+    )
+    .map((role) => role.roleId);
+  if (unassessed.length > 0) {
+    return { ok: false, code: "PROMOTION_COMPATIBILITY_UNASSESSED", roleIds: unassessed };
+  }
+
+  const incompatible = manifest.roles
+    .filter((role) => role.sourceSha256 !== undefined)
+    .filter((role) => role.compatibility?.verdict === "incompatible")
+    .map((role) => role.roleId);
+  if (incompatible.length > 0) {
+    return { ok: false, code: "PROMOTION_INCOMPATIBLE", roleIds: incompatible };
+  }
+
+  // An exercise is evidence about a particular contract version, not a durable badge on a role.
+  // A skipped/waived exercise and a result from a drifted version are both intentionally unable to
+  // satisfy this join.
+  const missingExercises = manifest.roles
+    .filter(
+      (role) =>
+        !exerciseRecord?.exercises?.some(
+          (exercise) =>
+            exercise.performed === true &&
+            exercise.roleId === role.roleId &&
+            digestsMatch(exercise, role),
+        ),
+    )
+    .map((role) => role.roleId);
+  if (missingExercises.length > 0) {
+    return { ok: false, code: "PROMOTION_EXERCISE_MISSING", roleIds: missingExercises };
+  }
+
   const drifted = requested
     .filter((entry) => {
       const role = known.get(entry.roleId);
-      return role.sourceSha256 !== entry.sourceSha256 || role.overlaySha256 !== entry.overlaySha256;
+      return !digestsMatch(entry, role);
     })
     .map((entry) => entry.roleId);
 
@@ -46,10 +86,13 @@ export function planPromotion({ manifest, requested, record, now, packetRef }) {
     if (existing && existing.revokedAt === null && digestsMatch(existing, role)) {
       return existing;
     }
+    const contract =
+      typeof role.contentSha256 === "string"
+        ? { contentSha256: role.contentSha256 }
+        : { sourceSha256: role.sourceSha256, overlaySha256: role.overlaySha256 };
     return {
       roleId: role.roleId,
-      sourceSha256: role.sourceSha256,
-      overlaySha256: role.overlaySha256,
+      ...contract,
       commit: manifest.commit,
       promotedAt: now,
       packetRef,
@@ -107,6 +150,9 @@ export function promotedRoleIds(record, manifest) {
 }
 
 function digestsMatch(left, right) {
+  if (typeof left.contentSha256 === "string" || typeof right.contentSha256 === "string") {
+    return left.contentSha256 === right.contentSha256;
+  }
   return left.sourceSha256 === right.sourceSha256 && left.overlaySha256 === right.overlaySha256;
 }
 

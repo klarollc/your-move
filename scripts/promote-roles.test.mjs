@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   emptyPromotionRecord,
-  planPromotion,
+  planPromotion as planPromotionImplementation,
   planRevocation,
   promotedRoleIds,
 } from "./promote-roles.mjs";
@@ -29,6 +29,12 @@ function manifest(overrides = {}) {
       overlaySha256: `overlay-${roleId}`,
       status: "candidate",
       executable: false,
+      compatibility: {
+        assessed: "2026-09-12",
+        by: "owner",
+        verdict: "compatible",
+        notes: "Compatible with the declared project stack.",
+      },
     })),
     ...overrides,
   };
@@ -42,6 +48,25 @@ function request(roleIds = ROLE_IDS, mutate = () => {}) {
   }));
   mutate(entries);
   return entries;
+}
+
+function performedExercises(currentManifest) {
+  return {
+    schema: "cuckcode.role-exercise.v1",
+    exercises: currentManifest.roles.map((role) => ({
+      roleId: role.roleId,
+      sourceSha256: role.sourceSha256,
+      overlaySha256: role.overlaySha256,
+      performed: true,
+    })),
+  };
+}
+
+function planPromotion(input) {
+  return planPromotionImplementation({
+    ...input,
+    exerciseRecord: performedExercises(input.manifest),
+  });
 }
 
 test("promotes all six roles when every digest matches the manifest", () => {
@@ -72,6 +97,58 @@ test("refuses a partial promotion request and promotes nothing", () => {
   });
 
   assert.deepEqual(result, { ok: false, code: "PROMOTION_INCOMPLETE" });
+});
+
+test("refuses the entire promotion when an imported role has not been assessed compatible", () => {
+  const unassessed = manifest();
+  unassessed.roles[2].compatibility = {
+    assessed: "2026-09-12",
+    by: "owner",
+    verdict: "unassessed",
+    notes: "No suitability conclusion has been recorded.",
+  };
+
+  const result = planPromotion({
+    manifest: unassessed,
+    requested: request(),
+    record: emptyPromotionRecord(),
+    now: NOW,
+    packetRef: PACKET,
+  });
+
+  assert.deepEqual(result, {
+    ok: false,
+    code: "PROMOTION_COMPATIBILITY_UNASSESSED",
+    roleIds: ["implementation-engineer"],
+  });
+});
+
+test("refuses promotion when the exact role version has no performed exercise", () => {
+  const currentManifest = manifest();
+  const result = planPromotionImplementation({
+    manifest: currentManifest,
+    requested: request(),
+    record: emptyPromotionRecord(),
+    now: NOW,
+    packetRef: PACKET,
+    exerciseRecord: {
+      schema: "cuckcode.role-exercise.v1",
+      exercises: [
+        {
+          roleId: "delivery-lead",
+          sourceSha256: "source-delivery-lead",
+          overlaySha256: "overlay-delivery-lead",
+          performed: false,
+        },
+      ],
+    },
+  });
+
+  assert.deepEqual(result, {
+    ok: false,
+    code: "PROMOTION_EXERCISE_MISSING",
+    roleIds: ROLE_IDS,
+  });
 });
 
 test("blocks the whole promotion on a single digest mismatch, leaving nothing promoted", () => {
@@ -212,4 +289,31 @@ test("re-promoting an already promoted role is idempotent, not a duplicate", () 
     second.record.promotions.find((item) => item.roleId === "delivery-lead").promotedAt,
     NOW,
   );
+});
+
+test("refuses an authored promotion request whose exact content digest drifted", () => {
+  const authored = {
+    commit: "35596d8",
+    roles: ROLE_IDS.map((roleId) => ({ roleId, contentSha256: `content-${roleId}` })),
+  };
+  const requested = authored.roles.map((role) => ({ ...role }));
+  requested[3].contentSha256 = "content-drifted";
+
+  const result = planPromotionImplementation({
+    manifest: authored,
+    requested,
+    record: emptyPromotionRecord(),
+    now: NOW,
+    packetRef: PACKET,
+    exerciseRecord: {
+      schema: "cuckcode.role-exercise.v1",
+      exercises: authored.roles.map((role) => ({ ...role, performed: true })),
+    },
+  });
+
+  assert.deepEqual(result, {
+    ok: false,
+    code: "PROMOTION_DRIFT",
+    drifted: ["test-engineer"],
+  });
 });
