@@ -4,9 +4,13 @@
   // 2026-09-14 when a duplicate `const` in the release brief passed both lint and typecheck and was
   // caught only by esbuild at runtime.
   //
-  // This is deliberately NOT wired into `npm run verify` yet: it reports two pre-existing errors in
-  // Phase 4 and Phase 6 scripts, and both need an owner ruling before anything changes in a
-  // completed phase. A gate that is switched on with known failures is not a gate.
+  // Wired into `npm run verify` on 2026-09-14, immediately after `typecheck`, once the two
+  // pre-existing errors it reported were ruled on and fixed: the dropped `roleId` in
+  // `run-phase4-kickoff.ts` and the `exactOptionalPropertyTypes` violation in
+  // `build-phase6-golden-states.ts`. Both were in completed phases and neither was touched before
+  // the ruling, which is recorded in
+  // `docs/evidence/decision-record-2026-09-14-scripts-typecheck.md`. It was held out of `verify`
+  // until then because a gate that is switched on with known failures is not a gate.
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "noEmit": true,

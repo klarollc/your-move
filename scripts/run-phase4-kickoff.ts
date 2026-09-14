@@ -103,7 +103,13 @@ if (openFailures.length > 0) {
   process.stderr.write(`${JSON.stringify({ ok: false, openFailures }, null, 2)}\n`);
   process.exitCode = 1;
 } else {
-  const bindings: Array<{ report: RuntimeBindingReport; createdAt: string }> = [];
+  // The role is captured here, from the candidate, rather than read off the report. A report says
+  // what runtime session exists and `runtimeBindingReportSchema` is strict with no `roleId`; the
+  // candidate is what joins that session to a role contract. This line used to write
+  // `roleId: report.roleId`, which was `undefined`, and `JSON.stringify` dropped the key — which is
+  // why both shipped Task 17 run artifacts record bindings that do not say which role they were
+  // for. Owner ruling 2026-09-14, `docs/evidence/decision-record-2026-09-14-scripts-typecheck.md`.
+  const bindings: Array<{ report: RuntimeBindingReport; roleId: string; createdAt: string }> = [];
   const transcript: Array<Record<string, unknown>> = [];
 
   const promptFor = (kind: string, roleId: string): string => {
@@ -131,7 +137,17 @@ if (openFailures.length > 0) {
     synthesisRoleId: SYNTHESIS_ROLE_ID,
     trustStore: {
       registerAgent: () => undefined,
-      appendBinding: ({ report, createdAt }) => bindings.push({ report, createdAt }),
+      appendBinding: ({ report, createdAt }) => {
+        // `runPreflightedKickoff` refuses the round unless every candidate's agentId and bindingId
+        // equal its report's, so this join is exact by construction rather than by convention. It
+        // still refuses rather than recording an unattributed binding: a binding whose role cannot
+        // be named is the defect this replaces.
+        const preparedBinding = prepared.find(
+          (entry) => entry.candidate.bindingId === report.bindingId,
+        );
+        if (!preparedBinding) throw new Error("BINDING_ROLE_UNRESOLVED");
+        bindings.push({ report, roleId: preparedBinding.candidate.roleId, createdAt });
+      },
     },
     runTurn: async (request) => {
       const session = sessions.get(request.roleId);
@@ -223,9 +239,9 @@ if (openFailures.length > 0) {
         ranAt: new Date().toISOString(),
         briefing: KICKOFF_BRIEFING,
         synthesisRoleId: SYNTHESIS_ROLE_ID,
-        bindings: bindings.map(({ report, createdAt }) => ({
+        bindings: bindings.map(({ report, roleId, createdAt }) => ({
           agentId: report.agentId,
-          roleId: report.roleId,
+          roleId,
           model: report.model,
           reasoningEffort: report.reasoningEffort,
           protocolVersion: report.protocolVersion,

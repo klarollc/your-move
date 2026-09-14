@@ -164,6 +164,20 @@ const PRODUCERS: Array<{
     producedBy: "owner, approving the Task 17 manager charter",
     authorizedBy: null,
   },
+  // Cross-phase owner rulings and the corrections recorded under them. Both were written by hand
+  // in the session that carried the ruling, so neither has a producing script to name.
+  {
+    prefix: "decision-record-",
+    kind: "owner",
+    producedBy: "owner",
+    authorizedBy: null,
+  },
+  {
+    prefix: "phase-4/live-kickoff/task-17-run/correction-",
+    kind: "owner",
+    producedBy: "owner ruling S-B, recorded beside the artifacts it corrects",
+    authorizedBy: "decision-record-2026-09-14-scripts-typecheck.md",
+  },
   {
     prefix: "phase-6/",
     kind: "script",

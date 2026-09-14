@@ -51,7 +51,12 @@ function sceneStateFrom(projected: ProjectedGoldenState): SceneState {
   for (const collaboration of Object.values(projected.snapshot.collaborations)) {
     if (collaboration.active) collaborationParticipants.push(...collaboration.participantIds);
   }
-  return { agentStates, work, collaborationParticipants };
+  // `work` is omitted rather than set to `undefined`. `SceneState.work` is optional and the
+  // renderer tests it with `if (scene.work)`, so the two are identical at runtime — but under
+  // `exactOptionalPropertyTypes` an explicit `undefined` is not assignable to an optional property.
+  // Type-only; proven no-op against the five golden states at both viewports, digests unchanged.
+  // Owner ruling 2026-09-14, `docs/evidence/decision-record-2026-09-14-scripts-typecheck.md`.
+  return { agentStates, collaborationParticipants, ...(work ? { work } : {}) };
 }
 
 /** The pinned environment every capture was produced in. */

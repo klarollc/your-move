@@ -1,0 +1,125 @@
+{
+  "schema": "cuckcode.evidence-correction.v1",
+  "kind": "correction",
+  "recordedAt": "2026-09-14",
+  "recordedBy": "owner ruling, this session",
+  "ruling": "docs/evidence/decision-record-2026-09-14-scripts-typecheck.md",
+  "summary": "Both Task 17 run artifacts record bindings that do not say which role each binding was for. The producing script wrote `roleId: report.roleId`, `report` has no such property, the value was `undefined`, and JSON.stringify dropped the key. This correction sits beside those artifacts and does not alter them.",
+  "defect": {
+    "site": "scripts/run-phase4-kickoff.ts, the `bindings` projection in the run record",
+    "wrote": "roleId: report.roleId",
+    "why": "`runtimeBindingReportSchema` (packages/contracts/src/runtime.ts) is strict and declares no `roleId`. A binding report states what runtime session exists; the preflight candidate is what joins that session to a role contract.",
+    "foundOn": "2026-09-14",
+    "foundBy": "`npm run typecheck:scripts`, added the same day because scripts/ had never been in the tsconfig project graph. TS2339 at run-phase4-kickoff.ts(228,26).",
+    "fixedOn": "2026-09-14, under the ruling above. The script now takes the role from the candidate."
+  },
+  "effect": {
+    "on": "the evidence record only",
+    "detail": "No provider turn, no binding admission, no preflight check and no domain decision read this field. The round ran as recorded; what was lost is the run record's own statement of which role each binding served.",
+    "futureRuns": "A future Phase 4 live run under the fixed script would record roleId. No such run is authorized."
+  },
+  "appliesTo": [
+    {
+      "artifact": "docs/evidence/phase-4/live-kickoff/task-17-run/run-attempt-1.json",
+      "sha256": "16e639b99727c168fdcecacde86cbe595a686f0b051001de2c306b8f5b6684a0",
+      "recordedIn": "89a704b",
+      "runOutcome": "stopped at turn 7 of 13",
+      "bindingCount": 6,
+      "keysPresentPerBinding": [
+        "agentId",
+        "createdAt",
+        "materialFingerprint",
+        "model",
+        "protocolVersion",
+        "reasoningEffort"
+      ],
+      "recoveredRoleIds": [
+        {
+          "agentId": "agent_delivery_lead",
+          "roleId": "delivery-lead",
+          "materialFingerprint": "41d6d9d479c4569517cc77acfc464e3d0c4545db7750567bf37519d851313989"
+        },
+        {
+          "agentId": "agent_product_designer",
+          "roleId": "product-designer",
+          "materialFingerprint": "d1631f281fcfd809588eb5b5805f6bbd0d5766544d7eb2d0a8d4a00b49801038"
+        },
+        {
+          "agentId": "agent_implementation_engineer",
+          "roleId": "implementation-engineer",
+          "materialFingerprint": "e4945c869d254a7fe0d4e906264bbd36265f5ffaaadd355ad723915a07390106"
+        },
+        {
+          "agentId": "agent_test_engineer",
+          "roleId": "test-engineer",
+          "materialFingerprint": "de69b99bffa4353308f182f9017ecb8c9e89ca22fd29c1b08f1ba50e33ddbcbe"
+        },
+        {
+          "agentId": "agent_visual_qa_reviewer",
+          "roleId": "visual-qa-reviewer",
+          "materialFingerprint": "95e964a6fc4d78e824ed2cc77c4943e9ac34cc7037286a5639adeb5a67b4dd9a"
+        },
+        {
+          "agentId": "agent_release_reviewer",
+          "roleId": "release-reviewer",
+          "materialFingerprint": "f21e0fd66fc1efb811da469379aa8344c34306ff5693593317615541a124973a"
+        }
+      ],
+      "everyBindingRecovered": true
+    },
+    {
+      "artifact": "docs/evidence/phase-4/live-kickoff/task-17-run/run-attempt-2.json",
+      "sha256": "0a73e7d63a6d65277d9c3b08b413329bab59c450b94d822fd23a42e764052253",
+      "recordedIn": "638bfac",
+      "runOutcome": "completed, 13 turns",
+      "bindingCount": 6,
+      "keysPresentPerBinding": [
+        "agentId",
+        "createdAt",
+        "materialFingerprint",
+        "model",
+        "protocolVersion",
+        "reasoningEffort"
+      ],
+      "recoveredRoleIds": [
+        {
+          "agentId": "agent_delivery_lead",
+          "roleId": "delivery-lead",
+          "materialFingerprint": "41d6d9d479c4569517cc77acfc464e3d0c4545db7750567bf37519d851313989"
+        },
+        {
+          "agentId": "agent_product_designer",
+          "roleId": "product-designer",
+          "materialFingerprint": "d1631f281fcfd809588eb5b5805f6bbd0d5766544d7eb2d0a8d4a00b49801038"
+        },
+        {
+          "agentId": "agent_implementation_engineer",
+          "roleId": "implementation-engineer",
+          "materialFingerprint": "e4945c869d254a7fe0d4e906264bbd36265f5ffaaadd355ad723915a07390106"
+        },
+        {
+          "agentId": "agent_test_engineer",
+          "roleId": "test-engineer",
+          "materialFingerprint": "de69b99bffa4353308f182f9017ecb8c9e89ca22fd29c1b08f1ba50e33ddbcbe"
+        },
+        {
+          "agentId": "agent_visual_qa_reviewer",
+          "roleId": "visual-qa-reviewer",
+          "materialFingerprint": "95e964a6fc4d78e824ed2cc77c4943e9ac34cc7037286a5639adeb5a67b4dd9a"
+        },
+        {
+          "agentId": "agent_release_reviewer",
+          "roleId": "release-reviewer",
+          "materialFingerprint": "f21e0fd66fc1efb811da469379aa8344c34306ff5693593317615541a124973a"
+        }
+      ],
+      "everyBindingRecovered": true
+    }
+  ],
+  "recovery": {
+    "method": "Join each binding's agentId to the transcript entries in the same file, which carry roleId and agentId as a pair on every turn.",
+    "corroboration": "`agentIdFor` in scripts/phase4-kickoff-preflight.ts derives agentId from roleId as `agent_${roleId.replace(/-/g,'_')}`, and every recovered pair matches that derivation.",
+    "limit": "This is a join inferred from agentId, not a statement recorded in the binding row. It is exact for these two runs because all six agentIds are distinct and every one appears in the transcript; it is not a general substitute for the field."
+  },
+  "notCorrected": "Neither run-attempt-1.json nor run-attempt-2.json is edited. Accepted artifacts record what was produced on the day they were produced; corrections are recorded beside them."
+}

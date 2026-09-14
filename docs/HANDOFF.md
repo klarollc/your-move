@@ -50,11 +50,30 @@ naming the screen reader, the exact build, the journeys and states exercised, th
 omissions; add that record to the provenance ledger; then have an independent reviewer confirm no
 acceptance obligation remains open.
 
-Known and unruled, found 2026-09-14 while auditing the brief: `scripts/` is not in the tsconfig
-project graph and has never been typechecked. `npm run typecheck:scripts` makes it visible and is
-deliberately not in `verify`, because it reports two pre-existing errors in completed phases. One is
-a shipped defect — `run-phase4-kickoff.ts` writes `roleId: report.roleId`, `report` has no such
-property, and both committed Phase 4 run artifacts record bindings with no `roleId` at all.
+**Ruled and closed 2026-09-14**, `docs/evidence/decision-record-2026-09-14-scripts-typecheck.md`.
+`scripts/` was not in the tsconfig project graph and had never been typechecked;
+`npm run typecheck:scripts` made it visible and reported two pre-existing errors in completed
+phases. Both are fixed under owner rulings S-A to S-D, and `typecheck:scripts` now runs inside
+`verify`, immediately after `typecheck`.
+
+- **The shipped one.** `run-phase4-kickoff.ts` wrote `roleId: report.roleId`; `RuntimeBindingReport`
+  is strict and has no `roleId`, so the key was dropped and **both committed Task 17 run artifacts
+  record bindings that do not say which role they were for.** The script now takes the role from the
+  preflight candidate — the record that joins a runtime session to a role contract — and refuses
+  with `BINDING_ROLE_UNRESOLVED` rather than recording an unattributed binding. The fix changes what
+  a *future* Phase 4 live run records; no such run is authorized and no evidence was rewritten. The
+  two artifacts carry a correction beside them, never in them:
+  `phase-4/live-kickoff/task-17-run/correction-2026-09-14-binding-roleid.json`, which recovers the
+  six-row `agentId` → `roleId` mapping from each file's own transcript **and states that the join is
+  inferred from `agentId` rather than recorded in the binding row.**
+- **The type-only one.** `build-phase6-golden-states.ts` passed `work: undefined` into an optional
+  property. Fixed by omitting the key; proven a no-op first — five golden states, both viewports,
+  ten captures compared in memory, zero differing digests, nothing written.
+
+**`run-phase4-kickoff.ts` has no test and cannot get one as written.** It is a top-level
+side-effecting module and the run-record projection is inline in it, so the defect was reachable only
+by reading the file or by typechecking it. Nothing in this pass is TDD evidence; the new `verify`
+stage is the guard. Extracting the projection into a pure function is unruled work.
 
 Nothing else is authorized. The ten items the reviewer says would change its verdict are ordinary
 work nobody has ruled on, except these three, which cannot be closed by an agent at all:
@@ -91,8 +110,12 @@ exists any more — `scripts/phase5-evidence-inventory.ts` reads the tree and re
   `npm run verify`: 282 artifacts recorded with digest and producer, six supersession edges, and the
   enforcement that matters — no current artifact may cite a superseded one outside a declared
   historical field. Corrections are appends, so an earlier claim stays in the history.
-  **Forty-three artifacts carry `producerKind: unknown`**, almost all pre-Phase-5: no code in the
-  tree writes them and no record says who did. Stated, not guessed.
+  **Forty-four artifacts carry `producerKind: unknown`**, almost all pre-Phase-5: no code in the
+  tree writes them and no record says who did. Stated, not guessed. This read forty-three of 282
+  here until 2026-09-14; it was already forty-four of 292 at `2b5f212`, before that day's two new
+  artifacts, both of which are attributed. `npm run phase5:provenance` reports the live numbers.
+  One of the forty-four, `phase-5/side-effect-review.json`, has **five recorded digests at an
+  identical 4498 bytes** and no producer rule, so every run of its producer re-records it. Unruled.
 - **Three Phase 6 provenance gaps** carry forward: no external visual reference informed any
   candidate; the generated half of the approved hybrid medium was never produced; four of six named
   typefaces cannot be embedded, with Phase 7 embedding as the named trigger.
