@@ -1,0 +1,216 @@
+{
+  "schema": "cuckcode.phase5-visual-qa.v1",
+  "pass": 2,
+  "previousPasses": [
+    "pass-1.json"
+  ],
+  "status": "Authored by the promoted visual-qa-reviewer from accessibility trees, not images. Class 3 evidence at most; C-19 still requires the owner's own eyes.",
+  "roleId": "visual-qa-reviewer",
+  "authoredAt": "2026-09-14T07:04:29.367Z",
+  "turnsSpent": 1,
+  "overclaims": [
+    "every state was judged from an accessibility tree, with nothing deferred to a human look"
+  ],
+  "crossCheck": {
+    "unreachableStates": [],
+    "capturedCells": 40
+  },
+  "attempts": [
+    {
+      "turn": 1,
+      "accepted": true,
+      "shortfalls": [],
+      "overclaims": [
+        "every state was judged from an accessibility tree, with nothing deferred to a human look"
+      ],
+      "responseSha256": "170d4a90ea0ca8aa1f8f063e164e7d4259e8b36cbfe75fe276cc23cda67f66b4"
+    }
+  ],
+  "annotation": {
+    "stateAnnotations": [
+      {
+        "stateId": "pending",
+        "contractSatisfied": "partial",
+        "observed": "Tree shows Pending status, summary, significant severity, due date, five evidence states, and Acknowledge/Defer controls.",
+        "gap": "Open-circle marker, visual treatment, spacing, contrast, and amber usage cannot be judged; no icon or status-marker evidence appears in the tree."
+      },
+      {
+        "stateId": "acknowledged",
+        "contractSatisfied": "partial",
+        "observed": "Tree shows Acknowledged status, disabled actions, and an Undo latest decision change button.",
+        "gap": "Required acknowledgement metadata/timestamp is absent from the tree; completed marker and visual settled-notice treatment cannot be judged."
+      },
+      {
+        "stateId": "deferred",
+        "contractSatisfied": "partial",
+        "observed": "Tree shows Deferred status, next review date, defer reason, disabled actions, and undo control.",
+        "gap": "Calendar-pause marker and visual settled treatment cannot be judged; no explicit deferral timestamp is shown."
+      },
+      {
+        "stateId": "overdue",
+        "contractSatisfied": "partial",
+        "observed": "Tree shows Overdue status, due date, and enabled actions.",
+        "gap": "No explicit past-due wording or escalation affordance is shown; warning icon, prominent review-date styling, and severity treatment cannot be judged."
+      },
+      {
+        "stateId": "saving",
+        "contractSatisfied": "partial",
+        "observed": "Tree shows Saving status, disabled actions, static text 'Saving…', and save-progress announcement.",
+        "gap": "An inline progress indicator is not represented in the tree; progress styling and stable layout cannot be judged."
+      },
+      {
+        "stateId": "save-failed",
+        "contractSatisfied": "partial",
+        "observed": "Tree shows Save failed status, alert with explanatory message, Retry save button, and disabled actions.",
+        "gap": "Error icon, failure-panel placement, preserved-input presentation, and visual treatment cannot be judged."
+      },
+      {
+        "stateId": "disabled",
+        "contractSatisfied": "partial",
+        "observed": "Tree shows Disabled status, explanatory note, and disabled Acknowledge/Defer controls.",
+        "gap": "Lock icon and muted-but-legible visual treatment cannot be verified from the tree."
+      },
+      {
+        "stateId": "severity-routine",
+        "contractSatisfied": "partial",
+        "observed": "Tree shows Severity: routine and Pending status with normal actions.",
+        "gap": "Required neutral dot-and-label marker and absence of amber treatment cannot be judged."
+      },
+      {
+        "stateId": "severity-significant",
+        "contractSatisfied": "partial",
+        "observed": "Tree shows Severity: significant and Pending status with normal actions.",
+        "gap": "Required double-rule marker and distinct medium-emphasis treatment cannot be judged."
+      },
+      {
+        "stateId": "severity-critical",
+        "contractSatisfied": "partial",
+        "observed": "Tree shows Severity: critical and Pending status with normal actions.",
+        "gap": "Required diamond-exclamation marker, strong boundary, and escalation treatment cannot be judged."
+      },
+      {
+        "stateId": "severity-unknown",
+        "contractSatisfied": "partial",
+        "observed": "Tree shows Unknown severity and source value 'blocker'.",
+        "gap": "Outlined question marker and diagnostic visual treatment cannot be judged."
+      },
+      {
+        "stateId": "date-malformed",
+        "contractSatisfied": "partial",
+        "observed": "Tree shows 'Due date unavailable: malformed' and the raw source value without substituting a date.",
+        "gap": "Calendar-slash icon and inline diagnostic styling cannot be judged."
+      },
+      {
+        "stateId": "link-resolved",
+        "contractSatisfied": "partial",
+        "observed": "Tree shows two available artifacts with artifact names, paths, Evidence available labels, and resolved Inspect buttons.",
+        "gap": "Document-check icons, affordance styling, and source metadata presentation cannot be judged."
+      },
+      {
+        "stateId": "link-missing",
+        "contractSatisfied": "partial",
+        "observed": "Tree shows Missing report, Evidence missing, expected path, and disabled Unavailable control.",
+        "gap": "Document-minus icon, source-order layout, and missing-artifact placeholder styling cannot be judged."
+      },
+      {
+        "stateId": "link-invalid",
+        "contractSatisfied": "partial",
+        "observed": "Tree shows Unfiled reference, Evidence reference invalid, an empty code value, and disabled Unavailable control.",
+        "gap": "Broken-link icon and validation-detail presentation cannot be judged; the empty technical evidence value may be insufficiently identifiable."
+      },
+      {
+        "stateId": "link-unavailable",
+        "contractSatisfied": "partial",
+        "observed": "Tree shows External report, Evidence unavailable, an external URL, and disabled Unavailable control.",
+        "gap": "Offline-box icon and local-resolution explanation are not present in the tree; visual unavailable treatment cannot be judged."
+      },
+      {
+        "stateId": "validation-reason-empty",
+        "contractSatisfied": "partial",
+        "observed": "Tree shows defer form, empty invalid Deferral reason textbox, Reason required alert, Review date textbox, and Submit deferral control.",
+        "gap": "Required marker, empty-field outline, blocked-submit semantics, and visual validation treatment cannot be fully verified from the tree."
+      },
+      {
+        "stateId": "validation-reason-too-long",
+        "contractSatisfied": "partial",
+        "observed": "Tree shows preserved 281-character input, '1 character over the 280 limit', invalid textbox, Reason too long alert, and defer controls.",
+        "gap": "Character-counter styling and blocked-submit behavior are not established by the tree alone."
+      },
+      {
+        "stateId": "validation-date-invalid",
+        "contractSatisfied": "partial",
+        "observed": "Tree shows preserved reason, invalid Review date textbox, Review date invalid alert, and defer controls.",
+        "gap": "Calendar-alert icon, absent/malformed/past explanation, and blocked-submit behavior are not established by the tree alone."
+      },
+      {
+        "stateId": "undo-available",
+        "contractSatisfied": "partial",
+        "observed": "Tree shows Acknowledged status, disabled actions, and Undo latest decision change button.",
+        "gap": "Required 'Change saved; undo available' label, history-arrow icon, and event timestamp are absent from the tree."
+      }
+    ],
+    "findings": [
+      {
+        "severity": "significant",
+        "statement": "Visual fidelity against the art-direction contract remains unverified for every state.",
+        "evidence": "All states: only accessibility trees and image hashes are provided; the images are explicitly not shown.",
+        "recommendation": "Review annotated screenshots at 1440x900 and 1280x800 in Chromium against the named surface, typography, accent, spacing, severity, and responsive contract."
+      },
+      {
+        "severity": "significant",
+        "statement": "Acknowledgement metadata required by the acknowledged state is not exposed in the captured tree.",
+        "evidence": "acknowledged: after disabled actions, the tree contains only button 'Undo latest decision change'; no acknowledgement timestamp or metadata appears.",
+        "recommendation": "Expose acknowledgement metadata, including a readable timestamp, and verify its layout visually."
+      },
+      {
+        "severity": "significant",
+        "statement": "The overdue state lacks the contract's explicit past-due wording and escalation affordance in the tree.",
+        "evidence": "overdue: tree shows status 'Decision status: overdue' and Due date October 1, 2026, but no past-due phrase or escalation control.",
+        "recommendation": "Add explicit past-due wording and an escalation affordance, then capture and verify the resulting hierarchy."
+      },
+      {
+        "severity": "significant",
+        "statement": "The disabled state does not expose the required lock icon in the tree.",
+        "evidence": "disabled: explanatory note and disabled controls are present, but no lock icon or equivalent named marker appears.",
+        "recommendation": "Add a non-colour lock cue and verify muted contrast remains WCAG-compliant."
+      },
+      {
+        "severity": "significant",
+        "statement": "The undo state does not expose the required confirmation label or event timestamp.",
+        "evidence": "undo-available: tree contains only button 'Undo latest decision change'; the required change-saved label and timestamp are absent.",
+        "recommendation": "Add the confirmation tray label, event timestamp, and history-arrow cue with separated Undo action."
+      },
+      {
+        "severity": "significant",
+        "statement": "Several inventory-required non-colour cues and state-specific visual boundaries cannot be confirmed from the supplied evidence.",
+        "evidence": "pending, severity-routine, severity-significant, severity-critical, severity-unknown, date-malformed, and all link states show text but no inspectable visual evidence.",
+        "recommendation": "Provide annotated screenshots and a discrepancy log covering each required icon, marker, boundary, and semantic treatment."
+      },
+      {
+        "severity": "significant",
+        "statement": "Keyboard operation and reduced-motion behavior were not directly verified by the supplied artifacts.",
+        "evidence": "The artifact summary reports reduced-motion CSS inspection and zoom overflow, but explicitly does not cover a screen-reader walkthrough; no keyboard journey evidence is supplied.",
+        "recommendation": "Exercise keyboard journeys at both approved viewports and capture focus order, focus visibility, announcements, and immediate reduced-motion state changes."
+      },
+      {
+        "severity": "minor",
+        "statement": "Cross-browser fidelity is unverified.",
+        "evidence": "The supplied captures and trees are Chromium-1440; the artifact summary explicitly says no browser other than Chromium was covered.",
+        "recommendation": "Run the approved browser matrix before owner fidelity acceptance."
+      }
+    ],
+    "requiresHumanEyes": [
+      "Whether the rendered surface matches the warm matte office-artifact direction, including framing, shadows, edge definition, and absence of prohibited glass/neon/dashboard styling.",
+      "Typography family, hierarchy, wrapping, monospace restrictions, contrast, and 200% zoom legibility.",
+      "Whether amber is reserved correctly for attention, focus, selection, and the primary action rather than severity, status, links, or decoration.",
+      "Visual distinction among lifecycle status, severity, validation, evidence states, saving/failure, and undo treatment.",
+      "Whether required icons and markers are visibly present and semantically recognizable.",
+      "Responsive stacking and action reachability at 1440x900 and 1280x800, including long evidence names and validation content.",
+      "Keyboard focus order and interaction quality; no direct keyboard walkthrough evidence is supplied.",
+      "Screen-reader behavior and live announcements; accessibility trees are not a substitute for a walkthrough.",
+      "Cross-browser rendering beyond Chromium."
+    ],
+    "verdict": "NEEDS WORK",
+    "verdictReason": "The trees establish substantial state and accessible-label coverage, and the supplied automated checks are useful floors, but visual fidelity and direct interaction verification are explicitly unavailable. Additionally, acknowledgement metadata, overdue escalation/past-due wording, and undo confirmation metadata are not evident in the current trees. This cannot be ready for owner fidelity acceptance."
+  }
+}

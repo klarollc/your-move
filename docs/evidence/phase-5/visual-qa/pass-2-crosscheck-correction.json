@@ -1,0 +1,21 @@
+{
+  "schema": "cuckcode.phase5-visual-qa-crosscheck-correction.v1",
+  "status": "A correction to the cross-check, not to the annotation. pass-2.json is left exactly as the run produced it, including the overclaim it recorded at the time. This file states why that flag was wrong.",
+  "correctsPass": 2,
+  "correctsFile": "docs/evidence/phase-5/visual-qa/pass-2.json",
+  "correctsFileSha256": "bbb78b0ce6de208623262f788420e69b3eb5b92e363e66282becace9fe2bca2c",
+  "recordedAt": "2026-09-14T00:00:00.000Z",
+  "flagRaisedAtRunTime": [
+    "every state was judged from an accessibility tree, with nothing deferred to a human look"
+  ],
+  "finding": "The flag is a guard defect. The cross-check required at least one state to carry the literal value `cannot-tell-without-seeing`. Pass 2 deferred appearance on all twenty states instead, by marking every one `partial` and stating in each gap that visual fidelity is unverified, and its first finding says so for every state explicitly. The guard read the absence of one spelling as dishonesty and accused the most careful annotation this phase has produced.",
+  "correctedRule": "An overclaim is a state annotated `yes`, which asserts a visual treatment no accessibility tree can establish, or any claim about a state the build cannot enter. Deferral is recognised however it is spelled. `requiresHumanEyes` is enforced structurally at acceptance and is not re-checked here.",
+  "reEvaluation": {
+    "overclaimsUnderCorrectedRule": [],
+    "verdictUnchanged": "NEEDS WORK"
+  },
+  "implementedBy": [
+    "scripts/phase5-visual-qa-crosscheck.ts",
+    "scripts/phase5-visual-qa-crosscheck.unit.test.ts"
+  ]
+}

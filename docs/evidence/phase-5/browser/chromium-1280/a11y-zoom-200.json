@@ -1,0 +1,18 @@
+{
+  "viewport": "chromium-1280",
+  "emulatedBy": "halving the viewport at the same device scale factor",
+  "effectiveSize": {
+    "width": 640,
+    "height": 400
+  },
+  "horizontalOverflowPx": 0,
+  "preserved": [
+    "status",
+    "deferral details",
+    "severity",
+    "undo control",
+    "evidence state"
+  ],
+  "consoleErrors": [],
+  "violations": []
+}

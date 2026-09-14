@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { resolve } from "node:path";
 
 const ROOT = resolve(process.cwd());
@@ -15,6 +15,12 @@ const VIEWPORT = "chromium-1440";
  *
  * It is told what the mechanical checks already found, so it does not spend its turn rediscovering
  * name drift, and it is asked for the judgement those checks cannot make.
+ *
+ * The first version of this brief omitted the accessibility and isolation runs entirely. The
+ * reviewer correctly reported that no such checks had been shown to it and recommended performing
+ * work that already existed — a true answer to a question nobody should have asked. Both runs are
+ * now included, as the artifacts they wrote rather than as an assurance from the author, along with
+ * the prior annotation and the fact that the build has changed underneath it.
  */
 export async function buildVisualQaBrief(): Promise<string> {
   const contract = JSON.parse(
@@ -50,6 +56,51 @@ export async function buildVisualQaBrief(): Promise<string> {
   const fidelity = JSON.parse(await readFile(resolve(OUT, "fidelity-check.json"), "utf8")) as {
     drift: Array<{ state: string; contractAccessibleName: string; nearest: string | null }>;
   };
+
+  const readJson = async <T>(path: string, fallback: T): Promise<T> => {
+    const body = await readFile(path, "utf8").catch(() => "");
+    return body ? (JSON.parse(body) as T) : fallback;
+  };
+
+  const scans = await Promise.all(
+    (await readdir(resolve(OUT, VIEWPORT)))
+      .filter((name) => name.startsWith("a11y-scan-"))
+      .sort()
+      .map(async (name) =>
+        readJson<{ state: string; violations: unknown[]; rulesPassed: number }>(
+          resolve(OUT, VIEWPORT, name),
+          { state: name, violations: [], rulesPassed: 0 },
+        ),
+      ),
+  );
+
+  const zoom = await readJson<Record<string, unknown>>(
+    resolve(OUT, VIEWPORT, "a11y-zoom-200.json"),
+    {},
+  );
+  const motion = await readJson<Record<string, unknown>>(
+    resolve(OUT, VIEWPORT, "a11y-reduced-motion.json"),
+    {},
+  );
+  const content = await readJson<Record<string, unknown>>(
+    resolve(OUT, VIEWPORT, "a11y-content-length.json"),
+    {},
+  );
+  const isolation = await readJson<{
+    passCondition: string;
+    observations: Array<{ journey: string; externalRequests: string[]; storageWrites: string[] }>;
+  }>(resolve(OUT, VIEWPORT, "isolation.json"), { passCondition: "", observations: [] });
+  const deliberateFailure = await readJson<Record<string, unknown>>(
+    resolve(OUT, VIEWPORT, "isolation-deliberate-failure.json"),
+    {},
+  );
+
+  const priorPass = await readJson<{
+    annotation: {
+      verdict?: string;
+      findings?: Array<{ severity: string; statement: string }>;
+    } | null;
+  }>(resolve(ROOT, "docs/evidence/phase-5/visual-qa/pass-1.json"), { annotation: null });
 
   const inventory = contract.contract.stateInventory
     .map(
@@ -109,6 +160,45 @@ accessibility tree of each state at ${VIEWPORT} and the sha256 of each image. **
 shown the images and you cannot see them.** Say so wherever it limits you rather than writing as
 though you had looked. Every image is byte-distinct from every other, which rules out one state
 being filed twice; it says nothing about whether any of them looks right.
+
+WHAT ELSE WAS RUN, AS ARTIFACTS RATHER THAN AS AN ASSURANCE
+
+An earlier version of this brief omitted this section, and the reviewer reading it correctly reported
+that no such checks had been shown to it. These files are in the capture directory and you are being
+told what they contain.
+
+Automated accessibility scans, ${VIEWPORT} (axe-core, one run per state):
+${scans.map((scan) => `  ${scan.state}: ${scan.violations.length} violations, ${scan.rulesPassed} rules passed`).join("\n")}
+
+  Axe is a floor. It checks the rules it encodes and says nothing about whether a person can operate
+  this, so a clean scan is not an accessibility verdict.
+
+200% zoom, emulated by halving the viewport: horizontal overflow
+${JSON.stringify(zoom.horizontalOverflowPx)}px, console errors ${JSON.stringify((zoom.consoleErrors as unknown[] | undefined)?.length ?? 0)}, preserved
+${JSON.stringify(zoom.preserved)}.
+
+Reduced motion: elements carrying a non-zero transition or animation duration —
+${JSON.stringify(motion.elementsWithNonZeroDuration)}. Checked over ${JSON.stringify(motion.checkedEvery)}.
+
+Content length: title clipped ${JSON.stringify(content.titleClipped)}, summary clipped
+${JSON.stringify(content.summaryClipped)}.
+
+Isolation, ${isolation.observations.length} journeys: every one recorded
+${JSON.stringify(isolation.observations.map((entry) => entry.externalRequests.length))} external requests and
+${JSON.stringify(isolation.observations.map((entry) => entry.storageWrites.length))} storage writes. A deliberate
+violation was then injected and caught: ${JSON.stringify(deliberateFailure.injectedViolation ?? "none")}.
+
+What none of the above covers: a screen-reader walkthrough, any browser other than Chromium, and
+whether any of this looks right.
+
+A PRIOR ANNOTATION EXISTS, AND IT DESCRIBES AN EARLIER BUILD
+
+Verdict ${JSON.stringify(priorPass.annotation?.verdict ?? "none")}. Its findings were:
+${(priorPass.annotation?.findings ?? []).map((finding) => `  [${finding.severity}] ${finding.statement}`).join("\n") || "  none"}
+
+All of them were ruled on by the owner and the build has changed since. **Do not assume they were
+fixed and do not assume they were not.** The trees below are the current build; check against those.
+Your annotation is your own, not a diff against that one.
 
 STATES THE BUILD CANNOT ENTER
 

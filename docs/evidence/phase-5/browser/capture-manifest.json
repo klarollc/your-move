@@ -1,7 +1,7 @@
 {
   "schema": "cuckcode.phase5-browser-capture.v1",
   "status": "Current-build evidence. Not a promoted baseline, not high-fidelity, and not owner acceptance.",
-  "capturedAt": "2026-09-14T06:48:58.235Z",
+  "capturedAt": "2026-09-14T07:03:08.709Z",
   "viewports": [
     "chromium-1440",
     "chromium-1280"

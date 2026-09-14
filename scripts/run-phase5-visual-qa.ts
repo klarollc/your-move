@@ -9,6 +9,7 @@ import { parseApprovedRoleExercisePlan } from "@cuckcode/runtime-codex";
 import { buildKickoffPreflightInput } from "./phase4-kickoff-preflight.js";
 import { openKickoffSession, parseTurnJson } from "./phase4-kickoff-session.js";
 import { buildVisualQaBrief } from "./phase5-visual-qa-brief.js";
+import { visualQaOverclaims } from "./phase5-visual-qa-crosscheck.js";
 
 /**
  * Phase 5 Task 7 — the Visual QA Reviewer's annotation of the current build.
@@ -123,34 +124,9 @@ if (!opened.ok) {
     return missing;
   };
 
-  /**
-   * Two ways this annotation can be false, both of which look like thoroughness.
-   *
-   * Claiming a state the build cannot enter is satisfied is a claim about something that does not
-   * exist. Claiming every state is satisfied from trees alone is a fidelity verdict without
-   * fidelity evidence — the class-4 judgement MDD section 18 reserves for a person.
-   */
-  const claimCrossCheck = (value: Record<string, unknown>): string[] => {
-    const found: string[] = [];
-    const annotations = Array.isArray(value.stateAnnotations) ? value.stateAnnotations : [];
-    let cannotTell = 0;
-    for (const entry of annotations) {
-      const stateId = String((entry as { stateId?: unknown }).stateId ?? "");
-      const satisfied = String((entry as { contractSatisfied?: unknown }).contractSatisfied ?? "");
-      if (satisfied === "cannot-tell-without-seeing") cannotTell += 1;
-      if (satisfied === "yes" && unreachable.has(stateId)) {
-        found.push(
-          `${stateId} annotated satisfied though the build cannot enter that state at all`,
-        );
-      }
-    }
-    if (annotations.length > 0 && cannotTell === 0) {
-      found.push(
-        "every state was judged from an accessibility tree, with nothing deferred to a human look",
-      );
-    }
-    return [...new Set(found)];
-  };
+  /** Extracted and unit-tested, because it got this wrong once in the direction that matters. */
+  const claimCrossCheck = (value: Record<string, unknown>): string[] =>
+    visualQaOverclaims(value, unreachable);
 
   let prompt = await buildVisualQaBrief();
 

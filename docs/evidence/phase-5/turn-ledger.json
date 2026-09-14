@@ -1,6 +1,6 @@
 {
   "budget": 60,
-  "spent": 4,
+  "spent": 5,
   "entries": [
     {
       "task": "phase-5-task-3-surface-contract",
@@ -31,6 +31,14 @@
       "turns": 1,
       "accepted": true,
       "at": "2026-09-14T06:24:00.716Z"
+    },
+    {
+      "task": "phase-5-task-7-visual-qa",
+      "pass": 2,
+      "roleId": "visual-qa-reviewer",
+      "turns": 1,
+      "accepted": true,
+      "at": "2026-09-14T07:04:29.365Z"
     }
   ]
 }

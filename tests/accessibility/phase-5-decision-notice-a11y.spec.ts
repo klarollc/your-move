@@ -1,5 +1,10 @@
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname } from "node:path";
+
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page, type TestInfo } from "@playwright/test";
+
+import { evidenceOutputPath } from "../support/evidence-output.js";
 
 /**
  * Phase 5 Task 7 — the accessibility and responsive half of the capture, covering C-09.
@@ -28,6 +33,22 @@ const open = async (page: Page, state: string): Promise<void> => {
   await expect(page.locator(`[data-capture-state="${state}"]`)).toBeVisible();
 };
 
+/**
+ * Each check writes what it observed, not merely whether it passed.
+ *
+ * An assertion that throws leaves nothing behind, so a brief describing these runs to a reviewer
+ * would be citing the author's memory. The Visual QA brief cites these files instead: a reviewer
+ * told that accessibility was checked, with no artifact to read, is being asked to take it on trust.
+ */
+const record = async (testInfo: TestInfo, name: string, body: unknown): Promise<void> => {
+  const path = evidenceOutputPath(
+    testInfo,
+    `phase-5/browser/${testInfo.project.name}/a11y-${name}.json`,
+  );
+  await mkdir(dirname(path), { recursive: true });
+  await writeFile(path, `${JSON.stringify(body, null, 2)}\n`, "utf8");
+};
+
 /** The page must never scroll sideways; only a named container may. */
 const horizontalOverflow = (page: Page): Promise<number> =>
   page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
@@ -35,7 +56,7 @@ const horizontalOverflow = (page: Page): Promise<number> =>
 for (const state of STATES) {
   test(`@a11y Phase 5 decision notice has no detectable violations — ${state}`, async ({
     page,
-  }) => {
+  }, testInfo) => {
     if (state === "saving" || state === "save-failed") {
       await open(page, state);
       await page.getByRole("button", { name: "Acknowledge" }).click();
@@ -44,11 +65,26 @@ for (const state of STATES) {
     }
 
     const results = await new AxeBuilder({ page }).analyze();
+    await record(testInfo, `scan-${state}`, {
+      state,
+      viewport: testInfo.project.name,
+      // Axe is a floor. `passes` counts rules it could check, `incomplete` counts rules it could not
+      // decide, and neither number says a person can operate this.
+      violations: results.violations.map((violation) => ({
+        id: violation.id,
+        impact: violation.impact,
+        nodes: violation.nodes.length,
+      })),
+      rulesPassed: results.passes.length,
+      rulesIncomplete: results.incomplete.map((entry) => entry.id),
+    });
     expect(results.violations).toEqual([]);
   });
 }
 
-test("@a11y Phase 5 decision notice stays operable and complete at 200% zoom", async ({ page }) => {
+test("@a11y Phase 5 decision notice stays operable and complete at 200% zoom", async ({
+  page,
+}, testInfo) => {
   const consoleErrors: string[] = [];
   page.on("console", (message) => {
     if (message.type() === "error") consoleErrors.push(message.text());
@@ -73,16 +109,26 @@ test("@a11y Phase 5 decision notice stays operable and complete at 200% zoom", a
   await expect(page.getByRole("button", { name: "Undo latest decision change" })).toBeVisible();
   await expect(page.locator('li[data-evidence-state="missing"]')).toContainText("Evidence missing");
 
-  expect(await horizontalOverflow(page)).toBeLessThanOrEqual(1);
-  expect(consoleErrors).toEqual([]);
-
+  const overflow = await horizontalOverflow(page);
   const results = await new AxeBuilder({ page }).analyze();
+  await record(testInfo, "zoom-200", {
+    viewport: testInfo.project.name,
+    emulatedBy: "halving the viewport at the same device scale factor",
+    effectiveSize: page.viewportSize(),
+    horizontalOverflowPx: overflow,
+    preserved: ["status", "deferral details", "severity", "undo control", "evidence state"],
+    consoleErrors,
+    violations: results.violations.map((violation) => violation.id),
+  });
+
+  expect(overflow).toBeLessThanOrEqual(1);
+  expect(consoleErrors).toEqual([]);
   expect(results.violations).toEqual([]);
 });
 
 test("@a11y Phase 5 decision notice preserves the full title and summary rather than truncating", async ({
   page,
-}) => {
+}, testInfo) => {
   await open(page, "pending");
   const title = page.locator("#decision-notice-title");
   await expect(title).toHaveText("Adopt the bounded kickoff turn budget");
@@ -105,16 +151,25 @@ test("@a11y Phase 5 decision notice preserves the full title and summary rather 
     );
   };
 
-  expect(await title.evaluate(clipped)).toBe(false);
-
+  const titleClipped = await title.evaluate(clipped);
   const summary = page.locator("#decision-notice-summary");
   await expect(summary).toContainText("A plain-language summary of one decision awaiting");
-  expect(await summary.evaluate(clipped)).toBe(false);
+  const summaryClipped = await summary.evaluate(clipped);
+
+  await record(testInfo, "content-length", {
+    viewport: testInfo.project.name,
+    titleClipped,
+    summaryClipped,
+    rule: "do not replace identifying meaning with an ellipsis; overflow only counts as truncation when the box clips",
+  });
+
+  expect(titleClipped).toBe(false);
+  expect(summaryClipped).toBe(false);
 });
 
 test("@a11y Phase 5 decision notice removes motion under the reduced-motion policy", async ({
   page,
-}) => {
+}, testInfo) => {
   await open(page, "pending");
 
   // "Remove all transitions, progress animation, parallax, and ambient motion." Asserted on computed
@@ -135,6 +190,12 @@ test("@a11y Phase 5 decision notice removes motion under the reduced-motion poli
         return runs ? `${element.tagName.toLowerCase()}.${element.className}` : "";
       })
       .filter(Boolean);
+  });
+  await record(testInfo, "reduced-motion", {
+    viewport: testInfo.project.name,
+    policy: "prefers-reduced-motion: reduce",
+    elementsWithNonZeroDuration: moving,
+    checkedEvery: "every descendant of the card plus the card itself, transition and animation",
   });
   expect(moving).toEqual([]);
 });

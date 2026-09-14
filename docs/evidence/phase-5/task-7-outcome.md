@@ -139,6 +139,38 @@ one pattern containing parentheses and pipes made it unmissable. Recorded as **D
 **The generalisable part:** the first symptom was a single unreproducible failure, and the honest
 reading of "I cannot reproduce it" is "I do not know what happened", not "it was nothing."
 
+## Pass 2, run 2026-09-14 after the rulings
+
+Re-run so that Task 9's Release Reviewer reads an annotation of the build that exists rather than one
+of a build that was fixed underneath it. **Verdict: NEEDS WORK again.** Ledger 5 of 60.
+
+The brief was corrected first. Pass 1's brief omitted the accessibility and isolation runs entirely,
+and the reviewer correctly reported that no such checks had been shown to it. Pass 2's brief carries
+both — as the artifacts they wrote, not as an assurance from the author, which is why the
+accessibility suite now records what it observed instead of only asserting it. It also names pass 1,
+its verdict and its findings, and says plainly that the build has changed since and that the reviewer
+should assume nothing either way.
+
+The annotation changed shape completely. Pass 1 returned sixteen `cannot-tell-without-seeing`, three
+`partial` and one `no`; pass 2 returned **twenty `partial`**, deferring appearance on every state
+rather than on most of them. None of its findings repeats a ruled one. The new ones are specific and
+checkable: `acknowledged` exposes no acknowledgement timestamp, `overdue` carries no past-due wording
+or escalation affordance, `disabled` has no lock icon in the tree, and `undo-available` has no
+change-saved label or event timestamp. Each is a contract `nonColourCue` the tree does not show.
+
+**The cross-check flagged an overclaim, and the cross-check was wrong.** It required at least one
+state to carry the literal value `cannot-tell-without-seeing`, found none, and accused the most
+careful annotation of the phase. Deferring appearance on twenty states by marking them all `partial`
+with the visual gap stated is not dishonesty; it is a different spelling of the same honesty. The
+rule is now: `yes` is an overclaim, because it asserts a visual treatment no tree can establish, and
+any claim about a state the build cannot enter is an overclaim. Deferral is recognised however it is
+spelled.
+
+`pass-2.json` is left exactly as the run produced it, including the flag it recorded at the time.
+`pass-2-crosscheck-correction.json` sits beside it and says why the flag was wrong — the same overlay
+discipline as the contract amendments, for the same reason. The cross-check is extracted to
+`scripts/phase5-visual-qa-crosscheck.ts` and unit-tested, with the false positive pinned as a test.
+
 ## What no capture settles
 
 The reviewer marked **sixteen of twenty states `cannot-tell-without-seeing`**, which is the correct

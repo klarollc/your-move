@@ -1,0 +1,6 @@
+{
+  "viewport": "chromium-1440",
+  "titleClipped": false,
+  "summaryClipped": false,
+  "rule": "do not replace identifying meaning with an ellipsis; overflow only counts as truncation when the box clips"
+}

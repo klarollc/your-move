@@ -1,0 +1,6 @@
+{
+  "viewport": "chromium-1440",
+  "policy": "prefers-reduced-motion: reduce",
+  "elementsWithNonZeroDuration": [],
+  "checkedEvery": "every descendant of the card plus the card itself, transition and animation"
+}
