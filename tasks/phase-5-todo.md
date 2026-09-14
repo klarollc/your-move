@@ -65,7 +65,14 @@ approval.
   - **The tree is red by design until Task 5.** `npm run verify` fails; exactly 17 failures, all in
     `decision-notice.unit.test.ts`, with 412 other tests passing.
 
-- [ ] Task 5: GREEN, then REFACTOR with behaviour held.
+- [x] Task 5: GREEN and REFACTOR **complete 2026-09-14**;
+      `docs/evidence/phase-5/green-evidence.md`.
+  - All seventeen criteria-named tests pass on the first implementation pass; the tree is green
+    again at **429 passing, 3 skipped**. Refactor extracted deferral validation with behaviour held.
+  - Three mutations killed: undo erasing the action it reverses, every refusal collapsing to one
+    code, and two statuses sharing a signature.
+  - **Near-miss recorded:** re-running the RED capture after GREEN overwrote the RED evidence with a
+    passing run. Recovered from the commit; the script now refuses to overwrite a recorded RED phase.
 
 - [ ] Task 6: Test Engineer verification — deterministic browser and failure evidence, negative
       paths, and an explicit statement of what is not covered.
