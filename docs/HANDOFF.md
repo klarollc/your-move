@@ -12,32 +12,33 @@ live state, the next action, and the things a fresh session pays for twice if no
 | 0–3 | Accepted 2026-08-13 |
 | 4 | **Complete.** Bounded live D-25 round ran the full thirteen turns; evidence packet delivered. Owner gate open. |
 | 6 | **Complete.** `reconciliation-b-clarity` is the **Active** visual system, promoted by owner execution. |
-| 5 | **In progress.** Tasks 1–8 done. Task 6 ran twice; Task 7 returned **NEEDS WORK** and its four findings are ruled and implemented. |
+| 5 | **Tasks 1–9 done.** Release verdict: **NEEDS WORK**, 11 of 21 criteria satisfied. Task 10 is owner-run and is the only authorized step left. |
 | 7, 8 | **Unauthorized.** Phase 7 needs its own specification, plan and owner approval. |
 
-Phase 5 turn ledger: **4 of 60**. Acceptance criteria: **20 ready, 1 blocked** (C-18, on gap 3).
+Phase 5 turn ledger: **10 of 60**. Acceptance criteria: **20 ready, 1 blocked** (C-18, on gap 3).
 
 ---
 
 ## The immediate next action
 
-**Task 9 — the Release Reviewer's independent verdict.** The reviewer may not be the implementer,
-and a green suite is not a verdict. It is the last authorized task; Task 10 is owner-run.
+**Task 10 is owner-run and is the only authorized step left in Phase 5.** Do not perform it. The
+Release Reviewer's verdict is `NEEDS WORK` — `docs/evidence/phase-5/task-9-outcome.md` — so what the
+owner is being asked to accept is a phase that its own independent reviewer says is not ready, with
+eleven of twenty-one criteria satisfied.
 
-Task 8 is done with no agent turns spent — `docs/evidence/phase-5/task-8-outcome.md`. The
-shared-knowledge scenario replays a disagreement that actually happened: the two Test Engineer passes
-reached different conclusions about C-06, C-12, C-14 and C-20, and the script discovers which rather
-than being told.
+Nothing else is authorized. The ten items the reviewer says would change its verdict are ordinary
+work nobody has ruled on, except these three, which cannot be closed by an agent at all:
 
-**Before Task 9, decide one thing.** The Release Reviewer will read the Visual QA verdict, and that
-verdict describes a build that no longer exists — all four of its findings were ruled and fixed. A
-second Visual QA pass costs one turn and would give the release reviewer a current annotation. Left
-as is, the reviewer must be told in its brief that the verdict it is reading is historical, which is
-the third time in this phase that a brief's accuracy has been the precondition of an answer's.
+- **C-17** needs a human screen-reader walkthrough naming the screen reader, the build, and the paths
+  it did and did not exercise. Decision 5-D committed this phase to it.
+- **C-18** needs gap 3, the provenance and supersession schema.
+- **C-19** needs the owner to look at the forty current-build images and record fidelity acceptance.
 
-**A clean pass is still the suspicious outcome.** Two verification passes disagreed with each other
-in both directions, Task 7 found a blocking defect that eleven passing criteria had not, and the
-knowledge scenario's own mutation run found two behaviours designed and never pinned.
+**Read DF-015 before writing any brief.** Four briefs in this phase described a world that did not
+exist, cost three agent turns, and nearly cost the release verdict: the first release pass reported
+four of twenty-one satisfied and the third reported eleven, on an unchanged implementation. Every
+false claim was hardcoded prose that was true the day it was written. No brief states what evidence
+exists any more — `scripts/phase5-evidence-inventory.ts` reads the tree and reports it.
 
 ## Open debts, none of them closed
 
@@ -91,6 +92,10 @@ at least eight more times in Phase 6 alone. Its variants, each of which cost rea
 - A guard that greps prose. It passes on whatever phrasing it is handed; use a structured field.
 - **A mutation that fails to apply is indistinguishable from a guard that does not work.** Verify the
   mutation landed before believing a survivor. This happened once with a prettier-wrapped string.
+
+**And the one that cost the most (DF-015):** four briefs described a world that did not exist. A
+brief is a promoted role's entire world, it was treated as framing rather than as evidence, and the
+answer's accuracy is bounded by it. **Never hardcode a claim about what evidence exists.**
 
 **And the variant that nearly got filed as a flake (DF-014):** the capture runner passed `--grep
 "@visual Phase 5"` through `execFile` with `shell: true`, so the shell split it and Playwright
@@ -157,6 +162,7 @@ error and there is no inline env-var prefix — write `$env:X='1'; cmd` and clea
 | `npm run phase5:visualqa:run` | Visual QA Reviewer annotation (live, debits the ledger) |
 | `npm run phase5:knowledge` | Rebuild the shared-knowledge scenario from the two passes |
 | `npm run test:knowledge` | The Phase 5 shared-knowledge gate condition (also in `verify`) |
+| `npm run phase5:release:run` | Release Reviewer verdict (live, debits the ledger) |
 | `npm run phase5:verify:run` | Test Engineer verification pass (live, debits the ledger) |
 | `npm run phase5:surface:run` | Product Designer surface contract (live, debits the ledger) |
 | `npm run roles:promotion:status` | Which roles are promoted, derived from `roles/authored` |

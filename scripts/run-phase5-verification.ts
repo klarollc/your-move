@@ -67,6 +67,29 @@ const criterionIds = contract.criteria.map((criterion) => criterion.id);
  */
 const inventory = await readTestInventory(ROOT);
 const hasUnitTest = criteriaWithATest(inventory);
+
+/**
+ * What the code looked like when this assessment was made.
+ *
+ * A coverage assessment is a statement about a particular build, and it stops being true the moment
+ * that build changes. Pass 2 was authored fourteen minutes before the commit that closed three of
+ * the gaps it named, and the Release Reviewer was later handed it as current — reasoning, in good
+ * faith, from a description of code that no longer existed. Recording the digests is what lets a
+ * later reader ask whether this assessment still describes anything.
+ */
+const assessedFiles = [
+  "packages/domain/src/decision-notice.ts",
+  "apps/web/src/decision-notice.tsx",
+  ...inventory.map((entry) => entry.file),
+];
+const assessedVersions = Object.fromEntries(
+  await Promise.all(
+    assessedFiles.map(
+      async (file) =>
+        [file, sha256(await readFile(resolve(ROOT, file), "utf8")).slice(0, 16)] as const,
+    ),
+  ),
+);
 /** Nothing in the repository renders this component yet, so no rendered evidence can exist. */
 const renderedArtifactsExist = existsSync(resolve(OUT, "..", "browser"));
 
@@ -237,6 +260,7 @@ if (!opened.ok) {
         roleId: ROLE_ID,
         authoredAt: new Date().toISOString(),
         turnsSpent,
+        assessedVersions,
         overclaims,
         crossCheck: {
           criteriaWithAUnitTest: [...hasUnitTest],

@@ -127,8 +127,15 @@ approval.
     returned labelled rather than withheld. Only rejected and superseded are withheld, both reported.
   - `npm run test:knowledge` is part of `npm run verify`. No agent turns spent; ledger stays 4 of 60.
 
-- [ ] Task 9: Release Reviewer verdict — NEEDS WORK or eligible-for-owner-approval.
+- [x] Task 9: Release Reviewer verdict — **NEEDS WORK**, 11 of 21 criteria satisfied, zero
+      overclaims, eight artifact versions cited. `docs/evidence/phase-5/task-9-outcome.md`
   - Acceptance: **the reviewer is not the implementer**, and a green suite alone is not a verdict.
+  - Outstanding per the verdict: C-05, C-08, C-09, C-10, C-11, C-15, C-17, C-18, C-19, C-20.
+  - Sharpest objections: a halved viewport is not 200% browser zoom; C-08 has no two-run
+    byte-identical artifact; C-15 never establishes stored dates are ISO-8601 UTC; five journeys are
+    not every journey.
+  - Three passes were run. The first reported 4 of 21 and the third 11 of 21 on an unchanged
+    implementation — the difference was entirely brief accuracy. **DF-015.**
 
 - [ ] Task 10: **Owner acceptance. Owner-run.** Accept the fixture outcome or record bounded
       revisions. Atomically creates the D-24 review that Phase 8 closes.

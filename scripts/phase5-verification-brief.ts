@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
+import { buildEvidenceInventory } from "./phase5-evidence-inventory.js";
 import { readTestInventory } from "./phase5-test-inventory.js";
 
 const ROOT = resolve(process.cwd());
@@ -52,6 +53,7 @@ export async function buildVerificationBrief(): Promise<string> {
     .join("\n");
 
   const tests = inventory.join("\n");
+  const evidence = await buildEvidenceInventory();
 
   return `THE ACCEPTANCE CONTRACT — twenty-one criteria
 
@@ -69,10 +71,16 @@ THE TESTS THAT EXIST — every test currently in the repository for this compone
 
 ${tests}
 
-That is the complete automated inventory, read from the test files themselves. Beyond it there are
-no browser or end-to-end runs, no visual captures, no axe or accessibility runs, and no
-screen-reader record. Whether the tests listed actually establish their criteria is your judgement,
-not something this brief asserts.
+That is the complete automated inventory, read from the test files themselves.
+
+EVERY OTHER PIECE OF EVIDENCE THAT EXISTS — read from the evidence tree, not asserted here
+
+${evidence.narrative}
+
+An earlier version of this brief stated flatly that none of the above existed. It was true when it
+was written and false by the time it was next used, and a role was asked to assess coverage against
+it. Whether any of this actually establishes the criteria it touches is your judgement; the list is
+only what is there.
 
 YOUR TASK
 

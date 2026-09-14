@@ -1,6 +1,6 @@
 {
   "budget": 60,
-  "spent": 5,
+  "spent": 10,
   "entries": [
     {
       "task": "phase-5-task-3-surface-contract",
@@ -39,6 +39,46 @@
       "turns": 1,
       "accepted": true,
       "at": "2026-09-14T07:04:29.365Z"
+    },
+    {
+      "task": "phase-5-task-9-release-review",
+      "pass": 1,
+      "roleId": "release-reviewer",
+      "turns": 1,
+      "accepted": true,
+      "at": "2026-09-14T07:11:27.850Z"
+    },
+    {
+      "task": "phase-5-task-6-verification",
+      "pass": 3,
+      "roleId": "test-engineer",
+      "turns": 1,
+      "accepted": true,
+      "at": "2026-09-14T07:12:56.455Z"
+    },
+    {
+      "task": "phase-5-task-6-verification",
+      "pass": 4,
+      "roleId": "test-engineer",
+      "turns": 1,
+      "accepted": true,
+      "at": "2026-09-14T07:14:46.547Z"
+    },
+    {
+      "task": "phase-5-task-9-release-review",
+      "pass": 2,
+      "roleId": "release-reviewer",
+      "turns": 1,
+      "accepted": true,
+      "at": "2026-09-14T07:17:03.144Z"
+    },
+    {
+      "task": "phase-5-task-9-release-review",
+      "pass": 3,
+      "roleId": "release-reviewer",
+      "turns": 1,
+      "accepted": true,
+      "at": "2026-09-14T07:19:17.463Z"
     }
   ]
 }

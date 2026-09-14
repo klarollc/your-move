@@ -66,7 +66,8 @@
     "phase5:fidelity": "tsx scripts/phase5-fidelity-check.ts",
     "phase5:visualqa:run": "tsx scripts/run-phase5-visual-qa.ts",
     "phase5:knowledge": "tsx scripts/build-phase5-knowledge-scenario.ts",
-    "test:knowledge": "node --test scripts/phase5-knowledge-scenario.test.mjs"
+    "test:knowledge": "node --test scripts/phase5-knowledge-scenario.test.mjs",
+    "phase5:release:run": "tsx scripts/run-phase5-release-review.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

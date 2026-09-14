@@ -655,3 +655,60 @@ error rather than only stdout and stderr — the empty output was what made the 
 **Proposed and not authorized:** no evidence-producing script should invoke a tool through a shell.
 `execFile` with an explicit interpreter and an argument array is the only form that survives review,
 and the three other scripts in `scripts/` that pass `shell: true` should be swept.
+
+---
+
+### DF-015 — Four briefs, four false pictures, three wasted agent turns
+
+Observed across 2026-09-13 and 2026-09-14, in every role run of Phase 5.
+
+A brief is what a promoted role is given instead of the repository. It is the role's entire world.
+Four of them described a world that did not exist, and in each case the role answered the question it
+was actually asked, accurately, and the project came close to filing the answer as a statement about
+something else.
+
+| Brief | What it said | What was true |
+| --- | --- | --- |
+| Verification | "There are no other tests for this component: no component tests…" | Task 5 had shipped six component tests |
+| Visual QA | Omitted the accessibility and isolation runs entirely | Both had run and passed |
+| Verification | "no browser or end-to-end runs, no visual captures, no axe or accessibility runs" | Task 7 had produced all of them |
+| Release review | Cited verification pass 2 as current | Pass 2 predated the gap-closure commit by fourteen minutes |
+
+## What it cost
+
+Three agent turns, and very nearly the Phase 5 release verdict. The first release verdict reported
+four of twenty-one criteria satisfied; with a brief that stopped withholding evidence, the same role
+on the same implementation reported **eleven**. Verification pass 3 marked C-09 and C-20 `none` while
+the captures, scans and isolation records sat in the evidence tree; pass 4, given them, returned ten
+full where pass 3 had returned three.
+
+**The phase was materially further along than its own records said**, and every one of those records
+was produced by a careful reviewer doing exactly what was asked.
+
+## The shape
+
+Every false claim was **hardcoded prose that was true the day it was written**. Not one was a lie, a
+guess, or an inference. They were accurate snapshots that nobody re-examined when the thing they
+described moved — the register's standing sentence, applied to a sentence rather than to a guard.
+
+The variant worth naming separately: **a brief is an evidence artifact.** It was treated as framing —
+context, preamble, the wrapper around the real question — and so it was written once and edited
+casually. But the answer's accuracy is bounded by the brief's, and the answer is what gets filed. A
+brief deserves the same suspicion as any other input to the evidence model, and it never received it.
+
+## Product response
+
+No brief states what evidence exists any more. `scripts/phase5-evidence-inventory.ts` reads
+`docs/evidence/phase-5` and reports what is there, including the isolation record's actual fields
+rather than a summary of them — the summary omitted the credential and storage-write scans, and the
+reviewer reading it correctly reported both missing.
+
+The verification runner records `assessedVersions`, the content digest of every file its assessment
+covers. The release brief finds the latest verification pass rather than naming one, compares those
+digests against the files on disk, and tells the reviewer plainly when the pass no longer describes
+the build.
+
+**Proposed and not authorized:** every brief should be generated, never written. Any sentence in a
+brief asserting the presence or absence of evidence should be derived from the evidence tree at build
+time, and a brief containing a hardcoded claim about what exists should fail review the way a
+hardcoded test fixture of a superseded manifest does.

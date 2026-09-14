@@ -1,0 +1,203 @@
+{
+  "schema": "cuckcode.phase5-release-review.v1",
+  "pass": 3,
+  "previousPasses": [
+    "pass-1.json",
+    "pass-2.json"
+  ],
+  "status": "Authored by the promoted release-reviewer, which is not the implementer and has never seen the working tree. A verdict, not an approval: Task 10 is owner-run.",
+  "roleId": "release-reviewer",
+  "authoredAt": "2026-09-14T07:19:17.465Z",
+  "turnsSpent": 1,
+  "overclaims": [],
+  "crossCheck": {
+    "unmetAtReviewTime": [
+      {
+        "id": "C-18",
+        "why": "the acceptance contract records it as blocked-on-gap, on gap 3"
+      },
+      {
+        "id": "C-17",
+        "why": "no screen-reader walkthrough record exists anywhere under docs/evidence/phase-5"
+      },
+      {
+        "id": "C-19",
+        "why": "owner fidelity acceptance is owner-run and no acceptance record exists"
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "turn": 1,
+      "accepted": true,
+      "shortfalls": [],
+      "overclaims": [],
+      "responseSha256": "c2906f382e9041bbe8ee16938d0ce6e174de434df8aec29e26daf9685fde25b3"
+    }
+  ],
+  "verdict": {
+    "verdict": "NEEDS WORK",
+    "verdictReason": "Certification is blocked by unmet criteria C-05, C-08, C-09, C-10, C-11, C-15, C-17, C-18, C-19, and C-20. In particular, the required human screen-reader walkthrough and owner fidelity acceptance do not exist, provenance remains blocked on gap 3, and several deterministic, persistence, focus, zoom, date-storage, and isolation assertions lack complete evidence. The green suite and other reviewers' conclusions do not close these obligations.",
+    "artifactVersions": {
+      "packages/domain/src/decision-notice.ts": "288806570aaf737c",
+      "apps/web/src/decision-notice.tsx": "a29e977f561961a6",
+      "docs/evidence/phase-5/acceptance-contract.json": "75dcd2ceade59b4f",
+      "docs/evidence/phase-5/surface-contract/surface-contract.json": "c3cd235c1d52658b",
+      "docs/evidence/phase-5/surface-contract/amendments.json": "a12c80e147e2cc70",
+      "docs/evidence/phase-5/verification/pass-2.json": "9b4e8f7556e3acfc",
+      "docs/evidence/phase-5/visual-qa/pass-2.json": "bbb78b0ce6de2086",
+      "docs/evidence/phase-5/browser/capture-manifest.json": "5f4e13765edfb525"
+    },
+    "criterionFindings": [
+      {
+        "criterionId": "C-01",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-4.json and docs/evidence/phase-5/browser/capture-manifest.json with the accompanying per-state accessibility trees",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-02",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-4.json and the evidence-link accessibility trees and journey records under docs/evidence/phase-5/browser",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-03",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-4.json and the keyboard and pointer journey records under docs/evidence/phase-5/browser",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-04",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-4.json, assessing packages/domain/src/decision-notice.ts and the deferral journey evidence",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-05",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-4.json",
+        "reservation": "The retained evidence does not establish reload restoration after every action or prove that the injected adapter is isolated from ambient storage; adapter failure and corruption behavior are also unestablished."
+      },
+      {
+        "criterionId": "C-06",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-4.json and the shared-knowledge resolution record for C-06",
+        "reservation": "Earlier contradictory passes are superseded for this finding by pass-4; they remain retained historical artifacts and must not be cited as current conclusions."
+      },
+      {
+        "criterionId": "C-07",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-4.json and the per-state accessibility trees indexed by docs/evidence/phase-5/browser/capture-manifest.json",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-08",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-4.json",
+        "reservation": "No artifact demonstrates byte-identical output across two complete runs using the same injected inputs or establishes deterministic injected ID-source behavior."
+      },
+      {
+        "criterionId": "C-09",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-4.json and docs/evidence/phase-5/browser/capture-manifest.json",
+        "reservation": "A halved viewport is not evidence of actual 200% browser zoom, so preservation of all content and structure at the required zoom boundary remains unverified."
+      },
+      {
+        "criterionId": "C-10",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-4.json",
+        "reservation": "Focus after acknowledge success and reload was not explicitly checked against the target specified in advance."
+      },
+      {
+        "criterionId": "C-11",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/browser/chromium-1440/isolation.json, docs/evidence/phase-5/browser/chromium-1280/isolation.json, and docs/evidence/phase-5/verification/pass-4.json",
+        "reservation": "The isolation artifacts cover five journeys and show zero external requests, credential-shaped hits, or ambient-storage writes, but they do not establish the assertion for every journey. Moreover, the recorded request logs contain 475 requests and therefore do not literally establish an empty network panel."
+      },
+      {
+        "criterionId": "C-12",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-4.json and the shared-knowledge resolution record for C-12",
+        "reservation": "Earlier contradictory passes are retained but superseded for the current finding."
+      },
+      {
+        "criterionId": "C-13",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-4.json, assessing the action and undo event-log behavior in packages/domain/src/decision-notice.ts",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-14",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-4.json, the severity-state accessibility trees, and the shared-knowledge resolution record for C-14",
+        "reservation": "Earlier contradictory passes are retained but superseded for the current finding."
+      },
+      {
+        "criterionId": "C-15",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-4.json",
+        "reservation": "Locale variation and malformed-date rendering are supported, but the evidence does not establish that all stored and persisted dates are normalized as ISO-8601 UTC."
+      },
+      {
+        "criterionId": "C-16",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-4.json and the evidence-resolution entries in both viewport isolation.json artifacts",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-17",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-4.json and the documented absence of a walkthrough record under docs/evidence/phase-5",
+        "reservation": "No human screen-reader walkthrough record names the screen reader, build, exercised paths, and untested paths. Axe results cannot substitute for it."
+      },
+      {
+        "criterionId": "C-18",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/acceptance-contract.json",
+        "reservation": "The criterion is explicitly blocked on gap 3. Per-artifact origin, supersession linkage, and rejection of superseded artifacts as current citations are not established."
+      },
+      {
+        "criterionId": "C-19",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/visual-qa/pass-2.json and docs/evidence/phase-5/browser/capture-manifest.json",
+        "reservation": "The visual reviewer did not inspect the images and deferred all visual judgments; owner fidelity acceptance is absent. The review also reports unestablished acknowledgement metadata, overdue wording and escalation, disabled-state lock cue, undo confirmation metadata, and other state-specific visual boundaries."
+      },
+      {
+        "criterionId": "C-20",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/browser/chromium-1440/isolation.json, docs/evidence/phase-5/browser/chromium-1280/isolation.json, and docs/evidence/phase-5/verification/pass-4.json",
+        "reservation": "The five recorded journeys and deliberate forbidden-request detection are meaningful evidence, but the artifacts do not demonstrate every required journey or fixture-only resolution across every journey."
+      },
+      {
+        "criterionId": "C-21",
+        "satisfied": true,
+        "evidenceCited": "This independent NEEDS WORK release verdict, citing the content-addressed artifacts listed in artifactVersions",
+        "reservation": "This finding is not final acceptance. Only the manager may approve the charter or release."
+      }
+    ],
+    "outstanding": [
+      "C-05",
+      "C-08",
+      "C-09",
+      "C-10",
+      "C-11",
+      "C-15",
+      "C-17",
+      "C-18",
+      "C-19",
+      "C-20"
+    ],
+    "wouldChangeYourVerdict": [
+      "Versioned evidence showing reload restoration after every acknowledge, defer, and undo action, exclusive use of the injected storage adapter, and defined adapter failure and corruption behavior.",
+      "A two-run determinism record proving byte-identical complete output with the same injected clock, ID source, fixture, and animation policy, plus evidence that ambient Date, Math.random, and timers are unreachable.",
+      "Real-browser 200% zoom verification at both D-07 viewports, preserving every state's content, accessible structure, and zero horizontal overflow.",
+      "Focus-transition evidence for validation, acknowledge success, defer success, save failure, and reload, checked against targets named before execution.",
+      "Complete C-11 and Task 6 isolation evidence across every required journey, reconciling the contract's empty-network-panel requirement with the recorded requests and proving credential scanning, write containment, and fixture-only evidence resolution throughout.",
+      "Evidence that every stored and persisted date is normalized to ISO-8601 UTC.",
+      "A human screen-reader walkthrough record naming the screen reader, exact build, exercised paths, and untested paths.",
+      "Completion of gap 3 with versioned origin and supersession metadata for every evidence artifact and enforcement preventing superseded artifacts from being cited as current.",
+      "Direct image review of all twenty states at both viewports by the qualified visual reviewer, closure of the reported state-treatment defects, and a separate owner fidelity-acceptance record."
+    ]
+  }
+}

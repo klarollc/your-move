@@ -1,0 +1,202 @@
+{
+  "schema": "cuckcode.phase5-release-review.v1",
+  "pass": 1,
+  "previousPasses": [],
+  "status": "Authored by the promoted release-reviewer, which is not the implementer and has never seen the working tree. A verdict, not an approval: Task 10 is owner-run.",
+  "roleId": "release-reviewer",
+  "authoredAt": "2026-09-14T07:11:27.852Z",
+  "turnsSpent": 1,
+  "overclaims": [],
+  "crossCheck": {
+    "unmetAtReviewTime": [
+      {
+        "id": "C-18",
+        "why": "the acceptance contract records it as blocked-on-gap, on gap 3"
+      },
+      {
+        "id": "C-17",
+        "why": "no screen-reader walkthrough record exists anywhere under docs/evidence/phase-5"
+      },
+      {
+        "id": "C-19",
+        "why": "owner fidelity acceptance is owner-run and no acceptance record exists"
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "turn": 1,
+      "accepted": true,
+      "shortfalls": [],
+      "overclaims": [],
+      "responseSha256": "a2818646e099f2b2a398ca298c414a038ee033bc1246c81e9fa07eda2c8abcdd"
+    }
+  ],
+  "verdict": {
+    "verdict": "NEEDS WORK",
+    "verdictReason": "Only C-06, C-13, C-14, and C-21 are established. The authoritative second verification pass records material gaps for the other technical criteria, while C-17 has no walkthrough record, C-18 remains blocked on gap 3, and C-19 lacks owner fidelity acceptance. The green suite and capture count do not close those obligations. The first verification pass is treated as superseded on C-06, C-12, C-14, and C-20.",
+    "artifactVersions": {
+      "packages/domain/src/decision-notice.ts": "288806570aaf737c",
+      "apps/web/src/decision-notice.tsx": "a29e977f561961a6",
+      "docs/evidence/phase-5/acceptance-contract.json": "75dcd2ceade59b4f",
+      "docs/evidence/phase-5/surface-contract/surface-contract.json": "c3cd235c1d52658b",
+      "docs/evidence/phase-5/surface-contract/amendments.json": "a12c80e147e2cc70",
+      "docs/evidence/phase-5/verification/pass-2.json": "9b4e8f7556e3acfc",
+      "docs/evidence/phase-5/visual-qa/pass-2.json": "bbb78b0ce6de2086",
+      "docs/evidence/phase-5/browser/capture-manifest.json": "5f4e13765edfb525"
+    },
+    "criterionFindings": [
+      {
+        "criterionId": "C-01",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-2.json and docs/evidence/phase-5/browser/capture-manifest.json",
+        "reservation": "Capture names match, but no real-browser accessible-tree proof of all seven fixture values or stable decision ID across re-render is established."
+      },
+      {
+        "criterionId": "C-02",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-2.json",
+        "reservation": "Browser-exposed meaningful accessible names and preservation of fixture source order remain only partially verified."
+      },
+      {
+        "criterionId": "C-03",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-2.json and docs/evidence/phase-5/visual-qa/pass-2.json",
+        "reservation": "Real-browser keyboard and pointer completion, including proof that focus alone emits neither state change nor event, is absent."
+      },
+      {
+        "criterionId": "C-04",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-2.json",
+        "reservation": "Absent and malformed dates, every named validation state, and corresponding UI behavior are not fully covered."
+      },
+      {
+        "criterionId": "C-05",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-2.json",
+        "reservation": "Reload recovery after every action and implementation-wide exclusion of ambient storage are not established."
+      },
+      {
+        "criterionId": "C-06",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-2.json, which supersedes the first pass on C-06 by recorded manager authority",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-07",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-2.json, docs/evidence/phase-5/visual-qa/pass-2.json, and docs/evidence/phase-5/browser/capture-manifest.json",
+        "reservation": "Distinct captures and matching names do not establish unique non-colour signatures for all seven states; colour-removed and structural verification remains incomplete."
+      },
+      {
+        "criterionId": "C-08",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-2.json",
+        "reservation": "Injected IDs, fixtures, animation policy, byte-identical output, and complete ambient Date, random, and timer reachability exclusion are not fully evidenced."
+      },
+      {
+        "criterionId": "C-09",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-2.json and docs/evidence/phase-5/browser/capture-manifest.json",
+        "reservation": "Captures at the two viewports do not establish reduced-motion and 200% zoom behavior, absence of horizontal overflow, or preservation of all content."
+      },
+      {
+        "criterionId": "C-10",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-2.json",
+        "reservation": "Browser focus destinations after validation, save success, save failure, and reload are not all established in advance and verified."
+      },
+      {
+        "criterionId": "C-11",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-2.json and docs/evidence/phase-5/browser/capture-manifest.json",
+        "reservation": "The capture summary reports clean isolation journeys, but the cited evidence has not established every required network-panel, credential-scan, and write-boundary assertion across every journey."
+      },
+      {
+        "criterionId": "C-12",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-2.json, which supersedes the first pass on C-12 by recorded manager authority",
+        "reservation": "Every second-action permutation and its required named rejection reason are not demonstrated."
+      },
+      {
+        "criterionId": "C-13",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-2.json",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-14",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-2.json, which supersedes the first pass on C-14 by recorded manager authority",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-15",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-2.json",
+        "reservation": "ISO-8601 UTC storage and two complete locale/browser renderings are not established."
+      },
+      {
+        "criterionId": "C-16",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-2.json and docs/evidence/phase-5/browser/capture-manifest.json",
+        "reservation": "End-to-end proof that present, missing, invalid, and unavailable outcomes remain fixture-local with no external request is incomplete."
+      },
+      {
+        "criterionId": "C-17",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/acceptance-contract.json; no corresponding walkthrough record exists under docs/evidence/phase-5",
+        "reservation": "No genuine screen-reader walkthrough record names the screen reader, build, exercised scope, and omissions; the Phase 4 waiver remains open."
+      },
+      {
+        "criterionId": "C-18",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/acceptance-contract.json",
+        "reservation": "The criterion is explicitly blocked on gap 3; per-artifact origin, supersession links, and rejection of superseded citations are not established."
+      },
+      {
+        "criterionId": "C-19",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/browser/capture-manifest.json and docs/evidence/phase-5/visual-qa/pass-2.json",
+        "reservation": "Forty captures exist, but the visual reviewer deferred all fidelity judgments without seeing the images, identified unresolved state-treatment defects, and no owner acceptance record exists."
+      },
+      {
+        "criterionId": "C-20",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/browser/capture-manifest.json and docs/evidence/phase-5/verification/pass-2.json, with pass 2 superseding pass 1 on C-20",
+        "reservation": "Five clean journeys and detection of an injected forbidden request are useful evidence, but the authoritative verification finding remains partial because complete console/network capture, credential output checks, write scanning, and fixture-only evidence resolution are not all established."
+      },
+      {
+        "criterionId": "C-21",
+        "satisfied": true,
+        "evidenceCited": "This independent release-review verdict together with the content-addressed artifact and evidence versions listed in artifactVersions",
+        "reservation": "This is eligibility review only and is not manager acceptance."
+      }
+    ],
+    "outstanding": [
+      "C-01",
+      "C-02",
+      "C-03",
+      "C-04",
+      "C-05",
+      "C-07",
+      "C-08",
+      "C-09",
+      "C-10",
+      "C-11",
+      "C-12",
+      "C-15",
+      "C-16",
+      "C-17",
+      "C-18",
+      "C-19",
+      "C-20"
+    ],
+    "wouldChangeYourVerdict": [
+      "A new content-addressed independent verification artifact must close every partial technical finding for C-01 through C-05, C-07 through C-12, C-15, C-16, and C-20 with direct browser, isolation, deterministic, focus, locale, zoom, reduced-motion, accessibility-tree, network, credential, and write-boundary evidence as applicable.",
+      "A genuine screen-reader walkthrough record satisfying C-17 must exist and identify the screen reader, reviewed build, exercised journeys, and omissions.",
+      "Gap 3 must be resolved and C-18 must be evidenced with origin metadata, explicit supersession links, and enforced rejection of superseded artifacts as current evidence.",
+      "The owner must inspect the current-build images for all twenty inventory states at both D-07 viewports and record fidelity acceptance for C-19 after the visual reviewer's identified metadata, overdue, disabled, undo, and non-colour-cue issues are resolved or explicitly reconciled."
+    ]
+  }
+}

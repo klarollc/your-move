@@ -1,0 +1,236 @@
+{
+  "schema": "cuckcode.phase5-verification.v1",
+  "pass": 4,
+  "previousPasses": [
+    "pass-2.json",
+    "pass-3.json",
+    "verification.json"
+  ],
+  "status": "Authored by the promoted test-engineer. Coverage claims were cross-checked against what exists.",
+  "roleId": "test-engineer",
+  "authoredAt": "2026-09-14T07:14:46.549Z",
+  "turnsSpent": 1,
+  "assessedVersions": {
+    "packages/domain/src/decision-notice.ts": "288806570aaf737c",
+    "apps/web/src/decision-notice.tsx": "a29e977f561961a6",
+    "packages/domain/src/decision-notice.unit.test.ts": "32895a16e93b6327",
+    "apps/web/src/decision-notice.component.test.tsx": "a3a1b7d54e57854f"
+  },
+  "overclaims": [],
+  "crossCheck": {
+    "criteriaWithAUnitTest": [
+      "C-01",
+      "C-02",
+      "C-03",
+      "C-04",
+      "C-05",
+      "C-06",
+      "C-07",
+      "C-08",
+      "C-09",
+      "C-10",
+      "C-11",
+      "C-12",
+      "C-13",
+      "C-14",
+      "C-15",
+      "C-16",
+      "C-21"
+    ],
+    "renderedArtifactsExist": true
+  },
+  "attempts": [
+    {
+      "turn": 1,
+      "accepted": true,
+      "shortfalls": [],
+      "overclaims": [],
+      "responseSha256": "f8832d27ad093ca864f4f52a7172d35ffc81342fbebfdc952a8f84c7c0329b66"
+    }
+  ],
+  "assessment": {
+    "coverageAssessment": [
+      {
+        "criterionId": "C-01",
+        "covered": "full",
+        "evidence": "Unit and component tests verify all seven fixture fields and stable ID; browser accessibility trees provide rendered confirmation.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-02",
+        "covered": "full",
+        "evidence": "Unit and component tests verify meaningful accessible names and fixture source order; browser trees confirm rendered order.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-03",
+        "covered": "full",
+        "evidence": "Component test verifies keyboard and pointer activation and that focus alone does not commit.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-04",
+        "covered": "full",
+        "evidence": "Unit and component tests cover empty, overlong, absent, malformed, past, and valid deferral inputs with named validation.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-05",
+        "covered": "partial",
+        "evidence": "Component test reloads state through an injected adapter and tests undo persistence.",
+        "gap": "Evidence does not establish restoration after every action, adapter isolation from ambient storage, or adapter failure/corruption behavior."
+      },
+      {
+        "criterionId": "C-06",
+        "covered": "full",
+        "evidence": "Unit tests cover duplicate, stale, malformed, and out-of-order events, distinct refusal codes, and exact pre-event state preservation.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-07",
+        "covered": "full",
+        "evidence": "Unit tests verify seven distinct non-colour status signatures; browser trees and captures cover rendered state cues.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-08",
+        "covered": "partial",
+        "evidence": "Unit test checks injected-clock determinism and statically rejects ambient time, randomness, timers, storage, and network.",
+        "gap": "No evidence of byte-identical output across two complete runs or deterministic injected ID-source behavior."
+      },
+      {
+        "criterionId": "C-09",
+        "covered": "partial",
+        "evidence": "Accessibility evidence reports reduced motion, 0px overflow under zoom emulation, and captured trees at two Chromium viewports.",
+        "gap": "Halving the viewport is not proof of actual 200% browser zoom; no complete verification of preserved content and structure at the required zoom boundary."
+      },
+      {
+        "criterionId": "C-10",
+        "covered": "partial",
+        "evidence": "Tests verify focus after validation, undo, refusal, and save failure/retry.",
+        "gap": "Focus after acknowledge success and reload is not explicitly verified against the advance-specified target."
+      },
+      {
+        "criterionId": "C-11",
+        "covered": "partial",
+        "evidence": "Static source test rejects network and ambient side effects; isolation journeys report zero external requests and storage writes.",
+        "gap": "No reported credential-shaped-output scan, and zero storage writes does not by itself prove zero writes outside the fixture."
+      },
+      {
+        "criterionId": "C-12",
+        "covered": "full",
+        "evidence": "Unit and component tests reject both second-action directions and verify mutual exclusion.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-13",
+        "covered": "full",
+        "evidence": "Unit and component tests verify undo for acknowledge and defer, separate log entries, and restored pending state.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-14",
+        "covered": "full",
+        "evidence": "Unit and component tests verify distinct routine, significant, critical, and explicitly named unknown severity states.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-15",
+        "covered": "partial",
+        "evidence": "Unit and component tests verify locale-dependent rendering and named malformed-date output with raw value.",
+        "gap": "The inventory does not establish that all stored dates are normalized and persisted as ISO-8601 UTC."
+      },
+      {
+        "criterionId": "C-16",
+        "covered": "full",
+        "evidence": "Unit and component tests cover resolved, missing, invalid, and unavailable outcomes and fixture-only resolution; isolation evidence reports no external requests.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-17",
+        "covered": "none",
+        "evidence": "No screen-reader walkthrough record exists.",
+        "gap": "A human walkthrough record naming screen reader, build, exercised paths, and untested paths is required."
+      },
+      {
+        "criterionId": "C-18",
+        "covered": "none",
+        "evidence": "Criterion is explicitly blocked pending the gap-3 schema; no provenance or supersession evidence is present.",
+        "gap": "Every artifact needs origin and supersession linkage, with superseded artifacts rejected as current citations."
+      },
+      {
+        "criterionId": "C-19",
+        "covered": "partial",
+        "evidence": "Forty captures cover the two viewports and accessibility names match; visual QA annotated trees and image digests.",
+        "gap": "The visual reviewer did not see the images, and owner fidelity acceptance is absent; captures alone cannot satisfy acceptance."
+      },
+      {
+        "criterionId": "C-20",
+        "covered": "partial",
+        "evidence": "Isolation procedure ran on five journeys with console/network capture and a deliberate forbidden fetch was detected.",
+        "gap": "The evidence does not demonstrate every required journey, credential-output scanning, zero writes outside the fixture, or fixture-only resolution for every journey."
+      },
+      {
+        "criterionId": "C-21",
+        "covered": "none",
+        "evidence": "No independent promoted release-review verdict citing artifact and evidence versions is present.",
+        "gap": "A non-implementer release reviewer must issue needs-work or eligible-for-owner-approval."
+      }
+    ],
+    "missingNegativePaths": [
+      "Attempt keyboard and pointer activation on disabled controls.",
+      "Verify save failure after each action leaves state unchanged and preserves all input.",
+      "Reload after acknowledge, defer, undo, save failure, and an in-progress save.",
+      "Exercise storage adapter unavailable, malformed, stale, and conflicting persisted data.",
+      "Use malformed events with invalid action names, revisions, timestamps, IDs, and payloads in combinations.",
+      "Verify deterministic output with a separately injected ID source and compare serialized bytes across complete runs.",
+      "Test actual browser 200% zoom for wrapping, overlap, clipping, and keyboard reachability.",
+      "Check credential-shaped strings in rendered output, logs, accessibility trees, and captured artifacts.",
+      "Attempt writes outside the fixture, including path traversal and alternate storage destinations.",
+      "Test invalid evidence references including external URLs, traversal paths, unsupported schemes, and unreadable artifacts.",
+      "Attempt citing a superseded evidence artifact as current.",
+      "Perform visual inspection of every required state at both viewports.",
+      "Run every isolation journey, not only five representative journeys.",
+      "Verify release-review independence and rejection of verdicts outside the two permitted values."
+    ],
+    "isolationProcedure": {
+      "steps": [
+        "Start the browser in a clean isolated profile with only the supplied fixture artifacts and injected clock, IDs, storage, and animation policy.",
+        "Instrument and record all console output, network requests, storage operations, filesystem writes, and evidence-resolution paths.",
+        "Execute every required journey, including initial render, acknowledge, defer validation failures, valid defer, undo, reload, save success, save failure, retry, disabled controls, and all evidence-link outcomes.",
+        "Assert every evidence resolution maps only to an allowed fixture artifact and that no external URL or ambient provider is accessed.",
+        "Scan rendered text, accessibility trees, console logs, and artifacts for credential-shaped strings.",
+        "Run a deliberate forbidden external fetch and deliberate out-of-fixture write, confirming both detectors record failures.",
+        "Repeat the clean journeys and compare the resulting serialized state and evidence records for deterministic equality."
+      ],
+      "passCondition": "Every journey completes with zero external requests, zero credential-shaped output, zero writes outside the fixture, fixture-only evidence resolution, and deterministic repeat results; deliberate violations are detected.",
+      "failureEvidence": "A timestamped record identifies the injected violation, journey and step, operation or payload, captured console/network/storage/write trace, detector assertion, and resulting failing status."
+    },
+    "deterministicBrowserEvidence": {
+      "required": [
+        "For C-01 and C-02, captures and accessibility trees at chromium-1440 and chromium-1280 with exact field values, meaningful link names, and source order.",
+        "For C-03 and C-10, recorded keyboard and pointer journeys with focus targets, state transitions, and no focus-triggered action.",
+        "For C-07, C-09, C-14, and C-15, captures and accessibility trees for all relevant states under normal motion, reduced motion, locale variants, and actual 200% zoom.",
+        "For C-11 and C-20, per-journey console, network, storage/write, credential-scan, and fixture-resolution records.",
+        "For C-16, captures and resolution traces for resolved, missing, invalid, and unavailable artifacts with no external requests.",
+        "For C-17, a human screen-reader walkthrough record; automation and axe results are insufficient.",
+        "For C-19, human inspection of all twenty inventory states at both approved viewports plus owner fidelity acceptance.",
+        "For C-21, an independent release-review record citing artifact and evidence versions."
+      ],
+      "blockedBy": "Actual 200% browser-zoom verification, human screen-reader walkthrough, owner fidelity acceptance, independent release review, and the missing provenance/supersession schema and records are absent."
+    },
+    "notCovered": [
+      "State restoration after every action through the injected adapter is not fully verified.",
+      "Byte-identical full-run determinism with an injected ID source is not verified.",
+      "Actual 200% zoom behavior is not verified.",
+      "All four focus-restoration transitions are not explicitly verified.",
+      "Credential-shaped output and writes outside the fixture are not fully verified.",
+      "Provenance and supersession tracking are absent.",
+      "No genuine screen-reader walkthrough has been performed.",
+      "Owner visual-fidelity acceptance is absent.",
+      "Visual QA did not inspect the images themselves.",
+      "Isolation coverage is incomplete for all journeys and required scans.",
+      "No independent release-review verdict exists."
+    ]
+  }
+}
