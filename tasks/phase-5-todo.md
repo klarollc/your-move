@@ -52,9 +52,18 @@ approval.
   - [ ] **Owner acceptance of fidelity is still outstanding.** The record is Candidate; only the owner
         accepts art direction, and C-19 requires current-build captures that do not exist yet.
 
-- [ ] Task 4: RED evidence for every criterion.
+- [x] Task 4: RED evidence recorded **2026-09-14**; `docs/evidence/phase-5/red-evidence.json`.
   - Acceptance: each test fails for its stated reason first. A test that never failed for the right
     reason is not TDD evidence.
+  - Result: **17 assertions, 17 failed for the declared reason, 0 for another, 0 that did not fail,
+    0 criteria without a test.** The expected reason is `NOT_IMPLEMENTED`, declared before the run.
+  - The pure core in `packages/domain/src/decision-notice.ts` exists with real types so tests fail on
+    missing **behaviour** rather than a missing import — a suite that cannot resolve a module has not
+    tested anything, and recording that as RED would be recording a typo.
+  - The traceability guard joins criteria to tests: every ready criterion carrying behavioral
+    evidence has a test named for it. 17 required, 17 present.
+  - **The tree is red by design until Task 5.** `npm run verify` fails; exactly 17 failures, all in
+    `decision-notice.unit.test.ts`, with 412 other tests passing.
 
 - [ ] Task 5: GREEN, then REFACTOR with behaviour held.
 

@@ -1,0 +1,153 @@
+{
+  "schema": "cuckcode.phase5-red-evidence.v1",
+  "status": "RED recorded. The suite is failing by design; Task 5 turns it green. A red tree here is the evidence, not a defect.",
+  "recordedAt": "2026-09-14T04:51:57.958Z",
+  "expectedFailureReason": "NOT_IMPLEMENTED",
+  "totals": {
+    "assertions": 17,
+    "failedForTheRightReason": 17,
+    "failedForAnotherReason": 0,
+    "didNotFail": 0
+  },
+  "criteriaRequiringAUnitTest": [
+    "C-01",
+    "C-02",
+    "C-03",
+    "C-04",
+    "C-05",
+    "C-06",
+    "C-07",
+    "C-08",
+    "C-09",
+    "C-10",
+    "C-11",
+    "C-12",
+    "C-13",
+    "C-14",
+    "C-15",
+    "C-16",
+    "C-21"
+  ],
+  "criteriaWithoutATest": [],
+  "observations": [
+    {
+      "criterion": "C-01",
+      "title": "C-01: renders the seven required fields with a stable decision ID",
+      "status": "failed",
+      "expectedFailureReason": "NOT_IMPLEMENTED",
+      "observedFailureReason": "NOT_IMPLEMENTED"
+    },
+    {
+      "criterion": "C-02",
+      "title": "C-02: preserves evidence-link source order and gives each a meaningful accessible name",
+      "status": "failed",
+      "expectedFailureReason": "NOT_IMPLEMENTED",
+      "observedFailureReason": "NOT_IMPLEMENTED"
+    },
+    {
+      "criterion": "C-03",
+      "title": "C-03: focusing a control never changes state",
+      "status": "failed",
+      "expectedFailureReason": "NOT_IMPLEMENTED",
+      "observedFailureReason": "NOT_IMPLEMENTED"
+    },
+    {
+      "criterion": "C-04",
+      "title": "C-04: defer is refused for an empty reason, an over-long reason, and a non-future date",
+      "status": "failed",
+      "expectedFailureReason": "NOT_IMPLEMENTED",
+      "observedFailureReason": "NOT_IMPLEMENTED"
+    },
+    {
+      "criterion": "C-05",
+      "title": "C-05: state after an action is reproducible from the log",
+      "status": "failed",
+      "expectedFailureReason": "NOT_IMPLEMENTED",
+      "observedFailureReason": "NOT_IMPLEMENTED"
+    },
+    {
+      "criterion": "C-06",
+      "title": "C-06: duplicate, stale, malformed and out-of-order events are each refused by their own code",
+      "status": "failed",
+      "expectedFailureReason": "NOT_IMPLEMENTED",
+      "observedFailureReason": "NOT_IMPLEMENTED"
+    },
+    {
+      "criterion": "C-07",
+      "title": "C-07: all seven statuses are distinguishable without colour",
+      "status": "failed",
+      "expectedFailureReason": "NOT_IMPLEMENTED",
+      "observedFailureReason": "NOT_IMPLEMENTED"
+    },
+    {
+      "criterion": "C-08",
+      "title": "C-08: the same inputs and the same injected clock produce the same result",
+      "status": "failed",
+      "expectedFailureReason": "NOT_IMPLEMENTED",
+      "observedFailureReason": "NOT_IMPLEMENTED"
+    },
+    {
+      "criterion": "C-09",
+      "title": "C-09: status derivation depends on the injected clock, not on ambient time",
+      "status": "failed",
+      "expectedFailureReason": "NOT_IMPLEMENTED",
+      "observedFailureReason": "NOT_IMPLEMENTED"
+    },
+    {
+      "criterion": "C-10",
+      "title": "C-10: a refused action reports which field to return focus to",
+      "status": "failed",
+      "expectedFailureReason": "NOT_IMPLEMENTED",
+      "observedFailureReason": "NOT_IMPLEMENTED"
+    },
+    {
+      "criterion": "C-11",
+      "title": "C-11: resolving an evidence link never reaches outside the supplied fixture",
+      "status": "failed",
+      "expectedFailureReason": "NOT_IMPLEMENTED",
+      "observedFailureReason": "NOT_IMPLEMENTED"
+    },
+    {
+      "criterion": "C-12",
+      "title": "C-12: acknowledge and defer are mutually exclusive",
+      "status": "failed",
+      "expectedFailureReason": "NOT_IMPLEMENTED",
+      "observedFailureReason": "NOT_IMPLEMENTED"
+    },
+    {
+      "criterion": "C-13",
+      "title": "C-13: undo returns to pending and is recorded as its own event",
+      "status": "failed",
+      "expectedFailureReason": "NOT_IMPLEMENTED",
+      "observedFailureReason": "NOT_IMPLEMENTED"
+    },
+    {
+      "criterion": "C-14",
+      "title": "C-14: the three severities render distinctly and an unknown one is named",
+      "status": "failed",
+      "expectedFailureReason": "NOT_IMPLEMENTED",
+      "observedFailureReason": "NOT_IMPLEMENTED"
+    },
+    {
+      "criterion": "C-15",
+      "title": "C-15: dates render by locale and a malformed date is named with its raw value",
+      "status": "failed",
+      "expectedFailureReason": "NOT_IMPLEMENTED",
+      "observedFailureReason": "NOT_IMPLEMENTED"
+    },
+    {
+      "criterion": "C-16",
+      "title": "C-16: each evidence-link outcome is its own named state",
+      "status": "failed",
+      "expectedFailureReason": "NOT_IMPLEMENTED",
+      "observedFailureReason": "NOT_IMPLEMENTED"
+    },
+    {
+      "criterion": "C-21",
+      "title": "C-21: a refusal never invents state",
+      "status": "failed",
+      "expectedFailureReason": "NOT_IMPLEMENTED",
+      "observedFailureReason": "NOT_IMPLEMENTED"
+    }
+  ]
+}
