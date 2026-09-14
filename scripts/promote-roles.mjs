@@ -1,6 +1,4 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
-import { pathToFileURL } from "node:url";
 
 export const PROMOTION_SCHEMA = "cuckcode.role-promotion.v1";
 
@@ -172,15 +170,7 @@ export async function writePromotionRecord(path, record) {
   await writeFile(path, `${JSON.stringify(record, null, 2)}\n`, "utf8");
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
-  const rolesRoot = resolve(process.argv[2] ?? "roles");
-  const manifest = JSON.parse(await readFile(resolve(rolesRoot, "manifest.json"), "utf8"));
-  const record = await readPromotionRecord(resolve(rolesRoot, "promotions.json"));
-  console.log(
-    JSON.stringify({
-      ok: true,
-      promoted: promotedRoleIds(record, manifest),
-      of: manifest.roles.length,
-    }),
-  );
-}
+// This module deliberately has no CLI. Its status block joined against `roles/manifest.json` — the
+// import Decision Q1 marked superseded — and so reported an empty promoted set while all six
+// authored roles were promoted. `scripts/promotion-status.mjs` is the one status path; two commands
+// that can disagree about whether a gate is open is the defect, not the wiring.

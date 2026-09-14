@@ -1,0 +1,53 @@
+{
+  "schema": "cuckcode.role-promotion.v1",
+  "promotions": [
+    {
+      "roleId": "delivery-lead",
+      "contentSha256": "72a7f79e20cd99bb7e2b3bccfa8bebdf0b11a3544613a7c0b5b542016d9b84a7",
+      "commit": "35596d8eb601d6c92fa1ab70ad41d19db2f5f2b9",
+      "promotedAt": "2026-09-14T02:34:02.685Z",
+      "packetRef": "docs/evidence/phase-4/live-kickoff/task-16-preflight-packet.md",
+      "revokedAt": null
+    },
+    {
+      "roleId": "implementation-engineer",
+      "contentSha256": "2a5cce0d7afee5ba80bf9f50fbd29ccf2cb52b8c23a894e87d4dce2801c4aea4",
+      "commit": "35596d8eb601d6c92fa1ab70ad41d19db2f5f2b9",
+      "promotedAt": "2026-09-14T02:34:02.685Z",
+      "packetRef": "docs/evidence/phase-4/live-kickoff/task-16-preflight-packet.md",
+      "revokedAt": null
+    },
+    {
+      "roleId": "product-designer",
+      "contentSha256": "bf9cf9b3dfb2ae0017a942a74d805011b8260c13829ca3c7f705c6b87002223a",
+      "commit": "35596d8eb601d6c92fa1ab70ad41d19db2f5f2b9",
+      "promotedAt": "2026-09-14T02:34:02.685Z",
+      "packetRef": "docs/evidence/phase-4/live-kickoff/task-16-preflight-packet.md",
+      "revokedAt": null
+    },
+    {
+      "roleId": "release-reviewer",
+      "contentSha256": "5f2eb1f763e6e4770f5183b2a1fc12c427caead608e8d2ac2b54c27181f731cf",
+      "commit": "35596d8eb601d6c92fa1ab70ad41d19db2f5f2b9",
+      "promotedAt": "2026-09-14T02:34:02.685Z",
+      "packetRef": "docs/evidence/phase-4/live-kickoff/task-16-preflight-packet.md",
+      "revokedAt": null
+    },
+    {
+      "roleId": "test-engineer",
+      "contentSha256": "b4609775956d9f8bc9c41793b3b4cb036f6a92cdce06ca46e9b14527f7952e8a",
+      "commit": "35596d8eb601d6c92fa1ab70ad41d19db2f5f2b9",
+      "promotedAt": "2026-09-14T02:34:02.685Z",
+      "packetRef": "docs/evidence/phase-4/live-kickoff/task-16-preflight-packet.md",
+      "revokedAt": null
+    },
+    {
+      "roleId": "visual-qa-reviewer",
+      "contentSha256": "7d1d4d8d2298bd94f5d7c7987962caebef2f415f064dedf0c784fe7f01903528",
+      "commit": "35596d8eb601d6c92fa1ab70ad41d19db2f5f2b9",
+      "promotedAt": "2026-09-14T02:34:02.685Z",
+      "packetRef": "docs/evidence/phase-4/live-kickoff/task-16-preflight-packet.md",
+      "revokedAt": null
+    }
+  ]
+}

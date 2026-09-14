@@ -474,3 +474,69 @@ The unanswered question is what `status: candidate` should mean for these roles 
 records that they were faithfully imported and are not yet promoted. It does not record that four of
 six describe a stack this project does not use, which is a different kind of not-ready and is not
 fixed by promoting them.
+
+---
+
+### DF-012 — A gate reported closed while it was open
+
+Observed 2026-09-13, immediately after the owner promoted all six authored roles.
+
+`roles/promotions.json` held six live promotions, none revoked. `npm run roles:promotion:status`
+reported `{"ok":true,"promoted":[],"of":6}`.
+
+Both were produced by the same codebase, minutes apart, and they contradicted each other.
+
+## What actually happened
+
+`promotedRoleIds(record, manifest)` derives the promoted set by joining the promotion record against
+a manifest, and refuses any role whose digest no longer matches. That design is right, and its own
+comment says so: *"The promoted set is derived, never asserted... Fails closed."*
+
+The status CLI passed it `roles/manifest.json` — the **imported** role set, which Decision Q1 marked
+`superseded` on 2026-09-12. The authored artifacts live in `roles/authored/<id>.json` under Decision
+Q2. Their digests are not the imported digests, so every join missed and the derived set came back
+empty.
+
+The guard did exactly what it was written to do. The authoritative boundary moved underneath it and
+the call site was never revisited.
+
+## Why this is the DF-010 shape, inverted
+
+DF-010 and DF-011 are guards that **passed** on material that could not work. This is a guard that
+**refused** material that works. The failure direction is opposite; the cause is identical — a check
+that is exact inside a boundary nobody re-examined after the boundary moved.
+
+That makes the shape more general than the register has recorded so far. It is not "guards are too
+permissive." It is **a guard is only as current as its call site**, and nothing in this project makes
+a call site announce that its source of truth was superseded three weeks ago.
+
+## Why no test caught it
+
+`scripts/promote-roles.test.mjs` had twelve passing tests over this exact function, including drift
+and revocation. Every one of them constructs its own manifest fixture. None reads the manifest the
+CLI actually passes, so the suite proved the join was correct and could not observe that it was
+pointed at the wrong set. The test is written inside the same boundary as the guard — the sentence
+already in this register's classification section, now demonstrated a third time.
+
+## Impact
+
+Bounded, and only by luck of direction. `promotedRoleIds` had exactly one production consumer, the
+status CLI, so nothing executed under a wrong promotion. Had the live kickoff been wired through it,
+the kickoff would have **refused to run** and reported the roles as unpromoted — sending the next
+session to debug promotion, which was never broken.
+
+The nearer harm is that the status command is what a fresh session reads to learn whether a gate is
+open. For a few hours it stated, with a machine-checked air, the opposite of the truth.
+
+## Product response
+
+Fixed the same day under RED-GREEN, not deferred, because a status command that misreports a gate
+corrupts every later decision made from it. `scripts/promotion-status.mjs` joins against
+`roles/authored`, reports the `source` it derived from, and is the single status path; the stale CLI
+block in `promote-roles.mjs` was removed rather than left as a second command that could disagree.
+The drift guard was mutation-tested and killed four tests.
+
+**Proposed and not authorized:** a standing review question for any decision that supersedes an
+artifact — *what still reads the thing we just superseded?* Q1 marked the imported roles superseded
+and nothing swept the call sites. The same sweep, run against documents rather than code, is what
+the 2026-09-13 evaluation had to do by hand for five stale boundary lines.
