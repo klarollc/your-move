@@ -98,3 +98,44 @@ The reviewer was required to say, and did:
 
 Items 1 through 6 are ordinary work nobody has authorized yet. Item 7 is what Decision 5-D committed
 this phase to and has not done. Items 8 and 9 cannot be closed by an agent at all.
+
+---
+
+## Refreshed verdict — release review pass 4, 2026-09-14
+
+Run after the seven remediation items, the provenance ledger, the C-17 waiver and the C-19
+acceptance. **Verdict: NEEDS WORK, 18 of 21 satisfied**, up from 11. Accepted on the first turn,
+zero overclaims. Ledger 13 of 60.
+
+Two prerequisites were fixed before the run rather than after it, because the brief would otherwise
+have handed the reviewer a stale picture for the third time in this phase — see DF-017 and the
+commit that derived the brief instead of asserting it. Verification was re-run first (pass 6:
+16 full, 3 partial, 2 none, zero overclaims) because pass 4 predated the remediation and the brief
+said so in its own words.
+
+### What closed
+
+| | |
+| --- | --- |
+| C-18 | provenance ledger and schema, cited directly |
+| C-19 | the owner's fidelity acceptance |
+| C-08 | the two-run determinism comparison, which no previous brief had mentioned |
+| C-10, C-15, C-20 | focus contract, stored-date checks, enumerated journeys |
+| C-21 | this verdict itself |
+
+### What is outstanding — three, and only one needs a person
+
+- **C-09.** Reduced motion and 200% zoom are established for a subset, not for every inventory state
+  at both viewports. The reviewer wants a current-build matrix recording, per state, the accessible
+  name, the non-colour signature, content preservation and horizontal overflow under both
+  conditions. Ordinary work.
+- **C-11.** The isolation records show the defined journeys are clean; they do not establish that no
+  destructive, deployment, credential or paid path exists anywhere reachable. The reviewer wants a
+  static side-effect review over reachable component and domain code, paired with the behavioral
+  records rather than replacing them. Ordinary work.
+- **C-17.** Reported exactly as the waiver overlay requires: *"Waived by owner. No walkthrough record
+  names a screen reader, build, exercised coverage, and omissions; no human listener has heard the
+  interface."* The reviewer added, unprompted, that **the waiver does not close the obligation**.
+
+That last line is the phase's own governance working. A waiver was recorded, the brief carried it,
+and the independent reviewer still refused to count it as satisfied.

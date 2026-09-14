@@ -22,14 +22,25 @@ gaps are closed. Ready means assessable. It does not mean met.
 
 ## The immediate next action
 
-**Task 10 is owner-run and is the only authorized step left in Phase 5.** Do not perform it.
+**Task 10 is owner-run.** Do not perform it.
 
-The standing verdict is `NEEDS WORK` at eleven of twenty-one — `docs/evidence/phase-5/task-9-outcome.md`
-— but **that verdict is now stale in the owner's favour**. It predates the seven remediation items,
-the provenance ledger, the C-17 waiver and the C-19 acceptance. Every one of the ten things the
-reviewer said would change its verdict has been closed or ruled on. A refreshed release review, run
-against the completed evidence versions, is the honest next artifact and would cost one agent turn.
-It has not been authorized.
+The current verdict is release review **pass 4, 2026-09-14: `NEEDS WORK`, 18 of 21 satisfied**, zero
+overclaims, citing fourteen artifact versions by content address. It supersedes the 11-of-21 verdict,
+which was written before the remediation. Verification pass 6 is the current build assessment.
+
+Three criteria are outstanding and **only one of them needs a person**:
+
+- **C-09** — reduced motion and 200% zoom are established for a subset, not for every inventory state
+  at both viewports. The reviewer wants a per-state matrix: accessible name, non-colour signature,
+  content preservation and horizontal overflow under both conditions. Ordinary work, unruled.
+- **C-11** — the isolation records prove the defined journeys are clean, not that no destructive,
+  deployment, credential or paid path exists anywhere reachable. The reviewer wants a static
+  side-effect review over reachable component and domain code, paired with the behavioral records
+  rather than replacing them. Ordinary work, unruled.
+- **C-17** — waived by the owner. The reviewer reported it as waived and added, unprompted, that the
+  waiver does not close the obligation.
+
+Neither C-09 nor C-11 has an owner ruling. Nothing is authorized.
 
 Nothing else is authorized. The ten items the reviewer says would change its verdict are ordinary
 work nobody has ruled on, except these three, which cannot be closed by an agent at all:

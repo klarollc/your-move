@@ -1,0 +1,189 @@
+{
+  "schema": "cuckcode.phase5-release-review.v1",
+  "pass": 4,
+  "previousPasses": [
+    "pass-1.json",
+    "pass-2.json",
+    "pass-3.json"
+  ],
+  "status": "Authored by the promoted release-reviewer, which is not the implementer and has never seen the working tree. A verdict, not an approval: Task 10 is owner-run.",
+  "roleId": "release-reviewer",
+  "authoredAt": "2026-09-14T16:32:41.541Z",
+  "turnsSpent": 1,
+  "overclaims": [],
+  "crossCheck": {
+    "unmetAtReviewTime": [
+      {
+        "id": "C-17",
+        "why": "no screen-reader walkthrough record exists; the owner waived the criterion on the record. Report it as \"waived by owner\", never as satisfied. See acceptance-contract-waivers.json for what the waiver leaves unestablished."
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "turn": 1,
+      "accepted": true,
+      "shortfalls": [],
+      "overclaims": [],
+      "responseSha256": "133891a0d082567e0f7550b070272f96416ed2c6578f7ab51e88d57266c300e4"
+    }
+  ],
+  "verdict": {
+    "verdict": "NEEDS WORK",
+    "verdictReason": "Three obligations remain unestablished. C-09 lacks evidence that every inventory state preserves its accessible name and structure under both reduced motion and 200% zoom at both approved viewports. C-11 establishes clean defined journeys but not the absence of prohibited side effects across all reachable code paths. C-17 was waived by the owner, not satisfied; no human screen-reader walkthrough exists. Open obligations block eligibility regardless of the green suite, completed captures, owner fidelity acceptance, or another role's verdict. Earlier verification passes are retained as historical evidence; pass-6 is the current described-build assessment, not a substitute for this review. This conclusion is NEEDS WORK, not final acceptance.",
+    "artifactVersions": {
+      "packages/domain/src/decision-notice.ts": "330fc3a4e5096a75",
+      "apps/web/src/decision-notice.tsx": "9208415fe0ffc88b",
+      "docs/evidence/phase-5/acceptance-contract.json": "eeabdff69530438d",
+      "docs/evidence/phase-5/acceptance-contract-waivers.json": "7f4153b9de334d3c",
+      "docs/evidence/phase-5/surface-contract/surface-contract.json": "c3cd235c1d52658b",
+      "docs/evidence/phase-5/surface-contract/amendments.json": "a12c80e147e2cc70",
+      "docs/evidence/phase-5/surface-contract/focus-contract.json": "391d9a6c3df822e8",
+      "docs/evidence/phase-5/surface-contract/journeys.json": "ae11810c0c0d903f",
+      "docs/evidence/phase-5/verification/pass-6.json": "759caa2272c64717",
+      "docs/evidence/phase-5/visual-qa/pass-2.json": "bbb78b0ce6de2086",
+      "docs/evidence/phase-5/browser/capture-manifest.json": "a13ad17dc6faec07",
+      "docs/evidence/phase-5/browser/determinism.json": "1155fc0245641c63",
+      "docs/evidence/phase-5/provenance/schema.json": "54304ad202d2b5f3",
+      "docs/evidence/phase-5/c-19-owner-acceptance.json": "a78cd68cc46a23a2"
+    },
+    "criterionFindings": [
+      {
+        "criterionId": "C-01",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-6.json and docs/evidence/phase-5/browser/capture-manifest.json, tied to apps/web/src/decision-notice.tsx",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-02",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-6.json and the browser accessibility-tree artifacts indexed by docs/evidence/phase-5/browser/capture-manifest.json",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-03",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/surface-contract/journeys.json and docs/evidence/phase-5/verification/pass-6.json",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-04",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/surface-contract/journeys.json and docs/evidence/phase-5/verification/pass-6.json",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-05",
+        "satisfied": true,
+        "evidenceCited": "packages/domain/src/decision-notice.ts, apps/web/src/decision-notice.tsx, and docs/evidence/phase-5/verification/pass-6.json",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-06",
+        "satisfied": true,
+        "evidenceCited": "packages/domain/src/decision-notice.ts and docs/evidence/phase-5/verification/pass-6.json",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-07",
+        "satisfied": true,
+        "evidenceCited": "browser accessibility trees indexed by docs/evidence/phase-5/browser/capture-manifest.json and docs/evidence/phase-5/verification/pass-6.json",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-08",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/browser/determinism.json, packages/domain/src/decision-notice.ts, and apps/web/src/decision-notice.tsx",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-09",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-6.json and browser accessibility evidence indexed by docs/evidence/phase-5/browser/capture-manifest.json",
+        "reservation": "The supplied evidence does not establish preservation of accessible names and structure for every inventory state under both reduced motion and 200% zoom at both approved viewports."
+      },
+      {
+        "criterionId": "C-10",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/surface-contract/focus-contract.json, docs/evidence/phase-5/surface-contract/journeys.json, and docs/evidence/phase-5/verification/pass-6.json",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-11",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/browser/1440/isolation.json, docs/evidence/phase-5/browser/1280/isolation.json, and docs/evidence/phase-5/verification/pass-6.json",
+        "reservation": "The defined journeys show zero external requests, credential-shaped output, and storage writes, but no cited independent static examination establishes absence of destructive, deployment, credential, network, or paid side effects across all reachable code paths."
+      },
+      {
+        "criterionId": "C-12",
+        "satisfied": true,
+        "evidenceCited": "packages/domain/src/decision-notice.ts and docs/evidence/phase-5/verification/pass-6.json",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-13",
+        "satisfied": true,
+        "evidenceCited": "packages/domain/src/decision-notice.ts, docs/evidence/phase-5/surface-contract/journeys.json, and docs/evidence/phase-5/verification/pass-6.json",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-14",
+        "satisfied": true,
+        "evidenceCited": "browser captures and accessibility trees indexed by docs/evidence/phase-5/browser/capture-manifest.json, plus docs/evidence/phase-5/verification/pass-6.json",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-15",
+        "satisfied": true,
+        "evidenceCited": "packages/domain/src/decision-notice.ts, apps/web/src/decision-notice.tsx, and docs/evidence/phase-5/verification/pass-6.json",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-16",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/browser/1440/isolation.json, docs/evidence/phase-5/browser/1280/isolation.json, and docs/evidence/phase-5/verification/pass-6.json",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-17",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/acceptance-contract-waivers.json",
+        "reservation": "Waived by owner. No walkthrough record names a screen reader, build, exercised coverage, and omissions; no human listener has heard the interface."
+      },
+      {
+        "criterionId": "C-18",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/provenance.jsonl, docs/evidence/phase-5/provenance/schema.json, and docs/evidence/phase-5/verification/pass-6.json",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-19",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/c-19-owner-acceptance.json, docs/evidence/phase-5/browser/capture-manifest.json, and docs/evidence/phase-5/surface-contract/surface-contract.json",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-20",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/browser/1440/isolation.json, docs/evidence/phase-5/browser/1280/isolation.json, their deliberate-failure records, and docs/evidence/phase-5/verification/pass-6.json",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-21",
+        "satisfied": true,
+        "evidenceCited": "This independent release-reviewer verdict, citing the content-addressed implementation and evidence versions listed in artifactVersions",
+        "reservation": ""
+      }
+    ],
+    "outstanding": [
+      "C-09",
+      "C-11",
+      "C-17"
+    ],
+    "wouldChangeYourVerdict": [
+      "A current-build matrix covering every inventory state at both D-07 viewports that records reduced-motion and genuine 200% zoom results, including each state's accessible name, structural/non-colour signature, content preservation, and horizontal-overflow result.",
+      "An independent static side-effect review of all reachable component and domain code and relevant dependencies, paired with the existing behavioral isolation records, establishing that no prohibited network, credential, deployment, destructive, or paid path exists.",
+      "A recorded human screen-reader walkthrough naming the screen reader and version, exact build digest, exercised journeys and states, observed focus destinations, and explicit omissions. The existing owner waiver does not close this obligation."
+    ]
+  }
+}

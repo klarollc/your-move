@@ -205,6 +205,23 @@ approval.
     refusal was exercised before the record was written.
   - Whether C-19 is _satisfied_ against the whole of its assertion stays a release-review judgement.
 
+- [x] **Release review refreshed 2026-09-14 — NEEDS WORK, 18 of 21**, up from 11. Pass 4,
+      accepted on the first turn, zero overclaims. Ledger 13 of 60.
+  - Verification was re-run first (pass 6: 16 full, 3 partial, 2 none, zero overclaims) because
+    pass 4 predated the remediation and the brief said so in its own words.
+  - Closed: C-08 (the two-run determinism record, which no earlier brief had mentioned), C-10, C-15,
+    C-18, C-19, C-20, C-21.
+  - **Outstanding: C-09, C-11, C-17.** Only C-17 needs a person, and it is waived.
+    - C-09: reduced motion and 200% zoom are established for a subset, not for every inventory state
+      at both viewports. Wants a per-state matrix with name, non-colour signature, content
+      preservation and overflow under both conditions. Ordinary work, unruled.
+    - C-11: the isolation records prove the defined journeys are clean, not that no destructive,
+      deployment, credential or paid path exists anywhere reachable. Wants a static side-effect
+      review paired with the behavioral records. Ordinary work, unruled.
+    - C-17: reported as "waived by owner", and the reviewer added unprompted that **the waiver does
+      not close the obligation**. The governance worked: a waiver was recorded, the brief carried it,
+      and the independent reviewer still refused to count it satisfied.
+
 - [ ] Task 10: **Owner acceptance. Owner-run.** Accept the fixture outcome or record bounded
       revisions. Atomically creates the D-24 review that Phase 8 closes.
 

@@ -1,0 +1,235 @@
+{
+  "schema": "cuckcode.phase5-verification.v1",
+  "pass": 6,
+  "previousPasses": [
+    "pass-2.json",
+    "pass-3.json",
+    "pass-4.json",
+    "pass-5.json",
+    "verification.json"
+  ],
+  "status": "Authored by the promoted test-engineer. Coverage claims were cross-checked against what exists.",
+  "roleId": "test-engineer",
+  "authoredAt": "2026-09-14T16:30:35.106Z",
+  "turnsSpent": 1,
+  "assessedVersions": {
+    "packages/domain/src/decision-notice.ts": "330fc3a4e5096a75",
+    "apps/web/src/decision-notice.tsx": "9208415fe0ffc88b",
+    "apps/web/src/decision-notice-capture.unit.test.ts": "89239222f017c3d3",
+    "apps/web/src/decision-notice.component.test.tsx": "8e36f15c348a71e8",
+    "packages/domain/src/decision-notice.unit.test.ts": "34601cfcd4b57ad8",
+    "scripts/phase5-provenance.unit.test.ts": "187103fe1c704ae4"
+  },
+  "overclaims": [],
+  "crossCheck": {
+    "criteriaWithAUnitTest": [
+      "C-19",
+      "C-01",
+      "C-02",
+      "C-07",
+      "C-14",
+      "C-15",
+      "C-16",
+      "C-03",
+      "C-04",
+      "C-10",
+      "C-13",
+      "C-05",
+      "C-08",
+      "C-06",
+      "C-09",
+      "C-11",
+      "C-12",
+      "C-21",
+      "C-18"
+    ],
+    "renderedArtifactsExist": true
+  },
+  "attempts": [
+    {
+      "turn": 1,
+      "accepted": true,
+      "shortfalls": [],
+      "overclaims": [],
+      "responseSha256": "ba4260a0334251dfd96ba7f1064f1d140d77ed98b6b2eb62a3b66ff4b4bf37dc"
+    }
+  ],
+  "assessment": {
+    "coverageAssessment": [
+      {
+        "criterionId": "C-01",
+        "covered": "full",
+        "evidence": "Domain and component tests assert all seven fixture fields and stable decision ID across rerender; browser accessibility captures provide rendered evidence.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-02",
+        "covered": "full",
+        "evidence": "Domain and component tests assert non-empty meaningful accessible names and fixture source order.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-03",
+        "covered": "full",
+        "evidence": "Component tests cover focus without activation and explicit keyboard and pointer activation.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-04",
+        "covered": "full",
+        "evidence": "Domain and component tests cover empty, overlong, absent, malformed, past, and valid future deferral inputs.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-05",
+        "covered": "full",
+        "evidence": "Component tests reload through the injected adapter after actions and cover corrupt and throwing adapters.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-06",
+        "covered": "full",
+        "evidence": "Domain tests cover duplicate, stale, malformed, and out-of-order events, including exact pre-event state preservation.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-07",
+        "covered": "full",
+        "evidence": "Domain tests assert distinct non-colour signatures for all seven statuses; component tests cover saving and unavailable/disabled structure.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-08",
+        "covered": "full",
+        "evidence": "Static component test rejects ambient time, randomness, timers, storage, and network; browser determinism evidence compares two injected runs byte-for-byte.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-09",
+        "covered": "partial",
+        "evidence": "Accessibility evidence records reduced-motion behavior, 200% zoom emulation, and zero horizontal overflow; captures exist at both desktop viewports.",
+        "gap": "The evidence does not establish accessible names and structure for every inventory state under both reduced motion and 200% zoom."
+      },
+      {
+        "criterionId": "C-10",
+        "covered": "full",
+        "evidence": "Component tests cover focus destinations after validation, success, failure, reload, and named transitions.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-11",
+        "covered": "partial",
+        "evidence": "Isolation evidence records zero external requests, credential-shaped output, and writes outside the injected fixture; static source checks ambient effects.",
+        "gap": "The evidence does not independently establish absence of every destructive, deployment, credential, or paid side effect across all possible code paths."
+      },
+      {
+        "criterionId": "C-12",
+        "covered": "full",
+        "evidence": "Domain and component tests reject both directions of second action and preserve mutual exclusivity.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-13",
+        "covered": "full",
+        "evidence": "Domain and component tests verify undo restores pending state and retains separate original and undo events.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-14",
+        "covered": "full",
+        "evidence": "Domain and component tests cover routine, significant, critical, and explicitly named unknown severity.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-15",
+        "covered": "full",
+        "evidence": "Domain and component tests cover ISO UTC storage, locale rendering, malformed dates, and persisted date validation.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-16",
+        "covered": "full",
+        "evidence": "Domain and component tests cover resolved, missing, invalid, and unavailable links; isolation records fixture-only resolution and no external requests.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-17",
+        "covered": "none",
+        "evidence": "No screen-reader walkthrough record exists; the criterion is owner-waived.",
+        "gap": "A recorded human walkthrough naming screen reader, build, exercised coverage, and omissions is required."
+      },
+      {
+        "criterionId": "C-18",
+        "covered": "full",
+        "evidence": "Provenance verification records digests and producers, validates drift and supersession rules, and explicitly records 43 unknown producers without guessing.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-19",
+        "covered": "partial",
+        "evidence": "There are 40 captures at both viewports, accessibility-tree matches, and an owner whole-inventory acceptance.",
+        "gap": "Per-state owner judgements are not recorded, and visual QA annotated metadata without seeing the images; therefore each state's visual fidelity is not independently evidenced."
+      },
+      {
+        "criterionId": "C-20",
+        "covered": "full",
+        "evidence": "Isolation evidence documents nine end-to-end journeys, complete request and write scans, fixture-only resolution, and a deliberate failure detected by the procedure.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-21",
+        "covered": "none",
+        "evidence": "No independent promoted release-reviewer verdict is listed.",
+        "gap": "A needs-work or eligible-for-owner-approval review citing artifact and evidence versions, authored by a non-implementer release-reviewer, is missing."
+      }
+    ],
+    "missingNegativePaths": [
+      "Undo attempted twice or after an already-undone action.",
+      "Retry after save failure succeeding without changing preserved input or inventing state.",
+      "Keyboard and pointer attempts to activate every disabled control.",
+      "External, traversal, fragment, and malformed evidence references in the component journey.",
+      "Every inventory state checked for accessible structure under reduced motion and 200% zoom.",
+      "Malformed persisted values covering each individual field through the rendered component, not only the pure core.",
+      "Cross-run determinism under differing locale, timezone, and fresh-process module state.",
+      "A complete side-effect scan covering destructive, deployment, credential, and paid-operation pathways."
+    ],
+    "isolationProcedure": {
+      "steps": [
+        "Run each defined contract journey in the isolated browser harness.",
+        "Patch and record all network requests, including page, asset, fetch, XHR, and beacon traffic.",
+        "Scan rendered document text, console output, and persisted state for credential-shaped strings.",
+        "Patch localStorage, sessionStorage, indexedDB, and other persistence targets and record every write target.",
+        "Resolve every evidence link through the supplied fixture and record its resolution state.",
+        "Verify no request, write, or evidence resolution escapes the page origin and fixture.",
+        "Inject a deliberate forbidden external request and rerun the detector.",
+        "Record journey results, console logs, network logs, write targets, resolution states, and deliberate-failure output."
+      ],
+      "passCondition": "Every contract journey completes with no request beyond the page's own origin and assets, zero credential-shaped output, zero writes outside the injected fixture, and evidence resolution limited to fixture artifacts.",
+      "failureEvidence": "The deliberately injected forbidden request must be recorded as a deterministic detector finding identifying the external URL and failing journey, rather than being silently ignored."
+    },
+    "deterministicBrowserEvidence": {
+      "required": [
+        "C-01: repeat captures at both approved viewports with identical fixture values and stable decision ID.",
+        "C-03: keyboard and pointer journeys with focus-only controls producing no state change or event.",
+        "C-07: captures and accessibility trees for all seven statuses with colour removed or unavailable.",
+        "C-09: every inventory state at both approved viewports under reduced motion and 200% zoom, including overflow measurements.",
+        "C-14: captures and accessibility trees for all severity states, including unknown severity.",
+        "C-16: four fixture evidence-link outcomes with request logs proving no external fetch.",
+        "C-17: a real screen-reader walkthrough record naming the screen reader, build, exercised states, and omissions.",
+        "C-19: named current-build captures for all 20 states at both viewports plus recorded owner acceptance for each state.",
+        "C-20: complete journey network, console, persistence, and fixture-resolution logs plus deliberate-failure evidence.",
+        "C-21: independently authored release-review record with permitted verdict and cited artifact/evidence versions."
+      ],
+      "blockedBy": "C-17 is blocked by the absent screen-reader walkthrough. C-19 lacks per-state owner judgements. No non-Chromium browser evidence exists if the approved matrix requires one; C-21 lacks the independent release review."
+    },
+    "notCovered": [
+      "A human screen-reader listener has exercised the interface.",
+      "Per-state owner acceptance of visual fidelity is recorded.",
+      "An independent release reviewer has issued a permitted verdict.",
+      "Every state is proven under reduced motion and 200% zoom at both viewports.",
+      "All categories of forbidden side effects are independently ruled out across every code path.",
+      "Cross-process determinism across locale, timezone, and module-state variation.",
+      "The listed negative paths not exercised by the current tests."
+    ]
+  }
+}
