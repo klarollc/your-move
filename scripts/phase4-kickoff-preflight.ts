@@ -48,7 +48,7 @@ const sha256 = (value: Uint8Array): string => createHash("sha256").update(value)
 
 export const agentIdFor = (roleId: string): string => `agent_${roleId.replace(/-/gu, "_")}`;
 
-export async function buildKickoffPreflightInput(now: number): Promise<KickoffPreflightInput> {
+export async function buildKickoffPreflightInput(): Promise<KickoffPreflightInput> {
   const promotions = JSON.parse(await readFile(resolve(ROLES_ROOT, "promotions.json"), "utf8")) as {
     promotions: Array<{ roleId: string; contentSha256: string; revokedAt: string | null }>;
   };
@@ -97,7 +97,7 @@ if (
   import.meta.url.endsWith(process.argv[1].replace(/\\/gu, "/").split("/").pop() ?? "")
 ) {
   const now = Date.now();
-  const input = await buildKickoffPreflightInput(now);
+  const input = await buildKickoffPreflightInput();
   const result = checkBindingPreconditions({
     bindings: input.bindings,
     promoted: input.promoted,
