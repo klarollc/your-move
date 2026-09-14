@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "cuckcode",
   "version": "0.0.0",
   "private": true,
@@ -69,7 +69,8 @@
     "test:knowledge": "node --test scripts/phase5-knowledge-scenario.test.mjs scripts/phase5-determinism.test.mjs",
     "phase5:release:run": "tsx scripts/run-phase5-release-review.ts",
     "preview:web": "npm run build --workspace @cuckcode/web && npm run preview --workspace @cuckcode/web",
-    "phase5:determinism": "tsx scripts/phase5-determinism.ts"
+    "phase5:determinism": "tsx scripts/phase5-determinism.ts",
+    "phase5:contact-sheet": "tsx scripts/phase5-contact-sheet.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

@@ -152,6 +152,20 @@ approval.
   - **9-C** C-09: real browser zoom via `setDeviceMetricsOverride`, and the test asserts the
     emulation took effect. The reflow check survives under its own name.
 
+- [ ] C-19 owner look: contact sheet built, `npm run phase5:contact-sheet`.
+  - Forty plates, twenty states paired at both D-07 viewports, each sitting beside the treatment the
+    surface contract declared for it and beside the gap the Visual QA agent said it could not settle
+    from an accessibility tree. Writes to the ignored `test-results/`; it is a **lens over committed
+    evidence, not evidence**, and marking every state in it does not close C-19 — only an owner
+    ruling does.
+  - Every plate is verified against its manifest digest before it is embedded, so the sheet cannot
+    show an image the record no longer describes. The element-scoped plates are declared and then
+    cross-checked against the capture spec. Three mutants killed: a scoped plate missing from the
+    declared list, a whole-card plate wrongly declared scoped, and a capture changed since the
+    manifest.
+  - The page's Copy button emits a verdict block carrying the digest of each plate looked at, and
+    lists unmarked states as `not-looked-at` rather than omitting them.
+
 - [ ] Task 10: **Owner acceptance. Owner-run.** Accept the fixture outcome or record bounded
       revisions. Atomically creates the D-24 review that Phase 8 closes.
 
