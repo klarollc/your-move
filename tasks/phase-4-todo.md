@@ -122,8 +122,14 @@ Phase 4 gate below remain unauthorized.
       owner-gated promotion CLI, and the performed/not-performed exercise gate exist. On
       2026-09-13, the explicit opt-in exercise launcher recorded one attempt for each authored
       role in `roles/exercises.json`. All six stopped with `AUTH_REQUIRED` before `thread/start`
-      or a provider turn, so all remain not performed and promotion is correctly refused. This is
-      a recorded blocker, not exercise or kickoff evidence.
+      or a provider turn. **Cleared 2026-09-13:** the cause was `createControlledCodexHome`
+      replacing the credential along with the instruction sources; it now provisions exactly
+      `auth.json` and nothing else (see Task 17c-6 in
+      `docs/evidence/phase-4/red-green-log.md`). **All six bounded exercises then performed**, each
+      binding verified against the approved packet, with six substantively distinct transcripts in
+      `docs/evidence/phase-4/live-kickoff/role-exercises/`. This is exercise evidence, not kickoff
+      evidence: no D-25 round has run, nothing is promoted, and owner transcript review plus a
+      fresh go/no-go remain required before the one live kickoff.
   - Acceptance: six contributions, one synthesis, six explicit revisions/affirmations, full attribution, no prohibited effect, manager disposition.
   - Verify: exact `CUCKCODE_LIVE_KICKOFF=1` supervised run and canonical evidence.
 

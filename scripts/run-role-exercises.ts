@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { join, relative, resolve } from "node:path";
 
 import { composeRole, type RoleBrief } from "@cuckcode/domain";
@@ -18,6 +18,16 @@ const PACKET_PATH = resolve(ROOT, "docs/evidence/phase-4/live-kickoff/task-16-pr
 const EXECUTABLE =
   process.env.CUCKCODE_CODEX_EXE ??
   "C:/Users/nater/AppData/Local/Programs/OpenAI/Codex/bin/codex.exe";
+
+/**
+ * Replacing `CODEX_HOME` also replaces the credential Codex reads, so the controlled home must be
+ * given one explicitly. Exactly this one file is taken from the owner's Codex home — never its
+ * `config.toml`, and never its `AGENTS.md`, which is the unpinned instruction source DF-010 found.
+ */
+const CREDENTIAL_SOURCE = resolve(
+  process.env.CUCKCODE_CODEX_AUTH ??
+    join(process.env.CODEX_HOME ?? join(homedir(), ".codex"), "auth.json"),
+);
 
 if (process.env.CUCKCODE_LIVE_ROLE_EXERCISE !== "1") {
   throw new Error("LIVE_ROLE_EXERCISE_EXPLICIT_OPT_IN_REQUIRED");
@@ -52,6 +62,7 @@ for (const configuration of approved.plan) {
   const home = await createControlledCodexHome({
     parentDirectory: tmpdir(),
     instruction: composed.text,
+    credentialSourcePath: CREDENTIAL_SOURCE,
   });
   const observedAt = new Date().toISOString();
   try {

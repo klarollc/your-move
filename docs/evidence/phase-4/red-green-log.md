@@ -780,3 +780,55 @@ Nothing promotes these roles, no `roles/promotion-request.json` exists, and no c
 reached a runtime. The manifest still carries the six imported roles as `candidate` rather than
 `superseded`. Whether a model treats a composed brief as its operating constraint is untested and
 remains what the exercise gate is for.
+
+## Task 17c-6 — Controlled-home credential provisioning and the six role exercises
+
+Date: 2026-09-13
+
+**Defect.** Every role exercise on 2026-09-13 stopped at `AUTH_REQUIRED`. The cause was not absent
+authentication: `~/.codex/auth.json` existed and the 2026-09-11 facts probe completed a live turn on
+it. `createControlledCodexHome` created an empty directory and passed it as `CODEX_HOME`, which
+replaces the credential Codex reads along with the instruction sources it was built to replace. The
+DF-010 fix isolated the credential by accident.
+
+The existing test asserted `readdir(home.path)` equalled exactly `["AGENTS.md"]` — a guard that was
+exact inside a boundary nobody examined, and that actively locked the defect in place. This is the
+DF-010/DF-011 shape a fourth time, now in a test written in this repository.
+
+- RED: five integration tests against `controlled-home.ts`; two failed for the expected reasons —
+  no `auth.json` was provisioned, and an absent credential silently produced an unauthenticated
+  home instead of failing.
+- GREEN: `createControlledCodexHome` now takes an explicit `credentialSourcePath`, copies exactly
+  that one file to `auth.json`, exposes `credentialPath`, and throws
+  `RUNTIME_CREDENTIAL_UNAVAILABLE` after disposing the partial home when the copy fails. No
+  `config.toml` and no inherited `AGENTS.md` is copied, so the DF-010 guarantee is unchanged and is
+  now asserted directly rather than as a side effect of counting files.
+- Mutation evidence, because reading the test is not enough:
+  - delete the credential copy → 3 of 5 fail;
+  - swallow the missing-credential error → 1 of 5 fails;
+  - write a `config.toml` into the home → the instruction-isolation test fails.
+  Each guard was restored and the suite returned to 5 passed.
+- Vacuity check: the dispose test asserts the credential is readable *before* dispose, so it cannot
+  pass against a home that never had one.
+
+**The six bounded exercises.** `CUCKCODE_LIVE_ROLE_EXERCISE=1 npm run roles:exercise`, one text-only
+turn per role, read-only sandbox, `approvalPolicy: never`, no tools, no external effect.
+
+All six performed. Each binding was verified against the approved Task 16 packet rather than against
+the request: five roles reported `gpt-5.6-luna` and `release-reviewer` reported `gpt-5.6-sol`, all at
+`medium` on protocol `0.146.0`, each with a distinct binding fingerprint. Transcripts are under
+`docs/evidence/phase-4/live-kickoff/role-exercises/`.
+
+**The six transcripts are substantively distinct**, which is the claim Task 17c-2b said the run had
+to support and the reason composition exists: each role states a different mandate and different
+refusals — the Delivery Lead refuses to treat acknowledgement as approval, the Product Designer
+refuses to approve its own art direction, the Test Engineer refuses self-validating assertions, the
+Release Reviewer names its only two verdicts. Six anonymous agents agreeing would have proved
+nothing; this did not happen.
+
+**Limits.** This is exercise evidence, not kickoff evidence. No D-25 round ran, no role is promoted
+(`roles:promotion:status` reports `{"promoted":[],"of":6}`), and owner transcript review remains
+required before promotion. The credential is copied to a temporary directory for the life of each
+session; `dispose` removed every home, and a post-run scan of `%TEMP%` found no `auth.json` and no
+`cuckcode-role-*` residue. That cleanup is the only thing bounding the exposure, and Windows cleanup
+has failed once before in this project (Task 12, attempt 1, `EPERM`).

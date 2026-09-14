@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -14,8 +14,11 @@ const fixture = fileURLToPath(new URL("./fixtures/fake-app-server.mjs", import.m
 
 it("carries a controlled role home through supervisor, observed handshake, and one text turn", async () => {
   const parent = await mkdtemp(join(tmpdir(), "cuckcode-exercise-"));
+  const credentialSourcePath = join(parent, "source-auth.json");
+  await writeFile(credentialSourcePath, '{"synthetic":"not-a-real-credential"}', "utf8");
   const home = await createControlledCodexHome({
     parentDirectory: parent,
+    credentialSourcePath,
     instruction: "# Role\n\nThis is the reviewed Delivery Lead instruction.",
   });
   try {

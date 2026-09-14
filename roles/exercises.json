@@ -1,7 +1,7 @@
 {
   "schema": "cuckcode.role-exercise.v1",
-  "status": "exercise-failure-recorded",
-  "recordedAt": "2026-09-13",
+  "status": "partially-exercised-awaiting-owner-review",
+  "recordedAt": "2026-09-14",
   "exerciseContract": {
     "mode": "one bounded text-only turn per role",
     "assertions": [
@@ -15,84 +15,144 @@
     {
       "roleId": "delivery-lead",
       "contentSha256": "72a7f79e20cd99bb7e2b3bccfa8bebdf0b11a3544613a7c0b5b542016d9b84a7",
-      "performed": false,
-      "reason": "Bounded exercise did not pass: AUTH_REQUIRED",
+      "performed": true,
+      "reason": "Bounded exercise completed; owner transcript review remains required before promotion.",
       "attempts": [
         {
           "observedAt": "2026-09-13T05:19:56.384Z",
           "performed": false,
           "code": "AUTH_REQUIRED",
           "detail": "managed runtime authentication absent"
+        },
+        {
+          "observedAt": "2026-09-14T02:12:42.406Z",
+          "performed": true,
+          "evidencePath": "docs/evidence/phase-4/live-kickoff/role-exercises/2026-09-14T02-12-42-406Z-delivery-lead.md",
+          "transcriptSha256": "26c9eaf0b9e57ec3a8d012326bbb2a06d0b61c5398424cdfadfed3c2467a5ef5",
+          "model": "gpt-5.6-luna",
+          "reasoningEffort": "medium",
+          "protocolVersion": "0.146.0",
+          "bindingFingerprint": "5007e0dc05dd19642556b0e9933879ad7c36cac34d4789732b5db402537952e0"
         }
       ]
     },
     {
       "roleId": "product-designer",
       "contentSha256": "bf9cf9b3dfb2ae0017a942a74d805011b8260c13829ca3c7f705c6b87002223a",
-      "performed": false,
-      "reason": "Bounded exercise did not pass: AUTH_REQUIRED",
+      "performed": true,
+      "reason": "Bounded exercise completed; owner transcript review remains required before promotion.",
       "attempts": [
         {
           "observedAt": "2026-09-13T05:19:57.362Z",
           "performed": false,
           "code": "AUTH_REQUIRED",
           "detail": "managed runtime authentication absent"
+        },
+        {
+          "observedAt": "2026-09-14T02:12:51.405Z",
+          "performed": true,
+          "evidencePath": "docs/evidence/phase-4/live-kickoff/role-exercises/2026-09-14T02-12-51-405Z-product-designer.md",
+          "transcriptSha256": "e4777a3cbbb781e316dc3026e8abbc37fc78ee8b69f7bbd66723c3fdbee43548",
+          "model": "gpt-5.6-luna",
+          "reasoningEffort": "medium",
+          "protocolVersion": "0.146.0",
+          "bindingFingerprint": "54e2505912e20ed44c638c89215c2c644fc83ddf5f4e97a5de069328384e050f"
         }
       ]
     },
     {
       "roleId": "implementation-engineer",
       "contentSha256": "2a5cce0d7afee5ba80bf9f50fbd29ccf2cb52b8c23a894e87d4dce2801c4aea4",
-      "performed": false,
-      "reason": "Bounded exercise did not pass: AUTH_REQUIRED",
+      "performed": true,
+      "reason": "Bounded exercise completed; owner transcript review remains required before promotion.",
       "attempts": [
         {
           "observedAt": "2026-09-13T05:19:57.605Z",
           "performed": false,
           "code": "AUTH_REQUIRED",
           "detail": "managed runtime authentication absent"
+        },
+        {
+          "observedAt": "2026-09-14T02:13:00.923Z",
+          "performed": true,
+          "evidencePath": "docs/evidence/phase-4/live-kickoff/role-exercises/2026-09-14T02-13-00-923Z-implementation-engineer.md",
+          "transcriptSha256": "a60c3c855df97bbcfccfcd962ba511b1ee1d5474afb6e77805b44e7d91dd9d45",
+          "model": "gpt-5.6-luna",
+          "reasoningEffort": "medium",
+          "protocolVersion": "0.146.0",
+          "bindingFingerprint": "c1f9b755209cb39d2d827c4514e8b1f3a9fa3ed455f40ceedea0bfaf5f2d442a"
         }
       ]
     },
     {
       "roleId": "test-engineer",
       "contentSha256": "b4609775956d9f8bc9c41793b3b4cb036f6a92cdce06ca46e9b14527f7952e8a",
-      "performed": false,
-      "reason": "Bounded exercise did not pass: AUTH_REQUIRED",
+      "performed": true,
+      "reason": "Bounded exercise completed; owner transcript review remains required before promotion.",
       "attempts": [
         {
           "observedAt": "2026-09-13T05:19:57.819Z",
           "performed": false,
           "code": "AUTH_REQUIRED",
           "detail": "managed runtime authentication absent"
+        },
+        {
+          "observedAt": "2026-09-14T02:13:07.645Z",
+          "performed": true,
+          "evidencePath": "docs/evidence/phase-4/live-kickoff/role-exercises/2026-09-14T02-13-07-645Z-test-engineer.md",
+          "transcriptSha256": "ed514634ada0130200d003f365b7c5071490d426344765bac03b1d8295399230",
+          "model": "gpt-5.6-luna",
+          "reasoningEffort": "medium",
+          "protocolVersion": "0.146.0",
+          "bindingFingerprint": "62fc14872a3a5397b822869259ddb9bedfa3ed6f7a50495bd8698af84479f855"
         }
       ]
     },
     {
       "roleId": "visual-qa-reviewer",
       "contentSha256": "7d1d4d8d2298bd94f5d7c7987962caebef2f415f064dedf0c784fe7f01903528",
-      "performed": false,
-      "reason": "Bounded exercise did not pass: AUTH_REQUIRED",
+      "performed": true,
+      "reason": "Bounded exercise completed; owner transcript review remains required before promotion.",
       "attempts": [
         {
           "observedAt": "2026-09-13T05:19:58.060Z",
           "performed": false,
           "code": "AUTH_REQUIRED",
           "detail": "managed runtime authentication absent"
+        },
+        {
+          "observedAt": "2026-09-14T02:13:23.659Z",
+          "performed": true,
+          "evidencePath": "docs/evidence/phase-4/live-kickoff/role-exercises/2026-09-14T02-13-23-659Z-visual-qa-reviewer.md",
+          "transcriptSha256": "1d667c5e4ce2cdb1fcfbd67440685649636d8cde21bbfe3b036f0a210b6ba061",
+          "model": "gpt-5.6-luna",
+          "reasoningEffort": "medium",
+          "protocolVersion": "0.146.0",
+          "bindingFingerprint": "1ca1a644f62f9521ca7816d5702cdddd86e21a117790641e9a0e79b21abea7e3"
         }
       ]
     },
     {
       "roleId": "release-reviewer",
       "contentSha256": "5f2eb1f763e6e4770f5183b2a1fc12c427caead608e8d2ac2b54c27181f731cf",
-      "performed": false,
-      "reason": "Bounded exercise did not pass: AUTH_REQUIRED",
+      "performed": true,
+      "reason": "Bounded exercise completed; owner transcript review remains required before promotion.",
       "attempts": [
         {
           "observedAt": "2026-09-13T05:19:58.311Z",
           "performed": false,
           "code": "AUTH_REQUIRED",
           "detail": "managed runtime authentication absent"
+        },
+        {
+          "observedAt": "2026-09-14T02:13:29.482Z",
+          "performed": true,
+          "evidencePath": "docs/evidence/phase-4/live-kickoff/role-exercises/2026-09-14T02-13-29-482Z-release-reviewer.md",
+          "transcriptSha256": "cb2b2cd6f9b13f27b8481858e33468dd4da02804f3c06d58beeaad3b9f6c49e7",
+          "model": "gpt-5.6-sol",
+          "reasoningEffort": "medium",
+          "protocolVersion": "0.146.0",
+          "bindingFingerprint": "7db41fa724f3c6d033f0a19ba71d1e2ef47be22f30d13d5789b5cc0422171c76"
         }
       ]
     }
