@@ -114,7 +114,7 @@ if (openFailures.length > 0) {
       const contributions = transcript
         .filter((entry) => entry.kind === "contribution" && entry.accepted === true)
         .map((entry) => ({ roleId: entry.roleId, payload: entry.payload }));
-      return `SYNTHESIS. You are the Delivery Lead. Here are every role's contributions:\n\n${JSON.stringify(contributions, null, 2)}\n\nSynthesise them in the SYNTHESIS schema. Include every contributionId. Record disagreements rather than resolving them. One JSON object, nothing else.`;
+      return `SYNTHESIS. You are the Delivery Lead. Here are every role's contributions:\n\n${JSON.stringify(contributions, null, 2)}\n\nSynthesise them in the SYNTHESIS schema. Record disagreements rather than resolving them, attributing each to the ROLE that holds it — a roleId such as "test-engineer", never a contribution identifier. One JSON object, nothing else.`;
     }
     const synthesis = transcript.find(
       (entry) => entry.kind === "synthesis" && entry.accepted === true,

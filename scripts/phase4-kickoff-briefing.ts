@@ -78,6 +78,11 @@ SYNTHESIS schema:
 {"proposedGoal":"...","disagreementRegister":[{"roleId":"...","statement":"..."}],
  "unresolvedEvidenceGaps":["..."]}
 
+In disagreementRegister, roleId is a ROLE identifier and must be exactly one of:
+delivery-lead, product-designer, implementation-engineer, test-engineer, visual-qa-reviewer,
+release-reviewer. It is never a contribution identifier. A disagreement is attributed to the role
+that holds it, not to the document it appeared in.
+
 REVISION schema:
 {"response":"affirm"|"amend"|"challenge","statement":"..."}
 
