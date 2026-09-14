@@ -6,6 +6,7 @@ import { phase6ComparisonFixtureDigest } from "@cuckcode/testing";
 import { AGENTS, ZONES } from "./phase6-candidate-geometry.js";
 import { renderComposition } from "./phase6-candidate-render.js";
 import { CANDIDATE_STYLES, type CandidateStyle } from "./phase6-candidate-styles.js";
+import { ORIGINALITY, PROVENANCE_GAPS, PROVENANCE_REFERENCES } from "./phase6-provenance.js";
 
 const ROOT = resolve(process.cwd());
 const OUT = resolve(ROOT, "docs/evidence/phase-6/candidates");
@@ -414,23 +415,13 @@ async function buildCandidate(
       ratio: Number(pair.ratio.toFixed(2)),
       passesAA: pair.passesAA,
     })),
-    provenance: [
-      {
-        source: "docs/visual-reference-production-brief-v0.1.md",
-        basis: "owner-approved project artifact",
-        referenced: "visual thesis, comparative emphasis, candidate board, avatar contract",
-      },
-      {
-        source: ".ui-craft/tokens.md",
-        basis: "owner-approved project artifact",
-        referenced: "material family, reserved accent rule, motion durations, contrast floor",
-      },
-      {
-        source: "scripts/phase6-candidate-geometry.ts",
-        basis: "authored in-tree for this project",
-        referenced: "camera, floor plan, zone rectangles, agent placement",
-      },
-    ],
+    // Cited, not duplicated. The register is the authority; a manifest that restated the five
+    // required fields would be a second copy free to drift from the reviewed one.
+    provenanceRegister: "docs/evidence/phase-6/provenance-register.json",
+    provenance: PROVENANCE_REFERENCES.filter((reference) =>
+      reference.appliesTo.includes(style.candidateId),
+    ).map((reference) => ({ referenceId: reference.id, kind: reference.kind })),
+    originality: ORIGINALITY,
   };
   await writeFile(
     resolve(directory, "manifest.json"),
@@ -486,4 +477,24 @@ function comparisonPage(): string {
 const built = [];
 for (const style of CANDIDATE_STYLES) built.push(await buildCandidate(style));
 await writeFile(resolve(OUT, "comparison.html"), `${comparisonPage()}\n`, "utf8");
+
+// The register is written from the same module the manifests cite, so the review and the citations
+// cannot disagree with each other.
+await writeFile(
+  resolve(ROOT, "docs/evidence/phase-6/provenance-register.json"),
+  `${JSON.stringify(
+    {
+      schema: "cuckcode.phase6-provenance.v1",
+      status:
+        "Task 5 review complete 2026-09-13. Candidate provenance only; approves no candidate and promotes nothing.",
+      reviewedAt: "2026-09-13",
+      originality: ORIGINALITY,
+      references: PROVENANCE_REFERENCES,
+      gaps: PROVENANCE_GAPS,
+    },
+    null,
+    2,
+  )}\n`,
+  "utf8",
+);
 process.stdout.write(`${JSON.stringify({ ok: true, digest: DIGEST, built: built.length })}\n`);

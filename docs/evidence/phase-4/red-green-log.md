@@ -929,3 +929,39 @@ the frozen frame on every run rather than by inspection.
 **Limits.** No generated raster was produced, so the 6-C hybrid is half-exercised; each manifest
 records `generatedExploration: null` rather than implying coverage. Nothing is scored — Task 7 is a
 separate task — and nothing is selected. Selection is the owner's at Task 8.
+
+## Phase 6 Task 5 — provenance and originality review
+
+Date: 2026-09-13.
+
+- RED: eight checks against a register that did not exist; five failed on the missing file, three on
+  unresolvable citations.
+- GREEN: `scripts/phase6-provenance.ts` holds nine references, each with the brief's five required
+  fields. The register is written from the same module the candidate manifests cite, so the review
+  and the citations cannot drift apart. Manifests now carry `referenceId` pointers instead of
+  restating the fields, which removes the second copy entirely.
+
+**The result: no candidate is blocked, and the register is small on purpose.** Six references are
+the project's own approved documents, one is in-tree geometry, one is WCAG 2.2, one pair is typeface
+families named in a fallback stack. No image was traced, sampled, model-generated or copied; no
+external asset is fetched at build time. Neither forbidden thing occurred — no named living artist
+imitated, no commercial visual identity reproduced.
+
+**Three gaps recorded rather than resolved.** No external architectural, material, ergonomic,
+photographic or historical reference was consulted at all, although the brief permits them: clean
+originality and thin research are the same fact here, and Task 7 will be scoring invention rather
+than observation. The generated half of the 6-C hybrid is unexercised. Typeface embedding is
+deferred to Phase 7 with a named trigger, since only Cascadia Mono (SIL OFL 1.1) would survive it.
+
+**Two mutation-testing lessons, both about guards rather than about provenance.**
+
+1. The typeface check originally matched licence prose with a regular expression. It failed on
+   phrasing, not substance — "is embedded … or redistributed" versus "not embedded or
+   redistributed" — and could not distinguish either from a real claim. Rewritten to read a
+   structured `embedding` field. A guard that greps prose passes on whatever wording it is handed.
+2. The first mutation run reported the "unsourced reference blocks its candidate" guard as
+   surviving. It had not: prettier had wrapped the target string across two lines, the replacement
+   never matched, and the run proved nothing. Re-applied against the built register, the guard fails
+   with its intended message. **A mutation that does not apply is indistinguishable from a guard
+   that does not work** — the green-run-proving-nothing failure, arriving inside the tooling built
+   to catch it. Verify that the mutation landed before believing a survivor.

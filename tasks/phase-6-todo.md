@@ -46,8 +46,16 @@ Read each entry's own status line. Nothing here inherits authorization from the 
 - [x] Task 4: Candidate C — miniature craft precision. **Complete 2026-09-13.**
   - Acceptance: as Task 2; toy/diorama/game risk addressed.
 
-- [ ] Task 5: Provenance and originality review.
+- [x] Task 5: Provenance and originality review. **Complete 2026-09-13.**
   - Acceptance: every reference behind every candidate carries source, creator where known, licence basis, retrieval date, and the specific abstract quality referenced. An unsourced reference blocks its candidate.
+  - Result: nine references, all five fields each, all three candidates covered.
+    `docs/evidence/phase-6/provenance-register.json` is generated from the same module the manifests
+    cite, so review and citation cannot disagree; `docs/evidence/phase-6/provenance-review.md` is the
+    narrative. Eight machine checks, mutation-tested. **No candidate is blocked.** Three gaps are
+    open and recorded, none blocking: no external visual reference was consulted at all, the
+    generated half of the 6-C hybrid is unexercised, and typeface embedding is deferred to Phase 7
+    with a named trigger — Cascadia Mono under SIL OFL 1.1 is the only named face that would survive
+    an embedding review. Evidence: `docs/evidence/phase-4/red-green-log.md`.
 
 - [ ] Task 6: Accessibility and contrast intent.
   - Acceptance: per candidate — semantic palette, amber reserved for attention and focus, contrast at canonical scale, reduced-motion translation, 1280×800 accommodation diagram.
