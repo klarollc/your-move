@@ -598,3 +598,60 @@ passing with 3 skipped, then 46 e2e, 18 accessibility and 22 visual.
 **Proposed and not authorized:** `verify` should be the only command a session is allowed to cite
 when reporting suite health, and any report of a test count should name the command that produced
 it. A count with no command attached is what let this run for four phases.
+
+---
+
+### DF-014 — Arguments split by a shell nobody meant to invoke
+
+Observed 2026-09-14, while acting on the Task 7 findings.
+
+`scripts/capture-phase5-browser.ts` launched Playwright through `execFile` with `shell: true`, which
+is needed to resolve `npx` on Windows. Every argument was then concatenated into a command line and
+re-split by the shell, so this:
+
+```
+["playwright", "test", "--grep", "@visual Phase 5", "--project", "chromium-1440"]
+```
+
+arrived as `--grep @visual`, followed by `Phase` and `5` as **positional file filters**.
+
+## Why it looked fine
+
+Because the stray filters matched. Every spec involved lives in a file named `phase-5-...`, so
+filtering by `Phase` and `5` selected roughly the intended set, and the grep pattern `@visual` was a
+prefix of the intended one. Forty cells were produced, the manifest counted forty, and every check
+downstream agreed.
+
+## How it surfaced
+
+As **one unreproducible failure**. The isolation suite failed on a single capture run and passed when
+run directly, which reads as a flake and was nearly filed as one — the working theory was a race on
+the port-4173 preview server being torn down and restarted three times in sequence.
+
+The fix for that theory — collapse three invocations into one, matching `@(visual|a11y|e2e) Phase 5`
+— is what exposed the real fault. Parentheses and pipes are not filename-shaped, so the mangled
+command stopped accidentally working and failed every time. Removing `shell: true` then failed
+outright, because Windows refuses to spawn a `.cmd` without one. The working form launches
+`node_modules/@playwright/test/cli.js` under `process.execPath`, with no shell on any platform.
+
+## The shape
+
+This is the register's standing sentence pointed at a process boundary: **a guard is exact inside a
+boundary nobody examined**, and here the boundary is the argument vector. Every check downstream of
+the capture was exact — cell counts, digests, duplicate detection, name matching — and all of them
+were exact about the output of a command nobody had confirmed was the command being run.
+
+It is also a new variant worth naming on its own: **an unreproducible failure is not evidence of
+nothing.** "I could not reproduce it" means "I do not know what happened." Filing it as a flake would
+have left a capture harness running a command different from the one written in it, with every
+artifact it produced still counted as evidence.
+
+## Product response
+
+Fixed in the same pass. The runner resolves the CLI entry point and launches it under the current
+Node, so arguments arrive as written on every platform, and the failure path now reports the spawn
+error rather than only stdout and stderr — the empty output was what made the first diagnosis wrong.
+
+**Proposed and not authorized:** no evidence-producing script should invoke a tool through a shell.
+`execFile` with an explicit interpreter and an argument array is the only form that survives review,
+and the three other scripts in `scripts/` that pass `shell: true` should be swept.

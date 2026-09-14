@@ -27,6 +27,33 @@ const contract = JSON.parse(
   };
 };
 
+/**
+ * Owner-ruled amendments, applied over the authored contract rather than into it.
+ *
+ * Decision 7-B amended two accessible names. Editing the Product Designer's artifact to agree would
+ * have left no record that it ever said anything else, which is the defect that destroyed the RED
+ * capture. So the authored file stays as authored, this overlay carries the ruling and its reason,
+ * and what fidelity is checked against is visibly the contract *as amended, by whom, and why*.
+ */
+const amendments = JSON.parse(
+  await readFile(resolve(ROOT, "docs/evidence/phase-5/surface-contract/amendments.json"), "utf8"),
+) as {
+  amendments: Array<{ stateId: string; field: string; authored: string; amendedTo: string }>;
+};
+
+const amendedName = (stateId: string, authored: string): { name: string; amended: boolean } => {
+  const amendment = amendments.amendments.find(
+    (entry) => entry.stateId === stateId && entry.field === "accessibleName",
+  );
+  if (!amendment) return { name: authored, amended: false };
+  if (amendment.authored !== authored) {
+    // The overlay claims to amend a value the contract no longer holds. Applying it anyway would
+    // silently check against a name nobody wrote.
+    throw new Error(`AMENDMENT_BASE_MISMATCH:${stateId}:${authored}`);
+  }
+  return { name: amendment.amendedTo, amended: true };
+};
+
 const manifest = JSON.parse(await readFile(resolve(OUT, "capture-manifest.json"), "utf8")) as {
   cells: Array<{ state: string; viewport: string; captured: boolean }>;
 };
@@ -35,6 +62,7 @@ type Finding = {
   state: string;
   viewport: string;
   contractAccessibleName: string;
+  amendedByOwner: boolean;
   present: boolean;
   nearest: string | null;
 };
@@ -48,13 +76,14 @@ for (const viewport of VIEWPORTS) {
     );
     if (!cell?.captured) continue;
 
+    const expected = amendedName(entry.id, entry.accessibleName);
     const snapshot = await readFile(resolve(OUT, viewport, `${entry.id}.aria.yaml`), "utf8");
     // The contract writes placeholders like `Evidence link: resolved, [artifact name]`, which the
     // build fills with the real artifact name. Treating the bracket as literal text reported four
     // correct implementations as drift — a guard that refuses material that works, which is the
     // failure mode this register has recorded more than once.
     const pattern = new RegExp(
-      entry.accessibleName
+      expected.name
         .split(/\[[^\]]*\]/u)
         .map((part) => part.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&"))
         .join(".+"),
@@ -63,7 +92,7 @@ for (const viewport of VIEWPORTS) {
     const present = pattern.test(snapshot);
     // When the exact name is absent, report the line that shares the most leading words with it, so
     // the report says what the build calls this instead of only that the contract's name is missing.
-    const words = entry.accessibleName.toLowerCase().split(/\s+/u).filter(Boolean);
+    const words = expected.name.toLowerCase().split(/\s+/u).filter(Boolean);
     const nearest = present
       ? null
       : (snapshot
@@ -78,7 +107,8 @@ for (const viewport of VIEWPORTS) {
     findings.push({
       state: entry.id,
       viewport,
-      contractAccessibleName: entry.accessibleName,
+      contractAccessibleName: expected.name,
+      amendedByOwner: expected.amended,
       present,
       nearest,
     });
@@ -89,7 +119,8 @@ const drift = findings.filter((finding) => !finding.present);
 const record = {
   schema: "cuckcode.phase5-fidelity.v1",
   status:
-    "Mechanical name comparison only. It is not a fidelity judgement and it is not owner acceptance.",
+    "Mechanical name comparison only, against the authored contract as amended by decision 7-B. It is not a fidelity judgement and it is not owner acceptance.",
+  amendmentsApplied: amendments.amendments.length,
   checkedAt: new Date().toISOString(),
   statesChecked: [...new Set(findings.map((finding) => finding.state))].length,
   namesMatching: findings.length - drift.length,

@@ -108,11 +108,13 @@ approval.
   - Note: diffs detect change. They never approve taste.
   - 40 cells captured, every image byte-distinct; the isolation procedure runs end to end and its
     step 7 proves the detector fires on an injected forbidden request.
-  - **One blocking finding:** `validation-reason-too-long` cannot be entered — `maxLength=280`
-    truncates where the contract says reject, and no counter or limit statement is rendered.
-  - Three accessible names drift from the contract (`disabled`, `date-malformed`, `undo-available`),
-    and `saving`/`disabled` remove their controls rather than disabling them.
+  - **All four findings ruled by the owner 2026-09-14 and implemented RED first**
+    (`docs/evidence/phase-5/decision-record-2026-09-14-task-7-findings.md`): the over-length reason
+    is rejected rather than truncated with a live count; `disabled` is renamed in the build; two
+    contract names are amended by overlay; controls are disabled rather than removed; and the surface
+    now owns every sentence a person hears. All twenty states reachable, fidelity check clean.
   - Sixteen of twenty states were returned `cannot-tell-without-seeing`. C-19 still needs the owner.
+  - The NEEDS WORK verdict stands as the record of the build on the day it was annotated.
 
 - [ ] Task 8: Shared-knowledge contribution, retrieval and conflict-resolution scenario passing.
 

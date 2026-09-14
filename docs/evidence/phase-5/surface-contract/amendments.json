@@ -1,0 +1,24 @@
+{
+  "schema": "cuckcode.phase5-surface-contract-amendments.v1",
+  "status": "Owner-ruled amendments to the authored surface contract. The authored artifact is not edited: it records what the Product Designer produced on the day it produced it, and rewriting it to agree with a later decision is how a history stops existing. Anything checking fidelity reads the authored contract and applies this overlay on top.",
+  "ruledBy": "owner",
+  "ruledOn": "2026-09-14",
+  "decisionRecord": "docs/evidence/phase-5/decision-record-2026-09-14-task-7-findings.md",
+  "supersedes": "docs/evidence/phase-5/surface-contract/surface-contract.json",
+  "amendments": [
+    {
+      "stateId": "undo-available",
+      "field": "accessibleName",
+      "authored": "Undo available for the latest decision change",
+      "amendedTo": "Undo latest decision change",
+      "reason": "A control reads as an imperative a person performs, not as a status sentence. The authored name describes the situation rather than naming the action."
+    },
+    {
+      "stateId": "date-malformed",
+      "field": "accessibleName",
+      "authored": "Due date: malformed",
+      "amendedTo": "Due date unavailable: malformed",
+      "reason": "The built wording tells a reader both that the date is unusable and why. The authored name says only that something is wrong with it."
+    }
+  ]
+}

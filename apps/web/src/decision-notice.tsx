@@ -60,6 +60,47 @@ const validationLabels: Record<ValidationState, { label: string; detail: string 
   },
 };
 
+/**
+ * Decision 7-D: the surface owns every sentence a person hears.
+ *
+ * The core's `detail` strings are written for a log — one of them said "focus returns to the date
+ * field", which is an instruction to whoever implements the focus move, and it was being read aloud
+ * by a screen reader. The core keeps those strings; nothing announces them. Every refusal code the
+ * core can return is mapped here, so a code added later without a sentence is a type error rather
+ * than a developer string arriving in someone's ear.
+ */
+const refusalWording: Record<
+  ValidationCode,
+  { validation: ValidationState | null; detail: string }
+> = {
+  "reason-empty": { validation: "reason-empty", detail: validationLabels["reason-empty"].detail },
+  "reason-too-long": {
+    validation: "reason-too-long",
+    detail: validationLabels["reason-too-long"].detail,
+  },
+  "date-invalid": { validation: "date-invalid", detail: validationLabels["date-invalid"].detail },
+  "malformed-event": {
+    validation: "date-invalid",
+    detail: validationLabels["date-invalid"].detail,
+  },
+  "already-actioned": {
+    validation: null,
+    detail: "This decision has already been actioned. Undo it before recording another change.",
+  },
+  "duplicate-event": {
+    validation: null,
+    detail: "That change was already recorded. Nothing was applied twice.",
+  },
+  "stale-event": {
+    validation: null,
+    detail: "There is nothing to undo on this decision.",
+  },
+  "out-of-order-event": {
+    validation: null,
+    detail: "That change arrived out of order and was not applied.",
+  },
+};
+
 type PendingSave = Readonly<{
   nextState: DecisionState;
   action: DecisionAction;
@@ -142,6 +183,9 @@ export function DecisionNoticeCard({
   const commit = async (pending: PendingSave) => {
     setPendingSave(pending);
     setDisplayStatus("saving");
+    // The control the person just activated is about to be disabled. Disabling a focused element
+    // drops focus to the body, so focus is moved somewhere named instead. C-10.
+    setFocusRequest("status");
     setSaveError(null);
     setAnnouncement("Saving decision change");
     try {
@@ -164,27 +208,22 @@ export function DecisionNoticeCard({
     }
   };
 
-  const reportFailure = (code: ValidationCode, detail: string) => {
-    if (code === "reason-empty" || code === "reason-too-long") {
-      setValidation(code);
+  /** The refusal's code decides where focus goes and which sentence is announced. Never its detail. */
+  const reportFailure = (code: ValidationCode) => {
+    const wording = refusalWording[code];
+    setValidation(wording.validation);
+    setAnnouncement(wording.detail);
+    if (wording.validation === "reason-empty" || wording.validation === "reason-too-long") {
       setFocusRequest("reason");
-      setAnnouncement(detail);
       return;
     }
-    if (code === "date-invalid" || code === "malformed-event") {
-      setValidation("date-invalid");
-      setFocusRequest("review-date");
-      setAnnouncement(detail);
-      return;
-    }
-    setAnnouncement(detail);
-    setFocusRequest("status");
+    setFocusRequest(wording.validation === "date-invalid" ? "review-date" : "status");
   };
 
   const apply = (action: DecisionAction) => {
     const result = applyAction(state, action, clock, maxReasonLength);
     if (!result.ok) {
-      reportFailure(result.code, result.detail);
+      reportFailure(result.code);
       return;
     }
     void commit({ action, nextState: result.state });
@@ -199,15 +238,15 @@ export function DecisionNoticeCard({
     event.preventDefault();
     if (!canAct) return;
     if (reason.trim().length === 0) {
-      reportFailure("reason-empty", validationLabels["reason-empty"].detail);
+      reportFailure("reason-empty");
       return;
     }
     if (reason.length > maxReasonLength) {
-      reportFailure("reason-too-long", validationLabels["reason-too-long"].detail);
+      reportFailure("reason-too-long");
       return;
     }
     if (reviewDate.length === 0) {
-      reportFailure("date-invalid", validationLabels["date-invalid"].detail);
+      reportFailure("date-invalid");
       return;
     }
     const reviewAt = reviewDate ? `${reviewDate}T00:00:00.000Z` : "";
@@ -337,8 +376,8 @@ export function DecisionNoticeCard({
 
       {status === "disabled" ? (
         <p className="decision-notice__disabled-note" role="note">
-          This decision is unavailable in the current workspace. Actions are disabled and no change
-          can be recorded.
+          This decision is disabled in the current workspace. The actions remain visible and inert,
+          and no change can be recorded.
         </p>
       ) : null}
 
@@ -370,8 +409,20 @@ export function DecisionNoticeCard({
               <span className="decision-notice__label">Change the review date</span>
               <h2>Defer this decision</h2>
             </div>
-            <span>
-              {reason.length}/{maxReasonLength}
+            {/*
+              Decision 7-A. The field used to carry maxLength, so the browser refused the 281st
+              character and the over-length refusal could never fire for a person. The contract says
+              the opposite: reject overlong input rather than truncate it, and show the count.
+            */}
+            <span
+              data-testid="decision-reason-count"
+              className="decision-notice__reason-count"
+              data-over={reason.length > maxReasonLength ? "true" : "false"}
+              aria-live="polite"
+            >
+              {reason.length > maxReasonLength
+                ? `${reason.length - maxReasonLength} character${reason.length - maxReasonLength === 1 ? "" : "s"} over the ${maxReasonLength} limit`
+                : `${maxReasonLength - reason.length} characters remaining of ${maxReasonLength}`}
             </span>
           </div>
           <div className="decision-notice__field">
@@ -383,7 +434,6 @@ export function DecisionNoticeCard({
               id="decision-notice-reason"
               name="reason"
               value={reason}
-              maxLength={maxReasonLength}
               aria-invalid={validation === "reason-empty" || validation === "reason-too-long"}
               aria-describedby={
                 validation === "reason-empty" || validation === "reason-too-long"
@@ -449,25 +499,32 @@ export function DecisionNoticeCard({
       ) : null}
 
       <footer className="decision-notice__actions" aria-label="Decision actions">
-        {canAct ? (
-          <>
-            <button type="button" className="decision-notice__primary" onClick={acknowledge}>
-              Acknowledge
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setDeferOpen(true);
-                setValidation(null);
-                setSaveError(null);
-                setAnnouncement("Deferral editor opened");
-                setFocusRequest("reason");
-              }}
-            >
-              Defer
-            </button>
-          </>
-        ) : null}
+        {/*
+          Decision 7-C. These used to be removed from the DOM whenever the decision could not be
+          acted on. A keyboard user then finds nothing where a control should be, and in `saving`
+          focus is left on a button that vanished underneath the person who just activated it.
+        */}
+        <button
+          type="button"
+          className="decision-notice__primary"
+          onClick={acknowledge}
+          disabled={!canAct}
+        >
+          Acknowledge
+        </button>
+        <button
+          type="button"
+          disabled={!canAct}
+          onClick={() => {
+            setDeferOpen(true);
+            setValidation(null);
+            setSaveError(null);
+            setAnnouncement("Deferral editor opened");
+            setFocusRequest("reason");
+          }}
+        >
+          Defer
+        </button>
         {canUndo ? (
           <button
             ref={undoRef}

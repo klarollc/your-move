@@ -43,13 +43,13 @@
   - form "Defer decision":
     - text: Change the review date
     - heading "Defer this decision" [level=2]
-    - text: 280/280 Deferral reason
-    - textbox "Deferral reason": xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    - text: 1 character over the 280 limit Deferral reason
+    - textbox "Deferral reason" [invalid]: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    - 'alert "Deferral reason error: reason too long"': Reason too long. Shorten the explanation before deferring.
     - text: Review date
-    - textbox "Review date" [invalid]
-    - 'alert "Deferral review date error: invalid future date required"': Review date invalid. Choose a future date.
+    - textbox "Review date"
     - button "Cancel deferral"
     - button "Submit deferral"
   - button "Acknowledge"
   - button "Defer"
-  - paragraph: Review date invalid. Choose a future date.
+  - paragraph: Reason too long. Shorten the explanation before deferring.

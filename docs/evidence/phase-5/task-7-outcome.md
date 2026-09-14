@@ -3,6 +3,11 @@
 Ran 2026-09-14. Current-build evidence at both D-07 viewports, annotated by the promoted
 `visual-qa-reviewer`. **Verdict: NEEDS WORK.** Turn ledger 4 of 60.
 
+The verdict stands as the record of what the build was on the day it was annotated. All four
+findings were ruled by the owner the same day and all four are now implemented — see *What the owner
+ruled, and what moved*, below. A later annotation would be a later pass, and re-running this one to
+make the verdict agree with the fix is exactly the overwrite this project refuses.
+
 Nothing in this packet is high-fidelity evidence, a promoted baseline, or owner acceptance. Diffs
 detect change; C-19 still needs the owner's own eyes.
 
@@ -97,6 +102,42 @@ The verdict is unaffected — a blocking unreachable state and three name drifts
 their own — so the annotation stands with this correction attached rather than being re-run.
 
 ---
+
+## What the owner ruled, and what moved
+
+All four items were ruled on 2026-09-14 —
+`decision-record-2026-09-14-task-7-findings.md`. Every one was implemented RED first.
+
+- **7-A, the over-length reason → implement the contract.** `maxLength` removed, a live remaining
+  count and an explicit limit statement added, and the core's refusal now fires for a person.
+  `validation-reason-too-long` is reachable and captured; the capture asserts the *absence* of
+  `maxlength`, because that attribute returning is exactly how this state would go quietly
+  unreachable again.
+- **7-B, the three drifting names → split by case.** The build moved for `disabled`. The contract was
+  amended for `undo-available` and `date-malformed`, as an **overlay** in
+  `surface-contract/amendments.json` — the Product Designer's authored artifact is not edited, and
+  the fidelity check applies the overlay on top, refusing to apply an amendment whose stated base no
+  longer matches. The check now reports **40 checked, 0 drifted**.
+- **7-C, removed controls → disable, never remove.** Acknowledge and Defer are always rendered and
+  disabled when the decision cannot be acted on. Entering `saving` moves focus to the status region,
+  because disabling the focused control would otherwise drop focus to the body and C-10 forbids that.
+- **7-D, developer wording read aloud → the surface owns every sentence.** One table maps every
+  refusal code the core can return to a sentence written for a person; the core's `detail` is never
+  announced. The map is keyed by `ValidationCode`, so a code added later without a sentence is a type
+  error rather than a developer string arriving in someone's ear.
+
+All twenty states are now reachable and captured at both viewports, and the fidelity check is clean.
+
+## A defect in this script, found by its own output
+
+The capture runner passed `--grep "@visual Phase 5"` through `execFile` with `shell: true`, so the
+shell split it: Playwright received `@visual` as the pattern and `Phase` and `5` as positional file
+filters. It appeared to work, because those strings happen to match the phase-5 filenames, and it
+produced one failure that looked like a flake and did not reproduce. Collapsing the three runs into
+one pattern containing parentheses and pipes made it unmissable. Recorded as **DF-014**.
+
+**The generalisable part:** the first symptom was a single unreproducible failure, and the honest
+reading of "I cannot reproduce it" is "I do not know what happened", not "it was nothing."
 
 ## What no capture settles
 

@@ -22,28 +22,20 @@ Phase 5 turn ledger: **4 of 60**. Acceptance criteria: **20 ready, 1 blocked** (
 ## The immediate next action
 
 **Task 8 — the shared-knowledge scenario**, then Task 9's independent release verdict. Task 7 is
-done and its findings are in `docs/evidence/phase-5/task-7-outcome.md`.
+done, its four findings were ruled by the owner on 2026-09-14, and all four are implemented:
+`docs/evidence/phase-5/decision-record-2026-09-14-task-7-findings.md`.
 
-Three findings from Task 7 need an owner ruling before they can be acted on, because each changes
-behaviour the contract already fixed:
+Nothing from Task 7 is outstanding. All twenty contract states are now reachable and captured at both
+viewports, and `npm run phase5:fidelity` reports forty checked and none drifting.
 
-1. **Blocking.** `validation-reason-too-long` cannot be entered at all — the reason textarea carries
-   `maxLength=280`, so the browser refuses the 281st character. The contract says the opposite:
-   *"show remaining count and reject overlong input rather than truncate it."* No counter, no limit
-   statement. One of the twenty required states is unreachable by a person.
-2. **Three accessible names drift** from the contract — `disabled` renders "unavailable",
-   `date-malformed` names its section "Due date", and undo reads "Undo latest decision change"
-   rather than "Undo available for the latest decision change".
-3. **`saving` and `disabled` remove their action controls rather than disabling them.** The contract
-   asks for controls that expose disabled semantics; a keyboard user currently finds nothing there.
+The Visual QA verdict is still **NEEDS WORK**, and deliberately not re-run: it records what the build
+was on the day it was annotated, and re-running it so the verdict agrees with the fix is the same
+overwrite that destroyed the RED capture. A second pass is a second pass, and costs one turn when
+someone wants one.
 
-Also open and unruled, from the Task 5 gap closure: the past-date deferral path announces the core's
-own detail verbatim, so a screen reader reads *"focus returns to the date field"* — an instruction to
-an implementer — while the empty-date path announces a human sentence.
-
-**A clean pass is still the suspicious outcome.** Two verification passes have now disagreed with
-each other in both directions, and Task 7 found a blocking defect that eleven passing criteria and a
-green suite had not.
+**A clean pass is still the suspicious outcome.** Two verification passes have disagreed with each
+other in both directions, Task 7 found a blocking defect that eleven passing criteria and a green
+suite had not, and acting on the rulings surfaced a defect in the capture harness itself (DF-014).
 
 ## Open debts, none of them closed
 
@@ -98,6 +90,14 @@ at least eight more times in Phase 6 alone. Its variants, each of which cost rea
 - **A mutation that fails to apply is indistinguishable from a guard that does not work.** Verify the
   mutation landed before believing a survivor. This happened once with a prettier-wrapped string.
 
+**And the variant that nearly got filed as a flake (DF-014):** the capture runner passed `--grep
+"@visual Phase 5"` through `execFile` with `shell: true`, so the shell split it and Playwright
+received `@visual` as the pattern with `Phase` and `5` as positional file filters. It appeared to
+work because those strings match the phase-5 filenames. It surfaced as **one unreproducible
+failure**, and "I could not reproduce it" means "I do not know what happened" — filing it as a flake
+would have left every artifact the harness produced counted as evidence of a command nobody ran.
+**No evidence-producing script should invoke a tool through a shell.**
+
 **And the variant Task 7 produced twice in two days:** a brief that hands a role a false premise and
 then files the answer as evidence. The verification brief said there were no component tests after
 Task 5 shipped them. The Visual QA brief never mentioned the accessibility and isolation suites, so
@@ -151,7 +151,7 @@ error and there is no inline env-var prefix — write `$env:X='1'; cmd` and clea
 | `npm run phase5:contract:build` | Rebuild the acceptance contract and traceability matrix |
 | `npm run verify` | The whole gate. 511 unit/component/integration + 50 e2e + 42 a11y + 62 visual |
 | `npm run phase5:capture` | Recapture the 40 browser cells and rebuild the manifest |
-| `npm run phase5:fidelity` | Contract accessible names against the captured trees |
+| `npm run phase5:fidelity` | Contract names, as amended by the overlay, against the captured trees |
 | `npm run phase5:visualqa:run` | Visual QA Reviewer annotation (live, debits the ledger) |
 | `npm run phase5:verify:run` | Test Engineer verification pass (live, debits the ledger) |
 | `npm run phase5:surface:run` | Product Designer surface contract (live, debits the ledger) |
@@ -181,6 +181,12 @@ caught one being added during Task 7.
 Playwright and Vitest share `tests/`. `.spec.ts` is Playwright, `.test.ts` is Vitest, and
 `playwright.config.ts` now enforces it. Port 4173 is the preview server; a leftover one from an
 earlier session will fail `test:e2e` with "already used".
+
+Owner rulings that amend an authored artifact are recorded as an **overlay**, never edited into it —
+`surface-contract/amendments.json` carries decision 7-B's two name changes with their reasons, and
+the fidelity check refuses to apply an amendment whose stated base no longer matches what the
+authored contract says. The Product Designer's artifact records what that role produced on the day it
+produced it.
 
 Golden-state capture digests cover the **rendered SVG string**, not the file, which gains an XML
 declaration and `xmlns` on write. Hashing a capture directly will not match; a guard reverses the

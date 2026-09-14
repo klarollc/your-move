@@ -2,7 +2,7 @@
   - paragraph: Decision notice
   - heading "Adopt the bounded kickoff turn budget" [level=1]
   - code: decision_fixture_001
-  - 'status "Decision status: unavailable"': Unavailable
+  - 'status "Decision status: disabled"': Disabled
   - paragraph: A plain-language summary of one decision awaiting acknowledgement.
   - 'region "Severity: significant"':
     - text: Severity
@@ -40,5 +40,7 @@
         - text: Evidence unavailable
         - code: https://example.invalid/doc
         - 'button "Evidence link: unavailable, External report" [disabled]': Unavailable
-  - note: This decision is unavailable in the current workspace. Actions are disabled and no change can be recorded.
+  - note: This decision is disabled in the current workspace. The actions remain visible and inert, and no change can be recorded.
+  - button "Acknowledge" [disabled]
+  - button "Defer" [disabled]
   - paragraph: Decision notice loaded

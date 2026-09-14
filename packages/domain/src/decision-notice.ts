@@ -259,7 +259,8 @@ const STATUS_SIGNATURES: Record<DecisionStatus, { label: string; icon: string }>
   overdue: { label: "Overdue", icon: "warning-triangle" },
   saving: { label: "Saving", icon: "spinner-static" },
   "save-failed": { label: "Save failed", icon: "error" },
-  disabled: { label: "Unavailable", icon: "lock" },
+  // Decision 7-B: the contract fixes this name, and it is what a screen reader reads aloud.
+  disabled: { label: "Disabled", icon: "lock" },
 };
 
 /** Text and shape, never colour. No two statuses may share a signature. C-07. */

@@ -560,6 +560,18 @@ describe("Decision Notice — Phase 5 acceptance criteria", () => {
     });
   });
 
+  /**
+   * Decision 7-B. The contract fixed this status as "disabled" and the build called it
+   * "Unavailable". The status name is what a person searches for and what a screen reader reads, so
+   * the build moves rather than the contract.
+   */
+  it("C-07: the unavailable status is named disabled, as the contract fixes it", () => {
+    expect(statusSignature("disabled")).toMatchObject({
+      label: "Disabled",
+      accessibleName: "Decision status: disabled",
+    });
+  });
+
   it("C-21: a refusal never invents state", () => {
     // The release reviewer's standing objection, expressed as a property: whatever is refused, the
     // state the caller holds afterwards is the state it held before.

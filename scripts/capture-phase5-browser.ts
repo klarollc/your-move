@@ -30,29 +30,50 @@ const contract = JSON.parse(await readFile(CONTRACT, "utf8")) as {
 
 await mkdir(OUT, { recursive: true });
 
+/**
+ * Playwright is launched as a script under this Node, not through a shell and not through npx.
+ *
+ * `shell: true` was splitting these arguments before Playwright ever saw them: `--grep "@visual
+ * Phase 5"` reached the shell unquoted, so Playwright received `@visual` as the pattern and `Phase`
+ * and `5` as positional file filters. It appeared to work, because those strings happen to match the
+ * phase-5 filenames, and it failed once in a way that looked like a flake. Dropping the shell then
+ * failed outright on Windows, which refuses to spawn a `.cmd` without one. Calling the CLI entry
+ * point directly avoids both, and the arguments arrive exactly as written on every platform.
+ */
+const PLAYWRIGHT_CLI = resolve(ROOT, "node_modules/@playwright/test/cli.js");
+
 const playwright = async (grep: string): Promise<{ ok: boolean; output: string }> => {
   try {
     const { stdout, stderr } = await run(
-      "npx",
-      ["playwright", "test", "--grep", grep, ...VIEWPORTS.flatMap((name) => ["--project", name])],
+      process.execPath,
+      [PLAYWRIGHT_CLI, "test", "--grep", grep, ...VIEWPORTS.flatMap((name) => ["--project", name])],
       {
         cwd: ROOT,
-        shell: true,
         maxBuffer: 64 * 1024 * 1024,
         env: { ...process.env, CUCKCODE_REGENERATE_EVIDENCE: "1" },
       },
     );
     return { ok: true, output: `${stdout}${stderr}` };
   } catch (cause) {
-    const error = cause as { stdout?: string; stderr?: string };
-    return { ok: false, output: `${error.stdout ?? ""}${error.stderr ?? ""}` };
+    const error = cause as { stdout?: string; stderr?: string; message?: string };
+    return {
+      ok: false,
+      output: `${error.message ?? ""}
+${error.stdout ?? ""}${error.stderr ?? ""}`,
+    };
   }
 };
 
+/**
+ * One Playwright invocation, not three.
+ *
+ * Running the suites back to back started and tore down the port-4173 preview server three times in
+ * sequence, and the isolation suite failed once on a run that did not reproduce. A flake nobody can
+ * reproduce is a flake nobody can rule out, and the fix here costs nothing: matched in one pass, the
+ * server starts once.
+ */
 const suites = {
-  visual: await playwright("@visual Phase 5"),
-  accessibility: await playwright("@a11y Phase 5"),
-  isolation: await playwright("@e2e Phase 5"),
+  "visual, accessibility and isolation": await playwright("@(visual|a11y|e2e) Phase 5"),
 };
 
 const sha256 = (body: Buffer | string): string =>

@@ -78,7 +78,12 @@ const JOURNEYS: Journey[] = [
     drive: async (page) => {
       await page.getByRole("button", { name: "Acknowledge" }).click();
     },
-    verify: (page) => statusNamed(page, "Decision status: saving"),
+    verify: async (page) => {
+      await statusNamed(page, "Decision status: saving");
+      // Decision 7-C: duplicate submission is disabled rather than removed, so the control the
+      // person just activated is still under their focus instead of gone.
+      await expect(page.getByRole("button", { name: "Acknowledge" })).toBeDisabled();
+    },
   },
   {
     id: "save-failed",
@@ -93,14 +98,13 @@ const JOURNEYS: Journey[] = [
   {
     id: "disabled",
     verify: async (page) => {
-      // The contract asks for the label "Disabled" and for controls that *expose disabled
-      // semantics*. The build names the state "Unavailable" and removes the controls instead. Both
-      // are recorded as findings; this asserts what the build actually does, so the capture is a
-      // true picture and the gap lives in the annotation rather than in a quietly relaxed test.
-      await statusNamed(page, "Decision status: unavailable");
+      // Decisions 7-B and 7-C. Task 7 captured this state named "Unavailable" with its controls
+      // removed from the DOM; the contract asked for "Disabled" and for controls that expose
+      // disabled semantics. Both were ruled and both moved.
+      await statusNamed(page, "Decision status: disabled");
       await expect(page.getByRole("note")).toBeVisible();
-      await expect(page.getByRole("button", { name: "Acknowledge" })).toHaveCount(0);
-      await expect(page.getByRole("button", { name: "Defer" })).toHaveCount(0);
+      await expect(page.getByRole("button", { name: "Acknowledge" })).toBeDisabled();
+      await expect(page.getByRole("button", { name: "Defer" })).toBeDisabled();
     },
   },
   {
@@ -190,10 +194,6 @@ const JOURNEYS: Journey[] = [
   },
   {
     id: "validation-reason-too-long",
-    unreachableBecause:
-      "The reason textarea carries maxLength=280, so the browser refuses the 281st character and the " +
-      "over-length refusal the core implements can never be triggered by a person. The contract also " +
-      "requires a character counter and a limit statement, neither of which the build renders.",
     drive: async (page) => {
       await openDeferEditor(page);
       await page.getByRole("textbox", { name: /Deferral reason/ }).fill("x".repeat(281));
@@ -201,13 +201,19 @@ const JOURNEYS: Journey[] = [
     },
     verify: async (page) => {
       const reason = page.getByRole("textbox", { name: /Deferral reason/ });
-      // The blockage itself, asserted. If maxLength is ever removed this fails and the state becomes
-      // capturable, which is the only way an unreachable state stops being silently unreachable.
-      await expect(reason).toHaveAttribute("maxlength", "280");
-      await expect(reason).toHaveValue("x".repeat(280));
+      // Decision 7-A. Task 7 found this state unenterable: the field carried maxLength=280, so the
+      // browser refused the 281st character and the core's refusal could never fire for a person.
+      // The contract says reject rather than truncate, and show the count. All three are asserted,
+      // and the absent maxLength is asserted too, because that attribute returning is the exact way
+      // this state would go quietly unreachable again.
+      await expect(reason).not.toHaveAttribute("maxlength", /.*/u);
+      await expect(reason).toHaveValue("x".repeat(281));
+      await expect(page.getByTestId("decision-reason-count")).toContainText(
+        "1 character over the 280 limit",
+      );
       await expect(
         page.getByRole("alert", { name: "Deferral reason error: reason too long" }),
-      ).toHaveCount(0);
+      ).toBeVisible();
     },
   },
   {

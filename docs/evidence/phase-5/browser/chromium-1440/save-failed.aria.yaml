@@ -44,4 +44,6 @@
     - strong: Save failed
     - paragraph: The fixture storage adapter rejected the save.
     - button "Retry save"
+  - button "Acknowledge" [disabled]
+  - button "Defer" [disabled]
   - paragraph: Save failed. Your input is preserved; retry the decision change.

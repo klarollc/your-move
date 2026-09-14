@@ -45,5 +45,7 @@
     - strong: December 1, 2026
     - text: Reason
     - paragraph: Wait for the owner decision record before committing the team.
+  - button "Acknowledge" [disabled]
+  - button "Defer" [disabled]
   - button "Undo latest decision change"
   - paragraph: Decision notice loaded

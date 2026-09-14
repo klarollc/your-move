@@ -43,7 +43,7 @@
   - form "Defer decision":
     - text: Change the review date
     - heading "Defer this decision" [level=2]
-    - text: 0/280 Deferral reason
+    - text: 280 characters remaining of 280 Deferral reason
     - textbox "Deferral reason" [invalid]
     - 'alert "Deferral reason error: reason required"': Reason required. Add a short explanation before deferring.
     - text: Review date

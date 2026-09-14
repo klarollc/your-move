@@ -40,5 +40,7 @@
         - text: Evidence unavailable
         - code: https://example.invalid/doc
         - 'button "Evidence link: unavailable, External report" [disabled]': Unavailable
+  - button "Acknowledge" [disabled]
+  - button "Defer" [disabled]
   - button "Undo latest decision change"
   - paragraph: Decision notice loaded

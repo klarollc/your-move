@@ -43,7 +43,7 @@
   - form "Defer decision":
     - text: Change the review date
     - heading "Defer this decision" [level=2]
-    - text: 35/280 Deferral reason
+    - text: 245 characters remaining of 280 Deferral reason
     - textbox "Deferral reason": Wait for the owner decision record.
     - text: Review date
     - textbox "Review date" [invalid]
