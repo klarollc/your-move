@@ -1,0 +1,9 @@
+{
+  "viewport": "chromium-1280",
+  "measuredBy": "halving the viewport; this is reflow at a narrow width, not zoom",
+  "effectiveSize": {
+    "width": 640,
+    "height": 400
+  },
+  "horizontalOverflowPx": 0
+}

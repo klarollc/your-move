@@ -137,6 +137,21 @@ approval.
   - Three passes were run. The first reported 4 of 21 and the third 11 of 21 on an unchanged
     implementation — the difference was entirely brief accuracy. **DF-015.**
 
+- [x] Task 9 remediation: the seven ordinary-work items ruled on 2026-09-14
+      (`docs/evidence/phase-5/decision-record-2026-09-14-task-9-remediation.md`), all built RED first.
+  - **9-F** C-15: `storedDateViolations` checks every date a state persists, as stored not rendered.
+  - **9-D** C-10: `surface-contract/focus-contract.json` declares all nine destinations and the tests
+    read it; reload had no implementation at all and left focus on the document body.
+  - **9-A** C-05: `parsePersistedState` refuses a corrupt payload by named reason and the component
+    says so out loud; the storage scan now names every browser persistence API, not two.
+  - **9-E** C-11: captures moved to the production bundle on 4174. Requests per journey fell from 95
+    to 11, and the panel is now something a person can read.
+  - **9-G** C-20: `surface-contract/journeys.json` enumerates nine journeys; a journey the contract
+    names and the record does not now fails.
+  - **9-B** C-08: two complete capture runs, 146 artifacts, zero differing. `npm run phase5:determinism`.
+  - **9-C** C-09: real browser zoom via `setDeviceMetricsOverride`, and the test asserts the
+    emulation took effect. The reflow check survives under its own name.
+
 - [ ] Task 10: **Owner acceptance. Owner-run.** Accept the fixture outcome or record bounded
       revisions. Atomically creates the D-24 review that Phase 8 closes.
 

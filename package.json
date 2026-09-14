@@ -66,8 +66,10 @@
     "phase5:fidelity": "tsx scripts/phase5-fidelity-check.ts",
     "phase5:visualqa:run": "tsx scripts/run-phase5-visual-qa.ts",
     "phase5:knowledge": "tsx scripts/build-phase5-knowledge-scenario.ts",
-    "test:knowledge": "node --test scripts/phase5-knowledge-scenario.test.mjs",
-    "phase5:release:run": "tsx scripts/run-phase5-release-review.ts"
+    "test:knowledge": "node --test scripts/phase5-knowledge-scenario.test.mjs scripts/phase5-determinism.test.mjs",
+    "phase5:release:run": "tsx scripts/run-phase5-release-review.ts",
+    "preview:web": "npm run build --workspace @cuckcode/web && npm run preview --workspace @cuckcode/web",
+    "phase5:determinism": "tsx scripts/phase5-determinism.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

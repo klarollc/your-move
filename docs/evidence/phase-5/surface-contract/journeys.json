@@ -1,0 +1,79 @@
+{
+  "schema": "cuckcode.phase5-journeys.v1",
+  "status": "An owner-ruled addition to the surface contract, recorded beside the Product Designer's authored artifact rather than edited into it. C-20 requires the isolation procedure to run on \"every journey\" and nothing said what the journeys were, so the word had no referent and the claim could not be checked.",
+  "ruledBy": "owner",
+  "ruledOn": "2026-09-14",
+  "decisionRecord": "docs/evidence/phase-5/decision-record-2026-09-14-task-9-remediation.md",
+  "why": "A journey is a sequence, not a state. Running isolation over twenty end-states would miss a leak that only happens in transit, which is exactly where a save, a retry or a refusal does its work.",
+  "notCoveredHere": [
+    "Reload. The capture surface is deliberately non-persistent across page loads, so a browser reload cannot restore state there. Reload restoration is verified at the component level, where the adapter is injected and can be inspected after the fact."
+  ],
+  "steps": {
+    "acknowledge": "activate the Acknowledge control",
+    "open-defer": "activate the Defer control and wait for the editor",
+    "type-reason": "enter a valid deferral reason",
+    "type-overlong-reason": "enter a reason past its bound",
+    "set-future-date": "enter a review date after the injected clock",
+    "set-past-date": "enter a review date before the injected clock",
+    "submit-defer": "activate Submit deferral",
+    "undo": "activate the undo control",
+    "inspect-evidence": "activate the Inspect control on a resolved evidence link",
+    "attempt-disabled-action": "attempt to activate an action control that is disabled"
+  },
+  "journeys": [
+    {
+      "id": "acknowledge-then-undo",
+      "from": "pending",
+      "steps": ["acknowledge", "undo"],
+      "why": "the shortest complete path that writes twice and reverses itself"
+    },
+    {
+      "id": "defer-then-undo",
+      "from": "pending",
+      "steps": ["open-defer", "type-reason", "set-future-date", "submit-defer", "undo"],
+      "why": "the long path, and the only one that carries free text into the record"
+    },
+    {
+      "id": "defer-refused-empty-reason",
+      "from": "pending",
+      "steps": ["open-defer", "submit-defer"],
+      "why": "a refusal is a journey; it renders, announces and moves focus like any other outcome"
+    },
+    {
+      "id": "defer-refused-overlong-reason",
+      "from": "pending",
+      "steps": ["open-defer", "type-overlong-reason", "submit-defer"],
+      "why": "the refusal that could not be reached at all until decision 7-A"
+    },
+    {
+      "id": "defer-refused-past-date",
+      "from": "pending",
+      "steps": ["open-defer", "type-reason", "set-past-date", "submit-defer"],
+      "why": "the only refusal raised by the core rather than by the form"
+    },
+    {
+      "id": "save-failure",
+      "from": "save-failed",
+      "steps": ["acknowledge"],
+      "why": "the adapter rejects, input is preserved, and focus moves to retry"
+    },
+    {
+      "id": "inspect-resolved-evidence",
+      "from": "pending",
+      "steps": ["inspect-evidence"],
+      "why": "the one interaction that reads an artifact, and so the one most able to leave the fixture"
+    },
+    {
+      "id": "overdue-read-only",
+      "from": "overdue",
+      "steps": [],
+      "why": "a state reached by the clock alone, with nothing written"
+    },
+    {
+      "id": "disabled-refuses-action",
+      "from": "disabled",
+      "steps": ["attempt-disabled-action"],
+      "why": "activation must change nothing, and the controls are present rather than removed"
+    }
+  ]
+}

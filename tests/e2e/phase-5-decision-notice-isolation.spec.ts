@@ -1,9 +1,11 @@
 import { createHash } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { readFileSync } from "node:fs";
+import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
 
+import { readPhase5Contract } from "../support/contract-input.js";
 import { evidenceOutputPath } from "../support/evidence-output.js";
 
 /**
@@ -13,13 +15,24 @@ import { evidenceOutputPath } from "../support/evidence-output.js";
  * anything: it injects a forbidden external request and requires the harness to catch it. A clean
  * result from a detector nobody has ever seen fire is indistinguishable from a detector that does
  * not work, and this repository has shipped that mistake before.
+ *
+ * Decision 9-E: the page under test is the **production bundle** on 4174, not the dev server. C-11
+ * asks for an auditable network panel, and a dev-server page issues ninety-five module requests per
+ * journey. A panel nobody reads is not an audit.
+ *
+ * Decision 9-G: the journeys are read from the surface contract, not listed here. "Every journey"
+ * had no referent, so the claim could not be checked; a journey the contract names and the record
+ * does not now fails.
  */
 
-const ORIGIN = "http://127.0.0.1:4173";
+const ORIGIN = "http://127.0.0.1:4174";
 const ROOT = resolve(process.cwd());
 
-/** The journeys a person actually performs, not a state list. */
-const JOURNEYS = ["pending", "deferred", "save-failed", "overdue", "disabled"] as const;
+type JourneyContract = {
+  journeys: Array<{ id: string; from: string; steps: string[]; why: string }>;
+};
+
+const contract = readPhase5Contract<JourneyContract>("journeys.json");
 
 /**
  * Shapes that must never appear in rendered output, logs, or persisted state. Deliberately broad:
@@ -37,6 +50,8 @@ const CREDENTIAL_SHAPES: Array<[string, RegExp]> = [
 
 type Observation = {
   journey: string;
+  from: string;
+  steps: string[];
   requests: string[];
   externalRequests: string[];
   consoleLog: Array<{ type: string; text: string }>;
@@ -83,9 +98,9 @@ const recordStorageWrites = (page: Page): Promise<void> =>
 const scanForCredentials = (body: string): string[] =>
   CREDENTIAL_SHAPES.filter(([, pattern]) => pattern.test(body)).map(([name]) => name);
 
-const digest = async (path: string): Promise<string> =>
+const digest = (path: string): string =>
   createHash("sha256")
-    .update(await readFile(resolve(ROOT, path), "utf8"))
+    .update(readFileSync(resolve(ROOT, path), "utf8"))
     .digest("hex")
     .slice(0, 16);
 
@@ -97,13 +112,59 @@ const write = async (path: string, body: string): Promise<void> => {
 const recordPath = (testInfo: TestInfo, name: string): string =>
   evidenceOutputPath(testInfo, `phase-5/browser/${testInfo.project.name}/${name}`);
 
-test("@e2e Phase 5 decision notice runs every journey in isolation", async ({ page }, testInfo) => {
+/** The step vocabulary the contract names, executed against the real surface. */
+const runStep = async (page: Page, step: string): Promise<void> => {
+  const reason = page.getByRole("textbox", { name: /Deferral reason/ });
+  switch (step) {
+    case "acknowledge":
+      await page.getByRole("button", { name: "Acknowledge" }).click();
+      return;
+    case "open-defer":
+      await page.getByRole("button", { name: "Defer" }).click();
+      await expect(reason).toBeVisible();
+      return;
+    case "type-reason":
+      await reason.fill("Wait for the owner decision record.");
+      return;
+    case "type-overlong-reason":
+      await reason.fill("x".repeat(281));
+      return;
+    case "set-future-date":
+      await page.getByLabel("Review date").fill("2026-12-01");
+      return;
+    case "set-past-date":
+      await page.getByLabel("Review date").fill("2026-01-01");
+      return;
+    case "submit-defer":
+      await page.getByRole("button", { name: "Submit deferral" }).click();
+      return;
+    case "undo":
+      await page.getByRole("button", { name: "Undo latest decision change" }).click();
+      return;
+    case "inspect-evidence":
+      await page.getByRole("button", { name: "Evidence link: resolved, Preflight packet" }).click();
+      return;
+    case "attempt-disabled-action":
+      // force, because the control is disabled by design: the question is whether activating it
+      // anyway changes anything, and a click the harness refuses to send answers nothing.
+      await page.getByRole("button", { name: "Acknowledge" }).click({ force: true });
+      return;
+    default:
+      throw new Error(`UNKNOWN_JOURNEY_STEP:${step}`);
+  }
+};
+
+test("@e2e Phase 5 decision notice runs every contract journey in isolation", async ({
+  page,
+}, testInfo) => {
   const observations: Observation[] = [];
   await recordStorageWrites(page);
 
-  for (const journey of JOURNEYS) {
+  for (const journey of contract.journeys) {
     const observation: Observation = {
-      journey,
+      journey: journey.id,
+      from: journey.from,
+      steps: journey.steps,
       requests: [],
       externalRequests: [],
       consoleLog: [],
@@ -114,14 +175,9 @@ test("@e2e Phase 5 decision notice runs every journey in isolation", async ({ pa
     watch(page, observation);
 
     await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto(`/?surface=decision-notice-capture&state=${journey}`);
-    await expect(page.locator(`[data-capture-state="${journey}"]`)).toBeVisible();
-    if (journey === "save-failed") {
-      await page.getByRole("button", { name: "Acknowledge" }).click();
-      await expect(
-        page.getByRole("status", { name: "Decision status: save failed" }),
-      ).toBeVisible();
-    }
+    await page.goto(`${ORIGIN}/?surface=decision-notice-capture&state=${journey.from}`);
+    await expect(page.locator(`[data-capture-state="${journey.from}"]`)).toBeVisible();
+    for (const step of journey.steps) await runStep(page, step);
 
     // Step 5: every evidence link resolves, and resolution stays inside the supplied fixture.
     observation.evidenceStates = await page
@@ -149,24 +205,31 @@ test("@e2e Phase 5 decision notice runs every journey in isolation", async ({ pa
 
   // Step 6: what was under test, by content address, recorded with the result.
   const record = {
-    schema: "cuckcode.phase5-isolation.v1",
+    schema: "cuckcode.phase5-isolation.v2",
     viewport: testInfo.project.name,
+    servedFrom: `${ORIGIN} — the production bundle, per decision 9-E`,
     ranAt: new Date().toISOString(),
+    journeySource: "the surface contract's journeys.json",
     artifactVersions: {
-      "packages/domain/src/decision-notice.ts": await digest(
-        "packages/domain/src/decision-notice.ts",
-      ),
-      "apps/web/src/decision-notice.tsx": await digest("apps/web/src/decision-notice.tsx"),
-      "apps/web/src/decision-notice-capture.tsx": await digest(
+      "packages/domain/src/decision-notice.ts": digest("packages/domain/src/decision-notice.ts"),
+      "apps/web/src/decision-notice.tsx": digest("apps/web/src/decision-notice.tsx"),
+      "apps/web/src/decision-notice-capture.tsx": digest(
         "apps/web/src/decision-notice-capture.tsx",
       ),
     },
     passCondition:
-      "Every journey completes with zero external requests, zero credential-shaped output, zero " +
-      "writes outside the injected fixture, and evidence resolution limited to fixture artifacts.",
+      "Every contract journey completes with no request beyond the page's own origin and assets, " +
+      "zero credential-shaped output, zero writes outside the injected fixture, and evidence " +
+      "resolution limited to fixture artifacts.",
     observations,
   };
   await write(recordPath(testInfo, "isolation.json"), `${JSON.stringify(record, null, 2)}\n`);
+
+  // Decision 9-G: a journey the contract names and the record does not is the failure this guard
+  // exists for. "Every journey" is only a claim when the set is written down.
+  expect(observations.map((entry) => entry.journey).sort()).toStrictEqual(
+    contract.journeys.map((journey) => journey.id).sort(),
+  );
 
   for (const observation of observations) {
     expect(
@@ -190,6 +253,19 @@ test("@e2e Phase 5 decision notice runs every journey in isolation", async ({ pa
       "unavailable",
     ]);
   }
+
+  /**
+   * Decision 9-E, the part that made the criterion checkable. C-11 asks for an empty network panel;
+   * a page has to be fetched, so the honest reading is "nothing beyond the page's own assets". On
+   * the dev server this was ninety-five module requests per journey. Bounding it is what makes the
+   * panel something a person can actually audit.
+   */
+  for (const observation of observations) {
+    expect(
+      observation.requests.length,
+      `${observation.journey} requested ${observation.requests.length} resources; the panel should be small enough to read`,
+    ).toBeLessThanOrEqual(12);
+  }
 });
 
 test("@e2e Phase 5 isolation detects a deliberately injected external request", async ({
@@ -197,6 +273,8 @@ test("@e2e Phase 5 isolation detects a deliberately injected external request", 
 }, testInfo) => {
   const observation: Observation = {
     journey: "deliberate-violation",
+    from: "pending",
+    steps: [],
     requests: [],
     externalRequests: [],
     consoleLog: [],
@@ -214,7 +292,7 @@ test("@e2e Phase 5 isolation detects a deliberately injected external request", 
     void fetch("https://forbidden.invalid/telemetry").catch(() => undefined);
   });
 
-  await page.goto("/?surface=decision-notice-capture&state=pending");
+  await page.goto(`${ORIGIN}/?surface=decision-notice-capture&state=pending`);
   await expect(page.locator('[data-capture-state="pending"]')).toBeVisible();
   await expect
     .poll(() => observation.externalRequests.length, { timeout: 5_000 })
@@ -226,7 +304,7 @@ test("@e2e Phase 5 isolation detects a deliberately injected external request", 
     ranAt: new Date().toISOString(),
     journey: "pending, with an injected forbidden external request",
     injectedViolation: "fetch('https://forbidden.invalid/telemetry') from page init",
-    expectedCondition: "zero requests to any origin other than http://127.0.0.1:4173",
+    expectedCondition: `zero requests to any origin other than ${ORIGIN}`,
     observed: observation.externalRequests,
     consoleLog: observation.consoleLog,
     verdict:

@@ -5,6 +5,10 @@ import assert from "node:assert/strict";
 
 const testRoot = "tests";
 const sanctionedHelper = join("tests", "support", "evidence-output.ts");
+// Two doors, not one looser rule. `evidence-output.ts` is the only way a spec may write a capture;
+// `contract-input.ts` is the only way one may read an owner-ruled contract. Everything else still
+// may not name the tree at all, and telling reads from writes by string match would be weaker.
+const sanctionedReader = join("tests", "support", "contract-input.ts");
 const committedEvidence = "docs/evidence";
 
 function specFiles(dir) {
@@ -19,7 +23,7 @@ function specFiles(dir) {
 // visible only as an unexplained dirty working tree. Defect D4-P-003, and D4-P-001 before it.
 test("no browser spec writes directly into committed evidence", () => {
   const offenders = specFiles(testRoot)
-    .filter((path) => path !== sanctionedHelper)
+    .filter((path) => path !== sanctionedHelper && path !== sanctionedReader)
     .filter((path) => readFileSync(path, "utf8").includes(committedEvidence));
   assert.deepEqual(
     offenders,

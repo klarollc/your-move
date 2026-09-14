@@ -1,9 +1,14 @@
 {
   "viewport": "chromium-1440",
-  "emulatedBy": "halving the viewport at the same device scale factor",
+  "emulatedBy": "Emulation.setDeviceMetricsOverride at half the CSS viewport with deviceScaleFactor 2 — what browser zoom actually is",
+  "supersedes": "the halved-viewport convention inherited from Phase 4, which changed layout width without changing text size",
+  "emulationVerified": {
+    "devicePixelRatio": 2,
+    "innerWidth": 720
+  },
   "effectiveSize": {
-    "width": 720,
-    "height": 450
+    "width": 1440,
+    "height": 900
   },
   "horizontalOverflowPx": 0,
   "preserved": [

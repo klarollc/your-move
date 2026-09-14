@@ -27,10 +27,26 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 800 } },
     },
   ],
-  webServer: {
-    command: "npm run dev --workspace @cuckcode/web -- --host 127.0.0.1",
-    url: "http://127.0.0.1:4173",
-    reuseExistingServer: false,
-    timeout: 120_000,
-  },
+  /**
+   * Two servers, deliberately.
+   *
+   * 4173 is the dev server every Phase 4 spec has always used; moving those would re-serve
+   * owner-accepted evidence from a different build without anyone asking for that. 4174 serves the
+   * production bundle and is what the Phase 5 captures use, per decision 9-E: C-11 asks for an
+   * auditable network panel and the dev server issues ninety-five module requests per journey.
+   */
+  webServer: [
+    {
+      command: "npm run dev --workspace @cuckcode/web -- --host 127.0.0.1",
+      url: "http://127.0.0.1:4173",
+      reuseExistingServer: false,
+      timeout: 120_000,
+    },
+    {
+      command: "npm run preview:web",
+      url: "http://127.0.0.1:4174",
+      reuseExistingServer: false,
+      timeout: 120_000,
+    },
+  ],
 });

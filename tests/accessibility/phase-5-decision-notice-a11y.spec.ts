@@ -27,9 +27,12 @@ const STATES = [
   "date-malformed",
 ] as const;
 
+/** Decision 9-E: the production bundle, the same page the captures and the isolation run use. */
+const ORIGIN = "http://127.0.0.1:4174";
+
 const open = async (page: Page, state: string): Promise<void> => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto(`/?surface=decision-notice-capture&state=${state}`);
+  await page.goto(`${ORIGIN}/?surface=decision-notice-capture&state=${state}`);
   await expect(page.locator(`[data-capture-state="${state}"]`)).toBeVisible();
 };
 
@@ -92,15 +95,34 @@ test("@a11y Phase 5 decision notice stays operable and complete at 200% zoom", a
   page.on("pageerror", (error) => consoleErrors.push(error.message));
 
   await open(page, "deferred");
+
+  /**
+   * Decision 9-C. This used to halve the viewport, a convention inherited from Phase 4 and described
+   * across two phases of evidence as 200% zoom. The Release Reviewer refused it, correctly: halving
+   * narrows the layout without enlarging a single glyph.
+   *
+   * Browser zoom is a CSS viewport that shrinks while the device pixel ratio grows, so a CSS pixel
+   * covers twice the physical pixels and text is physically twice the size. `setDeviceMetricsOverride`
+   * is what produces that. The first attempt at this used `setPageScaleFactor`, which is pinch-zoom:
+   * it left devicePixelRatio at 1, innerWidth at 1440 and the computed font size unchanged, so the
+   * test measured an unzoomed page and passed. The assertions below exist so that cannot recur —
+   * a zoom test that does not first prove it zoomed is the defect it was written to fix.
+   */
   const viewport = page.viewportSize();
-  if (viewport) {
-    // 200% zoom is emulated by halving the viewport at the same device scale factor, which is the
-    // Phase 4 convention. Reflow, not shrinkage, is what the contract asks for.
-    await page.setViewportSize({
-      width: Math.round(viewport.width / 2),
-      height: Math.round(viewport.height / 2),
-    });
-  }
+  const client = await page.context().newCDPSession(page);
+  await client.send("Emulation.setDeviceMetricsOverride", {
+    width: Math.round((viewport?.width ?? 1440) / 2),
+    height: Math.round((viewport?.height ?? 900) / 2),
+    deviceScaleFactor: 2,
+    mobile: false,
+  });
+
+  const emulation = await page.evaluate(() => ({
+    devicePixelRatio: window.devicePixelRatio,
+    innerWidth: window.innerWidth,
+  }));
+  expect(emulation.devicePixelRatio, "the zoom emulation did not take effect").toBe(2);
+  expect(emulation.innerWidth).toBe(Math.round((viewport?.width ?? 1440) / 2));
 
   // Nothing the contract forbids hiding may disappear: status, severity, due date, evidence state.
   await expect(page.getByRole("status", { name: "Decision status: deferred" })).toBeVisible();
@@ -113,7 +135,11 @@ test("@a11y Phase 5 decision notice stays operable and complete at 200% zoom", a
   const results = await new AxeBuilder({ page }).analyze();
   await record(testInfo, "zoom-200", {
     viewport: testInfo.project.name,
-    emulatedBy: "halving the viewport at the same device scale factor",
+    emulatedBy:
+      "Emulation.setDeviceMetricsOverride at half the CSS viewport with deviceScaleFactor 2 — what browser zoom actually is",
+    supersedes:
+      "the halved-viewport convention inherited from Phase 4, which changed layout width without changing text size",
+    emulationVerified: emulation,
     effectiveSize: page.viewportSize(),
     horizontalOverflowPx: overflow,
     preserved: ["status", "deferral details", "severity", "undo control", "evidence state"],
@@ -124,6 +150,35 @@ test("@a11y Phase 5 decision notice stays operable and complete at 200% zoom", a
   expect(overflow).toBeLessThanOrEqual(1);
   expect(consoleErrors).toEqual([]);
   expect(results.violations).toEqual([]);
+  await client.detach();
+});
+
+/**
+ * Reflow at a narrow width, which is what halving the viewport actually measures. Kept, under its
+ * own name, because it is a real check — it was only ever mislabelled as zoom.
+ */
+test("@a11y Phase 5 decision notice reflows at half the approved width without horizontal scroll", async ({
+  page,
+}, testInfo) => {
+  await open(page, "deferred");
+  const viewport = page.viewportSize();
+  if (viewport) {
+    await page.setViewportSize({
+      width: Math.round(viewport.width / 2),
+      height: Math.round(viewport.height / 2),
+    });
+  }
+
+  await expect(page.getByRole("status", { name: "Decision status: deferred" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Undo latest decision change" })).toBeVisible();
+  const overflow = await horizontalOverflow(page);
+  await record(testInfo, "reflow-narrow", {
+    viewport: testInfo.project.name,
+    measuredBy: "halving the viewport; this is reflow at a narrow width, not zoom",
+    effectiveSize: page.viewportSize(),
+    horizontalOverflowPx: overflow,
+  });
+  expect(overflow).toBeLessThanOrEqual(1);
 });
 
 test("@a11y Phase 5 decision notice preserves the full title and summary rather than truncating", async ({

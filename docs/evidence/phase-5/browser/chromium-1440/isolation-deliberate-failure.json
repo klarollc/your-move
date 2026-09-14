@@ -1,10 +1,10 @@
 {
   "schema": "cuckcode.phase5-isolation-failure.v1",
   "viewport": "chromium-1440",
-  "ranAt": "2026-09-14T07:34:43.045Z",
+  "ranAt": "2026-09-14T07:47:00.754Z",
   "journey": "pending, with an injected forbidden external request",
   "injectedViolation": "fetch('https://forbidden.invalid/telemetry') from page init",
-  "expectedCondition": "zero requests to any origin other than http://127.0.0.1:4173",
+  "expectedCondition": "zero requests to any origin other than http://127.0.0.1:4174",
   "observed": [
     "https://forbidden.invalid/telemetry"
   ],
@@ -12,18 +12,6 @@
     {
       "type": "error",
       "text": "Failed to load resource: net::ERR_FAILED"
-    },
-    {
-      "type": "debug",
-      "text": "[vite] connecting..."
-    },
-    {
-      "type": "debug",
-      "text": "[vite] connected."
-    },
-    {
-      "type": "info",
-      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
     }
   ],
   "verdict": "FAIL — the isolation check fires on a forbidden request, so a clean run means something"

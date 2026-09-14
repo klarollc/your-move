@@ -17,7 +17,12 @@ import { evidenceOutputPath } from "../support/evidence-output.js";
  * here is high-fidelity evidence; C-19 still needs the owner's own eyes.
  */
 
-const ORIGIN = "http://127.0.0.1:4173";
+/**
+ * Decision 9-E. The captures are taken against the production bundle, not the dev server. A
+ * dev-server page issues ninety-five module requests per journey and schedules them in a different
+ * order each run, so the recorded evidence was neither auditable nor reproducible.
+ */
+const ORIGIN = "http://127.0.0.1:4174";
 
 type Journey = Readonly<{
   id: string;
@@ -270,7 +275,7 @@ for (const journey of JOURNEYS) {
     page.on("request", (request) => requests.push(request.url()));
 
     await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto(`/?surface=decision-notice-capture&state=${journey.id}`);
+    await page.goto(`${ORIGIN}/?surface=decision-notice-capture&state=${journey.id}`);
     await expect(page.locator(`[data-capture-state="${journey.id}"]`)).toBeVisible();
 
     if (journey.drive) await journey.drive(page);
@@ -292,7 +297,10 @@ for (const journey of JOURNEYS) {
           captured: !journey.unreachableBecause,
           unreachableBecause: journey.unreachableBecause ?? null,
           consoleLog,
-          requests,
+          // Sorted, because the browser schedules parallel asset loads in whatever order it likes.
+          // Which resources were requested is the claim; the order it happened to fetch them is not,
+          // and leaving it unsorted made forty otherwise identical records differ between runs.
+          requests: [...requests].sort(),
           externalRequests: external(),
         },
         null,
