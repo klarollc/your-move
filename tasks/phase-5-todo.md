@@ -27,9 +27,18 @@ approval.
   - Acceptance: no implementation may begin before this record exists.
   - Verify: charter record test; `implementationAllowed` cannot be true without it.
 
-- [ ] Task 2: Freeze the acceptance contract as machine-checkable criteria.
+- [x] Task 2: Acceptance contract frozen **2026-09-14**;
+      `docs/evidence/phase-5/acceptance-contract.json`.
   - Acceptance: every criterion carries its evidence class; no criterion without one.
   - Verify: criterion-to-evidence traceability matrix.
+  - Result: **21 criteria, 18 ready, 3 blocked** on the gaps dispositioned as work rather than
+    answers (3 provenance, 7 art direction, 8 isolation procedure). All eleven MDD contract bullets
+    covered; the bullets are read from the MDD at build time rather than copied, so the completeness
+    check cannot verify a copy against itself. Ten machine checks, three mutations killed: dropping a
+    bullet's coverage, letting an art-direction criterion be satisfied by rendered evidence alone,
+    and marking a gap-blocked criterion ready. Rebuild: `npm run phase5:contract:build`.
+  - Satisfies the Test Engineer's charter amendment: the matrix is the criterion-to-test traceability
+    record, and no criterion exists without a named evidence class.
 
 - [ ] Task 3: Product Designer surface contract, owner-accepted before implementation.
   - Acceptance: interaction and art-direction contract against the Active visual system.

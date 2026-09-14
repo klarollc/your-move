@@ -27,6 +27,7 @@
     "roles:exercise": "tsx scripts/run-role-exercises.ts",
     "kickoff:preflight": "tsx scripts/phase4-kickoff-preflight.ts",
     "kickoff:run": "tsx scripts/run-phase4-kickoff.ts",
+    "phase5:contract:build": "tsx scripts/build-phase5-acceptance-contract.ts",
     "phase6:fixture:freeze": "tsx scripts/freeze-phase6-fixture.ts",
     "phase6:candidates:build": "tsx scripts/build-phase6-candidates.ts",
     "phase6:a11y:build": "tsx scripts/build-phase6-accessibility.ts",
