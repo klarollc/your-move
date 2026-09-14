@@ -752,3 +752,52 @@ because TypeScript tolerates one.
 surfacing as a parse error in an unrelated script. And a standing rule: never write a repository file
 with `Set-Content`/`Out-File` on Windows PowerShell 5.1 — use the editing tools, or `-Encoding
 utf8NoBOM` where the shell supports it, which 5.1 does not.
+
+### DF-017 — Three invisible bytes inside a regex, and every gate passed
+
+Observed 2026-09-14, while preparing the brief for the refreshed release review.
+
+`scripts/phase5-test-inventory.ts` was rewritten to find its own test files rather than keep a
+hardcoded list of two. The new matcher was written through a shell heredoc, and the heredoc did not
+pass backslashes through literally: every intended `\b` word boundary reached Python as an escape
+and was written to disk as **byte 0x08, an actual backspace control character**.
+
+The regex became `/<BS>it\(\s*"[^"]*<BS>C-\d{2}<BS>/` — a pattern that matches a literal backspace
+followed by `it(`, which no source file contains. It matched nothing, silently.
+
+## What it cost
+
+Six tool calls of disbelief. The regex printed correctly in every diagnostic, because `.source`
+renders a backspace as nothing at all in a terminal; a fresh inline literal with the identical
+visible text matched, and the module constant did not. The difference was invisible until the line
+was hexdumped.
+
+## The shape
+
+**Every gate passed.** Prettier formatted it, ESLint accepted it, `tsc` typechecked it, and the unit
+suite stayed green — a control character inside a regex literal is syntactically valid JavaScript.
+Nothing in the toolchain has an opinion about it, and a reviewer reading the diff would see exactly
+the pattern that was intended.
+
+It is DF-016's lesson again, one layer deeper: **the damage came from the tool used to make the
+edit, not from the edit**. There the tool was PowerShell adding a byte-order mark; here it was a
+heredoc removing backslashes. Both produced a file that looked right in every rendering anyone would
+actually look at.
+
+The downstream effect was in the direction this project keeps finding: the inventory would have
+reported that **no test names any criterion**, and the verification brief would have told the Test
+Engineer that the entire suite had vanished. A brief stating that nothing exists is the exact failure
+class of DF-015.
+
+## Product response
+
+The file is repaired and the whole tracked tree is scanned: no other source file carries a control
+character. Two real defects were found underneath it and fixed in the same pass — the test inventory
+was a hardcoded list of two files that had already drifted (missing
+`decision-notice-capture.unit.test.ts` and the provenance tests), and the provenance tests did not
+name C-18 in their titles, which is the convention by which a test declares what it is for.
+
+**Proposed and not authorized:** a control-character scan over tracked text files, beside the
+byte-order-mark scan DF-016 proposed, both run early in `verify` so the failure names its cause. And
+a standing rule already worth following: do not write source files through shell heredocs. Use the
+editing tools, which do not transform the bytes.

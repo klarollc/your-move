@@ -78,7 +78,7 @@ describe("ledger parsing", () => {
 });
 
 describe("P-1 and P-2, coverage and drift", () => {
-  it("names an artifact on disk with no entry, and ignores the ledger itself", () => {
+  it("C-18: names an artifact on disk with no entry, and ignores the ledger itself", () => {
     const entries = [record("phase-5/a.json")];
     expect(
       artifactsMissingFromLedger(["phase-5/a.json", "phase-5/b.json", "provenance.jsonl"], entries),
@@ -97,7 +97,7 @@ describe("P-1 and P-2, coverage and drift", () => {
     ]);
   });
 
-  it("reports a digest that no longer describes the file", () => {
+  it("C-18: reports a digest that no longer describes the file", () => {
     const entries = [record("phase-5/a.json", "1".repeat(64))];
     expect(staleRecords(new Map([["phase-5/a.json", "9".repeat(64)]]), entries)).toStrictEqual([
       { artifact: "phase-5/a.json", recorded: "1".repeat(64), actual: "9".repeat(64) },
@@ -124,7 +124,7 @@ describe("P-3, a superseded artifact cited as current", () => {
     supersede("phase-5/release-review/pass-1.json", "phase-5/release-review/pass-3.json"),
   ];
 
-  it("catches a current artifact citing a superseded one", () => {
+  it("C-18: catches a current artifact citing a superseded one", () => {
     const brief = { sources: ["docs/evidence/phase-5/release-review/pass-1.json"] };
     expect(supersededCitations("phase-5/brief.json", brief, entries)).toStrictEqual([
       {
@@ -135,7 +135,7 @@ describe("P-3, a superseded artifact cited as current", () => {
     ]);
   });
 
-  it("allows a later pass to name the passes it replaced", () => {
+  it("C-18: allows a later pass to name the passes it replaced", () => {
     // The direction this gets wrong more easily. previousPasses exists to name history, and the
     // values are bare filenames resolved against the citing artifact's own directory.
     const passThree = { pass: 3, previousPasses: ["pass-1.json", "pass-2.json"] };
@@ -176,7 +176,7 @@ describe("P-4, append-only", () => {
     expect(appendOnlyViolation(first, "")).toMatch(/may only grow/u);
   });
 
-  it("refuses a rewritten line even when the length is unchanged", () => {
+  it("C-18: refuses a rewritten line even when the length is unchanged", () => {
     expect(appendOnlyViolation(first, `${JSON.stringify(record("phase-5/z.json"))}\n`)).toMatch(
       /line 1 was rewritten/u,
     );
@@ -184,7 +184,7 @@ describe("P-4, append-only", () => {
 });
 
 describe("supersession derivation", () => {
-  it("supersedes every pass but the highest, per directory", () => {
+  it("C-18: supersedes every pass but the highest, per directory", () => {
     expect(
       derivePassSupersessions([
         "phase-5/release-review/pass-1.json",

@@ -139,6 +139,25 @@ export async function buildEvidenceInventory(): Promise<EvidenceInventory> {
     );
   }
 
+  // Omitted from this inventory until 2026-09-14, so a reviewer assessing C-08 was told about the
+  // in-process same-input test and the static unreachability scan and not about the two-run
+  // comparison that actually answers the criterion. The absence of a line is a claim too.
+  const determinism = await readJson<{
+    artifactsCompared?: number;
+    identical?: boolean;
+    differing?: string[];
+    excludedFromComparison?: Array<{ file: string; why: string }>;
+    injected?: string[];
+  }>("browser/determinism.json", {});
+  if (determinism.artifactsCompared) {
+    present.push("two-run determinism comparison");
+    lines.push(
+      `  Determinism (phase-5/browser/determinism.json): the whole capture ran twice through a real browser and ${determinism.artifactsCompared} artifacts were digested and compared, ${determinism.identical ? "all identical" : `${(determinism.differing ?? []).length} differing`}. Injected rather than ambient: ${(determinism.injected ?? []).join(", ")}. ${(determinism.excludedFromComparison ?? []).map((entry) => `${entry.file} is excluded because it ${entry.why}`).join("; ")}. A repeat inside one process shares that process's locale, timezone and module state, so the in-process test beside this one cannot see the class of non-determinism that varies between runs.`,
+    );
+  } else {
+    absent.push("a two-run determinism comparison");
+  }
+
   if (has("visual-qa/")) {
     present.push("visual QA annotation");
     lines.push(
