@@ -1,0 +1,1057 @@
+{
+  "schema": "cuckcode.phase6-golden-states.v1",
+  "status": "Task 9 produced. Every state is Candidate and carries ownerApproval: null. Task 10 promotion and Phase 7 remain unauthorized.",
+  "producedAt": "2026-09-13",
+  "system": "reconciliation-b-clarity",
+  "environment": {
+    "node": "v24.18.0",
+    "platform": "win32",
+    "renderer": "scripts/phase6-candidate-render.ts, deterministic SVG",
+    "system": "reconciliation-b-clarity",
+    "systemStatus": "Approved by the owner 2026-09-13 as the Task 8 reconciliation. Still Candidate until Task 10 promotion.",
+    "capturedAt": "2026-09-13"
+  },
+  "motionOnlyFindings": [],
+  "states": [
+    {
+      "id": "01-default-office",
+      "name": "Default office",
+      "purpose": "The frozen Task 1 comparison frame, unchanged. Phase 7 implements against the same state the candidates were compared on.",
+      "digest": "657fe2ebfc41869e22f7261c79cb39beb5551a232cd3ca218d21415b30721437",
+      "eventIds": [
+        "event_phase6_001",
+        "event_phase6_002",
+        "event_phase6_003",
+        "event_phase6_004",
+        "event_phase6_005",
+        "event_phase6_006",
+        "event_phase6_007",
+        "event_phase6_008",
+        "event_phase6_009",
+        "event_phase6_010",
+        "event_phase6_011",
+        "event_phase6_012",
+        "event_phase6_013",
+        "event_phase6_014",
+        "event_phase6_015",
+        "event_phase6_016",
+        "event_phase6_017",
+        "event_phase6_018"
+      ],
+      "sceneDescriptors": [
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_delivery_lead",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_implementation_engineer",
+          "state": "active",
+          "behavior": "work_loop",
+          "zone": "desk",
+          "semanticMotion": true,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_product_designer",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_release_reviewer",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_test_engineer",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_visual_qa_reviewer",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "work",
+          "subjectId": "work_phase6_priority",
+          "state": "active",
+          "behavior": "work_loop",
+          "zone": "desk",
+          "semanticMotion": true,
+          "causeEventId": "event_phase6_017",
+          "updatedAt": "2026-09-14T00:00:17.000Z",
+          "freshness": "current",
+          "approved": false
+        }
+      ],
+      "outline": {
+        "projectId": "project_phase6_comparison",
+        "items": [
+          {
+            "subjectId": "work_phase6_priority",
+            "identity": {
+              "kind": "work_item",
+              "id": "work_phase6_priority"
+            },
+            "status": "active",
+            "scope": {
+              "projectId": "project_phase6_comparison",
+              "workItemId": "work_phase6_priority"
+            },
+            "constraints": {
+              "requiredEvidenceKinds": [
+                "unit"
+              ]
+            },
+            "decisions": {
+              "approvalIds": []
+            },
+            "conflicts": [],
+            "evidenceLinks": [],
+            "nextActions": [],
+            "label": "Deliver the current priority — active"
+          }
+        ]
+      },
+      "visibleChecklist": [
+        "six distinct agents, all connected, at their declared work areas",
+        "one current priority in the active state",
+        "no escalation: no waiting_input, blocked or failed subject",
+        "attention rail collapsed, inspector closed, camera at reset",
+        "exactly two semantic-motion subjects: the active work item and the agent working it"
+      ],
+      "accessibilityNotes": [
+        {
+          "state": "work:active",
+          "nonColourCues": [
+            "at the owning desk",
+            "raised card",
+            "assignee marker present",
+            "motion permitted"
+          ],
+          "reducedMotion": "Card raises instantly; the permitted motion is suppressed and the raised height carries the state."
+        },
+        {
+          "state": "agent:reserved",
+          "nonColourCues": [
+            "figure at the work area",
+            "upright posture",
+            "work card present, not raised"
+          ],
+          "reducedMotion": "Card appears without transition."
+        },
+        {
+          "state": "agent:active",
+          "nonColourCues": [
+            "figure at the work area",
+            "attention marker above the figure",
+            "raised work card",
+            "motion permitted"
+          ],
+          "reducedMotion": "Marker appears at full opacity; the permitted motion is suppressed and the marker plus raised card carry the state."
+        }
+      ],
+      "semanticMotionSubjects": [
+        "agent:active",
+        "work:active"
+      ],
+      "captures": {
+        "1440x900": {
+          "sha256": "e14173ab7e629b5e21f0110bec9cc805dc86618f4533507458ac034f18234877",
+          "animationConstructs": 0,
+          "reducedMotionEquivalent": true
+        },
+        "1280x800": {
+          "sha256": "fcfaf83b3c375ecdffcfc61f4dc6ade67b2ba4831d81ecd775ca995effabf635",
+          "animationConstructs": 0,
+          "reducedMotionEquivalent": true
+        }
+      },
+      "environment": {
+        "node": "v24.18.0",
+        "platform": "win32",
+        "renderer": "scripts/phase6-candidate-render.ts, deterministic SVG",
+        "system": "reconciliation-b-clarity",
+        "systemStatus": "Approved by the owner 2026-09-13 as the Task 8 reconciliation. Still Candidate until Task 10 promotion.",
+        "capturedAt": "2026-09-13"
+      },
+      "ownerApproval": null
+    },
+    {
+      "id": "02-active-collaboration",
+      "name": "Active collaboration",
+      "purpose": "A collaboration bound to a canonical collaboration event, so the visible gathering is backed by a record rather than by proximity.",
+      "digest": "f659d9bd911115870efff1d032f3b6776eae6a89a6d6dbf15970fb2406061245",
+      "eventIds": [
+        "event_phase6_001",
+        "event_phase6_002",
+        "event_phase6_003",
+        "event_phase6_004",
+        "event_phase6_005",
+        "event_phase6_006",
+        "event_phase6_007",
+        "event_phase6_008",
+        "event_phase6_009",
+        "event_phase6_010",
+        "event_phase6_011",
+        "event_phase6_012",
+        "event_phase6_013",
+        "event_phase6_014",
+        "event_phase6_015",
+        "event_phase6_016",
+        "event_phase6_017",
+        "event_phase6_018",
+        "event_phase6_gs_001"
+      ],
+      "sceneDescriptors": [
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_delivery_lead",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_implementation_engineer",
+          "state": "active",
+          "behavior": "work_loop",
+          "zone": "desk",
+          "semanticMotion": true,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_product_designer",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_release_reviewer",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_test_engineer",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_visual_qa_reviewer",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "collaboration",
+          "subjectId": "collaboration_charter_review",
+          "state": "collaboration",
+          "behavior": "active_collaboration",
+          "zone": "shared",
+          "semanticMotion": true,
+          "causeEventId": "event_phase6_gs_001",
+          "updatedAt": "2026-09-14T00:01:41.000Z",
+          "freshness": "delayed",
+          "approved": false
+        },
+        {
+          "subjectType": "work",
+          "subjectId": "work_phase6_priority",
+          "state": "active",
+          "behavior": "work_loop",
+          "zone": "desk",
+          "semanticMotion": true,
+          "causeEventId": "event_phase6_017",
+          "updatedAt": "2026-09-14T00:00:17.000Z",
+          "freshness": "current",
+          "approved": false
+        }
+      ],
+      "outline": {
+        "projectId": "project_phase6_comparison",
+        "items": [
+          {
+            "subjectId": "work_phase6_priority",
+            "identity": {
+              "kind": "work_item",
+              "id": "work_phase6_priority"
+            },
+            "status": "active",
+            "scope": {
+              "projectId": "project_phase6_comparison",
+              "workItemId": "work_phase6_priority"
+            },
+            "constraints": {
+              "requiredEvidenceKinds": [
+                "unit"
+              ]
+            },
+            "decisions": {
+              "approvalIds": []
+            },
+            "conflicts": [],
+            "evidenceLinks": [],
+            "nextActions": [],
+            "label": "Deliver the current priority — active"
+          }
+        ]
+      },
+      "visibleChecklist": [
+        "one active collaboration descriptor, at the shared zone",
+        "both named participants present and identifiable",
+        "the collaboration carries the id of the event that created it",
+        "no agent is drawn as collaborating who is not a recorded participant",
+        "proximity alone never implies collaboration"
+      ],
+      "accessibilityNotes": [
+        {
+          "state": "work:active",
+          "nonColourCues": [
+            "at the owning desk",
+            "raised card",
+            "assignee marker present",
+            "motion permitted"
+          ],
+          "reducedMotion": "Card raises instantly; the permitted motion is suppressed and the raised height carries the state."
+        },
+        {
+          "state": "agent:reserved",
+          "nonColourCues": [
+            "figure at the work area",
+            "upright posture",
+            "work card present, not raised"
+          ],
+          "reducedMotion": "Card appears without transition."
+        },
+        {
+          "state": "agent:active",
+          "nonColourCues": [
+            "figure at the work area",
+            "attention marker above the figure",
+            "raised work card",
+            "motion permitted"
+          ],
+          "reducedMotion": "Marker appears at full opacity; the permitted motion is suppressed and the marker plus raised card carry the state."
+        },
+        {
+          "state": "collaboration:collaboration",
+          "nonColourCues": [
+            "marked at the collaboration table",
+            "a shared artifact on the table",
+            "a participation marker above each recorded participant, at their own work area"
+          ],
+          "reducedMotion": "Markers and artifact are drawn in place; no agent is animated moving to the table."
+        }
+      ],
+      "semanticMotionSubjects": [
+        "agent:active",
+        "collaboration:collaboration",
+        "work:active"
+      ],
+      "captures": {
+        "1440x900": {
+          "sha256": "0a763b383d8ab536dd997891f0ba4086454754321a047171f4f4d69f597a2c68",
+          "animationConstructs": 0,
+          "reducedMotionEquivalent": true
+        },
+        "1280x800": {
+          "sha256": "47d81517e317868e625ed765c5a8405f3edb31f7b4994638a55567d5e73d8251",
+          "animationConstructs": 0,
+          "reducedMotionEquivalent": true
+        }
+      },
+      "environment": {
+        "node": "v24.18.0",
+        "platform": "win32",
+        "renderer": "scripts/phase6-candidate-render.ts, deterministic SVG",
+        "system": "reconciliation-b-clarity",
+        "systemStatus": "Approved by the owner 2026-09-13 as the Task 8 reconciliation. Still Candidate until Task 10 promotion.",
+        "capturedAt": "2026-09-13"
+      },
+      "ownerApproval": null
+    },
+    {
+      "id": "03-manager-escalation",
+      "name": "Manager escalation",
+      "purpose": "A single clear attention path: one subject needs the manager, and the route to it is unambiguous.",
+      "digest": "58c05440ad712448d52ebe7a39470a87962577590f222d0e727d6f8edf0d76b9",
+      "eventIds": [
+        "event_phase6_001",
+        "event_phase6_002",
+        "event_phase6_003",
+        "event_phase6_004",
+        "event_phase6_005",
+        "event_phase6_006",
+        "event_phase6_007",
+        "event_phase6_008",
+        "event_phase6_009",
+        "event_phase6_010",
+        "event_phase6_011",
+        "event_phase6_012",
+        "event_phase6_013",
+        "event_phase6_014",
+        "event_phase6_015",
+        "event_phase6_016",
+        "event_phase6_017",
+        "event_phase6_018",
+        "event_phase6_gs_002",
+        "event_phase6_gs_003"
+      ],
+      "sceneDescriptors": [
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_delivery_lead",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_implementation_engineer",
+          "state": "waiting",
+          "behavior": "waiting",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_product_designer",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_release_reviewer",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_test_engineer",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_visual_qa_reviewer",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "work",
+          "subjectId": "work_phase6_priority",
+          "state": "waiting_input",
+          "behavior": "attention_request",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": "event_phase6_gs_002",
+          "updatedAt": "2026-09-14T00:01:42.000Z",
+          "freshness": "delayed",
+          "approved": false
+        }
+      ],
+      "outline": {
+        "projectId": "project_phase6_comparison",
+        "items": [
+          {
+            "subjectId": "work_phase6_priority",
+            "identity": {
+              "kind": "work_item",
+              "id": "work_phase6_priority"
+            },
+            "status": "waiting_input",
+            "scope": {
+              "projectId": "project_phase6_comparison",
+              "workItemId": "work_phase6_priority"
+            },
+            "constraints": {
+              "requiredEvidenceKinds": [
+                "unit"
+              ]
+            },
+            "decisions": {
+              "approvalIds": []
+            },
+            "conflicts": [],
+            "evidenceLinks": [],
+            "nextActions": [
+              "answer_request"
+            ],
+            "label": "Deliver the current priority — waiting_input"
+          }
+        ]
+      },
+      "visibleChecklist": [
+        "exactly one subject in waiting_input",
+        "an entry in the manager attention rail for that subject and no other",
+        "a question glyph at the owning desk, not colour alone",
+        "the agent that raised it remains identifiable",
+        "no other zone competes for attention"
+      ],
+      "accessibilityNotes": [
+        {
+          "state": "work:waiting_input",
+          "nonColourCues": [
+            "at the owning desk",
+            "question glyph",
+            "entry in the attention rail"
+          ],
+          "reducedMotion": "Glyph and rail entry appear at full opacity; no pulse."
+        },
+        {
+          "state": "agent:reserved",
+          "nonColourCues": [
+            "figure at the work area",
+            "upright posture",
+            "work card present, not raised"
+          ],
+          "reducedMotion": "Card appears without transition."
+        },
+        {
+          "state": "agent:waiting",
+          "nonColourCues": [
+            "figure at the work area",
+            "question glyph above the figure",
+            "entry in the attention rail"
+          ],
+          "reducedMotion": "Glyph appears without pulse."
+        }
+      ],
+      "semanticMotionSubjects": [],
+      "captures": {
+        "1440x900": {
+          "sha256": "cb5cf1788be0d5e47e0a5d7a99b252dca7789e65a867e34017aa03df2616e466",
+          "animationConstructs": 0,
+          "reducedMotionEquivalent": true
+        },
+        "1280x800": {
+          "sha256": "2a4d290fb5f43fedd21529eb981f3587b0563c9d1dfcceae67a97fbf9763f01e",
+          "animationConstructs": 0,
+          "reducedMotionEquivalent": true
+        }
+      },
+      "environment": {
+        "node": "v24.18.0",
+        "platform": "win32",
+        "renderer": "scripts/phase6-candidate-render.ts, deterministic SVG",
+        "system": "reconciliation-b-clarity",
+        "systemStatus": "Approved by the owner 2026-09-13 as the Task 8 reconciliation. Still Candidate until Task 10 promotion.",
+        "capturedAt": "2026-09-13"
+      },
+      "ownerApproval": null
+    },
+    {
+      "id": "04-blocked-work",
+      "name": "Blocked work",
+      "purpose": "Blocked with the reason available and no fake activity: a blocked office must not animate as though work continues.",
+      "digest": "49bc168a59c774664392a1551f1cdb89b870171280390341b243569556b32911",
+      "eventIds": [
+        "event_phase6_001",
+        "event_phase6_002",
+        "event_phase6_003",
+        "event_phase6_004",
+        "event_phase6_005",
+        "event_phase6_006",
+        "event_phase6_007",
+        "event_phase6_008",
+        "event_phase6_009",
+        "event_phase6_010",
+        "event_phase6_011",
+        "event_phase6_012",
+        "event_phase6_013",
+        "event_phase6_014",
+        "event_phase6_015",
+        "event_phase6_016",
+        "event_phase6_017",
+        "event_phase6_018",
+        "event_phase6_gs_004",
+        "event_phase6_gs_005"
+      ],
+      "sceneDescriptors": [
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_delivery_lead",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_implementation_engineer",
+          "state": "blocked",
+          "behavior": "blocked_stationary",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_product_designer",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_release_reviewer",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_test_engineer",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_visual_qa_reviewer",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "work",
+          "subjectId": "work_phase6_priority",
+          "state": "blocked",
+          "behavior": "blocked_stationary",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": "event_phase6_gs_004",
+          "updatedAt": "2026-09-14T00:01:44.000Z",
+          "freshness": "delayed",
+          "approved": false
+        }
+      ],
+      "outline": {
+        "projectId": "project_phase6_comparison",
+        "items": [
+          {
+            "subjectId": "work_phase6_priority",
+            "identity": {
+              "kind": "work_item",
+              "id": "work_phase6_priority"
+            },
+            "status": "blocked",
+            "scope": {
+              "projectId": "project_phase6_comparison",
+              "workItemId": "work_phase6_priority"
+            },
+            "constraints": {
+              "requiredEvidenceKinds": [
+                "unit"
+              ]
+            },
+            "decisions": {
+              "approvalIds": []
+            },
+            "conflicts": [],
+            "evidenceLinks": [],
+            "nextActions": [
+              "resolve_blocker"
+            ],
+            "label": "Deliver the current priority — blocked"
+          }
+        ]
+      },
+      "visibleChecklist": [
+        "the priority is blocked and reads as blocked without colour",
+        "the reason is reachable from the subject",
+        "zero semantic-motion subjects: nothing moves while nothing progresses",
+        "the assigned agent is not drawn as active",
+        "lighting is unchanged; severity is carried by the subject, not the room"
+      ],
+      "accessibilityNotes": [
+        {
+          "state": "work:blocked",
+          "nonColourCues": [
+            "at the owning desk",
+            "bar glyph across the card",
+            "entry in the attention rail"
+          ],
+          "reducedMotion": "Bar appears without transition; nothing pulses."
+        },
+        {
+          "state": "agent:reserved",
+          "nonColourCues": [
+            "figure at the work area",
+            "upright posture",
+            "work card present, not raised"
+          ],
+          "reducedMotion": "Card appears without transition."
+        },
+        {
+          "state": "agent:blocked",
+          "nonColourCues": [
+            "figure at the work area",
+            "bar glyph above the figure",
+            "entry in the attention rail"
+          ],
+          "reducedMotion": "Bar appears without transition."
+        }
+      ],
+      "semanticMotionSubjects": [],
+      "captures": {
+        "1440x900": {
+          "sha256": "d4fac3e015eac87f5001319f1253746511faf297c47542c5523c6f82effbfbfc",
+          "animationConstructs": 0,
+          "reducedMotionEquivalent": true
+        },
+        "1280x800": {
+          "sha256": "e94d26c1373bd0825ecaad552517ea5bafffefcf0795f031d9d1abb8a9aaf1ba",
+          "animationConstructs": 0,
+          "reducedMotionEquivalent": true
+        }
+      },
+      "environment": {
+        "node": "v24.18.0",
+        "platform": "win32",
+        "renderer": "scripts/phase6-candidate-render.ts, deterministic SVG",
+        "system": "reconciliation-b-clarity",
+        "systemStatus": "Approved by the owner 2026-09-13 as the Task 8 reconciliation. Still Candidate until Task 10 promotion.",
+        "capturedAt": "2026-09-13"
+      },
+      "ownerApproval": null
+    },
+    {
+      "id": "05-visual-review",
+      "name": "Visual review with named artifact",
+      "purpose": "A review state that names the artifact and evidence under review, so completion stays distinct from approval.",
+      "digest": "9c60f86afa5d4259e12107870e4e62a05df81b7ef7a9cdae89f6eac0e4388764",
+      "eventIds": [
+        "event_phase6_001",
+        "event_phase6_002",
+        "event_phase6_003",
+        "event_phase6_004",
+        "event_phase6_005",
+        "event_phase6_006",
+        "event_phase6_007",
+        "event_phase6_008",
+        "event_phase6_009",
+        "event_phase6_010",
+        "event_phase6_011",
+        "event_phase6_012",
+        "event_phase6_013",
+        "event_phase6_014",
+        "event_phase6_015",
+        "event_phase6_016",
+        "event_phase6_017",
+        "event_phase6_018",
+        "event_phase6_gs_006",
+        "event_phase6_gs_007",
+        "event_phase6_gs_008"
+      ],
+      "sceneDescriptors": [
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_delivery_lead",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_implementation_engineer",
+          "state": "reviewing",
+          "behavior": "review_station",
+          "zone": "review",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_product_designer",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_release_reviewer",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_test_engineer",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "agent",
+          "subjectId": "agent_visual_qa_reviewer",
+          "state": "reserved",
+          "behavior": "reserved",
+          "zone": "desk",
+          "semanticMotion": false,
+          "causeEventId": null,
+          "updatedAt": null,
+          "freshness": "unavailable",
+          "approved": false
+        },
+        {
+          "subjectType": "work",
+          "subjectId": "work_phase6_priority",
+          "state": "review_requested",
+          "behavior": "review_station",
+          "zone": "review",
+          "semanticMotion": false,
+          "causeEventId": "event_phase6_gs_006",
+          "updatedAt": "2026-09-14T00:01:46.000Z",
+          "freshness": "delayed",
+          "approved": false
+        }
+      ],
+      "outline": {
+        "projectId": "project_phase6_comparison",
+        "items": [
+          {
+            "subjectId": "work_phase6_priority",
+            "identity": {
+              "kind": "work_item",
+              "id": "work_phase6_priority"
+            },
+            "status": "review_requested",
+            "scope": {
+              "projectId": "project_phase6_comparison",
+              "workItemId": "work_phase6_priority"
+            },
+            "constraints": {
+              "requiredEvidenceKinds": [
+                "unit"
+              ]
+            },
+            "decisions": {
+              "approvalIds": []
+            },
+            "conflicts": [],
+            "evidenceLinks": [],
+            "nextActions": [
+              "review_evidence"
+            ],
+            "label": "Deliver the current priority — review_requested"
+          }
+        ]
+      },
+      "visibleChecklist": [
+        "the priority sits at the review station, not at its owning desk",
+        "the named artifact and evidence kind are both present in the outline",
+        "review_requested is visibly distinct from verified and from completed",
+        "no approval is implied by the presence of evidence",
+        "the reviewing agent is identifiable"
+      ],
+      "accessibilityNotes": [
+        {
+          "state": "work:review_requested",
+          "nonColourCues": [
+            "moved to the review station",
+            "card on the review surface"
+          ],
+          "reducedMotion": "Card is drawn at the review station; no travel path is animated."
+        },
+        {
+          "state": "agent:reserved",
+          "nonColourCues": [
+            "figure at the work area",
+            "upright posture",
+            "work card present, not raised"
+          ],
+          "reducedMotion": "Card appears without transition."
+        },
+        {
+          "state": "agent:reviewing",
+          "nonColourCues": [
+            "figure at the review station",
+            "upright posture",
+            "card on the review surface"
+          ],
+          "reducedMotion": "Figure is drawn at the review station; no walk is animated."
+        }
+      ],
+      "semanticMotionSubjects": [],
+      "captures": {
+        "1440x900": {
+          "sha256": "6c1c02003b106dff36f0f41776e5e194871eeab3a1865c65245e0d3dd8e0cee9",
+          "animationConstructs": 0,
+          "reducedMotionEquivalent": true
+        },
+        "1280x800": {
+          "sha256": "6e81299a0ad292b70d880300d97cf8fe588abac4eaad6adfe5ec3576f3565d18",
+          "animationConstructs": 0,
+          "reducedMotionEquivalent": true
+        }
+      },
+      "environment": {
+        "node": "v24.18.0",
+        "platform": "win32",
+        "renderer": "scripts/phase6-candidate-render.ts, deterministic SVG",
+        "system": "reconciliation-b-clarity",
+        "systemStatus": "Approved by the owner 2026-09-13 as the Task 8 reconciliation. Still Candidate until Task 10 promotion.",
+        "capturedAt": "2026-09-13"
+      },
+      "ownerApproval": null
+    }
+  ]
+}

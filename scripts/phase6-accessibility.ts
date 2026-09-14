@@ -14,7 +14,7 @@
 
 export type StateTreatment = {
   state: string;
-  family: "work" | "agent";
+  family: "work" | "agent" | "collaboration";
   /** Cues that survive greyscale: position, shape, occupancy, label, texture. Never hue. */
   nonColourCues: string[];
   /** What the transition into this state does when the viewer has asked for reduced motion. */
@@ -202,6 +202,39 @@ export const STATE_TREATMENTS: StateTreatment[] = [
       "evidence tray filled",
     ],
     reducedMotion: "Glyph is drawn immediately; no shake, ever.",
+    paletteRole: "metal",
+  },
+  // ---- collaboration kinds ----
+  // Added 2026-09-13 while building Task 9. Task 6 documented work states and agent presences and
+  // stopped there; `projectOfficeScene` emits a third family, and both of its kinds carry
+  // semanticMotion. Twenty documented states out of twenty-two is the same guard-inside-an-
+  // unexamined-boundary shape this repository keeps recording, found this time by a later task
+  // needing the thing the earlier one had not covered.
+  {
+    state: "collaboration",
+    family: "collaboration",
+    nonColourCues: [
+      "marked at the collaboration table",
+      "a shared artifact on the table",
+      "a participation marker above each recorded participant, at their own work area",
+    ],
+    // Corrected 2026-09-13: this first read "participants co-located at the shared surface". The
+    // canonical state does not move an agent when a collaboration is recorded, so drawing them
+    // gathered would be exactly the fake proximity the brief forbids by name. Participation is
+    // marked where the agent actually is.
+    reducedMotion:
+      "Markers and artifact are drawn in place; no agent is animated moving to the table.",
+    paletteRole: "ink",
+  },
+  {
+    state: "handoff",
+    family: "collaboration",
+    nonColourCues: [
+      "spanning two work areas",
+      "artifact shown at both endpoints",
+      "both participant markers present",
+    ],
+    reducedMotion: "Both endpoints are drawn; no transit path is animated.",
     paletteRole: "metal",
   },
 ];

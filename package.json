@@ -29,6 +29,7 @@
     "phase6:candidates:build": "tsx scripts/build-phase6-candidates.ts",
     "phase6:a11y:build": "tsx scripts/build-phase6-accessibility.ts",
     "phase6:reconciliation:build": "tsx scripts/build-phase6-reconciliation.ts",
+    "phase6:golden:build": "tsx scripts/build-phase6-golden-states.ts",
     "phase6:review": "tsx scripts/run-phase6-review.ts",
     "test:roles": "node --test scripts/agency-agents-import.test.mjs scripts/promote-roles.test.mjs scripts/promote-authored-roles.test.mjs scripts/promotion-status.test.mjs && npm run roles:agency-agents:check",
     "roles:promotion:status": "node scripts/promotion-status.mjs",

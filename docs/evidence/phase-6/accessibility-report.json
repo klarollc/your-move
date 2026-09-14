@@ -226,6 +226,28 @@
       ],
       "reducedMotion": "Glyph is drawn immediately; no shake, ever.",
       "paletteRole": "metal"
+    },
+    {
+      "state": "collaboration",
+      "family": "collaboration",
+      "nonColourCues": [
+        "marked at the collaboration table",
+        "a shared artifact on the table",
+        "a participation marker above each recorded participant, at their own work area"
+      ],
+      "reducedMotion": "Markers and artifact are drawn in place; no agent is animated moving to the table.",
+      "paletteRole": "ink"
+    },
+    {
+      "state": "handoff",
+      "family": "collaboration",
+      "nonColourCues": [
+        "spanning two work areas",
+        "artifact shown at both endpoints",
+        "both participant markers present"
+      ],
+      "reducedMotion": "Both endpoints are drawn; no transit path is animated.",
+      "paletteRole": "metal"
     }
   ],
   "candidates": [
@@ -413,6 +435,24 @@
         },
         {
           "state": "agent:failed",
+          "paletteRole": "metal",
+          "colour": "#6f7377",
+          "against": "#d3cec3",
+          "ratio": 3.05,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "collaboration:collaboration",
+          "paletteRole": "ink",
+          "colour": "#2f2e2b",
+          "against": "#d3cec3",
+          "ratio": 8.66,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "collaboration:handoff",
           "paletteRole": "metal",
           "colour": "#6f7377",
           "against": "#d3cec3",
@@ -625,6 +665,24 @@
           "ratio": 3.17,
           "threshold": 3,
           "passes": true
+        },
+        {
+          "state": "collaboration:collaboration",
+          "paletteRole": "ink",
+          "colour": "#332e27",
+          "against": "#e0d3be",
+          "ratio": 9.12,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "collaboration:handoff",
+          "paletteRole": "metal",
+          "colour": "#7b7368",
+          "against": "#e0d3be",
+          "ratio": 3.17,
+          "threshold": 3,
+          "passes": true
         }
       ],
       "accommodation": {
@@ -825,6 +883,24 @@
         },
         {
           "state": "agent:failed",
+          "paletteRole": "metal",
+          "colour": "#686c70",
+          "against": "#cec6b5",
+          "ratio": 3.12,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "collaboration:collaboration",
+          "paletteRole": "ink",
+          "colour": "#2b2924",
+          "against": "#cec6b5",
+          "ratio": 8.56,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "collaboration:handoff",
           "paletteRole": "metal",
           "colour": "#686c70",
           "against": "#cec6b5",

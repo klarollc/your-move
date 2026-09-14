@@ -1083,3 +1083,53 @@ treatment and nothing structural.
 
 **Still open: the reconciled system is Candidate and unapproved.** Task 9 does not begin until the
 owner approves it.
+
+## Phase 6 Task 9 — golden states
+
+Date: 2026-09-13. Owner approved the Task 8 reconciliation; these are produced in that system.
+
+Five canonical fixtures plus reduced-motion equivalents, each built from canonical events and
+projected through the same projectors the graybox uses. A golden state assembled by drawing what it
+ought to look like would be a picture of a state rather than a state.
+
+**Task 6 was incomplete, and Task 9 is how that surfaced.** `projectOfficeScene` emits three
+families, not two: work states, agent presences, and **collaboration kinds** — and both collaboration
+kinds carry `semanticMotion`. Task 6 documented twenty of twenty-two. The two missing treatments were
+added and the Task 6 guard extended to the third family before Task 9 built on it. Same shape as
+every other finding in this register: a guard exact inside a boundary nobody examined, found by a
+later task needing what the earlier one had not covered.
+
+**Fake activity, found by building the state rather than by describing it.** Nothing in the domain
+propagates a work transition to the agent holding it. The first blocked fixture transitioned only the
+work, and the projector duly emitted a *moving agent beside a blocked work item* — an office
+animating work on work that had stopped, which the brief forbids by name. It arrives from a stale
+presence, not from any decision to fake anything. The escalation and review states had the same
+defect. All three now move presence with the work.
+
+**Two golden states rendered byte-identically.** `02-active-collaboration` was indistinguishable from
+`01-default-office`, because the renderer received `collaborationParticipants` and drew nothing with
+it. A collaboration golden state showing no collaboration. Now the shared artifact is drawn on the
+table and each recorded participant carries a participation marker **at their own work area**.
+
+**A Task 6 cue was wrong and was corrected, not worked around.** It read "participants co-located at
+the shared surface". The canonical state never moves an agent when a collaboration is recorded, so
+rendering them gathered would have been precisely the fake proximity the brief forbids. Participation
+is marked where the agent actually is.
+
+**Reduced motion.** Rendering each frame twice and comparing would have been vacuous — the same call
+returns the same string. What is checked instead is that every capture contains **zero animation
+constructs**, which is the claim worth proving: there is no motion to remove, so a reduced-motion
+viewer receives exactly what everyone else does. Ten captures, zero constructs.
+
+**The reviewed artifacts did not move.** Making the renderer state-aware risked changing the
+compositions the Task 7 review scored. The scene parameter defaults to the frozen default-office
+frame, and the candidate and reconciliation captures were re-rendered and confirmed byte-identical
+before and after.
+
+**Mutation evidence.** Leaving the agent active while its work blocks fails the fake-activity guard.
+Dropping the collaboration event fails three guards, including capture distinctness at both
+viewports.
+
+**Every state is Candidate.** `ownerApproval` is `null` on all five, and a guard asserts it, so a
+state cannot quietly claim an approval that was never given. Task 10 promotion and Phase 7 remain
+unauthorized.

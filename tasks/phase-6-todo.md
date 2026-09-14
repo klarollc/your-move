@@ -94,8 +94,19 @@ Read each entry's own status line. Nothing here inherits authorization from the 
     `docs/evidence/phase-6/reconciliation/` — see `before-after.html`.
   - [ ] **Owner approval of the reconciled system is still required before Task 9 begins.**
 
-- [ ] Task 9: Golden states — default office at both viewports, active collaboration bound to a canonical event, manager escalation, blocked work, visual review with named artifact, reduced-motion equivalents.
+- [x] Task 9: Golden states. **Produced 2026-09-13 in the approved reconciliation.**
   - Acceptance: each carries fixture/event sequence, scene descriptor, DOM-outline expectation, environment manifest, visible-state checklist, accessibility notes, owner approval record.
+  - Result: five canonical fixtures, ten captures, all distinct at both viewports, in
+    `docs/evidence/phase-6/golden-states/` — see `index.html`. Zero animation constructs, which is
+    what makes the reduced-motion equivalents real rather than asserted. Ten machine checks, two
+    mutations killed.
+  - Found while building: **Task 6 had documented 20 of 22 states** — collaboration kinds are a third
+    family and both carry motion; now closed. **Fake activity** — nothing propagates a work
+    transition to the holding agent, so the first blocked fixture animated an agent beside stopped
+    work. **Two states rendered identically** — the collaboration drew nothing. A Task 6 cue that
+    would have required fake proximity was corrected.
+  - [ ] **Owner approval of each golden state is still outstanding.** All five carry
+        `ownerApproval: null` and a guard asserts it.
 
 - [ ] Task 10: Promotion to Active and the Phase 6 evidence packet.
   - Acceptance: manifests promoted Candidate → Active, environments fixed, baselines reviewed.

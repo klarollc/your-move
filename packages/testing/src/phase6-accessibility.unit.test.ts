@@ -26,6 +26,9 @@ const WORK_STATES = [
   "cancelled",
 ] as const;
 
+/** `projectOfficeScene` emits a third family; both kinds carry semanticMotion. */
+const COLLABORATION_KINDS = ["collaboration", "handoff"] as const;
+
 const AGENT_PRESENCES = [
   "unavailable",
   "idle",
@@ -39,7 +42,7 @@ const AGENT_PRESENCES = [
 
 type Treatment = {
   state: string;
-  family: "work" | "agent";
+  family: "work" | "agent" | "collaboration";
   nonColourCues: string[];
   reducedMotion: string;
 };
@@ -93,6 +96,20 @@ describe("Phase 6 accessibility and contrast intent", () => {
     expect(documented.size).toBe(AGENT_PRESENCES.length);
   });
 
+  it("documents every canonical collaboration kind", () => {
+    const documented = new Set(
+      report()
+        .treatments.filter((entry) => entry.family === "collaboration")
+        .map((entry) => entry.state),
+    );
+    for (const kind of COLLABORATION_KINDS) {
+      expect(documented.has(kind), `collaboration kind "${kind}" has no documented treatment`).toBe(
+        true,
+      );
+    }
+    expect(documented.size).toBe(COLLABORATION_KINDS.length);
+  });
+
   it("gives every state a cue that is not colour", () => {
     for (const treatment of report().treatments) {
       expect(
@@ -109,7 +126,7 @@ describe("Phase 6 accessibility and contrast intent", () => {
     // The weaker version of this test checks that every state HAS a cue. Two states can each have a
     // cue and still be identical once colour is removed, which is the defect shape this repository
     // has already recorded against a role-distinctness check that compared only names.
-    for (const family of ["work", "agent"] as const) {
+    for (const family of ["work", "agent", "collaboration"] as const) {
       const inFamily = report().treatments.filter((entry) => entry.family === family);
       const signatures = inFamily.map((entry) => [...entry.nonColourCues].sort().join("|"));
       const duplicates = signatures.filter((value, index) => signatures.indexOf(value) !== index);

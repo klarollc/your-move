@@ -106,7 +106,7 @@
     "all twenty state treatments and their reduced-motion equivalents",
     "the frozen comparison frame and every element of the shared geometry"
   ],
-  "stateTreatmentCount": 20,
+  "stateTreatmentCount": 22,
   "measurements": [
     {
       "name": "Agent label on scene ground",
