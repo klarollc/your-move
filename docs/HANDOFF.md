@@ -15,7 +15,8 @@ live state, the next action, and the things a fresh session pays for twice if no
 | 5 | **Tasks 1–9 done.** Release verdict: **NEEDS WORK**, 11 of 21 criteria satisfied. Task 10 is owner-run and is the only authorized step left. |
 | 7, 8 | **Unauthorized.** Phase 7 needs its own specification, plan and owner approval. |
 
-Phase 5 turn ledger: **10 of 60**. Acceptance criteria: **20 ready, 1 blocked** (C-18, on gap 3).
+Phase 5 turn ledger: **10 of 60**. Acceptance criteria: **21 ready, 0 blocked** — all ten charter
+gaps are closed. Ready means assessable. It does not mean met.
 
 ---
 
@@ -29,10 +30,15 @@ eleven of twenty-one criteria satisfied.
 Nothing else is authorized. The ten items the reviewer says would change its verdict are ordinary
 work nobody has ruled on, except these three, which cannot be closed by an agent at all:
 
-- **C-17** needs a human screen-reader walkthrough naming the screen reader, the build, and the paths
-  it did and did not exercise. Decision 5-D committed this phase to it.
-- **C-18** needs gap 3, the provenance and supersession schema.
-- **C-19** needs the owner to look at the forty current-build images and record fidelity acceptance.
+- **C-17 is closed as WAIVED, 2026-09-14**, amending Decision 5-D. Waived is not met: no human
+  listener has ever heard this interface, and MDD §19's walkthrough is now unmet in two consecutive
+  phases. Report it as *waived by owner*, never folded into a satisfied count. The overlay is
+  `docs/evidence/phase-5/acceptance-contract-waivers.json` and every brief and verdict must read it.
+- **C-18 is unblocked, 2026-09-14.** Gap 3 closed: the owner ruled a sidecar append-only ledger and
+  the schema is `docs/evidence/phase-5/provenance/schema.json`. Whether the ledger's forty-three
+  `unknown` producers satisfy "every evidence artifact" is a release-review judgement, not settled.
+- **C-19 still needs the owner to look.** `npm run phase5:contact-sheet` builds the forty plates
+  paired with their declared treatments; the look itself and the ruling are owner work.
 
 **Read DF-015 before writing any brief.** Four briefs in this phase described a world that did not
 exist, cost three agent turns, and nearly cost the release verdict: the first release pass reported
@@ -42,11 +48,18 @@ exists any more — `scripts/phase5-evidence-inventory.ts` reads the tree and re
 
 ## Open debts, none of them closed
 
-- **MDD §19 and §20 are unmet.** Waived in Phase 4 with comprehension tasks T3/T5/T6 never performed
-  and the screen-reader walkthrough never run. Decision 5-D commits Phase 5 to repeating the gate
-  properly: one screen reader, one walkthrough genuinely performed.
-- **Gap 3** — the provenance and supersession schema — is the only blocking gap left. C-18 depends
-  on it. It is Task 2 design work, not an owner decision.
+- **MDD §19 and §20 are unmet, now in two consecutive phases.** Waived in Phase 4 with comprehension
+  tasks T3/T5/T6 never performed and the walkthrough never run; Decision 5-D committed Phase 5 to
+  repeating the gate properly, and on 2026-09-14 the owner waived it again on the record. **Phase 8
+  inherits an interface no screen reader has ever been attached to.** What survives: the governance
+  did not close the gate by itself — three release passes all refused to certify and none reached for
+  the axe results.
+- **Gap 3 closed 2026-09-14** with the sidecar ledger. `npm run phase5:provenance` runs inside
+  `npm run verify`: 282 artifacts recorded with digest and producer, six supersession edges, and the
+  enforcement that matters — no current artifact may cite a superseded one outside a declared
+  historical field. Corrections are appends, so an earlier claim stays in the history.
+  **Forty-three artifacts carry `producerKind: unknown`**, almost all pre-Phase-5: no code in the
+  tree writes them and no record says who did. Stated, not guessed.
 - **Three Phase 6 provenance gaps** carry forward: no external visual reference informed any
   candidate; the generated half of the approved hybrid medium was never produced; four of six named
   typefaces cannot be embedded, with Phase 7 embedding as the named trigger.

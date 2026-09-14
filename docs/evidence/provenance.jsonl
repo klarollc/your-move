@@ -286,3 +286,4 @@
 {"op":"supersede","artifact":"phase-5/verification/pass-3.json","supersededBy":"phase-5/verification/pass-4.json","recordedAt":"2026-09-14T15:58:20.329Z","why":"a later pass of the same review; the highest-numbered pass is the current one"}
 {"op":"supersede","artifact":"phase-5/verification/verification.json","supersededBy":"phase-5/verification/pass-4.json","recordedAt":"2026-09-14T15:58:20.329Z","why":"a later pass of the same review; the highest-numbered pass is the current one"}
 {"op":"supersede","artifact":"phase-5/visual-qa/pass-1.json","supersededBy":"phase-5/visual-qa/pass-2.json","recordedAt":"2026-09-14T15:58:20.329Z","why":"a later pass of the same review; the highest-numbered pass is the current one"}
+{"op":"record","artifact":"dogfood-register.md","sha256":"f28c2997296b3143cc51ee2b736bf6b4fd7367203515a97b2543ea91fada6096","bytes":43590,"recordedAt":"2026-09-14T16:08:41.735Z","producerKind":"unknown","producedBy":null,"authorizedBy":null}

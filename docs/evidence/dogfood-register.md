@@ -712,3 +712,43 @@ the build.
 brief asserting the presence or absence of evidence should be derived from the evidence tree at build
 time, and a brief containing a hardcoded claim about what exists should fail review the way a
 hardcoded test fixture of a superseded manifest does.
+
+### DF-016 — A three-byte prefix broke the gate, and the gate is what would have said so
+
+Observed 2026-09-14, introduced by commit `2af4c12`, caught by the first full run after it.
+
+`npm run phase5:contact-sheet` was added to `package.json` with a PowerShell one-liner:
+`Set-Content package.json -Encoding utf8`. Windows PowerShell 5.1 writes a **byte-order mark** under
+`-Encoding utf8`. `JSON.parse` refuses a BOM, so `scripts/check-toolchain.mjs` — the second step of
+`npm run verify` — died with `Unexpected token '﻿'`, and every step after it never ran.
+
+## What it cost
+
+Nothing, this time, and only because the next thing attempted was a full `verify`. The contact-sheet
+commit itself was correct; `npm`, `git`, `tsx`, `eslint`, `prettier` and every editor tolerate the
+BOM, so nothing else complained. Had the next session run a narrower check first, the tree would have
+looked healthy while the gate was dead.
+
+## The shape
+
+This is **DF-013 again, by a different mechanism**. That entry recorded that `npm run verify` had not
+completed since `35596d8` because Playwright's default `testMatch` had quietly swallowed a unit test.
+Both are the same failure: *the gate stopped working, and the only thing that reports a broken gate is
+the gate*. A check that nothing else depends on has no independent witness.
+
+The variant worth naming: the damage came from **the tool used to make the edit**, not from the edit.
+The intended change — one line in `scripts` — was correct and is still there. PowerShell's `utf8`
+meaning "utf8 with BOM" is a platform default that no reviewer would read in a diff, because the diff
+does not show it.
+
+## Product response
+
+`package.json` is repaired and the tree is scanned: two files carry a BOM, and the other,
+`packages/persistence/src/recovery.integration.test.ts`, is pre-existing since `1fc8493` and harmless
+because TypeScript tolerates one.
+
+**Proposed and not authorized:** a BOM scan over tracked text files, run inside `verify` but placed
+*before* the first consumer that would choke on one, so the failure names the cause rather than
+surfacing as a parse error in an unrelated script. And a standing rule: never write a repository file
+with `Set-Content`/`Out-File` on Windows PowerShell 5.1 — use the editing tools, or `-Encoding
+utf8NoBOM` where the shell supports it, which 5.1 does not.

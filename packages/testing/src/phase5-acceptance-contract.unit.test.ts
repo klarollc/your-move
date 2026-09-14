@@ -115,7 +115,6 @@ describe("Phase 5 acceptance contract", () => {
 
   it("blocks every criterion that depends on an unanswered gap", () => {
     const { criteria, blockedGaps } = matrix();
-    expect(blockedGaps.length).toBeGreaterThan(0);
     for (const criterion of criteria) {
       if (criterion.dependsOnGap !== null && blockedGaps.includes(criterion.dependsOnGap)) {
         expect(
@@ -124,6 +123,25 @@ describe("Phase 5 acceptance contract", () => {
         ).toBe("blocked-on-gap");
       }
     }
+  });
+
+  it("still bites when a gap is open", () => {
+    // The live check above went vacuous on 2026-09-14, when gap 3 closed and blockedGaps emptied.
+    // It used to guard against that with `blockedGaps.length > 0` — an assertion that was true only
+    // while the phase was unfinished, and that therefore had to fail at exactly the moment the work
+    // succeeded. The rule is kept honest against a fixture instead, so an empty live list cannot
+    // quietly turn the real check into a no-op.
+    const blockedGaps = [3];
+    const criterion: Pick<Criterion, "id" | "dependsOnGap" | "status"> = {
+      id: "C-XX",
+      dependsOnGap: 3,
+      status: "ready",
+    };
+    const violates =
+      criterion.dependsOnGap !== null &&
+      blockedGaps.includes(criterion.dependsOnGap) &&
+      criterion.status !== "blocked-on-gap";
+    expect(violates).toBe(true);
   });
 
   it("never marks a criterion ready while it names an unanswered gap", () => {
