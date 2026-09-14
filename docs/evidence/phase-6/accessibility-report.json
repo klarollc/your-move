@@ -1,0 +1,852 @@
+{
+  "schema": "cuckcode.phase6-accessibility.v1",
+  "status": "Task 6 complete 2026-09-13. Documents accessible treatment and contrast intent. Approves no candidate and promotes nothing.",
+  "reviewedAt": "2026-09-13",
+  "note": "State treatments are shared by all three candidates because what a state means is canonical truth; only its colour is art direction. A candidate that distinguished two states by a cue another candidate lacked would be offering a different semantics, not a different look.",
+  "treatments": [
+    {
+      "state": "draft",
+      "family": "work",
+      "nonColourCues": [
+        "at the owning desk",
+        "outline-only card",
+        "no evidence tray"
+      ],
+      "reducedMotion": "Card appears at full opacity; no fade.",
+      "paletteRole": "inkMuted"
+    },
+    {
+      "state": "ready",
+      "family": "work",
+      "nonColourCues": [
+        "at the owning desk",
+        "filled card",
+        "no assignee marker"
+      ],
+      "reducedMotion": "Fill applies instantly.",
+      "paletteRole": "inkMuted"
+    },
+    {
+      "state": "assigned",
+      "family": "work",
+      "nonColourCues": [
+        "at the owning desk",
+        "filled card",
+        "assignee marker present"
+      ],
+      "reducedMotion": "Assignee marker appears without travel.",
+      "paletteRole": "ink"
+    },
+    {
+      "state": "active",
+      "family": "work",
+      "nonColourCues": [
+        "at the owning desk",
+        "raised card",
+        "assignee marker present",
+        "motion permitted"
+      ],
+      "reducedMotion": "Card raises instantly; the permitted motion is suppressed and the raised height carries the state.",
+      "paletteRole": "attention"
+    },
+    {
+      "state": "review_requested",
+      "family": "work",
+      "nonColourCues": [
+        "moved to the review station",
+        "card on the review surface"
+      ],
+      "reducedMotion": "Card is drawn at the review station; no travel path is animated.",
+      "paletteRole": "ink"
+    },
+    {
+      "state": "verified",
+      "family": "work",
+      "nonColourCues": [
+        "at the review station",
+        "check glyph",
+        "evidence tray filled"
+      ],
+      "reducedMotion": "Glyph appears without transition.",
+      "paletteRole": "greenery"
+    },
+    {
+      "state": "completed",
+      "family": "work",
+      "nonColourCues": [
+        "moved to the delivery area",
+        "crate form",
+        "no assignee marker"
+      ],
+      "reducedMotion": "Card is drawn in the delivery area; no travel path is animated.",
+      "paletteRole": "greenery"
+    },
+    {
+      "state": "waiting_input",
+      "family": "work",
+      "nonColourCues": [
+        "at the owning desk",
+        "question glyph",
+        "entry in the attention rail"
+      ],
+      "reducedMotion": "Glyph and rail entry appear at full opacity; no pulse.",
+      "paletteRole": "attention"
+    },
+    {
+      "state": "blocked",
+      "family": "work",
+      "nonColourCues": [
+        "at the owning desk",
+        "bar glyph across the card",
+        "entry in the attention rail"
+      ],
+      "reducedMotion": "Bar appears without transition; nothing pulses.",
+      "paletteRole": "metal"
+    },
+    {
+      "state": "failed",
+      "family": "work",
+      "nonColourCues": [
+        "at the owning desk",
+        "broken-edge card",
+        "entry in the attention rail",
+        "evidence tray filled"
+      ],
+      "reducedMotion": "Broken edge is drawn immediately; no shake, ever.",
+      "paletteRole": "metal"
+    },
+    {
+      "state": "paused",
+      "family": "work",
+      "nonColourCues": [
+        "at the owning desk",
+        "half-height card",
+        "assignee marker dimmed"
+      ],
+      "reducedMotion": "Height change applies instantly.",
+      "paletteRole": "inkMuted"
+    },
+    {
+      "state": "cancelled",
+      "family": "work",
+      "nonColourCues": [
+        "moved to the archive edge",
+        "outline-only card",
+        "strike glyph"
+      ],
+      "reducedMotion": "Card is drawn at the archive edge; no travel path is animated.",
+      "paletteRole": "inkMuted"
+    },
+    {
+      "state": "unavailable",
+      "family": "agent",
+      "nonColourCues": [
+        "no figure at the work area",
+        "vacant desk",
+        "name plate only"
+      ],
+      "reducedMotion": "Figure is absent; no departure is animated.",
+      "paletteRole": "inkMuted"
+    },
+    {
+      "state": "idle",
+      "family": "agent",
+      "nonColourCues": [
+        "figure at the work area",
+        "upright posture",
+        "no work card"
+      ],
+      "reducedMotion": "No ambient motion in either mode; idle is already still.",
+      "paletteRole": "figure"
+    },
+    {
+      "state": "reserved",
+      "family": "agent",
+      "nonColourCues": [
+        "figure at the work area",
+        "upright posture",
+        "work card present, not raised"
+      ],
+      "reducedMotion": "Card appears without transition.",
+      "paletteRole": "figure"
+    },
+    {
+      "state": "active",
+      "family": "agent",
+      "nonColourCues": [
+        "figure at the work area",
+        "attention marker above the figure",
+        "raised work card",
+        "motion permitted"
+      ],
+      "reducedMotion": "Marker appears at full opacity; the permitted motion is suppressed and the marker plus raised card carry the state.",
+      "paletteRole": "attention"
+    },
+    {
+      "state": "waiting",
+      "family": "agent",
+      "nonColourCues": [
+        "figure at the work area",
+        "question glyph above the figure",
+        "entry in the attention rail"
+      ],
+      "reducedMotion": "Glyph appears without pulse.",
+      "paletteRole": "attention"
+    },
+    {
+      "state": "blocked",
+      "family": "agent",
+      "nonColourCues": [
+        "figure at the work area",
+        "bar glyph above the figure",
+        "entry in the attention rail"
+      ],
+      "reducedMotion": "Bar appears without transition.",
+      "paletteRole": "metal"
+    },
+    {
+      "state": "reviewing",
+      "family": "agent",
+      "nonColourCues": [
+        "figure at the review station",
+        "upright posture",
+        "card on the review surface"
+      ],
+      "reducedMotion": "Figure is drawn at the review station; no walk is animated.",
+      "paletteRole": "figure"
+    },
+    {
+      "state": "failed",
+      "family": "agent",
+      "nonColourCues": [
+        "figure at the work area",
+        "broken-edge glyph above the figure",
+        "entry in the attention rail",
+        "evidence tray filled"
+      ],
+      "reducedMotion": "Glyph is drawn immediately; no shake, ever.",
+      "paletteRole": "metal"
+    }
+  ],
+  "candidates": [
+    {
+      "candidateId": "candidate-a-architectural-clarity",
+      "focus": {
+        "treatment": "A two-layer ring on the focused subject: an inner ring in the reserved accent and an outer ring in the scene ground, so the indicator holds against both the floor and any object it may sit on. Focus is never carried by fill alone, never by the absence of a ring on other subjects, and never shares its treatment with the attention marker — attention says the work needs you, focus says the keyboard is here.",
+        "innerRing": "#a56419",
+        "outerRing": "#e4e1da",
+        "ratio": 3.62,
+        "threshold": 3,
+        "passes": true
+      },
+      "statePairs": [
+        {
+          "state": "work:draft",
+          "paletteRole": "inkMuted",
+          "colour": "#595751",
+          "against": "#d3cec3",
+          "ratio": 4.61,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:ready",
+          "paletteRole": "inkMuted",
+          "colour": "#595751",
+          "against": "#d3cec3",
+          "ratio": 4.61,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:assigned",
+          "paletteRole": "ink",
+          "colour": "#2f2e2b",
+          "against": "#d3cec3",
+          "ratio": 8.66,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:active",
+          "paletteRole": "attention",
+          "colour": "#a56419",
+          "against": "#d3cec3",
+          "ratio": 3.02,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:review_requested",
+          "paletteRole": "ink",
+          "colour": "#2f2e2b",
+          "against": "#d3cec3",
+          "ratio": 8.66,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:verified",
+          "paletteRole": "greenery",
+          "colour": "#64765e",
+          "against": "#d3cec3",
+          "ratio": 3.12,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:completed",
+          "paletteRole": "greenery",
+          "colour": "#64765e",
+          "against": "#d3cec3",
+          "ratio": 3.12,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:waiting_input",
+          "paletteRole": "attention",
+          "colour": "#a56419",
+          "against": "#d3cec3",
+          "ratio": 3.02,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:blocked",
+          "paletteRole": "metal",
+          "colour": "#6f7377",
+          "against": "#d3cec3",
+          "ratio": 3.05,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:failed",
+          "paletteRole": "metal",
+          "colour": "#6f7377",
+          "against": "#d3cec3",
+          "ratio": 3.05,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:paused",
+          "paletteRole": "inkMuted",
+          "colour": "#595751",
+          "against": "#d3cec3",
+          "ratio": 4.61,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:cancelled",
+          "paletteRole": "inkMuted",
+          "colour": "#595751",
+          "against": "#d3cec3",
+          "ratio": 4.61,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:unavailable",
+          "paletteRole": "inkMuted",
+          "colour": "#595751",
+          "against": "#d3cec3",
+          "ratio": 4.61,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:idle",
+          "paletteRole": "figure",
+          "colour": "#6e7276",
+          "against": "#d3cec3",
+          "ratio": 3.09,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:reserved",
+          "paletteRole": "figure",
+          "colour": "#6e7276",
+          "against": "#d3cec3",
+          "ratio": 3.09,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:active",
+          "paletteRole": "attention",
+          "colour": "#a56419",
+          "against": "#d3cec3",
+          "ratio": 3.02,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:waiting",
+          "paletteRole": "attention",
+          "colour": "#a56419",
+          "against": "#d3cec3",
+          "ratio": 3.02,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:blocked",
+          "paletteRole": "metal",
+          "colour": "#6f7377",
+          "against": "#d3cec3",
+          "ratio": 3.05,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:reviewing",
+          "paletteRole": "figure",
+          "colour": "#6e7276",
+          "against": "#d3cec3",
+          "ratio": 3.09,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:failed",
+          "paletteRole": "metal",
+          "colour": "#6f7377",
+          "against": "#d3cec3",
+          "ratio": 3.05,
+          "threshold": 3,
+          "passes": true
+        }
+      ],
+      "accommodation": {
+        "declaredChanges": [
+          "Uniform scale-to-fit: the same scene, the same margins, a smaller scale factor. No reflow.",
+          "No zone, agent, label, prop or state marker is dropped, merged or abbreviated.",
+          "The camera does not move, rotate, or change its angle; reset view returns to the same position at both sizes.",
+          "Label plates keep their pixel size relative to the scene, so text scales with the composition rather than staying fixed and crowding it.",
+          "The accessible Office outline is unchanged at both viewports; it is not a function of scale."
+        ],
+        "textCount1440": 13,
+        "textCount1280": 13,
+        "zoneLabels1440": 7,
+        "zoneLabels1280": 7
+      }
+    },
+    {
+      "candidateId": "candidate-b-human-studio-warmth",
+      "focus": {
+        "treatment": "A two-layer ring on the focused subject: an inner ring in the reserved accent and an outer ring in the scene ground, so the indicator holds against both the floor and any object it may sit on. Focus is never carried by fill alone, never by the absence of a ring on other subjects, and never shares its treatment with the attention marker — attention says the work needs you, focus says the keyboard is here.",
+        "innerRing": "#ab6819",
+        "outerRing": "#efe7d9",
+        "ratio": 3.62,
+        "threshold": 3,
+        "passes": true
+      },
+      "statePairs": [
+        {
+          "state": "work:draft",
+          "paletteRole": "inkMuted",
+          "colour": "#625b51",
+          "against": "#e0d3be",
+          "ratio": 4.54,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:ready",
+          "paletteRole": "inkMuted",
+          "colour": "#625b51",
+          "against": "#e0d3be",
+          "ratio": 4.54,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:assigned",
+          "paletteRole": "ink",
+          "colour": "#332e27",
+          "against": "#e0d3be",
+          "ratio": 9.12,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:active",
+          "paletteRole": "attention",
+          "colour": "#ab6819",
+          "against": "#e0d3be",
+          "ratio": 3.01,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:review_requested",
+          "paletteRole": "ink",
+          "colour": "#332e27",
+          "against": "#e0d3be",
+          "ratio": 9.12,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:verified",
+          "paletteRole": "greenery",
+          "colour": "#687e5c",
+          "against": "#e0d3be",
+          "ratio": 3.01,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:completed",
+          "paletteRole": "greenery",
+          "colour": "#687e5c",
+          "against": "#e0d3be",
+          "ratio": 3.01,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:waiting_input",
+          "paletteRole": "attention",
+          "colour": "#ab6819",
+          "against": "#e0d3be",
+          "ratio": 3.01,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:blocked",
+          "paletteRole": "metal",
+          "colour": "#7b7368",
+          "against": "#e0d3be",
+          "ratio": 3.17,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:failed",
+          "paletteRole": "metal",
+          "colour": "#7b7368",
+          "against": "#e0d3be",
+          "ratio": 3.17,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:paused",
+          "paletteRole": "inkMuted",
+          "colour": "#625b51",
+          "against": "#e0d3be",
+          "ratio": 4.54,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:cancelled",
+          "paletteRole": "inkMuted",
+          "colour": "#625b51",
+          "against": "#e0d3be",
+          "ratio": 4.54,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:unavailable",
+          "paletteRole": "inkMuted",
+          "colour": "#625b51",
+          "against": "#e0d3be",
+          "ratio": 4.54,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:idle",
+          "paletteRole": "figure",
+          "colour": "#7f766b",
+          "against": "#e0d3be",
+          "ratio": 3.02,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:reserved",
+          "paletteRole": "figure",
+          "colour": "#7f766b",
+          "against": "#e0d3be",
+          "ratio": 3.02,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:active",
+          "paletteRole": "attention",
+          "colour": "#ab6819",
+          "against": "#e0d3be",
+          "ratio": 3.01,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:waiting",
+          "paletteRole": "attention",
+          "colour": "#ab6819",
+          "against": "#e0d3be",
+          "ratio": 3.01,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:blocked",
+          "paletteRole": "metal",
+          "colour": "#7b7368",
+          "against": "#e0d3be",
+          "ratio": 3.17,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:reviewing",
+          "paletteRole": "figure",
+          "colour": "#7f766b",
+          "against": "#e0d3be",
+          "ratio": 3.02,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:failed",
+          "paletteRole": "metal",
+          "colour": "#7b7368",
+          "against": "#e0d3be",
+          "ratio": 3.17,
+          "threshold": 3,
+          "passes": true
+        }
+      ],
+      "accommodation": {
+        "declaredChanges": [
+          "Uniform scale-to-fit: the same scene, the same margins, a smaller scale factor. No reflow.",
+          "No zone, agent, label, prop or state marker is dropped, merged or abbreviated.",
+          "The camera does not move, rotate, or change its angle; reset view returns to the same position at both sizes.",
+          "Label plates keep their pixel size relative to the scene, so text scales with the composition rather than staying fixed and crowding it.",
+          "The accessible Office outline is unchanged at both viewports; it is not a function of scale."
+        ],
+        "textCount1440": 13,
+        "textCount1280": 13,
+        "zoneLabels1440": 7,
+        "zoneLabels1280": 7
+      }
+    },
+    {
+      "candidateId": "candidate-c-miniature-craft-precision",
+      "focus": {
+        "treatment": "A two-layer ring on the focused subject: an inner ring in the reserved accent and an outer ring in the scene ground, so the indicator holds against both the floor and any object it may sit on. Focus is never carried by fill alone, never by the absence of a ring on other subjects, and never shares its treatment with the attention marker — attention says the work needs you, focus says the keyboard is here.",
+        "innerRing": "#9f5d12",
+        "outerRing": "#ded9cf",
+        "ratio": 3.69,
+        "threshold": 3,
+        "passes": true
+      },
+      "statePairs": [
+        {
+          "state": "work:draft",
+          "paletteRole": "inkMuted",
+          "colour": "#57524c",
+          "against": "#cec6b5",
+          "ratio": 4.55,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:ready",
+          "paletteRole": "inkMuted",
+          "colour": "#57524c",
+          "against": "#cec6b5",
+          "ratio": 4.55,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:assigned",
+          "paletteRole": "ink",
+          "colour": "#2b2924",
+          "against": "#cec6b5",
+          "ratio": 8.56,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:active",
+          "paletteRole": "attention",
+          "colour": "#9f5d12",
+          "against": "#cec6b5",
+          "ratio": 3.06,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:review_requested",
+          "paletteRole": "ink",
+          "colour": "#2b2924",
+          "against": "#cec6b5",
+          "ratio": 8.56,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:verified",
+          "paletteRole": "greenery",
+          "colour": "#5f7356",
+          "against": "#cec6b5",
+          "ratio": 3.04,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:completed",
+          "paletteRole": "greenery",
+          "colour": "#5f7356",
+          "against": "#cec6b5",
+          "ratio": 3.04,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:waiting_input",
+          "paletteRole": "attention",
+          "colour": "#9f5d12",
+          "against": "#cec6b5",
+          "ratio": 3.06,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:blocked",
+          "paletteRole": "metal",
+          "colour": "#686c70",
+          "against": "#cec6b5",
+          "ratio": 3.12,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:failed",
+          "paletteRole": "metal",
+          "colour": "#686c70",
+          "against": "#cec6b5",
+          "ratio": 3.12,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:paused",
+          "paletteRole": "inkMuted",
+          "colour": "#57524c",
+          "against": "#cec6b5",
+          "ratio": 4.55,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "work:cancelled",
+          "paletteRole": "inkMuted",
+          "colour": "#57524c",
+          "against": "#cec6b5",
+          "ratio": 4.55,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:unavailable",
+          "paletteRole": "inkMuted",
+          "colour": "#57524c",
+          "against": "#cec6b5",
+          "ratio": 4.55,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:idle",
+          "paletteRole": "figure",
+          "colour": "#726b62",
+          "against": "#cec6b5",
+          "ratio": 3.1,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:reserved",
+          "paletteRole": "figure",
+          "colour": "#726b62",
+          "against": "#cec6b5",
+          "ratio": 3.1,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:active",
+          "paletteRole": "attention",
+          "colour": "#9f5d12",
+          "against": "#cec6b5",
+          "ratio": 3.06,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:waiting",
+          "paletteRole": "attention",
+          "colour": "#9f5d12",
+          "against": "#cec6b5",
+          "ratio": 3.06,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:blocked",
+          "paletteRole": "metal",
+          "colour": "#686c70",
+          "against": "#cec6b5",
+          "ratio": 3.12,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:reviewing",
+          "paletteRole": "figure",
+          "colour": "#726b62",
+          "against": "#cec6b5",
+          "ratio": 3.1,
+          "threshold": 3,
+          "passes": true
+        },
+        {
+          "state": "agent:failed",
+          "paletteRole": "metal",
+          "colour": "#686c70",
+          "against": "#cec6b5",
+          "ratio": 3.12,
+          "threshold": 3,
+          "passes": true
+        }
+      ],
+      "accommodation": {
+        "declaredChanges": [
+          "Uniform scale-to-fit: the same scene, the same margins, a smaller scale factor. No reflow.",
+          "No zone, agent, label, prop or state marker is dropped, merged or abbreviated.",
+          "The camera does not move, rotate, or change its angle; reset view returns to the same position at both sizes.",
+          "Label plates keep their pixel size relative to the scene, so text scales with the composition rather than staying fixed and crowding it.",
+          "The accessible Office outline is unchanged at both viewports; it is not a function of scale."
+        ],
+        "textCount1440": 13,
+        "textCount1280": 13,
+        "zoneLabels1440": 7,
+        "zoneLabels1280": 7
+      }
+    }
+  ],
+  "failing": []
+}

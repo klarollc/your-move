@@ -965,3 +965,44 @@ deferred to Phase 7 with a named trigger, since only Cascadia Mono (SIL OFL 1.1)
    with its intended message. **A mutation that does not apply is indistinguishable from a guard
    that does not work** — the green-run-proving-nothing failure, arriving inside the tooling built
    to catch it. Verify that the mutation landed before believing a survivor.
+
+## Phase 6 Task 6 — accessibility and contrast intent
+
+Date: 2026-09-13.
+
+The contrast half of this task landed early, during Tasks 2–4. What remained was the acceptance
+criterion that actually had teeth: **no candidate advances with an undocumented state.**
+
+- RED: eight checks against a report that did not exist.
+- GREEN: `scripts/phase6-accessibility.ts` documents all twenty canonical states — twelve
+  `WorkState` values and eight `AgentPresence` values — each with cues that survive greyscale and a
+  reduced-motion equivalent. `docs/evidence/phase-6/accessibility-report.json` measures them per
+  candidate. The state lists are restated in the suite rather than imported, so a state added to the
+  domain fails as undocumented instead of silently expanding both sides of the comparison at once.
+
+**Treatments are shared by all three candidates, deliberately.** What a state means is canonical
+truth; only its colour is art direction. A candidate that distinguished `blocked` from `failed` by a
+cue another candidate lacked would be offering a different semantics, and the owner at Task 8 would
+be choosing what the office can express rather than how it looks.
+
+**A real accessibility failure, found by measuring rather than by asserting.** Nine of the twenty
+state colours fell below the SC 1.4.11 non-text threshold of 3:1 against the floor, in all three
+candidates — every `attention`, `greenery` and `figure` marker. Figures at 2.4:1 against the floor
+means the office's own occupants were not reliably perceivable as objects. All three palettes were
+corrected until the worst case across every surface a marker can sit on clears 3:1; nothing was
+waived. The frozen fixture digest is unchanged, because the frame is state and the fix was colour.
+
+**Mutation evidence.**
+
+- Removing one state treatment (`agent:reviewing`) fails the coverage check.
+- Giving `blocked` and `failed` identical non-colour cues fails the distinctness check. This is the
+  guard that matters: the weaker version asserts every state *has* a cue, and two states can each
+  have a cue while being identical once colour is removed — the same shape as the role-distinctness
+  check this repository already recorded as blind to two roles differing only by name.
+- The accommodation check counts rendered `<text>` nodes in both compositions rather than trusting
+  the board's prose: 13 text nodes and 7 zone labels at both viewports, in all three candidates. A
+  fit change that dropped a label would fail rather than be described as fine.
+
+Verified in a browser at both approved viewports: 13 board sections, the Task 6 table rendering all
+twenty rows, no horizontal overflow at 1280×800. No claim is made about any viewport outside the
+approved D-07 matrix.

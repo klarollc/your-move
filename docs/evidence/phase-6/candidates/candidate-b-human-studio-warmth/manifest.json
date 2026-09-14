@@ -95,14 +95,14 @@
       "pair": "Attention marker on scene ground",
       "kind": "non-text",
       "threshold": 3,
-      "ratio": 3.13,
+      "ratio": 3.62,
       "passesAA": true
     },
     {
       "pair": "Attention marker on its own halo",
       "kind": "non-text",
       "threshold": 3,
-      "ratio": 3.03,
+      "ratio": 3.5,
       "passesAA": true
     }
   ],

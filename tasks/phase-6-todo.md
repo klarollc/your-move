@@ -57,8 +57,17 @@ Read each entry's own status line. Nothing here inherits authorization from the 
     with a named trigger — Cascadia Mono under SIL OFL 1.1 is the only named face that would survive
     an embedding review. Evidence: `docs/evidence/phase-4/red-green-log.md`.
 
-- [ ] Task 6: Accessibility and contrast intent.
+- [x] Task 6: Accessibility and contrast intent. **Complete 2026-09-13.**
   - Acceptance: per candidate — semantic palette, amber reserved for attention and focus, contrast at canonical scale, reduced-motion translation, 1280×800 accommodation diagram.
+  - Result: all twenty canonical states documented with greyscale-surviving cues and reduced-motion
+    equivalents, shared across candidates because meaning is canonical and only colour is art.
+    `docs/evidence/phase-6/accessibility-report.json`; a Task 6 section now renders in each board.
+    **Nine of twenty state colours failed the SC 1.4.11 3:1 non-text threshold** against the floor in
+    all three candidates — including the figures themselves — and all three palettes were corrected
+    rather than waived. Eight machine checks, three mutations killed, including a distinctness guard
+    that catches two states being identical once colour is removed. The 1280×800 claim is measured by
+    counting rendered text in both compositions, not asserted. Frozen digest unchanged.
+    Evidence: `docs/evidence/phase-4/red-green-log.md`. Rebuild: `npm run phase6:a11y:build`.
 
 - [ ] Task 7: Independent scored review.
   - Acceptance: fourteen rubric criteria scored 1–5 with written evidence, Product Designer and Visual QA Reviewer separately; disagreements recorded, never averaged.

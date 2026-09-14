@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 
 import { phase6ComparisonFixtureDigest } from "@cuckcode/testing";
 
+import { ACCOMMODATION_CHANGES, FOCUS_INTENT, STATE_TREATMENTS } from "./phase6-accessibility.js";
 import { AGENTS, ZONES } from "./phase6-candidate-geometry.js";
 import { renderComposition } from "./phase6-candidate-render.js";
 import { CANDIDATE_STYLES, type CandidateStyle } from "./phase6-candidate-styles.js";
@@ -261,6 +262,23 @@ function boardPage(style: CandidateStyle): string {
     <li><strong>DOM shell:</strong> all labels are real text and have accessible-outline equivalents; none is canvas-only.</li>
     <li><strong>Cost driver:</strong> ${style.includeWarmProps ? "prop variety — warm-density objects roughly double the staging pass." : "none beyond the core prop set."}</li>
   </ul>
+</section>
+
+<section>
+  <h2>Task 6 · Accessible treatment for every canonical state</h2>
+  <p class="note">All twenty states the office can express, each with a cue that survives greyscale and a reduced-motion equivalent. These treatments are <strong>identical in all three candidates</strong>: what a state means is canonical truth, and only its colour is art direction. A candidate that distinguished two states by a cue another candidate lacked would be offering a different semantics, not a different look.</p>
+  <table>
+    <thead><tr><th>State</th><th>Cues that are not colour</th><th>Reduced motion</th></tr></thead>
+    <tbody>${STATE_TREATMENTS.map(
+      (treatment) =>
+        `<tr><td class="mono">${treatment.family}:${treatment.state}</td><td>${treatment.nonColourCues.join("; ")}</td><td>${treatment.reducedMotion}</td></tr>`,
+    ).join("")}</tbody>
+  </table>
+  <h3 style="font-size:14px">Focus intent</h3>
+  <p class="note">${FOCUS_INTENT.treatment}</p>
+  <h3 style="font-size:14px">1280 × 800 accommodation</h3>
+  <ul>${ACCOMMODATION_CHANGES.map((change) => `<li>${change}</li>`).join("")}</ul>
+  <p class="note">Measured, not asserted: <code class="mono">docs/evidence/phase-6/accessibility-report.json</code> counts the rendered text in both compositions and the suite fails if the narrower viewport carries fewer labels.</p>
 </section>
 </div>`;
 }
