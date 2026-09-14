@@ -54,7 +54,13 @@ type StateInventoryEntry = {
   accessibleName: string;
 };
 
-type Amendment = { stateId: string; field: string; authored: string; amendedTo: string; reason: string };
+type Amendment = {
+  stateId: string;
+  field: string;
+  authored: string;
+  amendedTo: string;
+  reason: string;
+};
 
 type Cell = { state: string; viewport: string; capture: string; captureSha256: string };
 
@@ -65,8 +71,7 @@ type Annotation = {
   gap: string | null;
 };
 
-const json = async <T>(path: string): Promise<T> =>
-  JSON.parse(await readFile(path, "utf8")) as T;
+const json = async <T>(path: string): Promise<T> => JSON.parse(await readFile(path, "utf8")) as T;
 
 /** PNG intrinsic size, straight from IHDR. A plate's real pixel size is part of what is being judged. */
 const pngSize = (body: Buffer): { width: number; height: number } => ({
@@ -78,7 +83,9 @@ const escape = (value: string): string =>
   value.replace(
     /[&<>"']/gu,
     (character) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character] as string,
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        character
+      ] as string,
   );
 
 const surface = await json<{
@@ -105,8 +112,14 @@ const visualQa = await json<{
  * silently the moment someone changes a capture target, and a note explaining a crop that is no
  * longer a crop is worse than no note.
  */
-const spec = await readFile(resolve(ROOT, "tests/visual/phase-5-decision-notice-states.spec.ts"), "utf8");
-const journeyBlocks = spec.slice(spec.indexOf("const JOURNEYS")).split(/\n {2}\{\n/u).slice(1);
+const spec = await readFile(
+  resolve(ROOT, "tests/visual/phase-5-decision-notice-states.spec.ts"),
+  "utf8",
+);
+const journeyBlocks = spec
+  .slice(spec.indexOf("const JOURNEYS"))
+  .split(/\n {2}\{\n/u)
+  .slice(1);
 const scopedInSpec = new Set(
   journeyBlocks
     .filter((block) => /\n\s*target:/u.test(block))
@@ -131,7 +144,14 @@ const amendmentByState = new Map(amendments.amendments.map((entry) => [entry.sta
 const cellFor = (state: string, viewport: string): Cell | undefined =>
   manifest.cells.find((cell) => cell.state === state && cell.viewport === viewport);
 
-const plates: Array<{ state: string; viewport: string; dataUri: string; width: number; height: number; sha: string }> = [];
+const plates: Array<{
+  state: string;
+  viewport: string;
+  dataUri: string;
+  width: number;
+  height: number;
+  sha: string;
+}> = [];
 for (const state of surface.requiredStates) {
   for (const viewport of VIEWPORTS) {
     const cell = cellFor(state, viewport);
@@ -161,7 +181,9 @@ for (const state of surface.requiredStates) {
 }
 
 const plateFor = (state: string, viewport: string): (typeof plates)[number] =>
-  plates.find((plate) => plate.state === state && plate.viewport === viewport) as (typeof plates)[number];
+  plates.find(
+    (plate) => plate.state === state && plate.viewport === viewport,
+  ) as (typeof plates)[number];
 
 const section = (state: string): string => {
   const entry = byState.get(state) as StateInventoryEntry;

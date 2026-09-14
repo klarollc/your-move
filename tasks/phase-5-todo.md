@@ -166,6 +166,35 @@ approval.
   - The page's Copy button emits a verdict block carrying the digest of each plate looked at, and
     lists unmarked states as `not-looked-at` rather than omitting them.
 
+- [x] **C-17 waived by the owner 2026-09-14**, amending Decision 5-D.
+      `docs/evidence/phase-5/decision-record-2026-09-14-c-17-waiver.md`; overlay in
+      `acceptance-contract-waivers.json`, recorded beside the frozen contract rather than into it.
+  - **Waived is not met.** No human listener has ever heard this interface; every accessibility
+    claim rests on axe scans and Playwright assertions. MDD §19's walkthrough is now unmet in two
+    consecutive phases and Phase 8 inherits it. W5 and W6 from the Phase 4 waiver stay open.
+  - What survives: the governance did not close the gate by itself. Three release-review passes ran
+    against this build and all three refused to certify, each naming C-17 unmet. None reached for
+    the axe results. The owner elected not to walk it — a different fact, and kept separate.
+  - Every brief and verdict must report C-17 as **waived by owner**, never folded into a count.
+
+- [x] **C-18 and charter gap 3 closed 2026-09-14.** Owner ruled the sidecar shape;
+      `docs/evidence/phase-5/provenance/schema.json` and the append-only ledger
+      `docs/evidence/provenance.jsonl`. `npm run phase5:provenance` runs inside `npm run verify`.
+  - Gap 3 had been dispositioned as design work inside Task 2 and Task 2 closed without doing it,
+    which is why C-18 sat blocked through three release reviews. **All ten gaps are now closed and
+    all 21 criteria are `ready`** — assessable, which is not the same as met.
+  - Why a sidecar: marking an accepted artifact superseded by editing it is the mutation behind
+    D4-P-001 and D4-P-003. Appending mutates nothing, and the repo had already converged on this
+    shape four times by hand.
+  - 282 artifacts recorded with digest and producer, 6 supersession edges, five rules enforced.
+    Corrections to a digest or an attribution are appends, so the earlier claim stays in the history.
+  - **43 artifacts, almost all pre-Phase-5, are recorded `producerKind: unknown`** — no code in the
+    tree writes them and no record says who did. Stated, not guessed. Whether that satisfies
+    "every evidence artifact" is a release-review judgement and is deliberately not asserted.
+  - Two findings while building it: `amendments.json` carries a `supersedes` field that does not
+    mean supersession, and the P-3 guard caught its own schema citing a superseded pass on the
+    first run. The fix was to name the field for what it holds, not to widen the exemption.
+
 - [ ] Task 10: **Owner acceptance. Owner-run.** Accept the fixture outcome or record bounded
       revisions. Atomically creates the D-24 review that Phase 8 closes.
 

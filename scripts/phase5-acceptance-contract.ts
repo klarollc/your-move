@@ -37,9 +37,12 @@ export type Criterion = {
  * art direction, responsive and content-length rules, reduced motion, and a twenty-state inventory.
  * Gap 8 closed the same day when the Test Engineer defined the isolation procedure in Task 6: six
  * steps, a pass condition, and what a deliberate failure must produce to count as evidence.
- * Gap 3 remains open, and the criterion depending on it stays blocked.
+ * Gap 3 closed on 2026-09-14 when the owner ruled the sidecar shape and the provenance schema was
+ * authored: docs/evidence/phase-5/provenance/schema.json, with the append-only ledger beside it.
+ * No gap is open. A criterion being unblocked says only that it can now be assessed, never that it
+ * is met.
  */
-export const BLOCKED_GAPS = [3];
+export const BLOCKED_GAPS: number[] = [];
 
 const MDD = "MDD §6 Decision Notice acceptance contract";
 const CHARTER = "approved-charter-v1, owner ruling 2026-09-14";
@@ -235,9 +238,9 @@ export const CRITERIA: Criterion[] = [
     source: `charter goal; ${CHARTER} gap 3`,
     evidenceClasses: ["static", "behavioral"],
     testableAssertion:
-      "Pending the gap-3 schema. Each artifact carries its origin and, when replaced, a link to what superseded it; a superseded artifact can never be cited as current.",
+      "Every file under docs/evidence has a ledger record carrying its digest and its producer, every recorded digest still matches the file, supersession edges exist for every replaced artifact, and no artifact that is still current cites a superseded one outside a declared historical field. Artifacts whose producer is not established are recorded as unknown and counted, never guessed.",
     dependsOnGap: 3,
-    status: "blocked-on-gap",
+    status: "ready",
   },
   {
     id: "C-19",

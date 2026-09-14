@@ -1,12 +1,10 @@
 {
   "schema": "cuckcode.phase5-acceptance-contract.v1",
-  "status": "Frozen 2026-09-14 against approved-charter-v1. Three criteria are blocked on gaps that were dispositioned as work rather than answers. No implementation is authorized by this document.",
+  "status": "Frozen 2026-09-14 against approved-charter-v1. The three gaps dispositioned as work rather than answers have all closed — 7 by the Task 3 surface contract, 8 by the Task 6 isolation procedure, 3 by the provenance schema ruled on 2026-09-14 — so every criterion can now be assessed. That is not a claim that any of them is met. No implementation is authorized by this document.",
   "frozenAt": "2026-09-14",
   "charter": "docs/evidence/phase-5/approved-charter-v1.md",
   "evidenceClassRule": "MDD §18: the four classes are never conflated, and only human-visual-acceptance approves art direction. Passing static, behavioral and rendered evidence cannot substitute for it.",
-  "blockedGaps": [
-    3
-  ],
+  "blockedGaps": [],
   "criteria": [
     {
       "id": "C-01",
@@ -213,9 +211,9 @@
         "static",
         "behavioral"
       ],
-      "testableAssertion": "Pending the gap-3 schema. Each artifact carries its origin and, when replaced, a link to what superseded it; a superseded artifact can never be cited as current.",
+      "testableAssertion": "Every file under docs/evidence has a ledger record carrying its digest and its producer, every recorded digest still matches the file, supersession edges exist for every replaced artifact, and no artifact that is still current cites a superseded one outside a declared historical field. Artifacts whose producer is not established are recorded as unknown and counted, never guessed.",
       "dependsOnGap": 3,
-      "status": "blocked-on-gap"
+      "status": "ready"
     },
     {
       "id": "C-19",

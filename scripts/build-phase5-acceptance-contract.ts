@@ -40,7 +40,7 @@ await writeFile(
     {
       schema: "cuckcode.phase5-acceptance-contract.v1",
       status:
-        "Frozen 2026-09-14 against approved-charter-v1. Three criteria are blocked on gaps that were dispositioned as work rather than answers. No implementation is authorized by this document.",
+        "Frozen 2026-09-14 against approved-charter-v1. The three gaps dispositioned as work rather than answers have all closed — 7 by the Task 3 surface contract, 8 by the Task 6 isolation procedure, 3 by the provenance schema ruled on 2026-09-14 — so every criterion can now be assessed. That is not a claim that any of them is met. No implementation is authorized by this document.",
       frozenAt: "2026-09-14",
       charter: "docs/evidence/phase-5/approved-charter-v1.md",
       evidenceClassRule:

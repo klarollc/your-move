@@ -1,0 +1,93 @@
+{
+  "schema": "cuckcode.evidence-provenance-schema.v1",
+  "status": "Authored 2026-09-14 to close charter gap 3, which the charter dispositioned as design work inside Phase 5 rather than as an owner decision. Ruled by the owner on 2026-09-14: the sidecar ledger, append-only.",
+  "closesGap": 3,
+  "unblocks": ["C-18"],
+  "ruledBy": "owner",
+  "ruledOn": "2026-09-14",
+  "decisionRecord": "docs/evidence/phase-5/decision-record-2026-09-14-c-18-provenance.md",
+  "ledger": "docs/evidence/provenance.jsonl",
+
+  "whyASidecarAndNotAFieldOnEachArtifact": "Recording that an artifact has been superseded means writing into an artifact whose owner gate has already closed. That is the mutation defects D4-P-001 and D4-P-003 were, and the evidence-immutability guard exists to prevent it. An append-only ledger records the same fact by adding a line, so no accepted artifact is ever edited. The repository had already converged on this shape four separate times by hand — amendments.json, focus-contract.json, journeys.json and pass-2-crosscheck-correction.json are all records placed beside an artifact rather than into it.",
+
+  "notToBeConfusedWith": {
+    "artifact": "docs/evidence/phase-6/provenance-register.json",
+    "why": "That register is about creative provenance — originality attestation, references consulted, licence basis for the visual candidates. This schema is about artifact provenance — what produced a file, from which inputs, under whose authorization, and what replaced it. The shared word covers two unrelated obligations."
+  },
+
+  "entries": {
+    "record": {
+      "op": "record",
+      "artifact": "path relative to docs/evidence",
+      "sha256": "full digest of the bytes as recorded",
+      "bytes": "size in bytes",
+      "recordedAt": "ISO-8601 UTC",
+      "producerKind": "one of script, suite, agent, implementer, owner, unknown. `implementer` is kept distinct from `agent` because Decision 5-A says the promoted role agents did not write the implementation, and the packet must preserve that limit rather than blur it",
+      "producedBy": "the script path, suite path, role id or person that produced it; null when producerKind is unknown",
+      "authorizedBy": "path to the decision record or charter that authorized it, or null"
+    },
+    "supersede": {
+      "op": "supersede",
+      "artifact": "the artifact that is no longer current",
+      "supersededBy": "the artifact that replaced it",
+      "recordedAt": "ISO-8601 UTC",
+      "why": "why it was replaced, in a sentence"
+    }
+  },
+
+  "rules": [
+    {
+      "id": "P-1",
+      "rule": "Every file under docs/evidence has a record entry, the ledger itself excepted.",
+      "why": "An artifact with no origin is the condition C-18 names. The ledger cannot record itself without regress, so it is excluded by name rather than by a pattern that might quietly exclude more."
+    },
+    {
+      "id": "P-2",
+      "rule": "Every record entry's digest still matches the file on disk, unless that artifact has been superseded.",
+      "why": "A provenance claim about bytes that have since changed is a claim about nothing. This is the same failure the determinism record guards against."
+    },
+    {
+      "id": "P-3",
+      "rule": "No artifact that is still current may cite a superseded artifact, except in a field declared historical.",
+      "why": "This is the enforcement half of C-18 — 'a superseded artifact can never be cited as current'. It is not hypothetical: release pass 1 reported 4 of 21 and pass 3 reported 11 of 21 on an unchanged implementation, and briefs built from superseded inputs are DF-015.",
+      "historicalFields": ["previousPasses", "supersedes", "supersededBy", "supersededPasses", "supersededPassAliases", "notToBeConfusedWith"]
+    },
+    {
+      "id": "P-4",
+      "rule": "The ledger only ever grows. Every line already committed must still be present, in order, as a prefix of the new file.",
+      "why": "An append-only record that can be rewritten is a mutable record with extra steps."
+    },
+    {
+      "id": "P-5",
+      "rule": "Producers are attributed from a declared map, and anything unmatched is recorded as producerKind 'unknown' and counted in the build output.",
+      "why": "Guessing an origin is worse than recording that it is not established. The count is surfaced so that unattributed artifacts stay visible rather than becoming the silent majority.",
+      "knownShortfall": "Most pre-Phase-5 evidence is recorded as unknown. No code in the tree writes those files and their authorship is recorded nowhere, so the ledger states that the origin is not established rather than inventing one. Whether that satisfies C-18's 'every evidence artifact' is a release-review judgement and is deliberately not asserted here."
+    }
+  ],
+
+  "supersessionDerivation": {
+    "from": "the pass-N convention only",
+    "rule": "Within one directory, files named pass-<N>.json are ordered by N and every pass but the highest is superseded by the highest.",
+    "supersededPassAliases": [
+      {
+        "artifact": "phase-5/verification/verification.json",
+        "treatedAsPass": 1,
+        "why": "The first verification pass was written before the pass-N convention existed. It is the same review, and leaving it outside the ordering would let a superseded pass stay citable as current."
+      }
+    ],
+    "crossCheckedAgainst": "previousPasses, where an artifact declares it. Derivation and declaration must agree or the build fails.",
+    "deliberatelyNotDerivedFrom": [
+      {
+        "field": "supersedes",
+        "example": "phase-5/surface-contract/amendments.json",
+        "why": "It reads 'supersedes: surface-contract.json', but the amendments file does not supersede the surface contract — it amends two names in it, and the contract remains the authored artifact that everything else cites. Treating that field as a supersession edge would mark the live contract superseded and forbid every current citation of it. A field named for a relation it does not express is exactly the ambiguity C-18 exists to remove; it is recorded here rather than acted on."
+      }
+    ]
+  },
+
+  "retention": {
+    "policy": "Superseded artifacts are kept indefinitely. Nothing is pruned.",
+    "ruledBy": "owner",
+    "why": "The tree is 278 files and 4.4 MB. Deleting superseded evidence to reclaim nothing would destroy the audit trail this schema exists to create; a supersession edge pointing at a file that is gone is not a record of what changed."
+  }
+}

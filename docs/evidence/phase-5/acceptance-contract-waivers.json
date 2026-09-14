@@ -1,0 +1,26 @@
+{
+  "schema": "cuckcode.phase5-acceptance-waivers.v1",
+  "status": "Owner waivers against the frozen acceptance contract, recorded beside it and never edited into it. A waived criterion is NOT a met criterion, and nothing here may be read as evidence that the underlying property holds.",
+  "ruledBy": "owner",
+  "ruledOn": "2026-09-14",
+  "appliesTo": "docs/evidence/phase-5/acceptance-contract.json",
+  "readingRule": "Any brief, verdict or packet that reports criterion status must report a waived criterion as 'waived by owner', with its shortfall, and must never fold it into a satisfied count.",
+
+  "waivers": [
+    {
+      "criterionId": "C-17",
+      "criterion": "One screen-reader walkthrough is genuinely performed and recorded, closing the Phase 4 waiver.",
+      "disposition": "waived",
+      "amends": "Decision 5-D, which committed Phase 5 to performing the walkthrough properly after the Phase 4 waiver.",
+      "ownerReasoning": "The Decision Notice is a fixture, not a product. Nobody will use it with a screen reader because nobody will use it at all, and under Decision 5-A the agents did not write it. The owner judged the personal cost of the walkthrough not repaid by what it would establish about a component that exists only to be governed.",
+      "whatIsThereforeNotEstablished": [
+        "No human listener has ever heard this interface. Every accessibility claim in Phase 5 rests on automated axe scans and Playwright assertions.",
+        "The nine focus destinations in focus-contract.json are asserted by tests and unconfirmed by ear. A destination can be correct in the accessibility tree and wrong in what is actually announced.",
+        "The MDD §19 walkthrough requirement is now unmet in two consecutive phases. Phase 8 inherits an interface no screen reader has been attached to.",
+        "The specific properties the Phase 4 waiver left open — W5 and W6 in phase-4/comprehension/screen-reader-walkthrough.md — remain open."
+      ],
+      "whatIsStillEstablished": "That the governance would not close the criterion by itself. Three release-review passes ran against this build and all three refused to certify, each naming C-17 unmet. The system did not substitute 44 passing axe assertions for the walkthrough; the owner elected not to perform it. Those are different facts and the packet must not blur them.",
+      "notAPrecedent": "This waiver covers C-17 in Phase 5 only. It does not license substituting automated accessibility evidence for human-visual-acceptance anywhere, which MDD §18 forbids independently of any waiver."
+    }
+  ]
+}
