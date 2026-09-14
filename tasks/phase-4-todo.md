@@ -110,7 +110,7 @@ Phase 4 gate below remain unauthorized.
   - Acceptance: six exact reviewed role versions, six qualified distinct identities, bounded permissions, shared briefing, max 13 turns, no tools/effects.
   - Verify: promotion/preflight matrix and owner decision record.
 
-- [ ] Task 17: Bounded live kickoff and manager charter. **AUTHORIZED, not yet runnable.** Owner
+- [x] Task 17: Bounded live kickoff **complete 2026-09-14**; manager charter outstanding. **AUTHORIZED, not yet runnable.** Owner
       approval of the Task 16 packet on 2026-09-08 authorized Task 17 conditional on §7
       (machine-enforced preflight and promotion checks); `e994188` completed §7. Owner ruling
       2026-09-12, Decision 0(a) in
@@ -132,6 +132,15 @@ Phase 4 gate below remain unauthorized.
       fresh go/no-go remain required before the one live kickoff.
   - Acceptance: six contributions, one synthesis, six explicit revisions/affirmations, full attribution, no prohibited effect, manager disposition.
   - Verify: exact `CUCKCODE_LIVE_KICKOFF=1` supervised run and canonical evidence.
+  - **Result: attempt 2 ran the full thirteen turns — 6 contributions, 1 synthesis, 6 revisions, 0
+    failures, not stopped.** Thirteen distinct turn indices and thirteen distinct raw responses, the
+    live confirmation that the replay fix holds. Six bindings, six distinct fingerprints, all
+    verified against the approved packet. **No external effect observed in either attempt.**
+    Attempt 1 stopped at turn 7 on a prompt defect of ours, not a domain or agent fault; it is
+    preserved unmodified. Evidence: `docs/evidence/phase-4/live-kickoff/task-17-run/`.
+  - [ ] **Manager disposition outstanding.** `phase: revision`, `implementationAllowed: false`. The
+        round produced a proposed goal, a register attributing disagreement to all six roles, and ten
+        unresolved evidence gaps. Only the manager approves a charter; no agent can.
 
 - [ ] Task 18: Phase 4 evidence and owner gate.
   - Acceptance: deterministic rerun, exact evidence binding, documented limits, charter record, no Phase 5 or high-fidelity claim.

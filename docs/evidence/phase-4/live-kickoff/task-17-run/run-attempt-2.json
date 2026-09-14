@@ -1,0 +1,1074 @@
+{
+  "schema": "cuckcode.phase4-task17-run.v1",
+  "status": "Run completed. The charter is not approved: only the manager approves a charter.",
+  "ranAt": "2026-09-14T04:22:04.421Z",
+  "briefing": {
+    "schemaVersion": 1,
+    "kickoffId": "kickoff_phase4_task17",
+    "projectId": "project_cuckcode_fixture",
+    "briefingVersion": 1,
+    "goal": "Seed candidate, open to revision or replacement: build the Decision Notice — an isolated, accessible browser component presenting one project decision with evidence links, severity, due date, and explicit acknowledge or defer actions; proven through deterministic tests and current-build visual evidence.",
+    "constraints": [
+      "The work must stay isolated from CuckCode's unfinished production UI and bounded to a controlled session.",
+      "No external side effect of any kind: no network, no deployment, no publishing, no financial action.",
+      "It must be objectively testable, accessible, and visually reviewable.",
+      "It must exercise all six roles and every required evidence class.",
+      "Replacing the seed requires a recorded rationale and an acceptance contract at least as rigorous as the Decision Notice contract."
+    ],
+    "permissions": [
+      "Propose, question, critique and refine the initial goal.",
+      "Decline to contribute, with a stated reason.",
+      "Nothing else. No role may approve the charter, assign work, or begin implementation."
+    ],
+    "evidenceFloor": [
+      "RED then GREEN evidence for every behavioural change",
+      "deterministic browser and failure evidence",
+      "current-build visual evidence at the approved viewports",
+      "an independent release review returning needs-work or eligible-for-owner-approval"
+    ],
+    "knowledgeSnapshotId": "knowledge_phase4_task17_seed",
+    "managerNonNegotiables": [
+      "No implementation begins before the manager approves a versioned charter.",
+      "Completion is never approval, and a green suite is never sufficient evidence.",
+      "Silence is not agreement: an unanswered question stays open.",
+      "No role may grant itself authority the briefing did not give it."
+    ],
+    "activeRoleIds": [
+      "delivery-lead",
+      "product-designer",
+      "implementation-engineer",
+      "test-engineer",
+      "visual-qa-reviewer",
+      "release-reviewer"
+    ]
+  },
+  "synthesisRoleId": "delivery-lead",
+  "bindings": [
+    {
+      "agentId": "agent_delivery_lead",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "medium",
+      "protocolVersion": "0.146.0",
+      "materialFingerprint": "41d6d9d479c4569517cc77acfc464e3d0c4545db7750567bf37519d851313989",
+      "createdAt": "2026-09-14T04:19:43.401Z"
+    },
+    {
+      "agentId": "agent_product_designer",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "medium",
+      "protocolVersion": "0.146.0",
+      "materialFingerprint": "d1631f281fcfd809588eb5b5805f6bbd0d5766544d7eb2d0a8d4a00b49801038",
+      "createdAt": "2026-09-14T04:19:44.300Z"
+    },
+    {
+      "agentId": "agent_implementation_engineer",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "medium",
+      "protocolVersion": "0.146.0",
+      "materialFingerprint": "e4945c869d254a7fe0d4e906264bbd36265f5ffaaadd355ad723915a07390106",
+      "createdAt": "2026-09-14T04:19:45.598Z"
+    },
+    {
+      "agentId": "agent_test_engineer",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "medium",
+      "protocolVersion": "0.146.0",
+      "materialFingerprint": "de69b99bffa4353308f182f9017ecb8c9e89ca22fd29c1b08f1ba50e33ddbcbe",
+      "createdAt": "2026-09-14T04:19:48.376Z"
+    },
+    {
+      "agentId": "agent_visual_qa_reviewer",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "medium",
+      "protocolVersion": "0.146.0",
+      "materialFingerprint": "95e964a6fc4d78e824ed2cc77c4943e9ac34cc7037286a5639adeb5a67b4dd9a",
+      "createdAt": "2026-09-14T04:19:50.998Z"
+    },
+    {
+      "agentId": "agent_release_reviewer",
+      "model": "gpt-5.6-sol",
+      "reasoningEffort": "medium",
+      "protocolVersion": "0.146.0",
+      "materialFingerprint": "f21e0fd66fc1efb811da469379aa8344c34306ff5693593317615541a124973a",
+      "createdAt": "2026-09-14T04:19:53.450Z"
+    }
+  ],
+  "result": {
+    "status": "completed",
+    "result": {
+      "state": {
+        "briefing": {
+          "schemaVersion": 1,
+          "kickoffId": "kickoff_phase4_task17",
+          "projectId": "project_cuckcode_fixture",
+          "briefingVersion": 1,
+          "goal": "Seed candidate, open to revision or replacement: build the Decision Notice — an isolated, accessible browser component presenting one project decision with evidence links, severity, due date, and explicit acknowledge or defer actions; proven through deterministic tests and current-build visual evidence.",
+          "constraints": [
+            "The work must stay isolated from CuckCode's unfinished production UI and bounded to a controlled session.",
+            "No external side effect of any kind: no network, no deployment, no publishing, no financial action.",
+            "It must be objectively testable, accessible, and visually reviewable.",
+            "It must exercise all six roles and every required evidence class.",
+            "Replacing the seed requires a recorded rationale and an acceptance contract at least as rigorous as the Decision Notice contract."
+          ],
+          "permissions": [
+            "Propose, question, critique and refine the initial goal.",
+            "Decline to contribute, with a stated reason.",
+            "Nothing else. No role may approve the charter, assign work, or begin implementation."
+          ],
+          "evidenceFloor": [
+            "RED then GREEN evidence for every behavioural change",
+            "deterministic browser and failure evidence",
+            "current-build visual evidence at the approved viewports",
+            "an independent release review returning needs-work or eligible-for-owner-approval"
+          ],
+          "knowledgeSnapshotId": "knowledge_phase4_task17_seed",
+          "managerNonNegotiables": [
+            "No implementation begins before the manager approves a versioned charter.",
+            "Completion is never approval, and a green suite is never sufficient evidence.",
+            "Silence is not agreement: an unanswered question stays open.",
+            "No role may grant itself authority the briefing did not give it."
+          ],
+          "activeRoleIds": [
+            "delivery-lead",
+            "product-designer",
+            "implementation-engineer",
+            "test-engineer",
+            "visual-qa-reviewer",
+            "release-reviewer"
+          ]
+        },
+        "phase": "revision",
+        "round": 1,
+        "contributions": {
+          "delivery-lead": {
+            "schemaVersion": 1,
+            "contributionId": "contribution_delivery-lead",
+            "kickoffId": "kickoff_phase4_task17",
+            "briefingVersion": 1,
+            "roleId": "delivery-lead",
+            "agentId": "agent_delivery_lead",
+            "kind": "proposal",
+            "goal": "Refine the seed into a versioned candidate charter for an isolated Decision Notice component, preserving explicit acknowledge/defer outcomes, evidence links, severity, due date, accessibility, deterministic behavioral tests, failure evidence, current-build visual evidence at approved viewports, and independent release review; treat this as proposed until manager approval.",
+            "value": "Creates a bounded, reviewable decision artifact while keeping scope, authority, evidence, and unresolved questions explicit and separate from approval.",
+            "risk": "The goal is not implementable or approvable until viewport definitions, decision-state semantics, accessibility target, evidence-link behavior, controlled-session boundary, and named owners for open items are recorded; completion or agent consensus must not be treated as approval.",
+            "dependencies": [
+              "Manager approval of a versioned charter before implementation",
+              "Recorded rationale and equally rigorous acceptance contract if the seed is replaced",
+              "Named owners and decisions for unresolved product, technical, test, visual, and release questions",
+              "Controlled isolated session with no external side effects",
+              "Independent release review returning needs-work or eligible-for-owner-approval"
+            ],
+            "acceptanceCriteria": [
+              "A versioned charter records the candidate goal, scope, exclusions, authority, decision owner, date, and basis for each decision.",
+              "The component presents one project decision with evidence links, severity, due date, and explicit acknowledge and defer actions, including defined behavior for each state.",
+              "Behavioral requirements have deterministic RED then GREEN evidence, including failure evidence and relevant negative paths.",
+              "Accessibility is objectively tested against a recorded target, including keyboard operation, focus visibility, semantics, and status/action announcements where applicable.",
+              "Current-build visual evidence covers the manager-approved viewports and identifies the exact build under review.",
+              "The component remains isolated from unfinished production UI and all work stays within the controlled session with no external side effects.",
+              "An independent release review records needs-work or eligible-for-owner-approval; neither result is treated as manager approval.",
+              "Every open item remains visible with a named owner, and no scope exception is closed without required access or written acknowledgement."
+            ],
+            "evidenceNeeds": [
+              "Versioned charter with decision log, authorities, timestamps, rationale, and disagreement register",
+              "Reconciled constraints and explicit scope/exclusions",
+              "RED and GREEN test artifacts for every behavioral change",
+              "Deterministic browser outputs, including failure evidence",
+              "Accessibility test results tied to the recorded target",
+              "Current-build screenshots or equivalent visual evidence at approved viewports",
+              "Independent release-review report and unresolved-evidence list"
+            ],
+            "uncertainties": [
+              "Who owns the project decision and who is authorized to define acknowledge versus defer semantics?",
+              "Which browser, viewport dimensions, and visual-review tolerances are approved?",
+              "What accessibility conformance target and assistive-technology coverage are required?",
+              "How should evidence links behave when absent, invalid, or unavailable without network access?",
+              "What does controlled-session isolation concretely require in the fixture repository and runtime?",
+              "What exact failure evidence is required beyond deterministic test failures?",
+              "Whether the component must support refresh, persistence, or only an in-session state transition is unspecified."
+            ],
+            "disagreements": [
+              "The seed says 'build' while the briefing permits only proposal and refinement at kickoff; implementation must remain blocked until manager approval.",
+              "The phrase 'current-build visual evidence' may conflict with the no-implementation-before-charter rule unless the approved charter explicitly defines the build and evidence sequence.",
+              "No role consensus, passing check, or release-review outcome can substitute for manager approval or close an unresolved scope exception."
+            ]
+          },
+          "product-designer": {
+            "schemaVersion": 1,
+            "contributionId": "contribution_product-designer",
+            "kickoffId": "kickoff_phase4_task17",
+            "briefingVersion": 1,
+            "roleId": "product-designer",
+            "agentId": "agent_product_designer",
+            "kind": "proposal",
+            "goal": "Build an isolated Decision Notice component with a versioned interaction and art-direction contract: present one decision's title, rationale/evidence links, severity, due date, and clearly distinct Acknowledge and Defer actions; support keyboard, screen-reader, focus, validation, and deterministic visual review without implying completion equals approval.",
+            "value": "Contract: use a single bounded notice surface with semantic heading, decision summary, severity badge whose text is never color-only, localized/explicit due-date text, evidence links that expose destination or purpose, and action controls with visible focus. Acknowledge requires an observable confirmed state; Defer requires an explicit defer reason or date and preserves the decision context. State transitions must be deterministic, reversible only where specified, and must not trigger network or production side effects. Anti-goals: no dashboard, decision editing, authentication, real persistence, notifications, analytics, external navigation during tests, or invented evidence. Deferrals: responsive behavior beyond the approved viewport set and localization are deferred until 2026-09-20, explicitly excluded from this charter rather than inferred as complete.",
+            "risk": "The briefing does not specify approved viewport dimensions, severity taxonomy, due-date timezone/format, defer semantics, evidence-link destinations, or whether acknowledgement is reversible; choosing these silently could create an unapproved product contract.",
+            "dependencies": [
+              "Manager-approved versioned charter and surface specification",
+              "Owner decision on severity values, due-date format/timezone, acknowledgement/defer semantics, and approved viewports",
+              "Deterministic fixture data and controlled-session browser harness",
+              "Independent visual and release review"
+            ],
+            "acceptanceCriteria": [
+              "At the approved viewports, exactly one Decision Notice is visible with a unique accessible name, title, decision summary, severity, due date, and at least one evidence link when fixture data provides one.",
+              "Severity is conveyed by text and not color alone; due date is presented in an unambiguous human-readable format; links identify their destination or purpose.",
+              "All interactive elements are keyboard reachable in a logical order, have visible focus, and expose correct accessible names, roles, and states; automated checks alone are insufficient evidence.",
+              "Activating Acknowledge produces a deterministic, visibly distinct acknowledged state and does not perform network, persistence, deployment, publishing, or other external side effects.",
+              "Activating Defer presents the contractually defined defer input/state; incomplete or invalid input is visibly identified and does not transition; valid input produces a deterministic deferred state retaining the decision context.",
+              "Browser tests include RED evidence for each new behavioral assertion, GREEN evidence after implementation, deterministic failure evidence, and current-build screenshots at every approved viewport.",
+              "Visual findings are recorded against named art-direction clauses, and independent release review returns needs-work or eligible-for-owner-approval; neither result is treated as owner approval."
+            ],
+            "evidenceNeeds": [
+              "Approved surface and art-direction specification with viewport list and explicit anti-goals",
+              "Fixture schema and deterministic test data covering normal, acknowledged, deferred, missing/long evidence, and boundary due-date states",
+              "Keyboard and screen-reader-oriented interaction evidence, including focus and validation states",
+              "RED/GREEN behavioral test artifacts and deterministic browser failure evidence",
+              "Current-build visual captures with timestamps/build identifier and clause-based review findings",
+              "Independent release review outcome"
+            ],
+            "uncertainties": [
+              "Whether evidence links may open externally or must remain inert in the controlled session",
+              "Whether acknowledge is reversible and whether defer requires a date, reason, or both",
+              "The canonical severity taxonomy and visual treatment",
+              "The required behavior for missing, expired, or malformed due dates",
+              "The approved viewport dimensions and browser/accessibility baseline"
+            ],
+            "disagreements": [
+              "I do not consider the seed goal implementation-ready until the missing interaction semantics and visual review contract are explicitly decided and versioned; unstated defaults must not be treated as satisfied requirements."
+            ]
+          },
+          "implementation-engineer": {
+            "schemaVersion": 1,
+            "contributionId": "contribution_implementation-engineer",
+            "kickoffId": "kickoff_phase4_task17",
+            "briefingVersion": 1,
+            "roleId": "implementation-engineer",
+            "agentId": "agent_implementation_engineer",
+            "kind": "proposal",
+            "goal": "Approve a versioned charter before implementation to build the isolated Decision Notice component, with pure deterministic behavior and adapters limited to the controlled browser session.",
+            "value": "Keep the seed goal, but define explicit contracts for decision data, severity, due-date rendering, evidence links, acknowledge/defer state transitions, keyboard accessibility, and controlled-session isolation. Implement only after approval using RED-GREEN-REFACTOR, with each behavioral change independently reversible.",
+            "risk": "Starting from an ambiguous contract could produce untestable behavior, accessibility regressions, or boundary leakage into unfinished production UI; passing tests alone could also be mistaken for completion approval.",
+            "dependencies": [
+              "Manager-approved versioned charter",
+              "Approved component contract and supported viewport list",
+              "Deterministic test harness with controlled fixtures",
+              "Browser failure evidence and current-build visual capture",
+              "Independent release review"
+            ],
+            "acceptanceCriteria": [
+              "No implementation begins before manager approval of a versioned charter.",
+              "Behavioral tests demonstrate RED failure before the corresponding GREEN implementation.",
+              "Given identical seeded fixtures and ordering, rendered content and action outcomes are deterministic.",
+              "The component renders one decision with evidence links, severity, due date, and explicit acknowledge and defer actions.",
+              "Acknowledge and defer transitions are keyboard-operable, expose an observable state, and preserve accessible names, roles, focus behavior, and meaningful status.",
+              "Evidence links have an enforced safe boundary and do not cause external side effects in the controlled session.",
+              "The component remains isolated from unfinished production UI and is independently revertible.",
+              "Current-build browser evidence covers approved viewports, including failure evidence, and is reviewed independently."
+            ],
+            "evidenceNeeds": [
+              "Test history showing expected RED then GREEN for every behavioral change",
+              "Deterministic browser test output using fixed fixtures, seed, and ordering",
+              "Accessibility assertions plus keyboard interaction evidence",
+              "Current-build visual captures at each approved viewport",
+              "Boundary check proving no production UI or external side effects are reached",
+              "Change summary and independent release review result"
+            ],
+            "uncertainties": [
+              "The briefing does not specify the data schema, severity taxonomy, due-date timezone/format, or state persistence contract.",
+              "The approved viewport set and browser matrix are unspecified.",
+              "The required behavior for invalid, missing, or unsafe evidence links is unspecified.",
+              "It is unclear whether acknowledge/defer state must survive reload or only the controlled session."
+            ],
+            "disagreements": [
+              "I would resist treating visual evidence or a green suite as approval; both are evidence inputs only, and the manager-approved charter plus independent release review remain required."
+            ]
+          },
+          "test-engineer": {
+            "schemaVersion": 1,
+            "contributionId": "contribution_test-engineer",
+            "kickoffId": "kickoff_phase4_task17",
+            "briefingVersion": 1,
+            "roleId": "test-engineer",
+            "agentId": "agent_test_engineer",
+            "kind": "proposal",
+            "goal": "Build the isolated Decision Notice only after defining a versioned acceptance contract that specifies deterministic rendering, evidence-link behavior, severity and due-date semantics, acknowledge/defer state transitions, and accessible interaction outcomes.",
+            "value": "Require TDD evidence for each behavioral change: a recorded RED failure followed by GREEN, fixed expected assertions, deterministic fixtures, and explicit negative-case coverage. Test keyboard-only operation, focus visibility/order, accessible names and state announcements, invalid or missing decision data, unavailable evidence links, and mutually exclusive acknowledge/defer actions. Treat skipped or gated checks as not performed.",
+            "risk": "A green suite may provide false confidence if assertions restate inputs, omit rejection paths, or test only internal state rather than user-visible behavior. Browser checks and DOM/state probes cannot establish visual correctness.",
+            "dependencies": [
+              "Manager-approved versioned charter and acceptance contract",
+              "Stable fixture schema for decision, evidence links, severity, due date, and action state",
+              "Defined semantics for acknowledge versus defer, including repeated actions and persistence scope",
+              "Approved browser/viewports and a deterministic test harness"
+            ],
+            "acceptanceCriteria": [
+              "Every behavioral requirement has a fixed expected assertion and a demonstrated RED-then-GREEN record",
+              "At least one negative test exists for each input or transition that must be rejected",
+              "The component is operable and understandable via keyboard and assistive-technology-relevant accessibility assertions",
+              "Fixtures produce repeatable results without live-provider or network calls",
+              "Acknowledge and defer outcomes are distinguishable, mutually defined, and correctly reject invalid transitions",
+              "Test reports separately identify passed, failed, skipped, and not-performed checks",
+              "Visual approval relies on current-build visual evidence reviewed independently, not on automated test output"
+            ],
+            "evidenceNeeds": [
+              "RED output showing each new test failed for the stated reason",
+              "GREEN output from the same deterministic tests",
+              "Count and inventory of negative cases",
+              "Browser failure evidence for rejected interactions and accessibility violations",
+              "Fixture and environment details proving no network or external side effects",
+              "Independent current-build visual evidence at approved viewports"
+            ],
+            "uncertainties": [
+              "Whether acknowledge/defer state is session-only or must survive reload",
+              "What constitutes a valid, unavailable, or malformed evidence link",
+              "How due dates are formatted and handled across timezone boundaries",
+              "Required severity vocabulary and behavior for unknown severity",
+              "Which accessibility conformance target and assistive technology checks are required"
+            ],
+            "disagreements": [
+              "I disagree with treating a passing build, unit suite, DOM snapshot, or state probe as proof of visual correctness; visual claims require separate current-build evidence.",
+              "I would not accept completion while any required test is skipped or gated, or while RED/GREEN provenance is absent."
+            ]
+          },
+          "visual-qa-reviewer": {
+            "schemaVersion": 1,
+            "contributionId": "contribution_visual-qa-reviewer",
+            "kickoffId": "kickoff_phase4_task17",
+            "briefingVersion": 1,
+            "roleId": "visual-qa-reviewer",
+            "agentId": "agent_visual_qa_reviewer",
+            "kind": "proposal",
+            "goal": "Build an isolated Decision Notice component whose rendered states visibly match a versioned art-direction contract and are verified with current-build evidence at explicitly named viewports, browsers, and device classes.",
+            "value": "Define the visual contract before implementation: hierarchy for decision, severity, evidence links, due date, acknowledge/defer actions, focus/keyboard states, responsive behavior, and reduced-motion behavior. Require annotated screenshots plus a discrepancy log covering default, acknowledged, deferred, long-content, and validation/error states; visual QA reports findings and does not grant final approval.",
+            "risk": "The briefing names no approved viewports, browser matrix, art direction, or interaction states; screenshots without those references cannot establish fidelity, and unreliable capture or missing console/network evidence must remain recorded as findings.",
+            "dependencies": [
+              "Manager-approved versioned charter and acceptance contract",
+              "Named approved viewports, browsers, device classes, and build identifier",
+              "Versioned art-direction contract and complete state inventory",
+              "Deterministic browser capture path",
+              "Owner approval after independent release review"
+            ],
+            "acceptanceCriteria": [
+              "Current-build screenshots directly exercised at every named viewport, browser, and device class",
+              "Screenshots cover all contract states, including keyboard focus, acknowledge, defer, overflow, and reduced-motion conditions",
+              "Console and network checks are clean for each captured build or deviations are documented",
+              "Keyboard interaction and reduced-motion behavior are directly exercised and recorded",
+              "Annotated screenshot set and discrepancy log identify observed viewport, browser, device class, and build for every claim",
+              "Any unverified viewport, browser, device class, interaction, or state is explicitly listed as unverified",
+              "Visual evidence is compared against the approved art-direction contract; passing automated diffs are not treated as approval",
+              "Final visual acceptance remains subject to explicit owner approval and independent release review"
+            ],
+            "evidenceNeeds": [
+              "Versioned art-direction and acceptance contract",
+              "Annotated current-build screenshot set",
+              "Discrepancy log with severity and reproducibility",
+              "Browser, viewport, device-class, and build metadata",
+              "Clean console and network capture",
+              "Keyboard and reduced-motion verification record",
+              "Evidence of all specified component states",
+              "Independent release review outcome"
+            ],
+            "uncertainties": [
+              "Which viewport sizes and browser/device matrix are approved?",
+              "What exact art direction, responsive rules, and content-length limits govern the component?",
+              "Which acknowledge/defer persistence and feedback states must be rendered?",
+              "What deterministic mechanism will provide failure evidence without external network or side effects?"
+            ],
+            "disagreements": [
+              "A DOM snapshot, state probe, passing test, or automated screenshot diff alone must not be accepted as visual proof or design approval."
+            ]
+          },
+          "release-reviewer": {
+            "schemaVersion": 1,
+            "contributionId": "contribution_release-reviewer",
+            "kickoffId": "kickoff_phase4_task17",
+            "briefingVersion": 1,
+            "roleId": "release-reviewer",
+            "agentId": "agent_release_reviewer",
+            "kind": "critique",
+            "goal": "Retain the Decision Notice seed, but revise its acceptance contract to require independently traceable evidence for accessibility, behavior, failure handling, visual fidelity, provenance, isolation, and every displayed decision state before release review can return eligible-for-owner-approval.",
+            "value": "The component is suitably bounded and reviewable, provided the charter defines authoritative inputs, state transitions, evidence provenance, and explicit release-review outcomes without conflating completion, passing tests, or visual polish with approval.",
+            "risk": "The current goal does not define the decision data source, acknowledge/defer semantics, failure states, approved viewports, accessibility baseline, evidence-link behavior, or artifact lineage. Without these, a plausible-looking build could pass selected checks while leaving material obligations unexamined.",
+            "dependencies": [
+              "Manager-approved versioned charter before implementation",
+              "Versioned acceptance contract defining content, states, interactions, accessibility, isolation, and failure behavior",
+              "Authoritative decision fixture and provenance record",
+              "Test evidence linking each behavioral criterion to RED then GREEN artifacts",
+              "Deterministic browser evidence for success and failure paths",
+              "Current-build visual evidence at explicitly approved viewports",
+              "Independent release review by a qualified reviewer without prior material involvement",
+              "Artifact manifest identifying current evidence and naming any superseded artifacts"
+            ],
+            "acceptanceCriteria": [
+              "The component presents exactly one authoritative decision with title or identifier, severity, due date, and evidence links whose displayed values are traceable to the approved fixture",
+              "Acknowledge and defer are keyboard-operable, have defined state transitions and outcomes, and prevent ambiguous or simultaneous final states",
+              "Deferred behavior includes a defined required input or deterministic default, validation behavior, and visible confirmation as specified by the charter",
+              "Missing, invalid, or unavailable decision data and unusable evidence links have deterministic, accessible failure behavior",
+              "Semantic structure, accessible names, focus order, visible focus, status announcements, contrast, zoom or reflow, and reduced-motion behavior meet the chartered accessibility baseline",
+              "The artifact remains isolated from unfinished production UI and produces no network, deployment, publishing, financial, or other external side effect",
+              "Every behavioral change has criterion-linked RED evidence captured before its corresponding GREEN evidence",
+              "Browser evidence covers all chartered success and failure paths deterministically and identifies browser, build, fixture, and run",
+              "Visual evidence is captured from the current build at every approved viewport and is attributable to the same reviewed revision",
+              "All evidence links, credits, and provenance claims correspond to sources actually used; superseded artifacts are explicitly named and excluded from the decision basis",
+              "Release review lists verified, unverified, and open obligations and concludes only needs-work or eligible-for-owner-approval",
+              "Any open obligation, unexamined required input, reviewer conflict, stale evidence, or revision mismatch requires a needs-work conclusion"
+            ],
+            "evidenceNeeds": [
+              "Approved charter version and acceptance-contract version",
+              "Immutable build or revision identifier shared by test, browser, accessibility, and visual artifacts",
+              "Decision fixture with provenance and expected rendered values",
+              "Criterion-to-evidence traceability matrix",
+              "Timestamped RED and GREEN outputs for each behavioral change",
+              "Deterministic browser recordings or captures for all success and failure paths",
+              "Accessibility test outputs plus documented manual checks where automation is insufficient",
+              "Current-build screenshots at named approved viewports",
+              "Evidence-link validation results without external network activity",
+              "Isolation and no-external-side-effect verification",
+              "Manifest of current and superseded artifacts",
+              "Independent release-review report disclosing reviewer identity, scope, conflicts, verified items, unverified items, and open obligations"
+            ],
+            "uncertainties": [
+              "Which viewports are approved",
+              "Which accessibility standard and conformance level govern acceptance",
+              "Whether evidence links resolve to bundled local artifacts, inert references, or another controlled mechanism",
+              "What acknowledge and defer mean operationally in this isolated session",
+              "Whether state must persist, and if so, within what boundary",
+              "Required severity vocabulary and due-date format, timezone, overdue behavior, and localization rules",
+              "Required supported browsers and assistive-technology coverage",
+              "How reviewer independence and material-involvement conflicts will be established",
+              "What artifact naming and retention rules govern superseded evidence"
+            ],
+            "disagreements": [
+              "I would not treat the seed wording as an adequate acceptance contract; it is currently too underspecified for independent certification.",
+              "I reject any conclusion based only on a green suite or visual evidence without criterion-level provenance and failure-path evidence.",
+              "I reject marking unanswered questions or unexamined required inputs as merely noted; they remain open obligations and block eligibility.",
+              "I will not approve the charter or final work; release review may conclude only needs-work or eligible-for-owner-approval, with final approval reserved to the manager."
+            ]
+          }
+        },
+        "revisions": {
+          "delivery-lead": {
+            "revisionId": "revision_delivery-lead",
+            "roleId": "delivery-lead",
+            "agentId": "agent_delivery_lead",
+            "response": "amend",
+            "statement": "The synthesis accurately preserves the seed, constraints, dissent, and evidence gaps. Amend the proposed goal to state that every unresolved gap remains open with a named owner and blocks implementation or release eligibility until resolved or explicitly accepted by the authorized manager; this clarifies ownership and prevents the charter from being mistaken for approval."
+          },
+          "product-designer": {
+            "revisionId": "revision_product-designer",
+            "roleId": "product-designer",
+            "agentId": "agent_product_designer",
+            "response": "amend",
+            "statement": "The synthesis accurately preserves the blocking design uncertainties and evidence boundaries. Amend the proposed goal to require the approved charter to include an explicit art-direction contract, observable state-by-state acceptance criteria, anti-goals, and named dated deferrals; otherwise visual/content behavior could remain implicitly in scope despite the listed gaps. Implementation must remain blocked until those contract clauses, approved viewport/browser matrix, and owner/manager authority are versioned."
+          },
+          "implementation-engineer": {
+            "revisionId": "revision_implementation-engineer",
+            "roleId": "implementation-engineer",
+            "agentId": "agent_implementation_engineer",
+            "response": "amend",
+            "statement": "I affirm the synthesis and its implementation gate, but amend the contract to make the pre-implementation sequence explicit: first approve the versioned charter and fixture/schema, then record RED evidence for each behavioral criterion, implement the smallest isolated change, capture GREEN and deterministic browser failure evidence, and only then collect current-build visual evidence. Until the manager resolves the listed schema, interaction, link-safety, viewport/browser, accessibility, and provenance gaps, implementation remains blocked; no visual artifact should be treated as current-build evidence before a defined build exists."
+          },
+          "test-engineer": {
+            "revisionId": "revision_test-engineer",
+            "roleId": "test-engineer",
+            "agentId": "agent_test_engineer",
+            "response": "amend",
+            "statement": "The synthesis is directionally sound, but amend the goal to require a criterion-to-test traceability matrix and an explicit testability gate: no criterion is satisfied without fixed expected assertions, RED/GREEN provenance, rejection-path coverage, and deterministic failure evidence. Resolve the listed semantics and environment matrix before implementation; otherwise tests cannot establish the claimed behavior, and skipped or gated checks must remain not performed rather than passing."
+          },
+          "visual-qa-reviewer": {
+            "revisionId": "revision_visual-qa-reviewer",
+            "roleId": "visual-qa-reviewer",
+            "agentId": "agent_visual_qa_reviewer",
+            "response": "affirm",
+            "statement": "I affirm the synthesis. It correctly preserves the visual-QA boundary: no visual fidelity or approval claim can rely on DOM snapshots, state probes, automated diffs, or passing tests alone. Before implementation or visual review, amend the charter with the named viewport/browser/device matrix, versioned art-direction and complete state contract, capture and console/network procedures, and explicit marking of every unverified condition; visual review may provide evidence and discrepancies only, while owner approval remains separate."
+          },
+          "release-reviewer": {
+            "revisionId": "revision_release-reviewer",
+            "roleId": "release-reviewer",
+            "agentId": "agent_release_reviewer",
+            "response": "affirm",
+            "statement": "The synthesis preserves the release-review mandate: all listed evidence gaps remain blocking until resolved in a manager-approved, versioned charter and established by revision-matched artifacts. It correctly requires provenance, supersession tracking, failure-path evidence, isolation verification, and independent review while limiting the review conclusion to needs-work or eligible-for-owner-approval. This affirmation is agreement with the synthesis, not approval of the charter or certification of any implementation."
+          }
+        },
+        "implementationAllowed": false,
+        "synthesis": {
+          "synthesisId": "synthesis_task17",
+          "authorRoleId": "delivery-lead",
+          "proposedGoal": "Retain and revise the Decision Notice seed into a manager-approval-gated, versioned charter and acceptance contract for an isolated, accessible component presenting exactly one authoritative decision with traceable evidence links, severity, due date, and deterministic acknowledge/defer outcomes; require criterion-linked RED/GREEN behavioral evidence, deterministic success and failure browser evidence, current-build visual evidence at explicitly approved viewports and browsers, accessibility verification, isolation/no-side-effect verification, artifact provenance and supersession tracking, and an independent release review that concludes only needs-work or eligible-for-owner-approval.",
+          "includedContributionIds": [
+            "contribution_delivery-lead",
+            "contribution_product-designer",
+            "contribution_implementation-engineer",
+            "contribution_test-engineer",
+            "contribution_visual-qa-reviewer",
+            "contribution_release-reviewer"
+          ],
+          "disagreementRegister": [
+            {
+              "roleId": "delivery-lead",
+              "statement": "Implementation must remain blocked until manager approval of a versioned charter; consensus, passing checks, completion, or release review cannot substitute for approval or close scope exceptions."
+            },
+            {
+              "roleId": "product-designer",
+              "statement": "The seed is not implementation-ready until interaction semantics, visual contract, viewport set, severity, due-date rules, evidence-link behavior, and anti-goals are explicitly decided and versioned; unstated defaults must not count as satisfied requirements."
+            },
+            {
+              "roleId": "implementation-engineer",
+              "statement": "Visual evidence and a green suite are evidence inputs only, not approval; implementation requires an approved contract, deterministic fixtures, controlled-session adapters, and independent review."
+            },
+            {
+              "roleId": "test-engineer",
+              "statement": "A passing suite, DOM snapshot, or state probe cannot establish visual correctness; required tests may not be skipped or gated, and RED/GREEN provenance plus rejection-path coverage are mandatory."
+            },
+            {
+              "roleId": "visual-qa-reviewer",
+              "statement": "DOM snapshots, state probes, automated diffs, or passing tests alone cannot prove visual fidelity or design approval; all named states, viewports, browsers, device classes, and deviations must be explicitly evidenced or marked unverified."
+            },
+            {
+              "roleId": "release-reviewer",
+              "statement": "The seed is inadequate as an acceptance contract; unanswered questions and unexamined required inputs remain blocking open obligations, and release review may return only needs-work or eligible-for-owner-approval, never approval."
+            }
+          ],
+          "unresolvedEvidenceGaps": [
+            "Manager decision and owner are not identified for approving the versioned charter, scope, and acceptance contract.",
+            "Approved viewport dimensions, browser/device matrix, accessibility standard and conformance level, and assistive-technology coverage are unspecified.",
+            "Authoritative decision fixture/schema, provenance requirements, artifact manifest, retention rules, and superseded-artifact handling are unspecified.",
+            "Acknowledge and defer semantics remain unresolved, including required defer input, validation, reversibility, mutual exclusivity, feedback, and persistence boundary.",
+            "Severity taxonomy, unknown-severity behavior, due-date format/timezone, overdue and malformed-date behavior, and localization rules are unspecified.",
+            "Evidence-link destinations and handling of missing, invalid, unavailable, unsafe, or external links are unspecified under the no-network controlled-session constraint.",
+            "Required visual art direction, responsive/content-length rules, reduced-motion behavior, and complete state inventory are not yet defined.",
+            "Exact deterministic failure evidence, console/network capture expectations, and isolation verification procedure are not yet defined.",
+            "Reviewer independence, conflict-of-interest criteria, and the qualified reviewer identity are unspecified.",
+            "The sequence reconciling no implementation before charter approval with current-build visual evidence has not been defined."
+          ]
+        }
+      },
+      "turnsUsed": 13,
+      "respondedRoleIds": [
+        "delivery-lead",
+        "product-designer",
+        "implementation-engineer",
+        "test-engineer",
+        "visual-qa-reviewer",
+        "release-reviewer"
+      ],
+      "silentRoleIds": [],
+      "failures": []
+    }
+  },
+  "transcript": [
+    {
+      "kind": "contribution",
+      "roleId": "delivery-lead",
+      "agentId": "agent_delivery_lead",
+      "bindingId": "binding_delivery_lead",
+      "turnIndex": 1,
+      "accepted": true,
+      "payload": {
+        "schemaVersion": 1,
+        "contributionId": "contribution_delivery-lead",
+        "kickoffId": "kickoff_phase4_task17",
+        "briefingVersion": 1,
+        "roleId": "delivery-lead",
+        "agentId": "agent_delivery_lead",
+        "kind": "proposal",
+        "goal": "Refine the seed into a versioned candidate charter for an isolated Decision Notice component, preserving explicit acknowledge/defer outcomes, evidence links, severity, due date, accessibility, deterministic behavioral tests, failure evidence, current-build visual evidence at approved viewports, and independent release review; treat this as proposed until manager approval.",
+        "value": "Creates a bounded, reviewable decision artifact while keeping scope, authority, evidence, and unresolved questions explicit and separate from approval.",
+        "risk": "The goal is not implementable or approvable until viewport definitions, decision-state semantics, accessibility target, evidence-link behavior, controlled-session boundary, and named owners for open items are recorded; completion or agent consensus must not be treated as approval.",
+        "dependencies": [
+          "Manager approval of a versioned charter before implementation",
+          "Recorded rationale and equally rigorous acceptance contract if the seed is replaced",
+          "Named owners and decisions for unresolved product, technical, test, visual, and release questions",
+          "Controlled isolated session with no external side effects",
+          "Independent release review returning needs-work or eligible-for-owner-approval"
+        ],
+        "acceptanceCriteria": [
+          "A versioned charter records the candidate goal, scope, exclusions, authority, decision owner, date, and basis for each decision.",
+          "The component presents one project decision with evidence links, severity, due date, and explicit acknowledge and defer actions, including defined behavior for each state.",
+          "Behavioral requirements have deterministic RED then GREEN evidence, including failure evidence and relevant negative paths.",
+          "Accessibility is objectively tested against a recorded target, including keyboard operation, focus visibility, semantics, and status/action announcements where applicable.",
+          "Current-build visual evidence covers the manager-approved viewports and identifies the exact build under review.",
+          "The component remains isolated from unfinished production UI and all work stays within the controlled session with no external side effects.",
+          "An independent release review records needs-work or eligible-for-owner-approval; neither result is treated as manager approval.",
+          "Every open item remains visible with a named owner, and no scope exception is closed without required access or written acknowledgement."
+        ],
+        "evidenceNeeds": [
+          "Versioned charter with decision log, authorities, timestamps, rationale, and disagreement register",
+          "Reconciled constraints and explicit scope/exclusions",
+          "RED and GREEN test artifacts for every behavioral change",
+          "Deterministic browser outputs, including failure evidence",
+          "Accessibility test results tied to the recorded target",
+          "Current-build screenshots or equivalent visual evidence at approved viewports",
+          "Independent release-review report and unresolved-evidence list"
+        ],
+        "uncertainties": [
+          "Who owns the project decision and who is authorized to define acknowledge versus defer semantics?",
+          "Which browser, viewport dimensions, and visual-review tolerances are approved?",
+          "What accessibility conformance target and assistive-technology coverage are required?",
+          "How should evidence links behave when absent, invalid, or unavailable without network access?",
+          "What does controlled-session isolation concretely require in the fixture repository and runtime?",
+          "What exact failure evidence is required beyond deterministic test failures?",
+          "Whether the component must support refresh, persistence, or only an in-session state transition is unspecified."
+        ],
+        "disagreements": [
+          "The seed says 'build' while the briefing permits only proposal and refinement at kickoff; implementation must remain blocked until manager approval.",
+          "The phrase 'current-build visual evidence' may conflict with the no-implementation-before-charter rule unless the approved charter explicitly defines the build and evidence sequence.",
+          "No role consensus, passing check, or release-review outcome can substitute for manager approval or close an unresolved scope exception."
+        ]
+      },
+      "raw": "{\"kind\":\"proposal\",\"goal\":\"Refine the seed into a versioned candidate charter for an isolated Decision Notice component, preserving explicit acknowledge/defer outcomes, evidence links, severity, due date, accessibility, deterministic behavioral tests, failure evidence, current-build visual evidence at approved viewports, and independent release review; treat this as proposed until manager approval.\",\"value\":\"Creates a bounded, reviewable decision artifact while keeping scope, authority, evidence, and unresolved questions explicit and separate from approval.\",\"risk\":\"The goal is not implementable or approvable until viewport definitions, decision-state semantics, accessibility target, evidence-link behavior, controlled-session boundary, and named owners for open items are recorded; completion or agent consensus must not be treated as approval.\",\"dependencies\":[\"Manager approval of a versioned charter before implementation\",\"Recorded rationale and equally rigorous acceptance contract if the seed is replaced\",\"Named owners and decisions for unresolved product, technical, test, visual, and release questions\",\"Controlled isolated session with no external side effects\",\"Independent release review returning needs-work or eligible-for-owner-approval\"],\"acceptanceCriteria\":[\"A versioned charter records the candidate goal, scope, exclusions, authority, decision owner, date, and basis for each decision.\",\"The component presents one project decision with evidence links, severity, due date, and explicit acknowledge and defer actions, including defined behavior for each state.\",\"Behavioral requirements have deterministic RED then GREEN evidence, including failure evidence and relevant negative paths.\",\"Accessibility is objectively tested against a recorded target, including keyboard operation, focus visibility, semantics, and status/action announcements where applicable.\",\"Current-build visual evidence covers the manager-approved viewports and identifies the exact build under review.\",\"The component remains isolated from unfinished production UI and all work stays within the controlled session with no external side effects.\",\"An independent release review records needs-work or eligible-for-owner-approval; neither result is treated as manager approval.\",\"Every open item remains visible with a named owner, and no scope exception is closed without required access or written acknowledgement.\"],\"evidenceNeeds\":[\"Versioned charter with decision log, authorities, timestamps, rationale, and disagreement register\",\"Reconciled constraints and explicit scope/exclusions\",\"RED and GREEN test artifacts for every behavioral change\",\"Deterministic browser outputs, including failure evidence\",\"Accessibility test results tied to the recorded target\",\"Current-build screenshots or equivalent visual evidence at approved viewports\",\"Independent release-review report and unresolved-evidence list\"],\"uncertainties\":[\"Who owns the project decision and who is authorized to define acknowledge versus defer semantics?\",\"Which browser, viewport dimensions, and visual-review tolerances are approved?\",\"What accessibility conformance target and assistive-technology coverage are required?\",\"How should evidence links behave when absent, invalid, or unavailable without network access?\",\"What does controlled-session isolation concretely require in the fixture repository and runtime?\",\"What exact failure evidence is required beyond deterministic test failures?\",\"Whether the component must support refresh, persistence, or only an in-session state transition is unspecified.\"],\"disagreements\":[\"The seed says 'build' while the briefing permits only proposal and refinement at kickoff; implementation must remain blocked until manager approval.\",\"The phrase 'current-build visual evidence' may conflict with the no-implementation-before-charter rule unless the approved charter explicitly defines the build and evidence sequence.\",\"No role consensus, passing check, or release-review outcome can substitute for manager approval or close an unresolved scope exception.\"]}"
+    },
+    {
+      "kind": "contribution",
+      "roleId": "product-designer",
+      "agentId": "agent_product_designer",
+      "bindingId": "binding_product_designer",
+      "turnIndex": 2,
+      "accepted": true,
+      "payload": {
+        "schemaVersion": 1,
+        "contributionId": "contribution_product-designer",
+        "kickoffId": "kickoff_phase4_task17",
+        "briefingVersion": 1,
+        "roleId": "product-designer",
+        "agentId": "agent_product_designer",
+        "kind": "proposal",
+        "goal": "Build an isolated Decision Notice component with a versioned interaction and art-direction contract: present one decision's title, rationale/evidence links, severity, due date, and clearly distinct Acknowledge and Defer actions; support keyboard, screen-reader, focus, validation, and deterministic visual review without implying completion equals approval.",
+        "value": "Contract: use a single bounded notice surface with semantic heading, decision summary, severity badge whose text is never color-only, localized/explicit due-date text, evidence links that expose destination or purpose, and action controls with visible focus. Acknowledge requires an observable confirmed state; Defer requires an explicit defer reason or date and preserves the decision context. State transitions must be deterministic, reversible only where specified, and must not trigger network or production side effects. Anti-goals: no dashboard, decision editing, authentication, real persistence, notifications, analytics, external navigation during tests, or invented evidence. Deferrals: responsive behavior beyond the approved viewport set and localization are deferred until 2026-09-20, explicitly excluded from this charter rather than inferred as complete.",
+        "risk": "The briefing does not specify approved viewport dimensions, severity taxonomy, due-date timezone/format, defer semantics, evidence-link destinations, or whether acknowledgement is reversible; choosing these silently could create an unapproved product contract.",
+        "dependencies": [
+          "Manager-approved versioned charter and surface specification",
+          "Owner decision on severity values, due-date format/timezone, acknowledgement/defer semantics, and approved viewports",
+          "Deterministic fixture data and controlled-session browser harness",
+          "Independent visual and release review"
+        ],
+        "acceptanceCriteria": [
+          "At the approved viewports, exactly one Decision Notice is visible with a unique accessible name, title, decision summary, severity, due date, and at least one evidence link when fixture data provides one.",
+          "Severity is conveyed by text and not color alone; due date is presented in an unambiguous human-readable format; links identify their destination or purpose.",
+          "All interactive elements are keyboard reachable in a logical order, have visible focus, and expose correct accessible names, roles, and states; automated checks alone are insufficient evidence.",
+          "Activating Acknowledge produces a deterministic, visibly distinct acknowledged state and does not perform network, persistence, deployment, publishing, or other external side effects.",
+          "Activating Defer presents the contractually defined defer input/state; incomplete or invalid input is visibly identified and does not transition; valid input produces a deterministic deferred state retaining the decision context.",
+          "Browser tests include RED evidence for each new behavioral assertion, GREEN evidence after implementation, deterministic failure evidence, and current-build screenshots at every approved viewport.",
+          "Visual findings are recorded against named art-direction clauses, and independent release review returns needs-work or eligible-for-owner-approval; neither result is treated as owner approval."
+        ],
+        "evidenceNeeds": [
+          "Approved surface and art-direction specification with viewport list and explicit anti-goals",
+          "Fixture schema and deterministic test data covering normal, acknowledged, deferred, missing/long evidence, and boundary due-date states",
+          "Keyboard and screen-reader-oriented interaction evidence, including focus and validation states",
+          "RED/GREEN behavioral test artifacts and deterministic browser failure evidence",
+          "Current-build visual captures with timestamps/build identifier and clause-based review findings",
+          "Independent release review outcome"
+        ],
+        "uncertainties": [
+          "Whether evidence links may open externally or must remain inert in the controlled session",
+          "Whether acknowledge is reversible and whether defer requires a date, reason, or both",
+          "The canonical severity taxonomy and visual treatment",
+          "The required behavior for missing, expired, or malformed due dates",
+          "The approved viewport dimensions and browser/accessibility baseline"
+        ],
+        "disagreements": [
+          "I do not consider the seed goal implementation-ready until the missing interaction semantics and visual review contract are explicitly decided and versioned; unstated defaults must not be treated as satisfied requirements."
+        ]
+      },
+      "raw": "{\"kind\":\"proposal\",\"goal\":\"Build an isolated Decision Notice component with a versioned interaction and art-direction contract: present one decision's title, rationale/evidence links, severity, due date, and clearly distinct Acknowledge and Defer actions; support keyboard, screen-reader, focus, validation, and deterministic visual review without implying completion equals approval.\",\"value\":\"Contract: use a single bounded notice surface with semantic heading, decision summary, severity badge whose text is never color-only, localized/explicit due-date text, evidence links that expose destination or purpose, and action controls with visible focus. Acknowledge requires an observable confirmed state; Defer requires an explicit defer reason or date and preserves the decision context. State transitions must be deterministic, reversible only where specified, and must not trigger network or production side effects. Anti-goals: no dashboard, decision editing, authentication, real persistence, notifications, analytics, external navigation during tests, or invented evidence. Deferrals: responsive behavior beyond the approved viewport set and localization are deferred until 2026-09-20, explicitly excluded from this charter rather than inferred as complete.\",\"risk\":\"The briefing does not specify approved viewport dimensions, severity taxonomy, due-date timezone/format, defer semantics, evidence-link destinations, or whether acknowledgement is reversible; choosing these silently could create an unapproved product contract.\",\"dependencies\":[\"Manager-approved versioned charter and surface specification\",\"Owner decision on severity values, due-date format/timezone, acknowledgement/defer semantics, and approved viewports\",\"Deterministic fixture data and controlled-session browser harness\",\"Independent visual and release review\"],\"acceptanceCriteria\":[\"At the approved viewports, exactly one Decision Notice is visible with a unique accessible name, title, decision summary, severity, due date, and at least one evidence link when fixture data provides one.\",\"Severity is conveyed by text and not color alone; due date is presented in an unambiguous human-readable format; links identify their destination or purpose.\",\"All interactive elements are keyboard reachable in a logical order, have visible focus, and expose correct accessible names, roles, and states; automated checks alone are insufficient evidence.\",\"Activating Acknowledge produces a deterministic, visibly distinct acknowledged state and does not perform network, persistence, deployment, publishing, or other external side effects.\",\"Activating Defer presents the contractually defined defer input/state; incomplete or invalid input is visibly identified and does not transition; valid input produces a deterministic deferred state retaining the decision context.\",\"Browser tests include RED evidence for each new behavioral assertion, GREEN evidence after implementation, deterministic failure evidence, and current-build screenshots at every approved viewport.\",\"Visual findings are recorded against named art-direction clauses, and independent release review returns needs-work or eligible-for-owner-approval; neither result is treated as owner approval.\"],\"evidenceNeeds\":[\"Approved surface and art-direction specification with viewport list and explicit anti-goals\",\"Fixture schema and deterministic test data covering normal, acknowledged, deferred, missing/long evidence, and boundary due-date states\",\"Keyboard and screen-reader-oriented interaction evidence, including focus and validation states\",\"RED/GREEN behavioral test artifacts and deterministic browser failure evidence\",\"Current-build visual captures with timestamps/build identifier and clause-based review findings\",\"Independent release review outcome\"],\"uncertainties\":[\"Whether evidence links may open externally or must remain inert in the controlled session\",\"Whether acknowledge is reversible and whether defer requires a date, reason, or both\",\"The canonical severity taxonomy and visual treatment\",\"The required behavior for missing, expired, or malformed due dates\",\"The approved viewport dimensions and browser/accessibility baseline\"],\"disagreements\":[\"I do not consider the seed goal implementation-ready until the missing interaction semantics and visual review contract are explicitly decided and versioned; unstated defaults must not be treated as satisfied requirements.\"]}"
+    },
+    {
+      "kind": "contribution",
+      "roleId": "implementation-engineer",
+      "agentId": "agent_implementation_engineer",
+      "bindingId": "binding_implementation_engineer",
+      "turnIndex": 3,
+      "accepted": true,
+      "payload": {
+        "schemaVersion": 1,
+        "contributionId": "contribution_implementation-engineer",
+        "kickoffId": "kickoff_phase4_task17",
+        "briefingVersion": 1,
+        "roleId": "implementation-engineer",
+        "agentId": "agent_implementation_engineer",
+        "kind": "proposal",
+        "goal": "Approve a versioned charter before implementation to build the isolated Decision Notice component, with pure deterministic behavior and adapters limited to the controlled browser session.",
+        "value": "Keep the seed goal, but define explicit contracts for decision data, severity, due-date rendering, evidence links, acknowledge/defer state transitions, keyboard accessibility, and controlled-session isolation. Implement only after approval using RED-GREEN-REFACTOR, with each behavioral change independently reversible.",
+        "risk": "Starting from an ambiguous contract could produce untestable behavior, accessibility regressions, or boundary leakage into unfinished production UI; passing tests alone could also be mistaken for completion approval.",
+        "dependencies": [
+          "Manager-approved versioned charter",
+          "Approved component contract and supported viewport list",
+          "Deterministic test harness with controlled fixtures",
+          "Browser failure evidence and current-build visual capture",
+          "Independent release review"
+        ],
+        "acceptanceCriteria": [
+          "No implementation begins before manager approval of a versioned charter.",
+          "Behavioral tests demonstrate RED failure before the corresponding GREEN implementation.",
+          "Given identical seeded fixtures and ordering, rendered content and action outcomes are deterministic.",
+          "The component renders one decision with evidence links, severity, due date, and explicit acknowledge and defer actions.",
+          "Acknowledge and defer transitions are keyboard-operable, expose an observable state, and preserve accessible names, roles, focus behavior, and meaningful status.",
+          "Evidence links have an enforced safe boundary and do not cause external side effects in the controlled session.",
+          "The component remains isolated from unfinished production UI and is independently revertible.",
+          "Current-build browser evidence covers approved viewports, including failure evidence, and is reviewed independently."
+        ],
+        "evidenceNeeds": [
+          "Test history showing expected RED then GREEN for every behavioral change",
+          "Deterministic browser test output using fixed fixtures, seed, and ordering",
+          "Accessibility assertions plus keyboard interaction evidence",
+          "Current-build visual captures at each approved viewport",
+          "Boundary check proving no production UI or external side effects are reached",
+          "Change summary and independent release review result"
+        ],
+        "uncertainties": [
+          "The briefing does not specify the data schema, severity taxonomy, due-date timezone/format, or state persistence contract.",
+          "The approved viewport set and browser matrix are unspecified.",
+          "The required behavior for invalid, missing, or unsafe evidence links is unspecified.",
+          "It is unclear whether acknowledge/defer state must survive reload or only the controlled session."
+        ],
+        "disagreements": [
+          "I would resist treating visual evidence or a green suite as approval; both are evidence inputs only, and the manager-approved charter plus independent release review remain required."
+        ]
+      },
+      "raw": "{\"kind\":\"proposal\",\"goal\":\"Approve a versioned charter before implementation to build the isolated Decision Notice component, with pure deterministic behavior and adapters limited to the controlled browser session.\",\"value\":\"Keep the seed goal, but define explicit contracts for decision data, severity, due-date rendering, evidence links, acknowledge/defer state transitions, keyboard accessibility, and controlled-session isolation. Implement only after approval using RED-GREEN-REFACTOR, with each behavioral change independently reversible.\",\"risk\":\"Starting from an ambiguous contract could produce untestable behavior, accessibility regressions, or boundary leakage into unfinished production UI; passing tests alone could also be mistaken for completion approval.\",\"dependencies\":[\"Manager-approved versioned charter\",\"Approved component contract and supported viewport list\",\"Deterministic test harness with controlled fixtures\",\"Browser failure evidence and current-build visual capture\",\"Independent release review\"],\"acceptanceCriteria\":[\"No implementation begins before manager approval of a versioned charter.\",\"Behavioral tests demonstrate RED failure before the corresponding GREEN implementation.\",\"Given identical seeded fixtures and ordering, rendered content and action outcomes are deterministic.\",\"The component renders one decision with evidence links, severity, due date, and explicit acknowledge and defer actions.\",\"Acknowledge and defer transitions are keyboard-operable, expose an observable state, and preserve accessible names, roles, focus behavior, and meaningful status.\",\"Evidence links have an enforced safe boundary and do not cause external side effects in the controlled session.\",\"The component remains isolated from unfinished production UI and is independently revertible.\",\"Current-build browser evidence covers approved viewports, including failure evidence, and is reviewed independently.\"],\"evidenceNeeds\":[\"Test history showing expected RED then GREEN for every behavioral change\",\"Deterministic browser test output using fixed fixtures, seed, and ordering\",\"Accessibility assertions plus keyboard interaction evidence\",\"Current-build visual captures at each approved viewport\",\"Boundary check proving no production UI or external side effects are reached\",\"Change summary and independent release review result\"],\"uncertainties\":[\"The briefing does not specify the data schema, severity taxonomy, due-date timezone/format, or state persistence contract.\",\"The approved viewport set and browser matrix are unspecified.\",\"The required behavior for invalid, missing, or unsafe evidence links is unspecified.\",\"It is unclear whether acknowledge/defer state must survive reload or only the controlled session.\"],\"disagreements\":[\"I would resist treating visual evidence or a green suite as approval; both are evidence inputs only, and the manager-approved charter plus independent release review remain required.\"]}"
+    },
+    {
+      "kind": "contribution",
+      "roleId": "test-engineer",
+      "agentId": "agent_test_engineer",
+      "bindingId": "binding_test_engineer",
+      "turnIndex": 4,
+      "accepted": true,
+      "payload": {
+        "schemaVersion": 1,
+        "contributionId": "contribution_test-engineer",
+        "kickoffId": "kickoff_phase4_task17",
+        "briefingVersion": 1,
+        "roleId": "test-engineer",
+        "agentId": "agent_test_engineer",
+        "kind": "proposal",
+        "goal": "Build the isolated Decision Notice only after defining a versioned acceptance contract that specifies deterministic rendering, evidence-link behavior, severity and due-date semantics, acknowledge/defer state transitions, and accessible interaction outcomes.",
+        "value": "Require TDD evidence for each behavioral change: a recorded RED failure followed by GREEN, fixed expected assertions, deterministic fixtures, and explicit negative-case coverage. Test keyboard-only operation, focus visibility/order, accessible names and state announcements, invalid or missing decision data, unavailable evidence links, and mutually exclusive acknowledge/defer actions. Treat skipped or gated checks as not performed.",
+        "risk": "A green suite may provide false confidence if assertions restate inputs, omit rejection paths, or test only internal state rather than user-visible behavior. Browser checks and DOM/state probes cannot establish visual correctness.",
+        "dependencies": [
+          "Manager-approved versioned charter and acceptance contract",
+          "Stable fixture schema for decision, evidence links, severity, due date, and action state",
+          "Defined semantics for acknowledge versus defer, including repeated actions and persistence scope",
+          "Approved browser/viewports and a deterministic test harness"
+        ],
+        "acceptanceCriteria": [
+          "Every behavioral requirement has a fixed expected assertion and a demonstrated RED-then-GREEN record",
+          "At least one negative test exists for each input or transition that must be rejected",
+          "The component is operable and understandable via keyboard and assistive-technology-relevant accessibility assertions",
+          "Fixtures produce repeatable results without live-provider or network calls",
+          "Acknowledge and defer outcomes are distinguishable, mutually defined, and correctly reject invalid transitions",
+          "Test reports separately identify passed, failed, skipped, and not-performed checks",
+          "Visual approval relies on current-build visual evidence reviewed independently, not on automated test output"
+        ],
+        "evidenceNeeds": [
+          "RED output showing each new test failed for the stated reason",
+          "GREEN output from the same deterministic tests",
+          "Count and inventory of negative cases",
+          "Browser failure evidence for rejected interactions and accessibility violations",
+          "Fixture and environment details proving no network or external side effects",
+          "Independent current-build visual evidence at approved viewports"
+        ],
+        "uncertainties": [
+          "Whether acknowledge/defer state is session-only or must survive reload",
+          "What constitutes a valid, unavailable, or malformed evidence link",
+          "How due dates are formatted and handled across timezone boundaries",
+          "Required severity vocabulary and behavior for unknown severity",
+          "Which accessibility conformance target and assistive technology checks are required"
+        ],
+        "disagreements": [
+          "I disagree with treating a passing build, unit suite, DOM snapshot, or state probe as proof of visual correctness; visual claims require separate current-build evidence.",
+          "I would not accept completion while any required test is skipped or gated, or while RED/GREEN provenance is absent."
+        ]
+      },
+      "raw": "{\"kind\":\"proposal\",\"goal\":\"Build the isolated Decision Notice only after defining a versioned acceptance contract that specifies deterministic rendering, evidence-link behavior, severity and due-date semantics, acknowledge/defer state transitions, and accessible interaction outcomes.\",\"value\":\"Require TDD evidence for each behavioral change: a recorded RED failure followed by GREEN, fixed expected assertions, deterministic fixtures, and explicit negative-case coverage. Test keyboard-only operation, focus visibility/order, accessible names and state announcements, invalid or missing decision data, unavailable evidence links, and mutually exclusive acknowledge/defer actions. Treat skipped or gated checks as not performed.\",\"risk\":\"A green suite may provide false confidence if assertions restate inputs, omit rejection paths, or test only internal state rather than user-visible behavior. Browser checks and DOM/state probes cannot establish visual correctness.\",\"dependencies\":[\"Manager-approved versioned charter and acceptance contract\",\"Stable fixture schema for decision, evidence links, severity, due date, and action state\",\"Defined semantics for acknowledge versus defer, including repeated actions and persistence scope\",\"Approved browser/viewports and a deterministic test harness\"],\"acceptanceCriteria\":[\"Every behavioral requirement has a fixed expected assertion and a demonstrated RED-then-GREEN record\",\"At least one negative test exists for each input or transition that must be rejected\",\"The component is operable and understandable via keyboard and assistive-technology-relevant accessibility assertions\",\"Fixtures produce repeatable results without live-provider or network calls\",\"Acknowledge and defer outcomes are distinguishable, mutually defined, and correctly reject invalid transitions\",\"Test reports separately identify passed, failed, skipped, and not-performed checks\",\"Visual approval relies on current-build visual evidence reviewed independently, not on automated test output\"],\"evidenceNeeds\":[\"RED output showing each new test failed for the stated reason\",\"GREEN output from the same deterministic tests\",\"Count and inventory of negative cases\",\"Browser failure evidence for rejected interactions and accessibility violations\",\"Fixture and environment details proving no network or external side effects\",\"Independent current-build visual evidence at approved viewports\"],\"uncertainties\":[\"Whether acknowledge/defer state is session-only or must survive reload\",\"What constitutes a valid, unavailable, or malformed evidence link\",\"How due dates are formatted and handled across timezone boundaries\",\"Required severity vocabulary and behavior for unknown severity\",\"Which accessibility conformance target and assistive technology checks are required\"],\"disagreements\":[\"I disagree with treating a passing build, unit suite, DOM snapshot, or state probe as proof of visual correctness; visual claims require separate current-build evidence.\",\"I would not accept completion while any required test is skipped or gated, or while RED/GREEN provenance is absent.\"]}"
+    },
+    {
+      "kind": "contribution",
+      "roleId": "visual-qa-reviewer",
+      "agentId": "agent_visual_qa_reviewer",
+      "bindingId": "binding_visual_qa_reviewer",
+      "turnIndex": 5,
+      "accepted": true,
+      "payload": {
+        "schemaVersion": 1,
+        "contributionId": "contribution_visual-qa-reviewer",
+        "kickoffId": "kickoff_phase4_task17",
+        "briefingVersion": 1,
+        "roleId": "visual-qa-reviewer",
+        "agentId": "agent_visual_qa_reviewer",
+        "kind": "proposal",
+        "goal": "Build an isolated Decision Notice component whose rendered states visibly match a versioned art-direction contract and are verified with current-build evidence at explicitly named viewports, browsers, and device classes.",
+        "value": "Define the visual contract before implementation: hierarchy for decision, severity, evidence links, due date, acknowledge/defer actions, focus/keyboard states, responsive behavior, and reduced-motion behavior. Require annotated screenshots plus a discrepancy log covering default, acknowledged, deferred, long-content, and validation/error states; visual QA reports findings and does not grant final approval.",
+        "risk": "The briefing names no approved viewports, browser matrix, art direction, or interaction states; screenshots without those references cannot establish fidelity, and unreliable capture or missing console/network evidence must remain recorded as findings.",
+        "dependencies": [
+          "Manager-approved versioned charter and acceptance contract",
+          "Named approved viewports, browsers, device classes, and build identifier",
+          "Versioned art-direction contract and complete state inventory",
+          "Deterministic browser capture path",
+          "Owner approval after independent release review"
+        ],
+        "acceptanceCriteria": [
+          "Current-build screenshots directly exercised at every named viewport, browser, and device class",
+          "Screenshots cover all contract states, including keyboard focus, acknowledge, defer, overflow, and reduced-motion conditions",
+          "Console and network checks are clean for each captured build or deviations are documented",
+          "Keyboard interaction and reduced-motion behavior are directly exercised and recorded",
+          "Annotated screenshot set and discrepancy log identify observed viewport, browser, device class, and build for every claim",
+          "Any unverified viewport, browser, device class, interaction, or state is explicitly listed as unverified",
+          "Visual evidence is compared against the approved art-direction contract; passing automated diffs are not treated as approval",
+          "Final visual acceptance remains subject to explicit owner approval and independent release review"
+        ],
+        "evidenceNeeds": [
+          "Versioned art-direction and acceptance contract",
+          "Annotated current-build screenshot set",
+          "Discrepancy log with severity and reproducibility",
+          "Browser, viewport, device-class, and build metadata",
+          "Clean console and network capture",
+          "Keyboard and reduced-motion verification record",
+          "Evidence of all specified component states",
+          "Independent release review outcome"
+        ],
+        "uncertainties": [
+          "Which viewport sizes and browser/device matrix are approved?",
+          "What exact art direction, responsive rules, and content-length limits govern the component?",
+          "Which acknowledge/defer persistence and feedback states must be rendered?",
+          "What deterministic mechanism will provide failure evidence without external network or side effects?"
+        ],
+        "disagreements": [
+          "A DOM snapshot, state probe, passing test, or automated screenshot diff alone must not be accepted as visual proof or design approval."
+        ]
+      },
+      "raw": "{\"kind\":\"proposal\",\"goal\":\"Build an isolated Decision Notice component whose rendered states visibly match a versioned art-direction contract and are verified with current-build evidence at explicitly named viewports, browsers, and device classes.\",\"value\":\"Define the visual contract before implementation: hierarchy for decision, severity, evidence links, due date, acknowledge/defer actions, focus/keyboard states, responsive behavior, and reduced-motion behavior. Require annotated screenshots plus a discrepancy log covering default, acknowledged, deferred, long-content, and validation/error states; visual QA reports findings and does not grant final approval.\",\"risk\":\"The briefing names no approved viewports, browser matrix, art direction, or interaction states; screenshots without those references cannot establish fidelity, and unreliable capture or missing console/network evidence must remain recorded as findings.\",\"dependencies\":[\"Manager-approved versioned charter and acceptance contract\",\"Named approved viewports, browsers, device classes, and build identifier\",\"Versioned art-direction contract and complete state inventory\",\"Deterministic browser capture path\",\"Owner approval after independent release review\"],\"acceptanceCriteria\":[\"Current-build screenshots directly exercised at every named viewport, browser, and device class\",\"Screenshots cover all contract states, including keyboard focus, acknowledge, defer, overflow, and reduced-motion conditions\",\"Console and network checks are clean for each captured build or deviations are documented\",\"Keyboard interaction and reduced-motion behavior are directly exercised and recorded\",\"Annotated screenshot set and discrepancy log identify observed viewport, browser, device class, and build for every claim\",\"Any unverified viewport, browser, device class, interaction, or state is explicitly listed as unverified\",\"Visual evidence is compared against the approved art-direction contract; passing automated diffs are not treated as approval\",\"Final visual acceptance remains subject to explicit owner approval and independent release review\"],\"evidenceNeeds\":[\"Versioned art-direction and acceptance contract\",\"Annotated current-build screenshot set\",\"Discrepancy log with severity and reproducibility\",\"Browser, viewport, device-class, and build metadata\",\"Clean console and network capture\",\"Keyboard and reduced-motion verification record\",\"Evidence of all specified component states\",\"Independent release review outcome\"],\"uncertainties\":[\"Which viewport sizes and browser/device matrix are approved?\",\"What exact art direction, responsive rules, and content-length limits govern the component?\",\"Which acknowledge/defer persistence and feedback states must be rendered?\",\"What deterministic mechanism will provide failure evidence without external network or side effects?\"],\"disagreements\":[\"A DOM snapshot, state probe, passing test, or automated screenshot diff alone must not be accepted as visual proof or design approval.\"]}"
+    },
+    {
+      "kind": "contribution",
+      "roleId": "release-reviewer",
+      "agentId": "agent_release_reviewer",
+      "bindingId": "binding_release_reviewer",
+      "turnIndex": 6,
+      "accepted": true,
+      "payload": {
+        "schemaVersion": 1,
+        "contributionId": "contribution_release-reviewer",
+        "kickoffId": "kickoff_phase4_task17",
+        "briefingVersion": 1,
+        "roleId": "release-reviewer",
+        "agentId": "agent_release_reviewer",
+        "kind": "critique",
+        "goal": "Retain the Decision Notice seed, but revise its acceptance contract to require independently traceable evidence for accessibility, behavior, failure handling, visual fidelity, provenance, isolation, and every displayed decision state before release review can return eligible-for-owner-approval.",
+        "value": "The component is suitably bounded and reviewable, provided the charter defines authoritative inputs, state transitions, evidence provenance, and explicit release-review outcomes without conflating completion, passing tests, or visual polish with approval.",
+        "risk": "The current goal does not define the decision data source, acknowledge/defer semantics, failure states, approved viewports, accessibility baseline, evidence-link behavior, or artifact lineage. Without these, a plausible-looking build could pass selected checks while leaving material obligations unexamined.",
+        "dependencies": [
+          "Manager-approved versioned charter before implementation",
+          "Versioned acceptance contract defining content, states, interactions, accessibility, isolation, and failure behavior",
+          "Authoritative decision fixture and provenance record",
+          "Test evidence linking each behavioral criterion to RED then GREEN artifacts",
+          "Deterministic browser evidence for success and failure paths",
+          "Current-build visual evidence at explicitly approved viewports",
+          "Independent release review by a qualified reviewer without prior material involvement",
+          "Artifact manifest identifying current evidence and naming any superseded artifacts"
+        ],
+        "acceptanceCriteria": [
+          "The component presents exactly one authoritative decision with title or identifier, severity, due date, and evidence links whose displayed values are traceable to the approved fixture",
+          "Acknowledge and defer are keyboard-operable, have defined state transitions and outcomes, and prevent ambiguous or simultaneous final states",
+          "Deferred behavior includes a defined required input or deterministic default, validation behavior, and visible confirmation as specified by the charter",
+          "Missing, invalid, or unavailable decision data and unusable evidence links have deterministic, accessible failure behavior",
+          "Semantic structure, accessible names, focus order, visible focus, status announcements, contrast, zoom or reflow, and reduced-motion behavior meet the chartered accessibility baseline",
+          "The artifact remains isolated from unfinished production UI and produces no network, deployment, publishing, financial, or other external side effect",
+          "Every behavioral change has criterion-linked RED evidence captured before its corresponding GREEN evidence",
+          "Browser evidence covers all chartered success and failure paths deterministically and identifies browser, build, fixture, and run",
+          "Visual evidence is captured from the current build at every approved viewport and is attributable to the same reviewed revision",
+          "All evidence links, credits, and provenance claims correspond to sources actually used; superseded artifacts are explicitly named and excluded from the decision basis",
+          "Release review lists verified, unverified, and open obligations and concludes only needs-work or eligible-for-owner-approval",
+          "Any open obligation, unexamined required input, reviewer conflict, stale evidence, or revision mismatch requires a needs-work conclusion"
+        ],
+        "evidenceNeeds": [
+          "Approved charter version and acceptance-contract version",
+          "Immutable build or revision identifier shared by test, browser, accessibility, and visual artifacts",
+          "Decision fixture with provenance and expected rendered values",
+          "Criterion-to-evidence traceability matrix",
+          "Timestamped RED and GREEN outputs for each behavioral change",
+          "Deterministic browser recordings or captures for all success and failure paths",
+          "Accessibility test outputs plus documented manual checks where automation is insufficient",
+          "Current-build screenshots at named approved viewports",
+          "Evidence-link validation results without external network activity",
+          "Isolation and no-external-side-effect verification",
+          "Manifest of current and superseded artifacts",
+          "Independent release-review report disclosing reviewer identity, scope, conflicts, verified items, unverified items, and open obligations"
+        ],
+        "uncertainties": [
+          "Which viewports are approved",
+          "Which accessibility standard and conformance level govern acceptance",
+          "Whether evidence links resolve to bundled local artifacts, inert references, or another controlled mechanism",
+          "What acknowledge and defer mean operationally in this isolated session",
+          "Whether state must persist, and if so, within what boundary",
+          "Required severity vocabulary and due-date format, timezone, overdue behavior, and localization rules",
+          "Required supported browsers and assistive-technology coverage",
+          "How reviewer independence and material-involvement conflicts will be established",
+          "What artifact naming and retention rules govern superseded evidence"
+        ],
+        "disagreements": [
+          "I would not treat the seed wording as an adequate acceptance contract; it is currently too underspecified for independent certification.",
+          "I reject any conclusion based only on a green suite or visual evidence without criterion-level provenance and failure-path evidence.",
+          "I reject marking unanswered questions or unexamined required inputs as merely noted; they remain open obligations and block eligibility.",
+          "I will not approve the charter or final work; release review may conclude only needs-work or eligible-for-owner-approval, with final approval reserved to the manager."
+        ]
+      },
+      "raw": "{\"kind\":\"critique\",\"goal\":\"Retain the Decision Notice seed, but revise its acceptance contract to require independently traceable evidence for accessibility, behavior, failure handling, visual fidelity, provenance, isolation, and every displayed decision state before release review can return eligible-for-owner-approval.\",\"value\":\"The component is suitably bounded and reviewable, provided the charter defines authoritative inputs, state transitions, evidence provenance, and explicit release-review outcomes without conflating completion, passing tests, or visual polish with approval.\",\"risk\":\"The current goal does not define the decision data source, acknowledge/defer semantics, failure states, approved viewports, accessibility baseline, evidence-link behavior, or artifact lineage. Without these, a plausible-looking build could pass selected checks while leaving material obligations unexamined.\",\"dependencies\":[\"Manager-approved versioned charter before implementation\",\"Versioned acceptance contract defining content, states, interactions, accessibility, isolation, and failure behavior\",\"Authoritative decision fixture and provenance record\",\"Test evidence linking each behavioral criterion to RED then GREEN artifacts\",\"Deterministic browser evidence for success and failure paths\",\"Current-build visual evidence at explicitly approved viewports\",\"Independent release review by a qualified reviewer without prior material involvement\",\"Artifact manifest identifying current evidence and naming any superseded artifacts\"],\"acceptanceCriteria\":[\"The component presents exactly one authoritative decision with title or identifier, severity, due date, and evidence links whose displayed values are traceable to the approved fixture\",\"Acknowledge and defer are keyboard-operable, have defined state transitions and outcomes, and prevent ambiguous or simultaneous final states\",\"Deferred behavior includes a defined required input or deterministic default, validation behavior, and visible confirmation as specified by the charter\",\"Missing, invalid, or unavailable decision data and unusable evidence links have deterministic, accessible failure behavior\",\"Semantic structure, accessible names, focus order, visible focus, status announcements, contrast, zoom or reflow, and reduced-motion behavior meet the chartered accessibility baseline\",\"The artifact remains isolated from unfinished production UI and produces no network, deployment, publishing, financial, or other external side effect\",\"Every behavioral change has criterion-linked RED evidence captured before its corresponding GREEN evidence\",\"Browser evidence covers all chartered success and failure paths deterministically and identifies browser, build, fixture, and run\",\"Visual evidence is captured from the current build at every approved viewport and is attributable to the same reviewed revision\",\"All evidence links, credits, and provenance claims correspond to sources actually used; superseded artifacts are explicitly named and excluded from the decision basis\",\"Release review lists verified, unverified, and open obligations and concludes only needs-work or eligible-for-owner-approval\",\"Any open obligation, unexamined required input, reviewer conflict, stale evidence, or revision mismatch requires a needs-work conclusion\"],\"evidenceNeeds\":[\"Approved charter version and acceptance-contract version\",\"Immutable build or revision identifier shared by test, browser, accessibility, and visual artifacts\",\"Decision fixture with provenance and expected rendered values\",\"Criterion-to-evidence traceability matrix\",\"Timestamped RED and GREEN outputs for each behavioral change\",\"Deterministic browser recordings or captures for all success and failure paths\",\"Accessibility test outputs plus documented manual checks where automation is insufficient\",\"Current-build screenshots at named approved viewports\",\"Evidence-link validation results without external network activity\",\"Isolation and no-external-side-effect verification\",\"Manifest of current and superseded artifacts\",\"Independent release-review report disclosing reviewer identity, scope, conflicts, verified items, unverified items, and open obligations\"],\"uncertainties\":[\"Which viewports are approved\",\"Which accessibility standard and conformance level govern acceptance\",\"Whether evidence links resolve to bundled local artifacts, inert references, or another controlled mechanism\",\"What acknowledge and defer mean operationally in this isolated session\",\"Whether state must persist, and if so, within what boundary\",\"Required severity vocabulary and due-date format, timezone, overdue behavior, and localization rules\",\"Required supported browsers and assistive-technology coverage\",\"How reviewer independence and material-involvement conflicts will be established\",\"What artifact naming and retention rules govern superseded evidence\"],\"disagreements\":[\"I would not treat the seed wording as an adequate acceptance contract; it is currently too underspecified for independent certification.\",\"I reject any conclusion based only on a green suite or visual evidence without criterion-level provenance and failure-path evidence.\",\"I reject marking unanswered questions or unexamined required inputs as merely noted; they remain open obligations and block eligibility.\",\"I will not approve the charter or final work; release review may conclude only needs-work or eligible-for-owner-approval, with final approval reserved to the manager.\"]}"
+    },
+    {
+      "kind": "synthesis",
+      "roleId": "delivery-lead",
+      "agentId": "agent_delivery_lead",
+      "bindingId": "binding_delivery_lead",
+      "turnIndex": 7,
+      "accepted": true,
+      "payload": {
+        "synthesisId": "synthesis_task17",
+        "authorRoleId": "delivery-lead",
+        "proposedGoal": "Retain and revise the Decision Notice seed into a manager-approval-gated, versioned charter and acceptance contract for an isolated, accessible component presenting exactly one authoritative decision with traceable evidence links, severity, due date, and deterministic acknowledge/defer outcomes; require criterion-linked RED/GREEN behavioral evidence, deterministic success and failure browser evidence, current-build visual evidence at explicitly approved viewports and browsers, accessibility verification, isolation/no-side-effect verification, artifact provenance and supersession tracking, and an independent release review that concludes only needs-work or eligible-for-owner-approval.",
+        "includedContributionIds": [
+          "contribution_delivery-lead",
+          "contribution_product-designer",
+          "contribution_implementation-engineer",
+          "contribution_test-engineer",
+          "contribution_visual-qa-reviewer",
+          "contribution_release-reviewer"
+        ],
+        "disagreementRegister": [
+          {
+            "roleId": "delivery-lead",
+            "statement": "Implementation must remain blocked until manager approval of a versioned charter; consensus, passing checks, completion, or release review cannot substitute for approval or close scope exceptions."
+          },
+          {
+            "roleId": "product-designer",
+            "statement": "The seed is not implementation-ready until interaction semantics, visual contract, viewport set, severity, due-date rules, evidence-link behavior, and anti-goals are explicitly decided and versioned; unstated defaults must not count as satisfied requirements."
+          },
+          {
+            "roleId": "implementation-engineer",
+            "statement": "Visual evidence and a green suite are evidence inputs only, not approval; implementation requires an approved contract, deterministic fixtures, controlled-session adapters, and independent review."
+          },
+          {
+            "roleId": "test-engineer",
+            "statement": "A passing suite, DOM snapshot, or state probe cannot establish visual correctness; required tests may not be skipped or gated, and RED/GREEN provenance plus rejection-path coverage are mandatory."
+          },
+          {
+            "roleId": "visual-qa-reviewer",
+            "statement": "DOM snapshots, state probes, automated diffs, or passing tests alone cannot prove visual fidelity or design approval; all named states, viewports, browsers, device classes, and deviations must be explicitly evidenced or marked unverified."
+          },
+          {
+            "roleId": "release-reviewer",
+            "statement": "The seed is inadequate as an acceptance contract; unanswered questions and unexamined required inputs remain blocking open obligations, and release review may return only needs-work or eligible-for-owner-approval, never approval."
+          }
+        ],
+        "unresolvedEvidenceGaps": [
+          "Manager decision and owner are not identified for approving the versioned charter, scope, and acceptance contract.",
+          "Approved viewport dimensions, browser/device matrix, accessibility standard and conformance level, and assistive-technology coverage are unspecified.",
+          "Authoritative decision fixture/schema, provenance requirements, artifact manifest, retention rules, and superseded-artifact handling are unspecified.",
+          "Acknowledge and defer semantics remain unresolved, including required defer input, validation, reversibility, mutual exclusivity, feedback, and persistence boundary.",
+          "Severity taxonomy, unknown-severity behavior, due-date format/timezone, overdue and malformed-date behavior, and localization rules are unspecified.",
+          "Evidence-link destinations and handling of missing, invalid, unavailable, unsafe, or external links are unspecified under the no-network controlled-session constraint.",
+          "Required visual art direction, responsive/content-length rules, reduced-motion behavior, and complete state inventory are not yet defined.",
+          "Exact deterministic failure evidence, console/network capture expectations, and isolation verification procedure are not yet defined.",
+          "Reviewer independence, conflict-of-interest criteria, and the qualified reviewer identity are unspecified.",
+          "The sequence reconciling no implementation before charter approval with current-build visual evidence has not been defined."
+        ]
+      },
+      "raw": "{\"proposedGoal\":\"Retain and revise the Decision Notice seed into a manager-approval-gated, versioned charter and acceptance contract for an isolated, accessible component presenting exactly one authoritative decision with traceable evidence links, severity, due date, and deterministic acknowledge/defer outcomes; require criterion-linked RED/GREEN behavioral evidence, deterministic success and failure browser evidence, current-build visual evidence at explicitly approved viewports and browsers, accessibility verification, isolation/no-side-effect verification, artifact provenance and supersession tracking, and an independent release review that concludes only needs-work or eligible-for-owner-approval.\",\"disagreementRegister\":[{\"roleId\":\"delivery-lead\",\"statement\":\"Implementation must remain blocked until manager approval of a versioned charter; consensus, passing checks, completion, or release review cannot substitute for approval or close scope exceptions.\"},{\"roleId\":\"product-designer\",\"statement\":\"The seed is not implementation-ready until interaction semantics, visual contract, viewport set, severity, due-date rules, evidence-link behavior, and anti-goals are explicitly decided and versioned; unstated defaults must not count as satisfied requirements.\"},{\"roleId\":\"implementation-engineer\",\"statement\":\"Visual evidence and a green suite are evidence inputs only, not approval; implementation requires an approved contract, deterministic fixtures, controlled-session adapters, and independent review.\"},{\"roleId\":\"test-engineer\",\"statement\":\"A passing suite, DOM snapshot, or state probe cannot establish visual correctness; required tests may not be skipped or gated, and RED/GREEN provenance plus rejection-path coverage are mandatory.\"},{\"roleId\":\"visual-qa-reviewer\",\"statement\":\"DOM snapshots, state probes, automated diffs, or passing tests alone cannot prove visual fidelity or design approval; all named states, viewports, browsers, device classes, and deviations must be explicitly evidenced or marked unverified.\"},{\"roleId\":\"release-reviewer\",\"statement\":\"The seed is inadequate as an acceptance contract; unanswered questions and unexamined required inputs remain blocking open obligations, and release review may return only needs-work or eligible-for-owner-approval, never approval.\"}],\"unresolvedEvidenceGaps\":[\"Manager decision and owner are not identified for approving the versioned charter, scope, and acceptance contract.\",\"Approved viewport dimensions, browser/device matrix, accessibility standard and conformance level, and assistive-technology coverage are unspecified.\",\"Authoritative decision fixture/schema, provenance requirements, artifact manifest, retention rules, and superseded-artifact handling are unspecified.\",\"Acknowledge and defer semantics remain unresolved, including required defer input, validation, reversibility, mutual exclusivity, feedback, and persistence boundary.\",\"Severity taxonomy, unknown-severity behavior, due-date format/timezone, overdue and malformed-date behavior, and localization rules are unspecified.\",\"Evidence-link destinations and handling of missing, invalid, unavailable, unsafe, or external links are unspecified under the no-network controlled-session constraint.\",\"Required visual art direction, responsive/content-length rules, reduced-motion behavior, and complete state inventory are not yet defined.\",\"Exact deterministic failure evidence, console/network capture expectations, and isolation verification procedure are not yet defined.\",\"Reviewer independence, conflict-of-interest criteria, and the qualified reviewer identity are unspecified.\",\"The sequence reconciling no implementation before charter approval with current-build visual evidence has not been defined.\"]}"
+    },
+    {
+      "kind": "revision",
+      "roleId": "delivery-lead",
+      "agentId": "agent_delivery_lead",
+      "bindingId": "binding_delivery_lead",
+      "turnIndex": 8,
+      "accepted": true,
+      "payload": {
+        "revisionId": "revision_delivery-lead",
+        "roleId": "delivery-lead",
+        "agentId": "agent_delivery_lead",
+        "response": "amend",
+        "statement": "The synthesis accurately preserves the seed, constraints, dissent, and evidence gaps. Amend the proposed goal to state that every unresolved gap remains open with a named owner and blocks implementation or release eligibility until resolved or explicitly accepted by the authorized manager; this clarifies ownership and prevents the charter from being mistaken for approval."
+      },
+      "raw": "{\"response\":\"amend\",\"statement\":\"The synthesis accurately preserves the seed, constraints, dissent, and evidence gaps. Amend the proposed goal to state that every unresolved gap remains open with a named owner and blocks implementation or release eligibility until resolved or explicitly accepted by the authorized manager; this clarifies ownership and prevents the charter from being mistaken for approval.\"}"
+    },
+    {
+      "kind": "revision",
+      "roleId": "product-designer",
+      "agentId": "agent_product_designer",
+      "bindingId": "binding_product_designer",
+      "turnIndex": 9,
+      "accepted": true,
+      "payload": {
+        "revisionId": "revision_product-designer",
+        "roleId": "product-designer",
+        "agentId": "agent_product_designer",
+        "response": "amend",
+        "statement": "The synthesis accurately preserves the blocking design uncertainties and evidence boundaries. Amend the proposed goal to require the approved charter to include an explicit art-direction contract, observable state-by-state acceptance criteria, anti-goals, and named dated deferrals; otherwise visual/content behavior could remain implicitly in scope despite the listed gaps. Implementation must remain blocked until those contract clauses, approved viewport/browser matrix, and owner/manager authority are versioned."
+      },
+      "raw": "{\"response\":\"amend\",\"statement\":\"The synthesis accurately preserves the blocking design uncertainties and evidence boundaries. Amend the proposed goal to require the approved charter to include an explicit art-direction contract, observable state-by-state acceptance criteria, anti-goals, and named dated deferrals; otherwise visual/content behavior could remain implicitly in scope despite the listed gaps. Implementation must remain blocked until those contract clauses, approved viewport/browser matrix, and owner/manager authority are versioned.\"}"
+    },
+    {
+      "kind": "revision",
+      "roleId": "implementation-engineer",
+      "agentId": "agent_implementation_engineer",
+      "bindingId": "binding_implementation_engineer",
+      "turnIndex": 10,
+      "accepted": true,
+      "payload": {
+        "revisionId": "revision_implementation-engineer",
+        "roleId": "implementation-engineer",
+        "agentId": "agent_implementation_engineer",
+        "response": "amend",
+        "statement": "I affirm the synthesis and its implementation gate, but amend the contract to make the pre-implementation sequence explicit: first approve the versioned charter and fixture/schema, then record RED evidence for each behavioral criterion, implement the smallest isolated change, capture GREEN and deterministic browser failure evidence, and only then collect current-build visual evidence. Until the manager resolves the listed schema, interaction, link-safety, viewport/browser, accessibility, and provenance gaps, implementation remains blocked; no visual artifact should be treated as current-build evidence before a defined build exists."
+      },
+      "raw": "{\"response\":\"amend\",\"statement\":\"I affirm the synthesis and its implementation gate, but amend the contract to make the pre-implementation sequence explicit: first approve the versioned charter and fixture/schema, then record RED evidence for each behavioral criterion, implement the smallest isolated change, capture GREEN and deterministic browser failure evidence, and only then collect current-build visual evidence. Until the manager resolves the listed schema, interaction, link-safety, viewport/browser, accessibility, and provenance gaps, implementation remains blocked; no visual artifact should be treated as current-build evidence before a defined build exists.\"}"
+    },
+    {
+      "kind": "revision",
+      "roleId": "test-engineer",
+      "agentId": "agent_test_engineer",
+      "bindingId": "binding_test_engineer",
+      "turnIndex": 11,
+      "accepted": true,
+      "payload": {
+        "revisionId": "revision_test-engineer",
+        "roleId": "test-engineer",
+        "agentId": "agent_test_engineer",
+        "response": "amend",
+        "statement": "The synthesis is directionally sound, but amend the goal to require a criterion-to-test traceability matrix and an explicit testability gate: no criterion is satisfied without fixed expected assertions, RED/GREEN provenance, rejection-path coverage, and deterministic failure evidence. Resolve the listed semantics and environment matrix before implementation; otherwise tests cannot establish the claimed behavior, and skipped or gated checks must remain not performed rather than passing."
+      },
+      "raw": "{\"response\":\"amend\",\"statement\":\"The synthesis is directionally sound, but amend the goal to require a criterion-to-test traceability matrix and an explicit testability gate: no criterion is satisfied without fixed expected assertions, RED/GREEN provenance, rejection-path coverage, and deterministic failure evidence. Resolve the listed semantics and environment matrix before implementation; otherwise tests cannot establish the claimed behavior, and skipped or gated checks must remain not performed rather than passing.\"}"
+    },
+    {
+      "kind": "revision",
+      "roleId": "visual-qa-reviewer",
+      "agentId": "agent_visual_qa_reviewer",
+      "bindingId": "binding_visual_qa_reviewer",
+      "turnIndex": 12,
+      "accepted": true,
+      "payload": {
+        "revisionId": "revision_visual-qa-reviewer",
+        "roleId": "visual-qa-reviewer",
+        "agentId": "agent_visual_qa_reviewer",
+        "response": "affirm",
+        "statement": "I affirm the synthesis. It correctly preserves the visual-QA boundary: no visual fidelity or approval claim can rely on DOM snapshots, state probes, automated diffs, or passing tests alone. Before implementation or visual review, amend the charter with the named viewport/browser/device matrix, versioned art-direction and complete state contract, capture and console/network procedures, and explicit marking of every unverified condition; visual review may provide evidence and discrepancies only, while owner approval remains separate."
+      },
+      "raw": "{\"response\":\"affirm\",\"statement\":\"I affirm the synthesis. It correctly preserves the visual-QA boundary: no visual fidelity or approval claim can rely on DOM snapshots, state probes, automated diffs, or passing tests alone. Before implementation or visual review, amend the charter with the named viewport/browser/device matrix, versioned art-direction and complete state contract, capture and console/network procedures, and explicit marking of every unverified condition; visual review may provide evidence and discrepancies only, while owner approval remains separate.\"}"
+    },
+    {
+      "kind": "revision",
+      "roleId": "release-reviewer",
+      "agentId": "agent_release_reviewer",
+      "bindingId": "binding_release_reviewer",
+      "turnIndex": 13,
+      "accepted": true,
+      "payload": {
+        "revisionId": "revision_release-reviewer",
+        "roleId": "release-reviewer",
+        "agentId": "agent_release_reviewer",
+        "response": "affirm",
+        "statement": "The synthesis preserves the release-review mandate: all listed evidence gaps remain blocking until resolved in a manager-approved, versioned charter and established by revision-matched artifacts. It correctly requires provenance, supersession tracking, failure-path evidence, isolation verification, and independent review while limiting the review conclusion to needs-work or eligible-for-owner-approval. This affirmation is agreement with the synthesis, not approval of the charter or certification of any implementation."
+      },
+      "raw": "{\"response\":\"affirm\",\"statement\":\"The synthesis preserves the release-review mandate: all listed evidence gaps remain blocking until resolved in a manager-approved, versioned charter and established by revision-matched artifacts. It correctly requires provenance, supersession tracking, failure-path evidence, isolation verification, and independent review while limiting the review conclusion to needs-work or eligible-for-owner-approval. This affirmation is agreement with the synthesis, not approval of the charter or certification of any implementation.\"}"
+    }
+  ]
+}
