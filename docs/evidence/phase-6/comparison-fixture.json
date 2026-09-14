@@ -1,0 +1,82 @@
+{
+  "schema": "cuckcode.phase6-comparison-fixture.v1",
+  "status": "FROZEN. Every Phase 6 candidate renders this frame and nothing else. Regenerate only by owner-approved change to the frame.",
+  "frozenAt": "2026-09-13",
+  "digest": "13c33cefebf7b13f9d47479d4dc47da1e00022d763c34c5901f6ee1bb20815f4",
+  "seed": {
+    "projectId": "project_phase6_comparison",
+    "baseTime": "2026-09-14T00:00:00.000Z",
+    "eventIdPrefix": "event_phase6",
+    "now": "2026-09-14T00:00:30.000Z"
+  },
+  "viewState": {
+    "primaryViewport": "1440x900",
+    "accommodationViewport": "1280x800",
+    "camera": "reset",
+    "inspector": "closed",
+    "attentionRail": "collapsed",
+    "escalations": 0,
+    "currentPriorities": 1,
+    "runtimeHealth": "connected",
+    "reducedMotion": false
+  },
+  "roleWorkAreas": {
+    "delivery-lead": "team_area",
+    "product-designer": "team_area",
+    "implementation-engineer": "team_area",
+    "test-engineer": "team_area",
+    "visual-qa-reviewer": "review_station",
+    "release-reviewer": "review_station"
+  },
+  "visibleStateChecklist": [
+    "six distinct admitted agents, each at the work area declared in roleWorkAreas",
+    "one current priority, in the active state",
+    "no escalation: no waiting_input, blocked, or failed subject",
+    "runtime health connected for all six agents",
+    "inspector closed",
+    "attention rail collapsed",
+    "camera at reset",
+    "identical labels, content density, and state data across candidates",
+    "exactly two semantic-motion subjects: the active work item and the agent working it"
+  ],
+  "projection": {
+    "eventIds": [
+      "event_phase6_001",
+      "event_phase6_002",
+      "event_phase6_003",
+      "event_phase6_004",
+      "event_phase6_005",
+      "event_phase6_006",
+      "event_phase6_007",
+      "event_phase6_008",
+      "event_phase6_009",
+      "event_phase6_010",
+      "event_phase6_011",
+      "event_phase6_012",
+      "event_phase6_013",
+      "event_phase6_014",
+      "event_phase6_015",
+      "event_phase6_016",
+      "event_phase6_017",
+      "event_phase6_018"
+    ],
+    "sceneDescriptorCount": 7,
+    "outlineItemCount": 1,
+    "agentCount": 6,
+    "assignmentCount": 6
+  },
+  "candidates": [
+    {
+      "candidateId": "candidate-a-architectural-clarity",
+      "manifestPath": null
+    },
+    {
+      "candidateId": "candidate-b-human-studio-warmth",
+      "manifestPath": null
+    },
+    {
+      "candidateId": "candidate-c-miniature-craft-precision",
+      "manifestPath": null
+    }
+  ]
+}

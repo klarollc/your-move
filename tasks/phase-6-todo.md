@@ -15,10 +15,15 @@ Read each entry's own status line. Nothing here inherits authorization from the 
 
 ## Tasks
 
-- [ ] Task 1: Freeze the comparison fixture.
+- [x] Task 1: Freeze the comparison fixture. **Complete 2026-09-13.**
   - Acceptance: one canonical default-office fixture, matching the brief's controlled comparison frame exactly; all three candidates render it and nothing else.
   - Verify: fixture-digest test across all three candidate manifests.
-  - Depends on: 6-A, 6-B.
+  - Result: `packages/testing/src/phase6-comparison-fixture.ts` builds the frame from canonical
+    events through the graybox projectors; `docs/evidence/phase-6/comparison-fixture.json` is frozen
+    at digest `13c33cefebf7b13f9d47479d4dc47da1e00022d763c34c5901f6ee1bb20815f4`. Nine tests,
+    three mutations killed, including the check that an unregistered candidate manifest fails rather
+    than passing over an empty list. Regenerate deliberately with `npm run phase6:fixture:freeze`.
+    Evidence: `docs/evidence/phase-4/red-green-log.md`.
 
 - [ ] Task 2: Candidate A — architectural clarity.
   - Acceptance: twelve candidate-board deliverables; the sterile/diagrammatic risk addressed in writing.

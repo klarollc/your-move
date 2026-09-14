@@ -832,3 +832,50 @@ required before promotion. The credential is copied to a temporary directory for
 session; `dispose` removed every home, and a post-run scan of `%TEMP%` found no `auth.json` and no
 `cuckcode-role-*` residue. That cleanup is the only thing bounding the exposure, and Windows cleanup
 has failed once before in this project (Task 12, attempt 1, `EPERM`).
+
+## Phase 6 Task 1 — Freeze the comparison fixture
+
+Date: 2026-09-13. Authorized by Decisions 6-A and 6-B, ruled the same day.
+
+**What the task had to prevent.** Three candidates that differ in setup rather than in art direction.
+A reviewer scoring three pictures cannot tell whether Candidate B looks calmer because of its
+materials or because it quietly rendered one fewer agent. The brief states a controlled comparison
+frame in prose; prose does not survive three separate production passes.
+
+- RED: nine tests against a frame that did not exist. Four failed — no frozen artifact, and one
+  genuine finding below.
+- GREEN: `packages/testing/src/phase6-comparison-fixture.ts` builds the frame from canonical events
+  and projects it through `replayProject`, `projectOfficeScene`, and `projectAccessibleOutline` —
+  the same projectors the graybox uses, so the frame cannot drift from the product it describes.
+  `docs/evidence/phase-6/comparison-fixture.json` is the frozen artifact.
+  Digest: `13c33cefebf7b13f9d47479d4dc47da1e00022d763c34c5901f6ee1bb20815f4`.
+
+**The frame.** Six distinct admitted agents, one per promoted role, all `connected`; six role
+assignments; one current priority in `active`; no `waiting_input`, `blocked`, or `failed` subject;
+declared view state of camera reset, inspector closed, attention rail collapsed, 1440×900 primary
+with 1280×800 accommodation. `now` is pinned, because `projectOfficeScene` derives freshness from
+the clock and an unpinned one would make the digest drift on its own — turning a drift failure into
+noise nobody trusts.
+
+**A test written wrong, and corrected rather than weakened.** The RED suite asserted exactly one
+semantic-motion subject. The frame produces two: the active work item moves, and so does the agent
+working it. The projector is right and the assertion was wrong. The tempting fix was to relax the
+test to "at least one," which would have stopped it from noticing a second moving subject appearing
+later. It now asserts one moving work item, one moving agent, that agent's exact id, and nothing
+else — a stronger claim than the one that failed.
+
+**Mutation evidence.**
+
+- `viewState.inspector` closed → open: the frozen-digest test fails. Declared view state is inside
+  the digest, not decoration beside it.
+- active role implementation-engineer → test-engineer: the motion test and the digest test both
+  fail.
+- a candidate manifest planted on disk but absent from the registry: the manifest test fails. With
+  zero candidates produced, that test would otherwise pass over an empty list — this is what makes
+  it a guard rather than a formality, and the vacuity check this project keeps needing.
+
+Each mutation was reverted and the suite returned to 9 passed; the full deterministic suite is 345
+passed, 3 skipped.
+
+**Limits.** This freezes the frame. It produces no art, scores nothing, and selects nothing. Tasks
+2–4 add candidate manifests, each of which must name this digest; Task 8 selection remains owner-run.
