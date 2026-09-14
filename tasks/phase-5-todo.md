@@ -246,6 +246,19 @@ approval.
   - Determinism re-run: **148 artifacts, 0 differing.** `npm run phase5:sideeffects` is inside
     `npm run verify`.
 
+- [x] **Release review pass 5, 2026-09-14 — NEEDS WORK, 20 of 21.** Only C-17 outstanding, and it
+      is the waived one. Sixteen artifact versions cited, zero overclaims. Ledger 15 of 60.
+  - _"The owner waiver records the unmet obligation but does not replace the required human
+    screen-reader walkthrough. An open acceptance obligation blocks eligibility regardless of the
+    green suite or the strength of the remaining evidence."_
+  - The brief's new staleness line worked: verification pass 6 had marked C-09, C-11 and C-19
+    partial, correctly, before those artifacts existed. The reviewer relied on _"later evidence that
+    controls over pass-6's older readings"_ instead of deferring. Without it, DF-015 a fifth time.
+  - The cross-check refused the first attempt — no criterion assessed, no artifact version named, no
+    permitted verdict string. The second was clean.
+  - **No technical work remains in Phase 5.** The distance to ELIGIBLE FOR OWNER APPROVAL is one
+    human with a screen reader.
+
 - [ ] Task 10: **Owner acceptance. Owner-run.** Accept the fixture outcome or record bounded
       revisions. Atomically creates the D-24 review that Phase 8 closes.
 

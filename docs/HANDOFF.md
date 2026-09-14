@@ -24,13 +24,15 @@ gaps are closed. Ready means assessable. It does not mean met.
 
 **Task 10 is owner-run.** Do not perform it.
 
-The current verdict is release review **pass 4, 2026-09-14: `NEEDS WORK`, 18 of 21 satisfied**, zero
-overclaims, citing fourteen artifact versions by content address. It supersedes the 11-of-21 verdict,
-which was written before the remediation. Verification pass 6 is the current build assessment.
+The current verdict is release review **pass 5, 2026-09-14: `NEEDS WORK`, 20 of 21 satisfied**, zero
+overclaims, citing sixteen artifact versions by content address.
 
-**C-09 and C-11 were closed by owner ruling on 2026-09-14**, after that verdict. A further release
-review has not been run against them, so the 18-of-21 figure is the last independent assessment and
-now understates the build. What that verdict listed as outstanding:
+**Only C-17 is outstanding, and it is the criterion the owner waived.** The reviewer will not treat a
+waiver as satisfaction: *"An open acceptance obligation blocks eligibility regardless of the green
+suite or the strength of the remaining evidence."* There is no technical work left in Phase 5. The
+distance between this verdict and `ELIGIBLE FOR OWNER APPROVAL` is one human with a screen reader.
+
+C-09 and C-11 were closed by owner ruling on 2026-09-14 and pass 5 confirms both:
 
 - **C-09 — closed.** All twenty contract states are measured three times each, at both viewports,
   and the reduced-motion and 200% zoom readings must equal the baseline.
@@ -42,8 +44,17 @@ now understates the build. What that verdict listed as outstanding:
 - **C-17 — still waived.** The reviewer reported it as waived and added, unprompted, that the waiver
   does not close the obligation. Nothing has changed there and nothing can, short of performing it.
 
-**The honest next artifact is another release review**, one turn, which would assess C-09 and C-11
-against the new evidence. It has not been authorized. Nothing else is.
+**Nothing technical is authorized or outstanding.** The only route to an eligible verdict is the
+walkthrough, and the reviewer named it and its two consequences: perform it and retain a record
+naming the screen reader, the exact build, the journeys and states exercised, the findings and the
+omissions; add that record to the provenance ledger; then have an independent reviewer confirm no
+acceptance obligation remains open.
+
+Known and unruled, found 2026-09-14 while auditing the brief: `scripts/` is not in the tsconfig
+project graph and has never been typechecked. `npm run typecheck:scripts` makes it visible and is
+deliberately not in `verify`, because it reports two pre-existing errors in completed phases. One is
+a shipped defect — `run-phase4-kickoff.ts` writes `roleId: report.roleId`, `report` has no such
+property, and both committed Phase 4 run artifacts record bindings with no `roleId` at all.
 
 Nothing else is authorized. The ten items the reviewer says would change its verdict are ordinary
 work nobody has ruled on, except these three, which cannot be closed by an agent at all:

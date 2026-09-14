@@ -139,3 +139,38 @@ said so in its own words.
 
 That last line is the phase's own governance working. A waiver was recorded, the brief carried it,
 and the independent reviewer still refused to count it as satisfied.
+
+---
+
+## Release review pass 5, 2026-09-14 — NEEDS WORK, 20 of 21
+
+Run after C-09 and C-11 were closed. **Only C-17 is outstanding, and it is the waived one.**
+
+> C-17 is not satisfied. The owner waiver records the unmet obligation but does not replace the
+> required human screen-reader walkthrough. An open acceptance obligation blocks eligibility
+> regardless of the green suite or the strength of the remaining evidence.
+
+Sixteen artifact versions cited by content address. Zero overclaims.
+
+### The brief's new staleness line did its job
+
+Verification pass 6 marked C-09, C-11 and C-19 partial — correctly, and hours before the state
+matrix, the side-effect review and the owner acceptance existed. The brief now dates every artifact
+against the pass using the provenance ledger and names the ones it never saw. The reviewer's own
+words: it relied on *"later evidence that controls over pass-6's older readings for C-09, C-11, and
+C-19."* Without that line it would have had a current pass telling it three criteria were partial and
+no reason to look past it — DF-015 for the fifth time.
+
+### The cross-check earned its place
+
+The first attempt was refused: it assessed no criterion, named no artifact version, and returned no
+verdict string the contract permits. The second was accepted clean. Two turns, ledger 15 of 60.
+
+### What would change the verdict
+
+The reviewer named three things, and the first is the whole of it: **perform the walkthrough.** The
+other two are consequences — record it in the provenance ledger, then have an independent reviewer
+confirm no acceptance obligation remains open.
+
+There is no longer any technical work outstanding in Phase 5. The distance between `NEEDS WORK` and
+`ELIGIBLE FOR OWNER APPROVAL` is one human sitting down with a screen reader.

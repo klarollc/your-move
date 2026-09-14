@@ -1,0 +1,225 @@
+{
+  "schema": "cuckcode.phase5-release-review.v1",
+  "pass": 5,
+  "previousPasses": [
+    "pass-1.json",
+    "pass-2.json",
+    "pass-3.json",
+    "pass-4.json"
+  ],
+  "status": "Authored by the promoted release-reviewer, which is not the implementer and has never seen the working tree. A verdict, not an approval: Task 10 is owner-run.",
+  "roleId": "release-reviewer",
+  "authoredAt": "2026-09-14T17:12:55.788Z",
+  "turnsSpent": 2,
+  "overclaims": [],
+  "crossCheck": {
+    "unmetAtReviewTime": [
+      {
+        "id": "C-17",
+        "why": "no screen-reader walkthrough record exists; the owner waived the criterion on the record. Report it as \"waived by owner\", never as satisfied. See acceptance-contract-waivers.json for what the waiver leaves unestablished."
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "turn": 1,
+      "accepted": false,
+      "shortfalls": [
+        "criterion C-01 was not assessed",
+        "criterion C-02 was not assessed",
+        "criterion C-03 was not assessed",
+        "criterion C-04 was not assessed",
+        "criterion C-05 was not assessed",
+        "criterion C-06 was not assessed",
+        "criterion C-07 was not assessed",
+        "criterion C-08 was not assessed",
+        "criterion C-09 was not assessed",
+        "criterion C-10 was not assessed",
+        "criterion C-11 was not assessed",
+        "criterion C-12 was not assessed",
+        "criterion C-13 was not assessed",
+        "criterion C-14 was not assessed",
+        "criterion C-15 was not assessed",
+        "criterion C-16 was not assessed",
+        "criterion C-17 was not assessed",
+        "criterion C-18 was not assessed",
+        "criterion C-19 was not assessed",
+        "criterion C-20 was not assessed",
+        "criterion C-21 was not assessed",
+        "verdict must be exactly \"NEEDS WORK\" or \"ELIGIBLE FOR OWNER APPROVAL\"",
+        "verdictReason is absent",
+        "outstanding is absent",
+        "wouldChangeYourVerdict is absent or empty"
+      ],
+      "overclaims": [
+        "the verdict names no artifact or evidence version"
+      ],
+      "responseSha256": "bf5f2d79c67f805a5e4310a55ea82db52ac54c86bcb8268e675c1d6263805bb9"
+    },
+    {
+      "turn": 2,
+      "accepted": true,
+      "shortfalls": [],
+      "overclaims": [],
+      "responseSha256": "002cdfcd558a909f5c0585aa34c4ea970fdb6de96b5231251e038265abc87c70"
+    }
+  ],
+  "verdict": {
+    "verdict": "NEEDS WORK",
+    "verdictReason": "C-17 is not satisfied. The owner waiver records the unmet obligation but does not replace the required human screen-reader walkthrough. An open acceptance obligation blocks eligibility regardless of the green suite or the strength of the remaining evidence. C-01 through C-16 and C-18 through C-21 are established by the cited artifacts, including later evidence that controls over pass-6's older readings for C-09, C-11, and C-19. This is not final acceptance; only the manager can approve.",
+    "artifactVersions": {
+      "packages/domain/src/decision-notice.ts": "330fc3a4e5096a75",
+      "apps/web/src/decision-notice.tsx": "9208415fe0ffc88b",
+      "docs/evidence/phase-5/acceptance-contract.json": "eeabdff69530438d",
+      "docs/evidence/phase-5/acceptance-contract-waivers.json": "7f4153b9de334d3c",
+      "docs/evidence/phase-5/surface-contract/surface-contract.json": "c3cd235c1d52658b",
+      "docs/evidence/phase-5/surface-contract/amendments.json": "a12c80e147e2cc70",
+      "docs/evidence/phase-5/surface-contract/focus-contract.json": "391d9a6c3df822e8",
+      "docs/evidence/phase-5/surface-contract/journeys.json": "ae11810c0c0d903f",
+      "docs/evidence/phase-5/verification/pass-6.json": "759caa2272c64717",
+      "docs/evidence/phase-5/visual-qa/pass-2.json": "bbb78b0ce6de2086",
+      "docs/evidence/phase-5/browser/capture-manifest.json": "a13ad17dc6faec07",
+      "docs/evidence/phase-5/browser/determinism.json": "4259c3badeda0db1",
+      "docs/evidence/phase-5/browser/chromium-1440/a11y-state-matrix.json": "0a7cad0b8827b375",
+      "docs/evidence/phase-5/side-effect-review.json": "31c15fb31eab16ff",
+      "docs/evidence/phase-5/provenance/schema.json": "54304ad202d2b5f3",
+      "docs/evidence/phase-5/c-19-owner-acceptance.json": "a78cd68cc46a23a2"
+    },
+    "criterionFindings": [
+      {
+        "criterionId": "C-01",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-6.json and docs/evidence/phase-5/browser/capture-manifest.json, against apps/web/src/decision-notice.tsx",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-02",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-6.json and the browser accessibility-tree captures indexed by docs/evidence/phase-5/browser/capture-manifest.json",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-03",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-6.json and the journeys declared in docs/evidence/phase-5/surface-contract/journeys.json",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-04",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-6.json, assessing packages/domain/src/decision-notice.ts and the declared deferral journeys",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-05",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-6.json and docs/evidence/phase-5/browser/determinism.json",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-06",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-6.json, assessing packages/domain/src/decision-notice.ts",
+        "reservation": "Earlier retained passes disagreed, but pass-6 is the latest assessed reading and records the assessed content digests."
+      },
+      {
+        "criterionId": "C-07",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-6.json, docs/evidence/phase-5/browser/chromium-1440/a11y-state-matrix.json, and the corresponding 1280 state matrix indexed by the capture manifest",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-08",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/browser/determinism.json and docs/evidence/phase-5/side-effect-review.json",
+        "reservation": "The determinism record explicitly excludes recorder files containing wall-clock stamps; those exclusions concern the recording rather than the component output."
+      },
+      {
+        "criterionId": "C-09",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/browser/chromium-1440/a11y-state-matrix.json and docs/evidence/phase-5/browser/chromium-1280/a11y-state-matrix.json",
+        "reservation": "This later per-state constrained matrix controls over pass-6's older partial finding. Only Chromium is evidenced, but the criterion is limited to the approved D-07 desktop boundary rather than cross-browser coverage."
+      },
+      {
+        "criterionId": "C-10",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-6.json and docs/evidence/phase-5/surface-contract/focus-contract.json",
+        "reservation": "The destinations are behaviorally established but remain unconfirmed by a human screen-reader walkthrough under C-17."
+      },
+      {
+        "criterionId": "C-11",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/side-effect-review.json plus the isolation records under docs/evidence/phase-5/browser/chromium-1440 and chromium-1280",
+        "reservation": "The static review covers all 36 reachable first-party modules but does not inspect React or Zod internals; behavioral isolation separately covers the declared journeys. This combination establishes the scoped component claim, not an unlimited claim about all third-party internals."
+      },
+      {
+        "criterionId": "C-12",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-6.json, assessing packages/domain/src/decision-notice.ts",
+        "reservation": "Earlier retained passes disagreed; pass-6 is the latest versioned assessment."
+      },
+      {
+        "criterionId": "C-13",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-6.json and the acknowledge-then-undo and defer-then-undo browser journey records",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-14",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-6.json and the captured state inventory indexed by docs/evidence/phase-5/browser/capture-manifest.json",
+        "reservation": "Earlier retained passes disagreed; pass-6 and the current captures assess the cited current build."
+      },
+      {
+        "criterionId": "C-15",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-6.json, assessing packages/domain/src/decision-notice.ts and apps/web/src/decision-notice.tsx",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-16",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/verification/pass-6.json and the inspect-resolved-evidence isolation journey under docs/evidence/phase-5/browser",
+        "reservation": ""
+      },
+      {
+        "criterionId": "C-17",
+        "satisfied": false,
+        "evidenceCited": "docs/evidence/phase-5/acceptance-contract-waivers.json",
+        "reservation": "Waived by owner, not satisfied. No walkthrough record names a screen reader, build, exercised coverage, and omissions; no human listener has heard the interface."
+      },
+      {
+        "criterionId": "C-18",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/provenance.jsonl, docs/evidence/phase-5/provenance/schema.json, and the provenance enforcement result incorporated into npm run verify",
+        "reservation": "Forty-four producers remain explicitly recorded as unknown. The criterion permits unknown attribution when it is recorded and counted rather than guessed."
+      },
+      {
+        "criterionId": "C-19",
+        "satisfied": true,
+        "evidenceCited": "docs/evidence/phase-5/c-19-owner-acceptance.json and docs/evidence/phase-5/browser/capture-manifest.json, against docs/evidence/phase-5/surface-contract/surface-contract.json",
+        "reservation": "The owner ruling covers all 40 digest-verified plates with no exceptions but supplies no per-state marks. Visual-qa/pass-2 remains a limited annotation because that reviewer did not see the images; it is not the evidence for the human acceptance half."
+      },
+      {
+        "criterionId": "C-20",
+        "satisfied": true,
+        "evidenceCited": "The isolation.json and isolation-deliberate-failure.json records under both docs/evidence/phase-5/browser viewport directories, with procedure journeys declared in docs/evidence/phase-5/surface-contract/journeys.json",
+        "reservation": "The finding is bounded to the defined isolation procedure and its recorded journeys; the deliberate external-fetch injection establishes that the detector fails deterministically."
+      },
+      {
+        "criterionId": "C-21",
+        "satisfied": true,
+        "evidenceCited": "This independent NEEDS WORK review, authored by the promoted release-reviewer who is not the implementer, citing the artifact and evidence versions listed in artifactVersions",
+        "reservation": "The review must be retained with its author and content address in the evidence ledger; it does not constitute manager approval."
+      }
+    ],
+    "outstanding": [
+      "C-17"
+    ],
+    "wouldChangeYourVerdict": [
+      "Perform a genuine human screen-reader walkthrough and retain a record naming the screen reader, exact build, exercised journeys and states, findings, and omissions.",
+      "Add the walkthrough and retained release review to the provenance ledger with matching digests and established producers, then rerun the provenance and verification gates.",
+      "Have an independent non-implementer release-reviewer examine the resulting versioned artifacts and confirm that no acceptance obligation remains open; that could support ELIGIBLE FOR OWNER APPROVAL, not final acceptance."
+    ]
+  }
+}
