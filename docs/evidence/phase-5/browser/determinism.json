@@ -1,7 +1,7 @@
 {
   "schema": "cuckcode.phase5-determinism.v1",
   "status": "Two complete capture runs through a real browser, digested and compared. This is what C-08 asks for; the in-process same-input test and the static unreachability scan remain and are not replaced by it.",
-  "ranAt": "2026-09-14T07:47:15.523Z",
+  "ranAt": "2026-09-14T17:00:23.484Z",
   "decisionRecord": "docs/evidence/phase-5/decision-record-2026-09-14-task-9-remediation.md",
   "injected": [
     "clock",
@@ -20,7 +20,7 @@
       "why": "stamps the wall clock into its own contents, which is a property of the recording rather than of the thing recorded"
     }
   ],
-  "artifactsCompared": 146,
+  "artifactsCompared": 148,
   "identical": true,
   "differing": [],
   "presentInOnlyOneRun": [],
@@ -37,6 +37,7 @@
     "chromium-1440/a11y-scan-save-failed.json": "d79e1cc0b2fc47f6",
     "chromium-1440/a11y-scan-saving.json": "cc1bc1173a1369ca",
     "chromium-1440/a11y-scan-severity-unknown.json": "14c15d25f8b3993c",
+    "chromium-1440/a11y-state-matrix.json": "0a7cad0b8827b375",
     "chromium-1440/a11y-zoom-200.json": "ae09cee70c4f8c0b",
     "chromium-1440/acknowledged.aria.yaml": "7b5528bdbf88bda2",
     "chromium-1440/acknowledged.journey.json": "3dcab255b22a8691",
@@ -110,6 +111,7 @@
     "chromium-1280/a11y-scan-save-failed.json": "44e11459c464d5d5",
     "chromium-1280/a11y-scan-saving.json": "f03ec4666ee4105f",
     "chromium-1280/a11y-scan-severity-unknown.json": "32cf10694869adf1",
+    "chromium-1280/a11y-state-matrix.json": "a16f1a647f2cb34d",
     "chromium-1280/a11y-zoom-200.json": "e4c93f4667301758",
     "chromium-1280/acknowledged.aria.yaml": "7b5528bdbf88bda2",
     "chromium-1280/acknowledged.journey.json": "ab90e1bea7102b24",
@@ -185,6 +187,7 @@
     "chromium-1440/a11y-scan-save-failed.json": "d79e1cc0b2fc47f6",
     "chromium-1440/a11y-scan-saving.json": "cc1bc1173a1369ca",
     "chromium-1440/a11y-scan-severity-unknown.json": "14c15d25f8b3993c",
+    "chromium-1440/a11y-state-matrix.json": "0a7cad0b8827b375",
     "chromium-1440/a11y-zoom-200.json": "ae09cee70c4f8c0b",
     "chromium-1440/acknowledged.aria.yaml": "7b5528bdbf88bda2",
     "chromium-1440/acknowledged.journey.json": "3dcab255b22a8691",
@@ -258,6 +261,7 @@
     "chromium-1280/a11y-scan-save-failed.json": "44e11459c464d5d5",
     "chromium-1280/a11y-scan-saving.json": "f03ec4666ee4105f",
     "chromium-1280/a11y-scan-severity-unknown.json": "32cf10694869adf1",
+    "chromium-1280/a11y-state-matrix.json": "a16f1a647f2cb34d",
     "chromium-1280/a11y-zoom-200.json": "e4c93f4667301758",
     "chromium-1280/acknowledged.aria.yaml": "7b5528bdbf88bda2",
     "chromium-1280/acknowledged.journey.json": "ab90e1bea7102b24",

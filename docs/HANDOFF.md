@@ -28,19 +28,22 @@ The current verdict is release review **pass 4, 2026-09-14: `NEEDS WORK`, 18 of 
 overclaims, citing fourteen artifact versions by content address. It supersedes the 11-of-21 verdict,
 which was written before the remediation. Verification pass 6 is the current build assessment.
 
-Three criteria are outstanding and **only one of them needs a person**:
+**C-09 and C-11 were closed by owner ruling on 2026-09-14**, after that verdict. A further release
+review has not been run against them, so the 18-of-21 figure is the last independent assessment and
+now understates the build. What that verdict listed as outstanding:
 
-- **C-09** — reduced motion and 200% zoom are established for a subset, not for every inventory state
-  at both viewports. The reviewer wants a per-state matrix: accessible name, non-colour signature,
-  content preservation and horizontal overflow under both conditions. Ordinary work, unruled.
-- **C-11** — the isolation records prove the defined journeys are clean, not that no destructive,
-  deployment, credential or paid path exists anywhere reachable. The reviewer wants a static
-  side-effect review over reachable component and domain code, paired with the behavioral records
-  rather than replacing them. Ordinary work, unruled.
-- **C-17** — waived by the owner. The reviewer reported it as waived and added, unprompted, that the
-  waiver does not close the obligation.
+- **C-09 — closed.** All twenty contract states are measured three times each, at both viewports,
+  and the reduced-motion and 200% zoom readings must equal the baseline.
+  `tests/accessibility/phase-5-decision-notice-state-matrix.spec.ts`.
+- **C-11 — closed.** `npm run phase5:sideeffects` walks the import graph from three declared entry
+  points and reads all 36 reachable first-party modules, whether or not a journey executed them.
+  Zero findings in all five categories. It is the static half and does not replace the behavioral
+  isolation records.
+- **C-17 — still waived.** The reviewer reported it as waived and added, unprompted, that the waiver
+  does not close the obligation. Nothing has changed there and nothing can, short of performing it.
 
-Neither C-09 nor C-11 has an owner ruling. Nothing is authorized.
+**The honest next artifact is another release review**, one turn, which would assess C-09 and C-11
+against the new evidence. It has not been authorized. Nothing else is.
 
 Nothing else is authorized. The ten items the reviewer says would change its verdict are ordinary
 work nobody has ruled on, except these three, which cannot be closed by an agent at all:

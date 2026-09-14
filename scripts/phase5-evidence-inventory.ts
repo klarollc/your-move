@@ -193,6 +193,39 @@ export async function buildEvidenceInventory(): Promise<EvidenceInventory> {
     absent.push("artifact provenance ledger");
   }
 
+  const matrix = await readJson<{
+    statesMeasured?: number;
+    conditions?: Record<string, string>;
+    observations?: Array<{ state: string; condition: string }>;
+  }>("browser/chromium-1440/a11y-state-matrix.json", {});
+  if (matrix.statesMeasured) {
+    present.push("per-state reduced-motion and zoom matrix");
+    lines.push(
+      `  State matrix (phase-5/browser/<viewport>/a11y-state-matrix.json): all ${matrix.statesMeasured} contract states measured three times each — unconstrained, under reduced motion, and under 200% zoom — at both viewports, recording the rendered roles and accessible names, the data markers the non-colour cues are built from, every visible leaf's text, page-level horizontal overflow, clipped elements and animating elements. The two constrained readings must equal the baseline: the criterion says "preserve", which is a comparison rather than a property, so a build that swapped every name under zoom would fail rather than pass. Only rendered elements are counted; reading textContent instead let a label hidden by a zoom-width media query survive the check.`,
+    );
+  } else {
+    absent.push("a per-state reduced-motion and zoom matrix");
+  }
+
+  const sideEffects = await readJson<{
+    modulesScanned?: number;
+    externalPackagesImported?: string[];
+    findings?: Record<string, string[]>;
+    entryPoints?: string[];
+    whatThisCannotEstablish?: string[];
+  }>("side-effect-review.json", {});
+  if (sideEffects.modulesScanned) {
+    const found = Object.entries(sideEffects.findings ?? {})
+      .map(([category, hits]) => `${category} ${hits.length}`)
+      .join(", ");
+    present.push("static side-effect review");
+    lines.push(
+      `  Side effects, statically (phase-5/side-effect-review.json): the import graph was walked from ${(sideEffects.entryPoints ?? []).join(", ")} and all ${sideEffects.modulesScanned} reachable first-party modules were read, whether or not any journey executed them — ${found}. External packages imported by that graph: ${(sideEffects.externalPackagesImported ?? []).join(", ") || "none"}; their internals are not walked. This is the static half of C-11 and does not replace the behavioral isolation records, which speak only for the paths they walked. Its stated limits: ${(sideEffects.whatThisCannotEstablish ?? []).length} of them, in the artifact.`,
+    );
+  } else {
+    absent.push("a static side-effect review");
+  }
+
   const acceptance = await readJson<{
     ruling?: string;
     ruledOn?: string;

@@ -222,6 +222,30 @@ approval.
       not close the obligation**. The governance worked: a waiver was recorded, the brief carried it,
       and the independent reviewer still refused to count it satisfied.
 
+- [x] **C-09 and C-11 closed 2026-09-14** by owner ruling after release review pass 4.
+      `docs/evidence/phase-5/decision-record-2026-09-14-c-09-c-11.md`
+  - **C-09:** all twenty contract states measured three times each — unconstrained, reduced motion,
+    real 200% zoom — at both viewports, and the two constrained readings must **equal** the baseline.
+    "Preserve" is a comparison, not a property; a test asking only "is the name non-empty under zoom"
+    passes on a build that renamed everything. States read from the contract, per 9-G.
+  - Three mutants. The first found a real weakness: the measurement read `textContent`, so a label
+    hidden by a `max-width: 800px` rule — the width 200% zoom produces — survived. It now counts only
+    rendered elements. One "mutant" turned out not to be one: the app's `!important` reduced-motion
+    reset already defends against it, which is evidence about the app, not the test.
+  - **C-11:** `npm run phase5:sideeffects` walks the import graph from three declared entry points
+    and reads all **36 reachable first-party modules**, whether or not any journey executed them.
+    Zero findings across network, credential, deployment, destructive and paid. External packages
+    reached: `react`, `zod` — internals not walked, and the artifact says so.
+  - Two silent failures caught before the artifact was believed, both producing a clean, passing,
+    wrong result: the resolver rewrote `.js` to `.ts` and stopped, dropping the `.tsx` component out
+    of its own graph; and the import pattern could not cross a newline, so an eighteen-line import
+    block was invisible. Three modules, clean, twice, for different reasons.
+  - Three mutants against the live tree: a `fetch` deep in the graph fires, a `document.cookie` in
+    the component fires, and the same `fetch` in an **unreachable** module does not — the scope
+    boundary working rather than a miss.
+  - Determinism re-run: **148 artifacts, 0 differing.** `npm run phase5:sideeffects` is inside
+    `npm run verify`.
+
 - [ ] Task 10: **Owner acceptance. Owner-run.** Accept the fixture outcome or record bounded
       revisions. Atomically creates the D-24 review that Phase 8 closes.
 

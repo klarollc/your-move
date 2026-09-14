@@ -2,7 +2,7 @@
   "schema": "cuckcode.phase5-isolation.v2",
   "viewport": "chromium-1440",
   "servedFrom": "http://127.0.0.1:4174 — the production bundle, per decision 9-E",
-  "ranAt": "2026-09-14T07:46:59.809Z",
+  "ranAt": "2026-09-14T16:59:58.422Z",
   "journeySource": "the surface contract's journeys.json",
   "artifactVersions": {
     "packages/domain/src/decision-notice.ts": "330fc3a4e5096a75",
