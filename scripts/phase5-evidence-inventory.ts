@@ -25,6 +25,10 @@ const readJson = async <T>(path: string, fallback: T): Promise<T> => {
   return body ? (JSON.parse(body) as T) : fallback;
 };
 
+/** The provenance ledger covers the whole evidence tree, so it is read from the root, not phase-5. */
+const readEvidenceFile = async (path: string): Promise<string> =>
+  readFile(resolve(ROOT, "docs/evidence", path), "utf8").catch(() => "");
+
 export async function buildEvidenceInventory(): Promise<EvidenceInventory> {
   const files = (await readdir(PHASE5, { recursive: true }).catch(() => [] as string[])).map(
     (name) => String(name).replaceAll("\\", "/"),
@@ -74,10 +78,11 @@ export async function buildEvidenceInventory(): Promise<EvidenceInventory> {
       .map((name) => name.replace(/^.*\/a11y-scan-/u, "").replace(/\.json$/u, "")),
   );
   const scans = scannedStates.size;
-  const zoom = await readJson<{ horizontalOverflowPx?: number }>(
-    "browser/chromium-1440/a11y-zoom-200.json",
-    {},
-  );
+  const zoom = await readJson<{
+    horizontalOverflowPx?: number;
+    emulatedBy?: string;
+    emulationVerified?: { devicePixelRatio?: number; innerWidth?: number };
+  }>("browser/chromium-1440/a11y-zoom-200.json", {});
   const motion = await readJson<{ elementsWithNonZeroDuration?: string[] }>(
     "browser/chromium-1440/a11y-reduced-motion.json",
     {},
@@ -107,7 +112,10 @@ export async function buildEvidenceInventory(): Promise<EvidenceInventory> {
   if (scans > 0) {
     present.push("automated accessibility runs");
     lines.push(
-      `  Accessibility: axe-core run on ${scans} states at each of ${manifest.viewports.length} viewports with zero violations; 200% zoom emulated by halving the viewport reports ${zoom.horizontalOverflowPx ?? "?"}px of horizontal overflow; under reduced motion ${(motion.elementsWithNonZeroDuration ?? []).length} element(s) carry a non-zero transition or animation duration. Axe is a floor, not an accessibility verdict.`,
+      // The zoom method is read from the record, not described here. This sentence used to say
+      // "200% zoom emulated by halving the viewport" long after decision 9-C replaced that with real
+      // device-metrics zoom — a brief describing a method the suite had stopped using.
+      `  Accessibility: axe-core run on ${scans} states at each of ${manifest.viewports.length} viewports with zero violations; 200% zoom by ${zoom.emulatedBy ?? "an unrecorded method"}, with the emulation itself asserted (devicePixelRatio ${zoom.emulationVerified?.devicePixelRatio ?? "?"}, innerWidth ${zoom.emulationVerified?.innerWidth ?? "?"}) so a zoom test that did not zoom fails rather than passes, reporting ${zoom.horizontalOverflowPx ?? "?"}px of horizontal overflow; reflow at a narrow width is recorded separately in a11y-reflow-narrow.json and is not the same check; under reduced motion ${(motion.elementsWithNonZeroDuration ?? []).length} element(s) carry a non-zero transition or animation duration. Axe is a floor, not an accessibility verdict.`,
     );
   } else {
     absent.push("automated accessibility runs");
@@ -147,8 +155,61 @@ export async function buildEvidenceInventory(): Promise<EvidenceInventory> {
     );
   }
 
-  if (!has("screen-reader")) absent.push("any screen-reader walkthrough record");
-  if (!has("owner-acceptance")) absent.push("owner fidelity acceptance");
+  const ledgerText = await readEvidenceFile("provenance.jsonl");
+  if (ledgerText.trim() !== "") {
+    const entries = ledgerText
+      .split("\n")
+      .filter((line) => line.trim() !== "")
+      .map((line) => JSON.parse(line) as { op: string; producerKind?: string; artifact: string });
+    const records = new Map<string, string>();
+    for (const entry of entries) {
+      if (entry.op === "record") records.set(entry.artifact, entry.producerKind ?? "unknown");
+    }
+    const unknown = [...records.values()].filter((kind) => kind === "unknown").length;
+    present.push("artifact provenance ledger");
+    lines.push(
+      `  Provenance (docs/evidence/provenance.jsonl, schema at phase-5/provenance/schema.json): ${records.size} artifacts recorded with a content digest and a producer, ${entries.filter((entry) => entry.op === "supersede").length} supersession edges, append-only. Enforced by npm run phase5:provenance inside npm run verify: every file has a record, every recorded digest still matches, and no artifact that is still current may cite a superseded one outside a declared historical field. ${unknown} artifacts carry producerKind "unknown" — almost all pre-Phase-5, where no code in the tree writes the file and no record says who did. Those are stated as unestablished, never guessed, and whether that satisfies "every evidence artifact" is your judgement to make.`,
+    );
+  } else {
+    absent.push("artifact provenance ledger");
+  }
+
+  const acceptance = await readJson<{
+    ruling?: string;
+    ruledOn?: string;
+    perStateMarks?: string;
+    lookedAt?: { plates?: number };
+  }>("c-19-owner-acceptance.json", {});
+  if (acceptance.ruling) {
+    present.push("owner fidelity acceptance");
+    lines.push(
+      `  Owner fidelity acceptance (phase-5/c-19-owner-acceptance.json, evidence class human-visual-acceptance, ruled ${acceptance.ruledOn ?? "?"}): ${JSON.stringify(acceptance.ruling)} It covers ${acceptance.lookedAt?.plates ?? "?"} plates, each verified against its manifest digest before the ruling was filed. Per-state marks: ${acceptance.perStateMarks ?? "unrecorded"}`,
+    );
+  } else {
+    absent.push("owner fidelity acceptance");
+  }
+
+  const waivers = await readJson<{
+    waivers: Array<{
+      criterionId: string;
+      disposition: string;
+      whatIsThereforeNotEstablished?: string[];
+    }>;
+  }>("acceptance-contract-waivers.json", { waivers: [] });
+  if (waivers.waivers.length > 0) {
+    present.push("owner waivers against the contract");
+    lines.push(
+      `  Owner waivers (phase-5/acceptance-contract-waivers.json): ${waivers.waivers.map((waiver) => `${waiver.criterionId} ${waiver.disposition}`).join(", ")}. A waived criterion is NOT a met criterion. The overlay states what each waiver leaves unestablished, and it requires you to report a waived criterion as "waived by owner" rather than folding it into a satisfied count.`,
+    );
+  }
+
+  if (!has("screen-reader")) {
+    absent.push(
+      waivers.waivers.some((waiver) => waiver.criterionId === "C-17")
+        ? "any screen-reader walkthrough record — C-17 was waived by the owner rather than performed, so no human listener has heard this interface"
+        : "any screen-reader walkthrough record",
+    );
+  }
   absent.push("any browser other than Chromium");
 
   return {

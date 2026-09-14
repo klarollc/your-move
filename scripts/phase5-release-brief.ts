@@ -53,10 +53,18 @@ export async function unmetCriteria(): Promise<UnmetCriterion[]> {
   const has = (fragment: string): boolean =>
     files.some((name) => String(name).replaceAll("\\", "/").includes(fragment));
 
+  const waivers = await readJson<{
+    waivers: Array<{ criterionId: string; disposition: string; ownerReasoning?: string }>;
+  }>("docs/evidence/phase-5/acceptance-contract-waivers.json", { waivers: [] });
+  const waived = new Map(waivers.waivers.map((waiver) => [waiver.criterionId, waiver]));
+
   if (!has("screen-reader")) {
+    const waiver = waived.get("C-17");
     unmet.push({
       id: "C-17",
-      why: "no screen-reader walkthrough record exists anywhere under docs/evidence/phase-5",
+      why: waiver
+        ? `no screen-reader walkthrough record exists; the owner ${waiver.disposition} the criterion on the record. Report it as "waived by owner", never as satisfied. See acceptance-contract-waivers.json for what the waiver leaves unestablished.`
+        : "no screen-reader walkthrough record exists anywhere under docs/evidence/phase-5",
     });
   }
   if (!has("owner-acceptance")) {
@@ -160,17 +168,38 @@ export async function buildReleaseBrief(): Promise<string> {
     .map((criterion) => `  ${criterion.id}: ${criterion.why}`)
     .join("\n");
 
+  /**
+   * The latest pass of each review, found rather than named.
+   *
+   * This list used to name `verification/pass-2.json`, which pass 4 has since superseded. Handing a
+   * reviewer the digest of a superseded artifact and calling it the current version is the same
+   * defect the provenance ledger's P-3 rule now forbids inside the evidence tree; a brief should not
+   * be the one place it is still allowed.
+   */
+  const latestIn = async (directory: string, fallback: string): Promise<string> => {
+    const names = (await readdir(resolve(PHASE5, directory)).catch(() => [] as string[]))
+      .filter((name) => /^pass-\d+\.json$/u.test(name))
+      .sort((left, right) => Number(left.match(/\d+/u)?.[0]) - Number(right.match(/\d+/u)?.[0]));
+    return `docs/evidence/phase-5/${directory}/${names.at(-1) ?? fallback}`;
+  };
+
   const versions = Object.fromEntries(
     await Promise.all(
       [
         "packages/domain/src/decision-notice.ts",
         "apps/web/src/decision-notice.tsx",
         "docs/evidence/phase-5/acceptance-contract.json",
+        "docs/evidence/phase-5/acceptance-contract-waivers.json",
         "docs/evidence/phase-5/surface-contract/surface-contract.json",
         "docs/evidence/phase-5/surface-contract/amendments.json",
-        "docs/evidence/phase-5/verification/pass-2.json",
-        "docs/evidence/phase-5/visual-qa/pass-2.json",
+        "docs/evidence/phase-5/surface-contract/focus-contract.json",
+        "docs/evidence/phase-5/surface-contract/journeys.json",
+        await latestIn("verification", "verification.json"),
+        await latestIn("visual-qa", "pass-1.json"),
         "docs/evidence/phase-5/browser/capture-manifest.json",
+        "docs/evidence/phase-5/browser/determinism.json",
+        "docs/evidence/phase-5/provenance/schema.json",
+        "docs/evidence/phase-5/c-19-owner-acceptance.json",
       ].map(async (path) => [path, await digest(path)] as const),
     ),
   );
@@ -219,8 +248,8 @@ THE BROWSER CAPTURE
   ${manifest.presentCells} of ${manifest.expectedCells} cells captured at 1440x900 and 1280x800.
   Every image byte-distinct from every other. States the build cannot enter: ${manifest.unreachableStates.length}.
   Contract accessible names: ${fidelity.namesMatching} matching, ${fidelity.namesDrifted} drifting.
-  The isolation procedure ran on five journeys and its deliberate-failure step caught an injected
-  forbidden request, so a clean isolation result is a finding rather than a silence.
+  The isolation procedure and its deliberate-failure step are described in the evidence inventory
+  above, which reads them from the records rather than restating them here.
 
 THE SHARED-KNOWLEDGE SCENARIO
 
@@ -229,9 +258,16 @@ THE SHARED-KNOWLEDGE SCENARIO
 
 THE SUITE
 
-  npm run verify completes: 325 unit, 61 component, 50 end-to-end, 42 accessibility, 62 visual.
-  That gate had never completed before this phase — Playwright collected a Vitest file and died, and
-  every prior report of suite health came from running the stages individually.
+  npm run verify completes end to end, exit 0, with the provenance check inside it.
+
+  **No per-suite counts are quoted here on purpose.** They were hardcoded in this brief and went
+  stale twice; no evidence artifact records them, so this brief will not assert a number it cannot
+  read from a file. If a count matters to your verdict, say so in wouldChangeYourVerdict and it will
+  be recorded as an artifact rather than as prose.
+
+  That gate has failed silently twice in this project's history — once when Playwright collected a
+  Vitest file and died, once when a byte-order mark in package.json killed the second step so the
+  other eighteen never ran. Both are in the dogfood register as DF-013 and DF-016.
 
   A green suite is not a verdict. It is the input you are being asked to weigh, not the answer.
 
@@ -247,7 +283,12 @@ WHAT THIS PHASE DELIBERATELY DID NOT DO
 
   MDD sections 19 and 20 were waived in Phase 4 with comprehension tasks never performed and the
   screen-reader walkthrough never run. Decision 5-D committed Phase 5 to repeating that gate
-  properly. It has not been repeated.
+  properly. **On 2026-09-14 the owner waived it again, on the record**, amending 5-D. The waiver is
+  an artifact you should read (phase-5/acceptance-contract-waivers.json) and it is blunt about what
+  it leaves open: no human listener has ever heard this interface, the nine declared focus
+  destinations are asserted by tests and unconfirmed by ear, and Phase 8 inherits the debt. Waived is
+  not met. Whether a waived criterion can sit inside an eligible-for-approval verdict is exactly the
+  kind of question this role exists to answer, and you are not being told the answer.
 
   One live round is one sample. Everything known about these roles behaving as distinct agents comes
   from a single thirteen-turn day.
