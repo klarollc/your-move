@@ -142,8 +142,12 @@ Phase 4 gate below remain unauthorized.
         round produced a proposed goal, a register attributing disagreement to all six roles, and ten
         unresolved evidence gaps. Only the manager approves a charter; no agent can.
 
-- [ ] Task 18: Phase 4 evidence and owner gate.
+- [x] Task 18: Phase 4 evidence packet **delivered 2026-09-14**;
+      `docs/evidence/phase-4/phase-4-evidence-packet.md`.
   - Acceptance: deterministic rerun, exact evidence binding, documented limits, charter record, no Phase 5 or high-fidelity claim.
   - Verify: final Phase 4 evidence packet.
+  - Result: states what the phase proves and what it does not — MDD §19/§20 still unmet by waiver,
+    no charter approved, ten evidence gaps open, one live round is one sample. Lists the six defects
+    found and fixed, and which were caught without spending a live turn.
 
 - [ ] Owner Phase 4 gate: accept evidence or request corrections. Phase 5 and high-fidelity art remain unauthorized.
