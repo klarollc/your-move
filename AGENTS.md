@@ -4,6 +4,8 @@
 
 Read these files before proposing or making changes:
 
+0. `docs/HANDOFF.md` — live state, the immediate next action, open debts, and the defects that cost
+   real time. Read it first; it is the only document that says what is happening *right now*.
 1. `docs/master-design-document-v0.1.md`
 2. `.ui-craft/brief.md`
 3. `.ui-craft/tokens.md`
