@@ -1,6 +1,9 @@
 # CuckCode visual-reference production brief v0.1
 
-Status: **Proposed for owner approval**  
+Status: **OWNER-APPROVED AS WRITTEN 2026-09-13.** Approved unchanged; no amendment was requested.
+Ruling recorded in `docs/evidence/phase-6/decision-request-2026-09-13-phase-6-parallel-start.md` (6-A).
+Approval authorizes Phase 6 Tasks 1-7 only. Task 8 selection and Task 10 promotion to Active remain
+owner-run, and Phase 7 high-fidelity implementation remains unauthorized.  
 Governing decisions: D-02, D-05, D-07, D-08, D-13–D-15, D-21, D-22, D-26  
 Purpose: create the owner-approved target that gates all high-fidelity UI implementation.
 

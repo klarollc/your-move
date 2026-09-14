@@ -1,6 +1,6 @@
 # Phase 4 checklist: Graybox office and collaborative kickoff
 
-Status: **Owner-approved for deterministic Tasks 1–15 on 2026-08-13; Tasks 16–17 remain unauthorized**
+Status: **Tasks 1–16 complete and owner-accepted. Task 17 authorized and unblocked; Tasks 17–18 and the Phase 4 gate remain open.** Corrected 2026-09-13 — this header still read "Tasks 16–17 remain unauthorized" while the entries below recorded both as authorized, the same contradiction already corrected once in this file on 2026-09-12.
 Specification: `docs/phase-4-graybox-office-and-kickoff-spec-v0.1.md`
 Plan: `tasks/phase-4-plan.md`
 Composition: `.ui-craft/spec.md`

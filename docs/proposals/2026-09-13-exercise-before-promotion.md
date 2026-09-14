@@ -1,6 +1,6 @@
 # Exercise before promotion
 
-**Status: proposed, not approved. Nothing implemented.**
+**Status: IMPLEMENTED. Corrected 2026-09-13** — this line read "proposed, not approved. Nothing implemented" after the exercise gate had already shipped. The gate exists (`90df656`), the opt-in launcher exists (`fca2482`, `scripts/run-role-exercises.ts`), and all six exercises performed under `bcba1f2`. Left uncorrected it was the DF-003 defect this project has already recorded against `AGENTS.md` and `tasks/phase-4-todo.md`.
 
 Author: agent, 2026-09-13. Raised out of Task 17c but not part of it: this changes the promotion
 gate itself, which every future artifact passes through.

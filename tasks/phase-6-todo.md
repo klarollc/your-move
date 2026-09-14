@@ -1,7 +1,7 @@
 # Phase 6 checklist: art-direction candidates and golden states
 
-Status: **PROPOSED, NOT APPROVED. No task below is authorized and nothing has been implemented.**
-Specification: `docs/visual-reference-production-brief-v0.1.md` — _Proposed for owner approval_, unchanged since 2026-08-13
+Status: **Owner-approved 2026-09-13 for Tasks 1-7 only.** Decisions 6-A, 6-B and 6-C are ruled. Task 8 selection, Tasks 9-10, and the Phase 6 gate remain owner-run or unauthorized.
+Specification: `docs/visual-reference-production-brief-v0.1.md` — **owner-approved as written 2026-09-13**
 Plan: `tasks/phase-6-plan.md`
 Decision request: `docs/evidence/phase-6/decision-request-2026-09-13-phase-6-parallel-start.md`
 
@@ -9,9 +9,9 @@ Read each entry's own status line. Nothing here inherits authorization from the 
 
 ## Blocking decisions
 
-- [ ] **6-A** — Owner approves `docs/visual-reference-production-brief-v0.1.md`. It has been proposed and unapproved for one month; every task below depends on it.
-- [ ] **6-B** — Owner authorizes Phase 6 running in parallel with Phase 5, and MDD §24 is amended to record the reordering rather than left contradicting it.
-- [ ] **6-C** — Owner rules on the candidate production medium. Blocks Tasks 2–4 only; Task 1 does not depend on it.
+- [x] **6-A** — Owner approved the brief **as written** on 2026-09-13, no changes requested.
+- [x] **6-B** — Owner authorized parallel Phase 6 on 2026-09-13. MDD §24 and its approval status were amended the same day.
+- [x] **6-C** — Owner ruled **(iv) hybrid** on 2026-09-13: generated raster for mood, material and avatar exploration, marked non-implementable; in-repo vector for the fixture-accurate composition.
 
 ## Tasks
 

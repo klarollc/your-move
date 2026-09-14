@@ -1,6 +1,6 @@
 # Roles as competence briefs, not personalities
 
-**Status: Decision A ruled 2026-09-12. Everything else proposed, not approved. Nothing implemented.**
+**Status: RULED AND IMPLEMENTED. Corrected 2026-09-13** — this line read "Everything else proposed, not approved. Nothing implemented." All sixteen open items were ruled on 2026-09-12 in `docs/evidence/phase-4/live-kickoff/decision-record-2026-09-12-roles-and-exercise.md`, Q4 included after a second explicit approval was sought rather than inferred. The six briefs (`35596d8`) and `composeRole` (`7f1b748`) shipped, and all six briefs were exercised live on 2026-09-13 under `bcba1f2`.
 
 Author: agent, 2026-09-12, at the owner's direction. Supersedes the composition-source
 recommendation in `2026-09-13-task-17c-2b-role-composition.md` §2b, which this document extends

@@ -1,6 +1,6 @@
 # Task 17c-2b — Role composition
 
-**Status: proposed, not approved. Nothing implemented.**
+**Status: APPROVED AND IMPLEMENTED. Corrected 2026-09-13** — this line read "proposed, not approved. Nothing implemented" after the owner had ruled Q3 in `docs/evidence/phase-4/live-kickoff/decision-record-2026-09-12-roles-and-exercise.md` and `composeRole` had shipped (`7f1b748`, `packages/domain/src/role-composition.ts`). Section 1's claim that no code path turns a promoted role into an instruction is no longer true, and the six distinct exercise transcripts of 2026-09-13 are the evidence.
 
 Author: agent, 2026-09-13.
 

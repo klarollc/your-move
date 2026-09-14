@@ -1,7 +1,7 @@
 # Implementation plan: Phase 6 art-direction candidates and golden states
 
-Status: **PROPOSED, NOT APPROVED.** Nothing in this plan is authorized. It requires three owner decisions recorded in `docs/evidence/phase-6/decision-request-2026-09-13-phase-6-parallel-start.md` before Task 1 begins.
-Specification: `docs/visual-reference-production-brief-v0.1.md` (itself still _Proposed for owner approval_, unchanged since 2026-08-13)
+Status: **Owner-approved 2026-09-13 for Tasks 1-7 only.** Decisions 6-A, 6-B and 6-C are ruled in `docs/evidence/phase-6/decision-request-2026-09-13-phase-6-parallel-start.md`. Task 8 selection and Task 10 promotion to Active are owner-run; Phase 7 remains unauthorized.
+Specification: `docs/visual-reference-production-brief-v0.1.md` — **owner-approved as written 2026-09-13**
 Governing: MDD §18 D-21/D-22, §24 Phase 6, `.ui-craft/brief.md`, `.ui-craft/tokens.md`
 Prior phase: `tasks/phase-4-plan.md`
 
@@ -17,7 +17,7 @@ MDD §24 orders Phase 6 after Phase 5. This plan proposes running it in parallel
 - Phase 6 is the most owner-latency-bound phase in the plan: it terminates in a taste judgment only the owner can make, and the brief has already waited a month for a first approval.
 - Phase 7 cannot start until Phase 6 closes, so every day Phase 6 waits is a day added to the end of the schedule, whereas Phase 5 delay costs only itself.
 
-**The deviation is the owner's to authorize, not this plan's to assume.** Running 6 before 5 departs from an approved document. If it is approved, MDD §24 is amended to say so rather than left to contradict the record — the failure mode already recorded three times in this repository.
+**Authorized 2026-09-13 (6-B).** MDD §24 and §27 were amended the same day so the approved document states the order the project actually runs, rather than being left to contradict the record — the failure mode already recorded three times in this repository.
 
 ## Governing decisions this plan does not reopen
 
@@ -27,9 +27,9 @@ MDD §24 orders Phase 6 after Phase 5. This plan proposes running it in parallel
 - Automated screenshot diffs detect change; they never approve taste.
 - Agent-authored identity details remain Candidate pending safety, accessibility, art-system, asset, and manager review.
 
-## Open decision that blocks Task 2
+## Production medium — ruled
 
-**The production medium for the three candidates is not settled by the brief.** The brief permits "generated or commissioned" assets and requires recorded provenance, but does not say which this project uses. The options differ in cost, provenance burden, and achievable fidelity, and the choice changes the shape of Tasks 2–4. It is recorded as Decision 6-C in the decision request.
+**Decision 6-C, ruled 2026-09-13: the hybrid.** Generated raster carries mood, material, and avatar exploration and is marked non-implementable; in-repo vector, rendered at 1440×900 by the existing Playwright harness, carries the fixture-accurate composition that Tasks 6 and 7 score for feasibility and accessibility. Every artifact records which half produced it, so the provenance register never describes a generated image as though it were authored in-tree, and no one can implement Phase 7 against a picture that was never feasible.
 
 ## Task sequence
 
@@ -94,4 +94,4 @@ Stop for: any Phase 7 implementation, any baseline promotion before Task 10, a n
 
 ## Approval gate
 
-This plan authorizes nothing. It requires, recorded: **(6-A)** approval of `docs/visual-reference-production-brief-v0.1.md`; **(6-B)** authorization to run Phase 6 in parallel with Phase 5, together with the MDD §24 amendment that records it; and **(6-C)** the candidate production medium. With all three, Tasks 1–7 are authorized and the plan stops at the Task 8 owner gate.
+All three prerequisites are ruled: **(6-A)** the brief is approved as written, **(6-B)** parallel Phase 6 is authorized and MDD §24 amended, **(6-C)** the medium is the hybrid. **Tasks 1–7 are authorized. The plan stops at the Task 8 owner gate.**

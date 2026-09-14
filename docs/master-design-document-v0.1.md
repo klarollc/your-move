@@ -1348,6 +1348,8 @@ Gate: owner accepts the fixture outcome or records bounded revisions.
 Deliverables: three original controlled-composition candidates, approved reference board/tokens, and named golden-state references.
 Gate: explicit owner promotion of one coherent visual system from Candidate to Active.
 
+**Amended 2026-09-13 — Phase 6 runs in parallel with Phase 5, not after it.** The owner authorized the reordering (6-B) in `docs/evidence/phase-6/decision-request-2026-09-13-phase-6-parallel-start.md`. Phase 6 reads no Phase 5 artifact; it is the most owner-latency-bound phase and Phase 7 cannot begin until it closes. This amendment changes sequencing only. Every Phase 6 gate, and the rule that Phase 7 stays unauthorized until Phase 6 promotes a visual system, is unchanged. Phase 5 acceptance remains a precondition of Phase 8.
+
 ### Phase 7 — High-fidelity implementation
 
 Deliverables: approved materials, lighting, avatars, typography, props, motion, reduced-motion treatment, and visual regression baselines.
@@ -1428,5 +1430,7 @@ Gate: disposition within the governed review period; production reuse remains a 
 **Owner-approved 2026-08-12 for implementation planning.** This document is the source of truth for the phased implementation plan, test plan, visual-reference production brief, and scaffold specification.
 
 **Amended 2026-08-13:** D-26 reciprocal usability and true collaboration is approved as a cross-cutting requirement; corresponding planning artifacts were updated.
+
+**Amended 2026-09-13:** the visual-reference production brief is owner-approved as written, and section 24 is amended so Phase 6 runs in parallel with Phase 5. Phase 6 Tasks 1-7 are authorized; Task 8 selection, Task 10 promotion, and all of Phase 7 are not.
 
 This approval does not authorize production implementation. Dependency installation, project scaffolding, runtime connection, imported role material, or production code requires approval of the next implementation-plan gate.

@@ -1,10 +1,18 @@
 # Decision request — starting Phase 6 in parallel
 
-Status: **REQUESTED, NOT RULED.** Recorded against `bcba1f2`.
+Status: **ALL THREE RULED BY THE OWNER 2026-09-13.** Requested and ruled in the same session; recorded against `bcba1f2`.
 
-On 2026-09-13 the owner instructed: *"start Phase 6's three art candidates in parallel now."* That instruction is the reason this document exists. It is recorded here as **an instruction received, not as approval granted**, because MDD D-25 holds that silence is not agreement and because three specific things this project already treats as owner-only are bundled inside it. `AGENTS.md` currently lists high-fidelity art, final visual tokens and assets, and visual-baseline promotion as unauthorized pending separate explicit approval. Acting on the instruction without recording what it authorizes would leave the boundary documents contradicting the record for a fourth time.
+| Decision | Ruling |
+| --- | --- |
+| 6-A approve the visual-reference production brief | **Approved as written**, no changes requested |
+| 6-B Phase 6 parallel with Phase 5 | **Authorized**, MDD section 24 amended the same day |
+| 6-C candidate production medium | **(iv) Hybrid** — generated exploration plus in-repo vector composition |
 
-Nothing has been implemented. `tasks/phase-6-plan.md` and `tasks/phase-6-todo.md` were written and committed as proposals. No art exists.
+This was an explicit yes to each item, not an acknowledgement. Tasks 1-7 are authorized. Task 8 selection, Task 10 promotion, and Phase 7 are not.
+
+On 2026-09-13 the owner instructed: *"start Phase 6's three art candidates in parallel now."* That instruction was recorded as **an instruction received rather than approval granted**, because MDD D-25 holds that silence is not agreement and because three things this project treats as owner-only were bundled inside it. Each was then put to the owner as a separate question and answered. The rulings above are those answers.
+
+No art exists yet. `tasks/phase-6-plan.md` and `tasks/phase-6-todo.md` were committed as proposals before the rulings and are now marked authorized for Tasks 1-7. `AGENTS.md`, `README.md`, MDD §24 and MDD §27 were amended the same day so no boundary document still denies what these rulings authorize.
 
 ---
 
@@ -14,7 +22,7 @@ Nothing has been implemented. `tasks/phase-6-plan.md` and `tasks/phase-6-todo.md
 
 Every Phase 6 task depends on it. No amendment is proposed — the request is to approve it as written.
 
-**Requested ruling:** approve as written / approve with named changes / do not approve.
+**Ruled 2026-09-13: approved as written.** No amendment requested. The brief's status line now records the approval and its limits.
 
 ---
 
@@ -28,7 +36,7 @@ The case against it is real: Phase 5 is where six live agents first run a full D
 
 **This ruling also changes MDD §24.** If parallel work is authorized, §24 is amended to say so in the same session. Leaving §24 reading one order while the project runs another is precisely the stale-boundary defect recorded against `AGENTS.md` and `tasks/phase-4-todo.md`.
 
-**Requested ruling:** authorize parallel Phase 6 and amend MDD §24 / keep the approved sequence and defer Phase 6 until Phase 5 closes.
+**Ruled 2026-09-13: parallel Phase 6 authorized.** MDD §24 was amended in the same session so the approved document states the order the project actually runs. Sequencing changed; no gate changed. Phase 5 acceptance remains a precondition of Phase 8.
 
 ---
 
@@ -45,7 +53,7 @@ The brief requires "original CuckCode compositions," permits "generated or commi
 
 **Agent recommendation: (iv).** It is the only option that does not force a trade between the two things the rubric scores hardest. It also keeps the honest line this project already draws elsewhere: the generated pieces would be labelled exploration that no one may implement against, exactly as automated screenshot diffs are labelled as detecting change rather than approving taste. Under (ii) alone the likely failure is three beautiful candidates, one selected, and a Phase 7 that cannot build it.
 
-**Requested ruling:** (i), (ii), (iii), (iv), or another medium you name.
+**Ruled 2026-09-13: (iv), the hybrid.** Generated raster carries mood, material, and avatar exploration and is marked non-implementable; in-repo vector carries the fixture-accurate composition that Tasks 6 and 7 score for feasibility and accessibility. Each artifact records which half it came from, so the provenance register never has to describe a generated image as though it were authored in-tree.
 
 ---
 

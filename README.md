@@ -13,9 +13,11 @@ projections of the same canonical state. See MDD §2.
 
 ## Current status
 
-**Phase 4 graybox implementation is in progress.**
+**Phase 4 is near closure and Phase 6 has started in parallel.**
 
-The owner approved deterministic Phase 4 Tasks 1–15 on 2026-08-13. Task 15, owner graybox acceptance, live kickoff, high-fidelity art, Phase 5 behavior, deployment, and external effects remain explicit decision gates; see `AGENTS.md`, `docs/phase-4-graybox-office-and-kickoff-spec-v0.1.md`, and `tasks/phase-4-todo.md` before changing behavior.
+Task 15 and the owner graybox gate closed on 2026-09-08, on complete automated evidence and partial human evidence — MDD sections 19 and 20 were waived, not met. All six authored-role exercises performed on 2026-09-13; Phase 4 Tasks 17 and 18 remain open. Phase 6 Tasks 1-7 are authorized as of 2026-09-13.
+
+The live kickoff, role promotion, Task 8 art selection, Phase 5 behavior, Phase 7 high-fidelity art, deployment, and external effects remain explicit decision gates; see `AGENTS.md`, `tasks/phase-4-todo.md`, and `tasks/phase-6-todo.md` before changing behavior.
 
 ## Toolchain
 
