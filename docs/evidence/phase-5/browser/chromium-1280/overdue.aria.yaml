@@ -1,0 +1,45 @@
+- article "Adopt the bounded kickoff turn budget":
+  - paragraph: Decision notice
+  - heading "Adopt the bounded kickoff turn budget" [level=1]
+  - code: decision_fixture_001
+  - 'status "Decision status: overdue"': Overdue
+  - paragraph: A plain-language summary of one decision awaiting acknowledgement.
+  - 'region "Severity: significant"':
+    - text: Severity
+    - strong: Significant
+  - region "Due date":
+    - text: Due date
+    - strong: October 1, 2026
+  - region "Evidence links":
+    - text: Supporting record
+    - heading "Evidence links" [level=2]
+    - text: 5 artifacts
+    - list:
+      - listitem:
+        - strong: Preflight packet
+        - text: Evidence available
+        - code: fixture/preflight.md
+        - 'button "Evidence link: resolved, Preflight packet"': Inspect
+      - listitem:
+        - strong: Round transcript
+        - text: Evidence available
+        - code: fixture/transcript.json
+        - 'button "Evidence link: resolved, Round transcript"': Inspect
+      - listitem:
+        - strong: Missing report
+        - text: Evidence missing
+        - code: fixture/missing.md
+        - 'button "Evidence link: missing, Missing report" [disabled]': Unavailable
+      - listitem:
+        - strong: Unfiled reference
+        - text: Evidence reference invalid
+        - code
+        - 'button "Evidence link: invalid, Unfiled reference" [disabled]': Unavailable
+      - listitem:
+        - strong: External report
+        - text: Evidence unavailable
+        - code: https://example.invalid/doc
+        - 'button "Evidence link: unavailable, External report" [disabled]': Unavailable
+  - button "Acknowledge"
+  - button "Defer"
+  - paragraph: Decision notice loaded

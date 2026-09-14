@@ -1,0 +1,427 @@
+{
+  "schema": "cuckcode.phase5-browser-capture.v1",
+  "status": "Current-build evidence. Not a promoted baseline, not high-fidelity, and not owner acceptance.",
+  "capturedAt": "2026-09-14T06:27:06.993Z",
+  "viewports": [
+    "chromium-1440",
+    "chromium-1280"
+  ],
+  "requiredStates": 20,
+  "expectedCells": 40,
+  "presentCells": 40,
+  "suites": {
+    "visual": true,
+    "accessibility": true,
+    "isolation": true
+  },
+  "missing": [],
+  "indistinctCaptures": [],
+  "unreachableStates": [
+    {
+      "state": "validation-reason-too-long",
+      "reason": "The reason textarea carries maxLength=280, so the browser refuses the 281st character and the over-length refusal the core implements can never be triggered by a person. The contract also requires a character counter and a limit statement, neither of which the build renders."
+    }
+  ],
+  "cells": [
+    {
+      "state": "pending",
+      "viewport": "chromium-1440",
+      "capture": "chromium-1440/pending.png",
+      "captureSha256": "a16546d9fac20ccc",
+      "ariaSnapshot": "chromium-1440/pending.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "acknowledged",
+      "viewport": "chromium-1440",
+      "capture": "chromium-1440/acknowledged.png",
+      "captureSha256": "93cadebc97a4686c",
+      "ariaSnapshot": "chromium-1440/acknowledged.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "deferred",
+      "viewport": "chromium-1440",
+      "capture": "chromium-1440/deferred.png",
+      "captureSha256": "8c26553e00657f34",
+      "ariaSnapshot": "chromium-1440/deferred.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "overdue",
+      "viewport": "chromium-1440",
+      "capture": "chromium-1440/overdue.png",
+      "captureSha256": "c1889485f06d1b01",
+      "ariaSnapshot": "chromium-1440/overdue.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "saving",
+      "viewport": "chromium-1440",
+      "capture": "chromium-1440/saving.png",
+      "captureSha256": "50b847bba62efff9",
+      "ariaSnapshot": "chromium-1440/saving.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "save-failed",
+      "viewport": "chromium-1440",
+      "capture": "chromium-1440/save-failed.png",
+      "captureSha256": "c6b0dcb33f807549",
+      "ariaSnapshot": "chromium-1440/save-failed.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "disabled",
+      "viewport": "chromium-1440",
+      "capture": "chromium-1440/disabled.png",
+      "captureSha256": "9d73f449ff682c59",
+      "ariaSnapshot": "chromium-1440/disabled.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "severity-routine",
+      "viewport": "chromium-1440",
+      "capture": "chromium-1440/severity-routine.png",
+      "captureSha256": "9557ff155bf252db",
+      "ariaSnapshot": "chromium-1440/severity-routine.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "severity-significant",
+      "viewport": "chromium-1440",
+      "capture": "chromium-1440/severity-significant.png",
+      "captureSha256": "43e81ba674bb7b34",
+      "ariaSnapshot": "chromium-1440/severity-significant.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "severity-critical",
+      "viewport": "chromium-1440",
+      "capture": "chromium-1440/severity-critical.png",
+      "captureSha256": "e8226aa79d44f564",
+      "ariaSnapshot": "chromium-1440/severity-critical.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "severity-unknown",
+      "viewport": "chromium-1440",
+      "capture": "chromium-1440/severity-unknown.png",
+      "captureSha256": "aa987e5b39f9f3a8",
+      "ariaSnapshot": "chromium-1440/severity-unknown.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "date-malformed",
+      "viewport": "chromium-1440",
+      "capture": "chromium-1440/date-malformed.png",
+      "captureSha256": "e118cd96a3fbd9a1",
+      "ariaSnapshot": "chromium-1440/date-malformed.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "link-resolved",
+      "viewport": "chromium-1440",
+      "capture": "chromium-1440/link-resolved.png",
+      "captureSha256": "f26b70a12059e212",
+      "ariaSnapshot": "chromium-1440/link-resolved.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "link-missing",
+      "viewport": "chromium-1440",
+      "capture": "chromium-1440/link-missing.png",
+      "captureSha256": "9723e59875af8167",
+      "ariaSnapshot": "chromium-1440/link-missing.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "link-invalid",
+      "viewport": "chromium-1440",
+      "capture": "chromium-1440/link-invalid.png",
+      "captureSha256": "bdb9a15cfc9569ed",
+      "ariaSnapshot": "chromium-1440/link-invalid.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "link-unavailable",
+      "viewport": "chromium-1440",
+      "capture": "chromium-1440/link-unavailable.png",
+      "captureSha256": "b4fccaa96972b603",
+      "ariaSnapshot": "chromium-1440/link-unavailable.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "validation-reason-empty",
+      "viewport": "chromium-1440",
+      "capture": "chromium-1440/validation-reason-empty.png",
+      "captureSha256": "3316a221d273f6f0",
+      "ariaSnapshot": "chromium-1440/validation-reason-empty.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "validation-reason-too-long",
+      "viewport": "chromium-1440",
+      "capture": "chromium-1440/validation-reason-too-long.png",
+      "captureSha256": "3cecdbdf6a719d93",
+      "ariaSnapshot": "chromium-1440/validation-reason-too-long.aria.yaml",
+      "captured": false,
+      "unreachableBecause": "The reason textarea carries maxLength=280, so the browser refuses the 281st character and the over-length refusal the core implements can never be triggered by a person. The contract also requires a character counter and a limit statement, neither of which the build renders.",
+      "externalRequests": []
+    },
+    {
+      "state": "validation-date-invalid",
+      "viewport": "chromium-1440",
+      "capture": "chromium-1440/validation-date-invalid.png",
+      "captureSha256": "11b645ed32e7606e",
+      "ariaSnapshot": "chromium-1440/validation-date-invalid.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "undo-available",
+      "viewport": "chromium-1440",
+      "capture": "chromium-1440/undo-available.png",
+      "captureSha256": "eed642eb4d825805",
+      "ariaSnapshot": "chromium-1440/undo-available.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "pending",
+      "viewport": "chromium-1280",
+      "capture": "chromium-1280/pending.png",
+      "captureSha256": "8a56e1bf565d3edc",
+      "ariaSnapshot": "chromium-1280/pending.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "acknowledged",
+      "viewport": "chromium-1280",
+      "capture": "chromium-1280/acknowledged.png",
+      "captureSha256": "8d66a4c7a9d737af",
+      "ariaSnapshot": "chromium-1280/acknowledged.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "deferred",
+      "viewport": "chromium-1280",
+      "capture": "chromium-1280/deferred.png",
+      "captureSha256": "515cd81237e0aa14",
+      "ariaSnapshot": "chromium-1280/deferred.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "overdue",
+      "viewport": "chromium-1280",
+      "capture": "chromium-1280/overdue.png",
+      "captureSha256": "012955494ae6ea98",
+      "ariaSnapshot": "chromium-1280/overdue.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "saving",
+      "viewport": "chromium-1280",
+      "capture": "chromium-1280/saving.png",
+      "captureSha256": "8eec0c7484c867bd",
+      "ariaSnapshot": "chromium-1280/saving.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "save-failed",
+      "viewport": "chromium-1280",
+      "capture": "chromium-1280/save-failed.png",
+      "captureSha256": "1ece2e7d18a60079",
+      "ariaSnapshot": "chromium-1280/save-failed.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "disabled",
+      "viewport": "chromium-1280",
+      "capture": "chromium-1280/disabled.png",
+      "captureSha256": "0c8cb272b0e6dea7",
+      "ariaSnapshot": "chromium-1280/disabled.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "severity-routine",
+      "viewport": "chromium-1280",
+      "capture": "chromium-1280/severity-routine.png",
+      "captureSha256": "d1e0ef0c038fffe4",
+      "ariaSnapshot": "chromium-1280/severity-routine.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "severity-significant",
+      "viewport": "chromium-1280",
+      "capture": "chromium-1280/severity-significant.png",
+      "captureSha256": "571b193ffae6f2c5",
+      "ariaSnapshot": "chromium-1280/severity-significant.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "severity-critical",
+      "viewport": "chromium-1280",
+      "capture": "chromium-1280/severity-critical.png",
+      "captureSha256": "aeb140a1f5d802e8",
+      "ariaSnapshot": "chromium-1280/severity-critical.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "severity-unknown",
+      "viewport": "chromium-1280",
+      "capture": "chromium-1280/severity-unknown.png",
+      "captureSha256": "a43d720ced7d61ae",
+      "ariaSnapshot": "chromium-1280/severity-unknown.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "date-malformed",
+      "viewport": "chromium-1280",
+      "capture": "chromium-1280/date-malformed.png",
+      "captureSha256": "e6a99007763a72cb",
+      "ariaSnapshot": "chromium-1280/date-malformed.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "link-resolved",
+      "viewport": "chromium-1280",
+      "capture": "chromium-1280/link-resolved.png",
+      "captureSha256": "f2d5445c2f7edef3",
+      "ariaSnapshot": "chromium-1280/link-resolved.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "link-missing",
+      "viewport": "chromium-1280",
+      "capture": "chromium-1280/link-missing.png",
+      "captureSha256": "3c903d7fd62bf751",
+      "ariaSnapshot": "chromium-1280/link-missing.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "link-invalid",
+      "viewport": "chromium-1280",
+      "capture": "chromium-1280/link-invalid.png",
+      "captureSha256": "7ee9674161f58d9f",
+      "ariaSnapshot": "chromium-1280/link-invalid.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "link-unavailable",
+      "viewport": "chromium-1280",
+      "capture": "chromium-1280/link-unavailable.png",
+      "captureSha256": "3f673dd789c5bdb9",
+      "ariaSnapshot": "chromium-1280/link-unavailable.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "validation-reason-empty",
+      "viewport": "chromium-1280",
+      "capture": "chromium-1280/validation-reason-empty.png",
+      "captureSha256": "571b7adb9d45d26c",
+      "ariaSnapshot": "chromium-1280/validation-reason-empty.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "validation-reason-too-long",
+      "viewport": "chromium-1280",
+      "capture": "chromium-1280/validation-reason-too-long.png",
+      "captureSha256": "022ba0731d128827",
+      "ariaSnapshot": "chromium-1280/validation-reason-too-long.aria.yaml",
+      "captured": false,
+      "unreachableBecause": "The reason textarea carries maxLength=280, so the browser refuses the 281st character and the over-length refusal the core implements can never be triggered by a person. The contract also requires a character counter and a limit statement, neither of which the build renders.",
+      "externalRequests": []
+    },
+    {
+      "state": "validation-date-invalid",
+      "viewport": "chromium-1280",
+      "capture": "chromium-1280/validation-date-invalid.png",
+      "captureSha256": "aa7cebf052f4bd0c",
+      "ariaSnapshot": "chromium-1280/validation-date-invalid.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    },
+    {
+      "state": "undo-available",
+      "viewport": "chromium-1280",
+      "capture": "chromium-1280/undo-available.png",
+      "captureSha256": "a44b43e99aabbff1",
+      "ariaSnapshot": "chromium-1280/undo-available.aria.yaml",
+      "captured": true,
+      "unreachableBecause": null,
+      "externalRequests": []
+    }
+  ]
+}

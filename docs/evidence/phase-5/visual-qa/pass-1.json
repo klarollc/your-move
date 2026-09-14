@@ -1,0 +1,183 @@
+{
+  "schema": "cuckcode.phase5-visual-qa.v1",
+  "pass": 1,
+  "previousPasses": [],
+  "status": "Authored by the promoted visual-qa-reviewer from accessibility trees, not images. Class 3 evidence at most; C-19 still requires the owner's own eyes.",
+  "roleId": "visual-qa-reviewer",
+  "authoredAt": "2026-09-14T06:24:00.719Z",
+  "turnsSpent": 1,
+  "overclaims": [],
+  "crossCheck": {
+    "unreachableStates": [
+      "validation-reason-too-long"
+    ],
+    "capturedCells": 38
+  },
+  "attempts": [
+    {
+      "turn": 1,
+      "accepted": true,
+      "shortfalls": [],
+      "overclaims": [],
+      "responseSha256": "450764d9973253426d493264a9992a48d9b8477df7b0911c5064c1af18e47c14"
+    }
+  ],
+  "annotation": {
+    "stateAnnotations": [
+      {
+        "stateId": "pending",
+        "contractSatisfied": "cannot-tell-without-seeing",
+        "observed": "Tree shows pending status, summary, significant severity, due date, five evidence states, and Acknowledge/Defer actions.",
+        "gap": "Visual treatment, spacing, contrast, focus, and responsive fidelity cannot be judged from the tree."
+      },
+      {
+        "stateId": "acknowledged",
+        "contractSatisfied": "cannot-tell-without-seeing",
+        "observed": "Tree shows acknowledged status and an Undo latest decision change button, but no acknowledgement timestamp or metadata.",
+        "gap": "Required acknowledgement metadata is absent; visual treatment cannot be judged."
+      },
+      {
+        "stateId": "deferred",
+        "contractSatisfied": "cannot-tell-without-seeing",
+        "observed": "Tree shows deferred status, next review date, and defer reason.",
+        "gap": "Visual treatment cannot be judged."
+      },
+      {
+        "stateId": "overdue",
+        "contractSatisfied": "cannot-tell-without-seeing",
+        "observed": "Tree shows overdue status, but only the ordinary due-date row and normal Acknowledge/Defer actions.",
+        "gap": "Prominent review-date row, escalation affordance, and explicit past-due wording are not evident; visual urgency treatment cannot be judged."
+      },
+      {
+        "stateId": "saving",
+        "contractSatisfied": "cannot-tell-without-seeing",
+        "observed": "Tree shows saving status and static text 'Saving…' with a saving announcement; no explicit progress indicator or disabled controls are present.",
+        "gap": "Required inline progress indicator and disabled duplicate submission are not evident; animation and visual treatment cannot be judged."
+      },
+      {
+        "stateId": "save-failed",
+        "contractSatisfied": "cannot-tell-without-seeing",
+        "observed": "Tree shows save-failed status, preserved notice content, alert text, explanatory message, and Retry save button.",
+        "gap": "Visual failure-panel placement and treatment cannot be judged."
+      },
+      {
+        "stateId": "disabled",
+        "contractSatisfied": "partial",
+        "observed": "Tree shows status 'Decision status: unavailable', disabled actions are not shown, and an unavailable-workspace note is present.",
+        "gap": "Contract requires accessible name and label 'Decision status: disabled', lock cue, and disabled controls; mechanical name drift is present."
+      },
+      {
+        "stateId": "severity-routine",
+        "contractSatisfied": "cannot-tell-without-seeing",
+        "observed": "Tree exposes accessible name 'Severity: routine' and the Routine label.",
+        "gap": "Dot marker, low-emphasis treatment, semantic color, and absence of amber cannot be judged."
+      },
+      {
+        "stateId": "severity-significant",
+        "contractSatisfied": "cannot-tell-without-seeing",
+        "observed": "Tree exposes accessible name 'Severity: significant' and the Significant label.",
+        "gap": "Double-rule marker, emphasis, and semantic color cannot be judged."
+      },
+      {
+        "stateId": "severity-critical",
+        "contractSatisfied": "cannot-tell-without-seeing",
+        "observed": "Tree exposes accessible name 'Severity: critical' and the Critical label.",
+        "gap": "Diamond-exclamation marker, boundary, escalation treatment, and semantic color cannot be judged."
+      },
+      {
+        "stateId": "severity-unknown",
+        "contractSatisfied": "cannot-tell-without-seeing",
+        "observed": "Tree exposes 'Severity: unknown', 'Unknown severity', and source value 'blocker'.",
+        "gap": "Outlined question marker and diagnostic visual treatment cannot be judged."
+      },
+      {
+        "stateId": "date-malformed",
+        "contractSatisfied": "partial",
+        "observed": "Tree exposes malformed source value and text 'Due date unavailable: malformed'.",
+        "gap": "Contract requires accessible name 'Due date: malformed'; mechanical name drift is present. Calendar-slash treatment cannot be judged."
+      },
+      {
+        "stateId": "link-resolved",
+        "contractSatisfied": "cannot-tell-without-seeing",
+        "observed": "Tree shows Evidence available, artifact name, source path, and accessible name 'Evidence link: resolved, Preflight packet' for the resolved item.",
+        "gap": "Document-check icon, affordance styling, and source metadata presentation cannot be judged."
+      },
+      {
+        "stateId": "link-missing",
+        "contractSatisfied": "cannot-tell-without-seeing",
+        "observed": "Tree shows Evidence missing, Missing report, expected path, and disabled accessible name 'Evidence link: missing, Missing report'.",
+        "gap": "Document-minus icon and source-order/layout treatment cannot be judged."
+      },
+      {
+        "stateId": "link-invalid",
+        "contractSatisfied": "cannot-tell-without-seeing",
+        "observed": "Tree shows Evidence reference invalid, Unfiled reference, an empty code element, and disabled invalid-link accessible name.",
+        "gap": "Validation detail is not exposed beyond the empty code element; broken-link treatment cannot be judged."
+      },
+      {
+        "stateId": "link-unavailable",
+        "contractSatisfied": "cannot-tell-without-seeing",
+        "observed": "Tree shows Evidence unavailable, External report, URL, and disabled unavailable-link accessible name.",
+        "gap": "Offline-box icon and local-resolution explanation are not evident; visual treatment cannot be judged."
+      },
+      {
+        "stateId": "validation-reason-empty",
+        "contractSatisfied": "cannot-tell-without-seeing",
+        "observed": "Tree shows invalid Deferral reason textbox, 0/280 counter, alert 'Reason required', required explanation, and blocked-looking defer form controls.",
+        "gap": "Empty-field outline, required marker, actual submission blocking, and visual treatment cannot be judged."
+      },
+      {
+        "stateId": "validation-reason-too-long",
+        "contractSatisfied": "no",
+        "observed": "No capture exists; annotated tree contains only 280/280 text and no 'Reason too long' message or character-limit statement.",
+        "gap": "The 281-character state cannot be entered because maxLength=280, and the required overlength diagnostic/counter behavior is not available."
+      },
+      {
+        "stateId": "validation-date-invalid",
+        "contractSatisfied": "cannot-tell-without-seeing",
+        "observed": "Tree shows invalid Review date textbox, alert 'Deferral review date error: invalid future date required', and preserved reason text.",
+        "gap": "Calendar-alert icon, blocked submission, and visual diagnostic treatment cannot be judged."
+      },
+      {
+        "stateId": "undo-available",
+        "contractSatisfied": "partial",
+        "observed": "Tree shows acknowledged status and button 'Undo latest decision change'.",
+        "gap": "Contract requires accessible name 'Undo available for the latest decision change', confirmation tray, event timestamp, and change-saved label; mechanical name drift and missing metadata are present."
+      }
+    ],
+    "findings": [
+      {
+        "severity": "blocking",
+        "statement": "The build cannot exercise the required validation-reason-too-long state.",
+        "evidence": "validation-reason-too-long: capture marked NO; reason textbox is 280/280 and maxLength prevents the 281st character.",
+        "recommendation": "Permit the test fixture or validation path to represent 281 characters, render 'Reason too long', preserve text, and show the required counter and limit statement."
+      },
+      {
+        "severity": "significant",
+        "statement": "Required accessible names drift for disabled, malformed date, and undo states.",
+        "evidence": "disabled status is 'Decision status: unavailable'; date-malformed strong text is 'Due date unavailable: malformed'; undo button is 'Undo latest decision change'.",
+        "recommendation": "Align accessible names and visible labels exactly with the contract while retaining explanatory text separately."
+      },
+      {
+        "severity": "significant",
+        "statement": "Several inventory requirements are not evident in the captured trees.",
+        "evidence": "overdue lacks explicit past-due wording/escalation affordance; saving lacks explicit progress indicator and disabled duplicate submission; acknowledged and undo lack required timestamps/metadata; link-invalid lacks validation detail.",
+        "recommendation": "Add the missing semantic content and controls, then recapture every affected state."
+      },
+      {
+        "severity": "significant",
+        "statement": "Visual fidelity and interaction quality remain unverified.",
+        "evidence": "Only accessibility trees and image hashes were provided; images were not shown, and no browser, viewport interaction, console, network, keyboard, zoom, or reduced-motion evidence exists.",
+        "recommendation": "Capture annotated screenshots at 1440x900 and 1280x800 in Chromium, plus direct keyboard, 200% zoom, reduced-motion, console, and network checks."
+      }
+    ],
+    "requiresHumanEyes": [
+      "Whether the surface, framing, edge, shadows, typography, spacing, severity markers, amber usage, responsive layout, contrast, wrapping, and panel hierarchy match the art-direction contract; trees and hashes cannot settle appearance.",
+      "Whether focus indicators, keyboard reachability, disabled affordances, and 200% zoom avoid overlap or horizontal scrolling; no interaction captures were provided.",
+      "Whether reduced-motion behavior removes transitions, progress animation, delayed reveals, and other motion; no runtime reduced-motion capture was provided.",
+      "Whether browser rendering is visually correct at both approved viewports and claimed device/browser conditions; viewport screenshots were not viewable."
+    ],
+    "verdict": "NEEDS WORK",
+    "verdictReason": "Known state-entry and naming defects remain, multiple contractual semantics are missing or unclear, and visual fidelity has not been directly inspected. Passing distinct image hashes cannot approve the design or replace owner review."
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "schema": "cuckcode.phase5-fidelity.v1",
+  "status": "Mechanical name comparison only. It is not a fidelity judgement and it is not owner acceptance.",
+  "checkedAt": "2026-09-14T06:27:08.119Z",
+  "statesChecked": 19,
+  "namesMatching": 32,
+  "namesDrifted": 6,
+  "drift": [
+    {
+      "state": "disabled",
+      "viewport": "chromium-1440",
+      "contractAccessibleName": "Decision status: disabled",
+      "present": false,
+      "nearest": "- 'status \"Decision status: unavailable\"': Unavailable"
+    },
+    {
+      "state": "date-malformed",
+      "viewport": "chromium-1440",
+      "contractAccessibleName": "Due date: malformed",
+      "present": false,
+      "nearest": "- strong: \"Due date unavailable: malformed\""
+    },
+    {
+      "state": "undo-available",
+      "viewport": "chromium-1440",
+      "contractAccessibleName": "Undo available for the latest decision change",
+      "present": false,
+      "nearest": "- button \"Undo latest decision change\""
+    },
+    {
+      "state": "disabled",
+      "viewport": "chromium-1280",
+      "contractAccessibleName": "Decision status: disabled",
+      "present": false,
+      "nearest": "- 'status \"Decision status: unavailable\"': Unavailable"
+    },
+    {
+      "state": "date-malformed",
+      "viewport": "chromium-1280",
+      "contractAccessibleName": "Due date: malformed",
+      "present": false,
+      "nearest": "- strong: \"Due date unavailable: malformed\""
+    },
+    {
+      "state": "undo-available",
+      "viewport": "chromium-1280",
+      "contractAccessibleName": "Undo available for the latest decision change",
+      "present": false,
+      "nearest": "- button \"Undo latest decision change\""
+    }
+  ]
+}

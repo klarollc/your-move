@@ -103,9 +103,16 @@ approval.
     component, keyboard and pointer semantics, storage reload, reduced motion, zoom, network and
     console cleanliness, provenance, and screen-reader use are all unverified.
 
-- [ ] Task 7: Visual QA capture at the approved viewports, annotated against the art-direction
-      contract.
+- [x] Task 7: Visual QA capture at the approved viewports, annotated against the art-direction
+      contract. **Verdict: NEEDS WORK.** `docs/evidence/phase-5/task-7-outcome.md`
   - Note: diffs detect change. They never approve taste.
+  - 40 cells captured, every image byte-distinct; the isolation procedure runs end to end and its
+    step 7 proves the detector fires on an injected forbidden request.
+  - **One blocking finding:** `validation-reason-too-long` cannot be entered — `maxLength=280`
+    truncates where the contract says reject, and no counter or limit statement is rendered.
+  - Three accessible names drift from the contract (`disabled`, `date-malformed`, `undo-available`),
+    and `saving`/`disabled` remove their controls rather than disabling them.
+  - Sixteen of twenty states were returned `cannot-tell-without-seeing`. C-19 still needs the owner.
 
 - [ ] Task 8: Shared-knowledge contribution, retrieval and conflict-resolution scenario passing.
 

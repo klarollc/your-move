@@ -12,37 +12,38 @@ live state, the next action, and the things a fresh session pays for twice if no
 | 0–3 | Accepted 2026-08-13 |
 | 4 | **Complete.** Bounded live D-25 round ran the full thirteen turns; evidence packet delivered. Owner gate open. |
 | 6 | **Complete.** `reconciliation-b-clarity` is the **Active** visual system, promoted by owner execution. |
-| 5 | **In progress.** Tasks 1–6 done. Task 5's component landed in `37c0dca`; Task 6 has been run twice. |
+| 5 | **In progress.** Tasks 1–7 done. Task 6 ran twice; Task 7 returned **NEEDS WORK**. |
 | 7, 8 | **Unauthorized.** Phase 7 needs its own specification, plan and owner approval. |
 
-Phase 5 turn ledger: **3 of 60**. Acceptance criteria: **20 ready, 1 blocked** (C-18, on gap 3).
+Phase 5 turn ledger: **4 of 60**. Acceptance criteria: **20 ready, 1 blocked** (C-18, on gap 3).
 
 ---
 
 ## The immediate next action
 
-**Task 7 — browser evidence.** Everything the second verification pass still calls uncovered is
-rendered-class or human-class, and none of it can be produced by another unit test.
+**Task 8 — the shared-knowledge scenario**, then Task 9's independent release verdict. Task 7 is
+done and its findings are in `docs/evidence/phase-5/task-7-outcome.md`.
 
-The second pass (`docs/evidence/phase-5/verification/pass-2.json`) returned **three full, thirteen
-partial, five none**, with **one overclaim** — C-14 claimed fully covered on behavioral tests alone
-when the criterion also requires rendered evidence. It did not come back clean, which was the stated
-expectation. It also *downgraded* C-12 from full to partial, correctly: the only mutual-exclusion
-test covers acknowledge-then-defer and none of the other three already-actioned transitions.
+Three findings from Task 7 need an owner ruling before they can be acted on, because each changes
+behaviour the contract already fixed:
 
-Ordered by what unblocks what:
+1. **Blocking.** `validation-reason-too-long` cannot be entered at all — the reason textarea carries
+   `maxLength=280`, so the browser refuses the 281st character. The contract says the opposite:
+   *"show remaining count and reject overlong input rather than truncate it."* No counter, no limit
+   statement. One of the twenty required states is unreachable by a person.
+2. **Three accessible names drift** from the contract — `disabled` renders "unavailable",
+   `date-malformed` names its section "Due date", and undo reads "Undo latest decision change"
+   rather than "Undo available for the latest decision change".
+3. **`saving` and `disabled` remove their action controls rather than disabling them.** The contract
+   asks for controls that expose disabled semantics; a keyboard user currently finds nothing there.
 
-1. **The three cheap behavioral gaps**, which are not Task 7 and can be closed immediately: C-12's
-   three untested transitions, deferral with an absent and with a malformed review date, and undo
-   focus restoration from both actioned states.
-2. **Task 7 capture** via the isolation procedure the Test Engineer defined, which is what moves
-   C-01, C-07, C-09, C-10, C-14, C-19 and C-20 off partial. `docs/evidence/phase-5/browser` does not
-   exist; the cross-check reads that path to decide whether rendered evidence exists at all.
-3. **C-17** needs the screen-reader walkthrough Decision 5-D already committed to. **C-18** needs
-   gap 3. **C-21** needs a promoted non-implementer to issue the release verdict — Task 9.
+Also open and unruled, from the Task 5 gap closure: the past-date deferral path announces the core's
+own detail verbatim, so a screen reader reads *"focus returns to the date field"* — an instruction to
+an implementer — while the empty-date path announces a human sentence.
 
-**A clean pass is still the suspicious outcome.** Two passes have now disagreed with each other on
-three criteria, in both directions. That is the assessment working.
+**A clean pass is still the suspicious outcome.** Two verification passes have now disagreed with
+each other in both directions, and Task 7 found a blocking defect that eleven passing criteria and a
+green suite had not.
 
 ## Open debts, none of them closed
 
@@ -97,6 +98,12 @@ at least eight more times in Phase 6 alone. Its variants, each of which cost rea
 - **A mutation that fails to apply is indistinguishable from a guard that does not work.** Verify the
   mutation landed before believing a survivor. This happened once with a prettier-wrapped string.
 
+**And the variant Task 7 produced twice in two days:** a brief that hands a role a false premise and
+then files the answer as evidence. The verification brief said there were no component tests after
+Task 5 shipped them. The Visual QA brief never mentioned the accessibility and isolation suites, so
+the reviewer correctly reported that no such checks were shown to it and recommended work already
+done. **A brief is an evidence artifact and its accuracy is a precondition of the answer's.**
+
 **And the variant that had been running the longest (DF-013):** `npm run verify` — the eighteen-stage
 gate that claims the whole project passes — had never completed since Phase 1. Playwright's default
 `testMatch` collected a Vitest file out of `tests/` and died at collection, so no e2e, accessibility
@@ -142,7 +149,10 @@ error and there is no inline env-var prefix — write `$env:X='1'; cmd` and clea
 | --- | --- |
 | `npm run kickoff:preflight` | Task 17 preconditions, no provider calls |
 | `npm run phase5:contract:build` | Rebuild the acceptance contract and traceability matrix |
-| `npm run verify` | The whole gate. 509 unit/component/integration + 46 e2e + 18 a11y + 22 visual |
+| `npm run verify` | The whole gate. 511 unit/component/integration + 50 e2e + 42 a11y + 62 visual |
+| `npm run phase5:capture` | Recapture the 40 browser cells and rebuild the manifest |
+| `npm run phase5:fidelity` | Contract accessible names against the captured trees |
+| `npm run phase5:visualqa:run` | Visual QA Reviewer annotation (live, debits the ledger) |
 | `npm run phase5:verify:run` | Test Engineer verification pass (live, debits the ledger) |
 | `npm run phase5:surface:run` | Product Designer surface contract (live, debits the ledger) |
 | `npm run roles:promotion:status` | Which roles are promoted, derived from `roles/authored` |
@@ -161,6 +171,12 @@ runner used to overwrite one path, which would have replaced the Task 6 assessme
 and erased the record that the component was ever unverified. The brief and the overclaim
 cross-check both read the live test inventory through `scripts/phase5-test-inventory.ts` rather than
 from `red-evidence.json`, which stopped being the inventory the moment a test was added.
+
+Browser captures route through `tests/support/evidence-output.ts` and nothing else. It writes into
+`docs/evidence` only when `CUCKCODE_REGENERATE_EVIDENCE=1`, and `scripts/evidence-immutability.test.mjs`
+fails any spec that names the evidence tree directly — committed evidence was silently rewritten by
+an ordinary test run twice before (D4-P-001, D4-P-003). Do not add a second capture path; that guard
+caught one being added during Task 7.
 
 Playwright and Vitest share `tests/`. `.spec.ts` is Playwright, `.test.ts` is Vitest, and
 `playwright.config.ts` now enforces it. Port 4173 is the preview server; a leftover one from an
