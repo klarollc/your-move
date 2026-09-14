@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -82,6 +83,31 @@ describe("Phase 6 Task 10 promotion", () => {
       expect(precondition.satisfied, `${precondition.id} was not satisfied at promotion`).toBe(
         true,
       );
+    }
+  });
+
+  it("lets every recorded baseline be verified against the capture on disk", () => {
+    const record = promotion();
+    if (record === null) return;
+    // The baseline hashes the rendered string; the file adds an XML declaration and xmlns on write.
+    // Reversing that transform must reproduce the baseline exactly, or the recorded digest is not a
+    // digest of the artifact it claims to describe and no later diff could be trusted.
+    for (const [state, viewports] of Object.entries(record.captureBaselines)) {
+      for (const [viewport, baseline] of Object.entries(viewports)) {
+        const file = readFileSync(
+          resolve(REPOSITORY_ROOT, `docs/evidence/phase-6/golden-states/${state}-${viewport}.svg`),
+          "utf8",
+        );
+        const lines = file.split("\n");
+        const rendered = lines
+          .slice(1, lines.length - 1)
+          .join("\n")
+          .replace('<svg xmlns="http://www.w3.org/2000/svg" ', "<svg ");
+        expect(
+          createHash("sha256").update(rendered).digest("hex"),
+          `${state}/${viewport} does not reverse to its recorded baseline`,
+        ).toBe(baseline);
+      }
     }
   });
 

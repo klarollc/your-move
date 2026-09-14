@@ -1,6 +1,6 @@
 # Phase 6 checklist: art-direction candidates and golden states
 
-Status: **Owner-approved 2026-09-13 for Tasks 1-7 only.** Decisions 6-A, 6-B and 6-C are ruled. Task 8 selection, Tasks 9-10, and the Phase 6 gate remain owner-run or unauthorized.
+Status: **PHASE 6 COMPLETE 2026-09-14.** All ten tasks done; the owner selected, approved the golden states, and executed the promotion. `reconciliation-b-clarity` is the Active visual system. Phase 7 remains unauthorized.
 Specification: `docs/visual-reference-production-brief-v0.1.md` — **owner-approved as written 2026-09-13**
 Plan: `tasks/phase-6-plan.md`
 Decision request: `docs/evidence/phase-6/decision-request-2026-09-13-phase-6-parallel-start.md`
@@ -117,9 +117,12 @@ Read each entry's own status line. Nothing here inherits authorization from the 
     all-or-nothing, and **all eight are satisfied**. Two mutations confirmed it refuses: stripping one
     state's approval fails P2, giving two states the same capture digest fails P6 — both with the
     owner flag set.
-  - [ ] **The promotion itself is owner-run and has not been executed.** The Phase 6 gate is worded
-        as explicit owner promotion; an agent promoting on the owner's behalf would convert an
-        approval into an action the owner never took. Run:
-        `CUCKCODE_OWNER_PROMOTION=1 npm run phase6:promote`
+  - [x] **Owner executed the promotion 2026-09-14.** `reconciliation-b-clarity` is **ACTIVE**;
+        `docs/evidence/phase-6/visual-system-promotion.json` records the frozen frame digest, five
+        golden-state digests, ten capture baselines and all eight satisfied preconditions.
+        Candidates A and C remain Candidate and are not revoked.
 
-- [ ] Owner Phase 6 gate: explicit promotion of one coherent visual system from Candidate to Active. **Phase 7 high-fidelity implementation remains unauthorized.**
+- [x] Owner Phase 6 gate: **closed 2026-09-14.** One coherent visual system promoted from Candidate
+      to Active by owner execution. **Phase 7 high-fidelity implementation remains unauthorized** and
+      requires its own specification, plan and approval. The three provenance gaps carry forward and
+      are not closed by this promotion.

@@ -2,6 +2,7 @@
   "schema": "cuckcode.phase6-golden-states.v1",
   "status": "Task 9 produced and owner-approved 2026-09-13. The states are approved; the visual system is still Candidate until the Task 10 promotion, which is owner-run. Phase 7 remains unauthorized.",
   "producedAt": "2026-09-13",
+  "digestScope": "sha256 of the rendered SVG string, before the XML declaration and xmlns attribute are added on write",
   "system": "reconciliation-b-clarity",
   "environment": {
     "node": "v24.18.0",

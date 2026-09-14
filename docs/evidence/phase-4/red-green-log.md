@@ -1163,3 +1163,25 @@ any candidate; the generated half of the approved hybrid was never produced; fou
 cannot be embedded in Phase 7; Task 7 could not complete its purpose in a text-only turn; and none of
 these captures is a regression baseline in the running product. A packet listing only outcomes would
 be the shape this project exists to refuse.
+
+## Phase 6 gate — closed 2026-09-14
+
+The owner executed `phase6:promote`. `reconciliation-b-clarity` is **ACTIVE**. All eight
+preconditions were satisfied at execution and are recorded in the promotion artifact alongside the
+frozen frame digest, five golden-state digests and ten capture baselines. Candidates A and C remain
+Candidate and are not revoked.
+
+**A trap found immediately after, and closed without re-promoting.** The recorded baselines are
+digests of the *rendered SVG string*, taken before the XML declaration and `xmlns` attribute are
+added on write. Hashing a capture file directly does not match them. The digests are correct and
+reproducible — reversing the transform reproduces each exactly — but a baseline whose relationship to
+its artifact is unstated is one that someone checks the obvious way and misreads as drift.
+
+Rather than change the digests and invalidate an owner-executed promotion, the relationship is now
+documented in `golden-states.json` as `digestScope` and **machine-checked**: a guard reads each
+capture from disk, reverses the write transform, and asserts it reproduces the recorded baseline.
+Mutating one glyph in one capture fails it with the state and viewport named, so the guard is a
+regression check on the artifacts rather than a restatement of the record.
+
+Phase 6 is complete. Phase 7 requires its own specification, plan and owner approval; the three open
+provenance gaps carry forward and are not closed by this promotion.

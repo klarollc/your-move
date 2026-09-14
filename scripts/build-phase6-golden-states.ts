@@ -146,6 +146,12 @@ await writeFile(
       status:
         "Task 9 produced and owner-approved 2026-09-13. The states are approved; the visual system is still Candidate until the Task 10 promotion, which is owner-run. Phase 7 remains unauthorized.",
       producedAt: "2026-09-13",
+      // The capture sha256 covers the rendered SVG string, not the file as written: the file adds an
+      // XML declaration and an xmlns attribute afterwards. Hashing the file directly will not match,
+      // and a baseline whose relationship to its artifact is unstated is a baseline someone checks
+      // the obvious way and misreads as drift. `phase6-promotion.unit.test.ts` asserts the reversal.
+      digestScope:
+        "sha256 of the rendered SVG string, before the XML declaration and xmlns attribute are added on write",
       system: style.candidateId,
       environment: ENVIRONMENT,
       motionOnlyFindings,

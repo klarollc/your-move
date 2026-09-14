@@ -1,0 +1,93 @@
+{
+  "schema": "cuckcode.phase6-visual-promotion.v1",
+  "status": "ACTIVE. Promoted from Candidate by the owner under the Phase 6 gate.",
+  "system": "reconciliation-b-clarity",
+  "baseCandidate": "candidate-b-human-studio-warmth",
+  "promotedAt": "2026-09-14T03:57:41.581Z",
+  "fixtureDigest": "13c33cefebf7b13f9d47479d4dc47da1e00022d763c34c5901f6ee1bb20815f4",
+  "goldenStateDigests": {
+    "01-default-office": "657fe2ebfc41869e22f7261c79cb39beb5551a232cd3ca218d21415b30721437",
+    "02-active-collaboration": "f659d9bd911115870efff1d032f3b6776eae6a89a6d6dbf15970fb2406061245",
+    "03-manager-escalation": "58c05440ad712448d52ebe7a39470a87962577590f222d0e727d6f8edf0d76b9",
+    "04-blocked-work": "49bc168a59c774664392a1551f1cdb89b870171280390341b243569556b32911",
+    "05-visual-review": "9c60f86afa5d4259e12107870e4e62a05df81b7ef7a9cdae89f6eac0e4388764"
+  },
+  "captureBaselines": {
+    "01-default-office": {
+      "1440x900": "e14173ab7e629b5e21f0110bec9cc805dc86618f4533507458ac034f18234877",
+      "1280x800": "fcfaf83b3c375ecdffcfc61f4dc6ade67b2ba4831d81ecd775ca995effabf635"
+    },
+    "02-active-collaboration": {
+      "1440x900": "0a763b383d8ab536dd997891f0ba4086454754321a047171f4f4d69f597a2c68",
+      "1280x800": "47d81517e317868e625ed765c5a8405f3edb31f7b4994638a55567d5e73d8251"
+    },
+    "03-manager-escalation": {
+      "1440x900": "cb5cf1788be0d5e47e0a5d7a99b252dca7789e65a867e34017aa03df2616e466",
+      "1280x800": "2a4d290fb5f43fedd21529eb981f3587b0563c9d1dfcceae67a97fbf9763f01e"
+    },
+    "04-blocked-work": {
+      "1440x900": "d4fac3e015eac87f5001319f1253746511faf297c47542c5523c6f82effbfbfc",
+      "1280x800": "e94d26c1373bd0825ecaad552517ea5bafffefcf0795f031d9d1abb8a9aaf1ba"
+    },
+    "05-visual-review": {
+      "1440x900": "6c1c02003b106dff36f0f41776e5e194871eeab3a1865c65245e0d3dd8e0cee9",
+      "1280x800": "6e81299a0ad292b70d880300d97cf8fe588abac4eaad6adfe5ec3576f3565d18"
+    }
+  },
+  "preconditions": [
+    {
+      "id": "P1-system-selected",
+      "requirement": "One coherent visual system is named by the owner's Task 8 ruling.",
+      "satisfied": true,
+      "detail": "golden states were produced in \"reconciliation-b-clarity\""
+    },
+    {
+      "id": "P2-states-approved",
+      "requirement": "Every golden state carries an owner approval whose record exists on disk.",
+      "satisfied": true,
+      "detail": "5 of 5 approved, 0 citing a missing record"
+    },
+    {
+      "id": "P3-frame-unchanged",
+      "requirement": "The system renders the frozen comparison frame the candidates were compared on.",
+      "satisfied": true,
+      "detail": "reconciliation 13c33cefebf7b13f vs frozen 13c33cefebf7b13f"
+    },
+    {
+      "id": "P4-contrast",
+      "requirement": "No contrast or accessibility result is failing, in the system or per state.",
+      "satisfied": true,
+      "detail": "0 system failures, 0 state failures"
+    },
+    {
+      "id": "P5-no-motion-only",
+      "requirement": "No golden-state capture carries meaning through animation.",
+      "satisfied": true,
+      "detail": "0 findings"
+    },
+    {
+      "id": "P6-captures-distinct",
+      "requirement": "Every golden state is a distinct artifact at every approved viewport.",
+      "satisfied": true,
+      "detail": "5 states at two viewports"
+    },
+    {
+      "id": "P7-provenance",
+      "requirement": "Provenance is complete and neither forbidden originality condition is true.",
+      "satisfied": true,
+      "detail": "9 references, 3 open gaps recorded"
+    },
+    {
+      "id": "P8-review-performed",
+      "requirement": "Both named reviewers performed the Task 7 scored review.",
+      "satisfied": true,
+      "detail": "2 reviewers performed"
+    }
+  ],
+  "limits": [
+    "Promotes one visual system to Active. Candidates A and C remain Candidate and are not revoked.",
+    "Phase 7 high-fidelity implementation remains unauthorized.",
+    "These capture digests are the reviewed baselines. An automated diff against them detects change; it never approves taste.",
+    "Three provenance gaps remain open and are not closed by this promotion."
+  ]
+}
