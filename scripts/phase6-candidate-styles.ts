@@ -192,3 +192,48 @@ export const CANDIDATE_C: CandidateStyle = {
 };
 
 export const CANDIDATE_STYLES = [CANDIDATE_A, CANDIDATE_B, CANDIDATE_C];
+
+/**
+ * The Task 8 reconciliation: base Candidate B, with three clarity traits imported from Candidate A.
+ *
+ * Kept separate from `CANDIDATE_STYLES` on purpose. The three candidates are the artifacts the Task
+ * 7 review scored; editing one of them into this would leave that review pointing at something that
+ * no longer exists. Retained and imported traits are named in
+ * `docs/evidence/phase-6/decision-record-2026-09-13-task-8-selection.md`.
+ *
+ * Retained from B: warm palette, textiles, full warm-density props, practical lighting, soft lift.
+ * Imported from A: a defining edge on solid faces, a grounded contact shadow, stronger floor-zone
+ * separation. Deliberately not imported: A's prop restraint — the clarity problem is definition, not
+ * object count, and removing props would remove the warmth that made B strongest.
+ */
+export const RECONCILIATION_B_CLARITY: CandidateStyle = {
+  ...CANDIDATE_B,
+  candidateId: "reconciliation-b-clarity",
+  name: "Human studio warmth, clarified",
+  emphasis:
+    "Candidate B's warmth, with Candidate A's edge definition, grounded shadow, and floor-zone separation imported.",
+  namedRisk:
+    "Importing edge and zoning definition far enough to answer the clarity note that it acquires A's diagrammatic reading instead.",
+  palette: {
+    ...CANDIDATE_B.palette,
+    // Wider value gap between adjacent zones; darker boundary stroke. Zone legibility is the
+    // primary clarity channel and B's weakest.
+    floorZoneA: "#d9cbb2",
+    floorZoneB: "#f1eade",
+    zoneEdge: "#ab9576",
+    // Darkened to hold 4.5:1 against the now-darker floor zone A. Measured, not assumed.
+    inkMuted: "#585149",
+    // Deepening the floor for zone clarity cost the graphical markers their 3:1, so every marker
+    // role is re-solved against the new floor rather than inherited from B. Clarity and
+    // accessibility are the same adjustment here, not competing ones.
+    attention: "#a16218",
+    greenery: "#627656",
+    figure: "#776f65",
+    metal: "#797166",
+  },
+  // A defining line, well short of A's 1.1: separation without the diagram.
+  edgeWidth: 0.7,
+  // Objects sit rather than hover. Tightened toward A's 1.5/1 without going flat.
+  shadow: { blur: 2.6, opacity: 0.22, spread: 1.2 },
+  practicalGlow: 34,
+};

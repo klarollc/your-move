@@ -80,8 +80,19 @@ Read each entry's own status line. Nothing here inherits authorization from the 
     choosing between candidates on how they look, and Task 8 rests entirely on the owner viewing
     them. Evidence: `docs/evidence/phase-4/red-green-log.md`.
 
-- [ ] Task 8: **Owner selection gate. Owner-run.** Select A, B, or C; reject all; or name a coherent reconciliation with its retained traits and base candidate.
-  - Nothing below begins until this is recorded.
+- [x] Task 8: **Owner ruled 2026-09-13.** Not a clean selection: _"B is the strongest, but I agree
+      that another pass for clarity is warranted."_ Recorded as the gate's third outcome — a coherent
+      reconciliation on base Candidate B, in
+      `docs/evidence/phase-6/decision-record-2026-09-13-task-8-selection.md`.
+  - The ruling rests on the owner viewing the rendered comparison, which is the evidence class Task
+    7's agent reviewers correctly refused to substitute for.
+  - **The reconciliation is built and proposed, not approved.** Base B with three clarity traits
+    named and imported from A — a 0.7px edge on solid faces, a tightened contact shadow, and wider
+    floor-zone separation. Prop density deliberately not reduced. Thirteen fields changed; shape
+    count is identical to B, so nothing structural moved. All seventeen measured contrast pairs pass
+    after marker and label colours were re-solved against the darker floor.
+    `docs/evidence/phase-6/reconciliation/` — see `before-after.html`.
+  - [ ] **Owner approval of the reconciled system is still required before Task 9 begins.**
 
 - [ ] Task 9: Golden states — default office at both viewports, active collaboration bound to a canonical event, manager escalation, blocked work, visual review with named artifact, reduced-motion equivalents.
   - Acceptance: each carries fixture/event sequence, scene descriptor, DOM-outline expectation, environment manifest, visible-state checklist, accessibility notes, owner approval record.

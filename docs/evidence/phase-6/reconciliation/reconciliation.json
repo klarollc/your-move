@@ -1,0 +1,232 @@
+{
+  "schema": "cuckcode.phase6-reconciliation.v1",
+  "status": "PROPOSED under the owner's Task 8 ruling. Candidate. Not approved, not promoted, not implementable.",
+  "ruledAt": "2026-09-13",
+  "baseCandidate": "candidate-b-human-studio-warmth",
+  "clarityTraitsFrom": "candidate-a-architectural-clarity",
+  "fixtureDigest": "13c33cefebf7b13f9d47479d4dc47da1e00022d763c34c5901f6ee1bb20815f4",
+  "deltas": [
+    {
+      "field": "edgeWidth",
+      "from": 0,
+      "to": 0.7,
+      "source": "Candidate A",
+      "why": "Define silhouettes; B drew no outline at all."
+    },
+    {
+      "field": "shadow.blur",
+      "from": 5,
+      "to": 2.6,
+      "source": "Candidate A",
+      "why": "Ground objects; B's softest shadow let them hover."
+    },
+    {
+      "field": "shadow.opacity",
+      "from": 0.2,
+      "to": 0.22,
+      "source": "Candidate A",
+      "why": "Hold the contact without going flat."
+    },
+    {
+      "field": "shadow.spread",
+      "from": 2,
+      "to": 1.2,
+      "source": "Candidate A",
+      "why": "Tighten the footprint."
+    },
+    {
+      "field": "palette.floorZoneA",
+      "from": "#e0d3be",
+      "to": "#d9cbb2",
+      "source": "Candidate A",
+      "why": "Widen the value gap between adjacent zones."
+    },
+    {
+      "field": "palette.floorZoneB",
+      "from": "#efe6d6",
+      "to": "#f1eade",
+      "source": "Candidate A",
+      "why": "Widen the value gap between adjacent zones."
+    },
+    {
+      "field": "palette.zoneEdge",
+      "from": "#cbb99e",
+      "to": "#ab9576",
+      "source": "Candidate A",
+      "why": "Zone boundaries are the primary clarity signal."
+    },
+    {
+      "field": "practicalGlow",
+      "from": 46,
+      "to": 34,
+      "source": "reduced",
+      "why": "Trim bloom so the new edges are not washed out."
+    },
+    {
+      "field": "palette.inkMuted",
+      "from": "#625b51",
+      "to": "#585149",
+      "source": "re-measured",
+      "why": "Hold 4.5:1 against the darker floor."
+    },
+    {
+      "field": "palette.attention",
+      "from": "#ab6819",
+      "to": "#a16218",
+      "source": "re-measured",
+      "why": "Hold 3:1 against the darker floor."
+    },
+    {
+      "field": "palette.greenery",
+      "from": "#687e5c",
+      "to": "#627656",
+      "source": "re-measured",
+      "why": "Hold 3:1 against the darker floor."
+    },
+    {
+      "field": "palette.figure",
+      "from": "#7f766b",
+      "to": "#776f65",
+      "source": "re-measured",
+      "why": "Hold 3:1 against the darker floor."
+    },
+    {
+      "field": "palette.metal",
+      "from": "#7b7368",
+      "to": "#797166",
+      "source": "re-measured",
+      "why": "Hold 3:1 against the darker floor."
+    }
+  ],
+  "unchanged": [
+    "props drawn (all 16, warm density retained — the clarity problem is definition, not object count)",
+    "every other palette role: plaster, wood, textile, paper, glass, ink, attentionSoft, shadow",
+    "typography stacks, label weight and size",
+    "top-face lift, plinth (none)",
+    "all twenty state treatments and their reduced-motion equivalents",
+    "the frozen comparison frame and every element of the shared geometry"
+  ],
+  "stateTreatmentCount": 20,
+  "measurements": [
+    {
+      "name": "Agent label on scene ground",
+      "kind": "text",
+      "threshold": 4.5,
+      "ratio": 10.96,
+      "passes": true
+    },
+    {
+      "name": "Zone label on floor A",
+      "kind": "text",
+      "threshold": 4.5,
+      "ratio": 4.89,
+      "passes": true
+    },
+    {
+      "name": "Zone label on floor B",
+      "kind": "text",
+      "threshold": 4.5,
+      "ratio": 6.53,
+      "passes": true
+    },
+    {
+      "name": "Body text on plaster",
+      "kind": "text",
+      "threshold": 4.5,
+      "ratio": 12.17,
+      "passes": true
+    },
+    {
+      "name": "Marker attention on floor zone A",
+      "kind": "non-text",
+      "threshold": 3,
+      "ratio": 3.07,
+      "passes": true
+    },
+    {
+      "name": "Marker attention on scene ground",
+      "kind": "non-text",
+      "threshold": 3,
+      "ratio": 4,
+      "passes": true
+    },
+    {
+      "name": "Marker greenery on floor zone A",
+      "kind": "non-text",
+      "threshold": 3,
+      "ratio": 3.09,
+      "passes": true
+    },
+    {
+      "name": "Marker greenery on scene ground",
+      "kind": "non-text",
+      "threshold": 3,
+      "ratio": 4.03,
+      "passes": true
+    },
+    {
+      "name": "Marker figure on floor zone A",
+      "kind": "non-text",
+      "threshold": 3,
+      "ratio": 3.09,
+      "passes": true
+    },
+    {
+      "name": "Marker figure on scene ground",
+      "kind": "non-text",
+      "threshold": 3,
+      "ratio": 4.03,
+      "passes": true
+    },
+    {
+      "name": "Marker metal on floor zone A",
+      "kind": "non-text",
+      "threshold": 3,
+      "ratio": 3.01,
+      "passes": true
+    },
+    {
+      "name": "Marker metal on scene ground",
+      "kind": "non-text",
+      "threshold": 3,
+      "ratio": 3.92,
+      "passes": true
+    },
+    {
+      "name": "Marker ink on floor zone A",
+      "kind": "non-text",
+      "threshold": 3,
+      "ratio": 8.42,
+      "passes": true
+    },
+    {
+      "name": "Marker ink on scene ground",
+      "kind": "non-text",
+      "threshold": 3,
+      "ratio": 10.96,
+      "passes": true
+    },
+    {
+      "name": "Marker inkMuted on floor zone A",
+      "kind": "non-text",
+      "threshold": 3,
+      "ratio": 4.89,
+      "passes": true
+    },
+    {
+      "name": "Marker inkMuted on scene ground",
+      "kind": "non-text",
+      "threshold": 3,
+      "ratio": 6.36,
+      "passes": true
+    },
+    {
+      "name": "Attention marker on its own halo",
+      "kind": "non-text",
+      "threshold": 3,
+      "ratio": 3.87,
+      "passes": true
+    }
+  ],
+  "failing": []
+}

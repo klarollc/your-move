@@ -1047,3 +1047,39 @@ misrepresent it.
 **Mutation evidence.** Making both transcript digests identical fails the independence check;
 dropping one reviewer fails two checks. Coverage is counted from the review body only, so the header
 that explains the limit is not miscounted as a refusal.
+
+## Phase 6 Task 8 — owner ruling and the clarity reconciliation
+
+Date: 2026-09-13.
+
+The owner viewed the rendered comparison and ruled: *"B is the strongest, but I agree that another
+pass for clarity is warranted."*
+
+**Recorded as a reconciliation, not a selection.** The brief's gate offers three outcomes and this is
+the third. Recording it as "selected B" would have let Task 9 begin against an artifact the owner
+had just said was not yet right.
+
+**The three reviewed candidates are untouched.** The reconciliation is built into
+`docs/evidence/phase-6/reconciliation/`, not over Candidate B, because rewriting B would leave the
+Task 7 review pointing at something that no longer exists.
+
+**Named traits, per the brief's requirement that a reconciliation say what it retains.** Retained
+from B: warm palette, textiles, all sixteen props, practical lighting. Imported from A: a 0.7px edge
+on solid faces (B drew none, and this is the largest single source of its softness), a contact shadow
+tightened from blur 5 to 2.6, and a wider floor-zone value gap with a darker boundary stroke.
+Deliberately **not** imported: A's prop restraint. The clarity problem is definition, not object
+count, and subtracting props would subtract the warmth that made B strongest — a choice the owner can
+overturn.
+
+**Clarity and accessibility turned out to be the same adjustment, not competing ones.** Deepening the
+floor for zone separation cost every graphical marker its 3:1, and the zone label its 4.5:1 — four
+markers and one text role fell below threshold. All five were re-solved against the new floor rather
+than inherited from B, because an inherited pass is a claim about a different palette. Seventeen
+pairs measured, all pass.
+
+Verified in a browser: both compositions render, with separate namespaced filters and **identical
+shape counts of 196**, which is the machine-checkable form of the claim that the pass changed
+treatment and nothing structural.
+
+**Still open: the reconciled system is Candidate and unapproved.** Task 9 does not begin until the
+owner approves it.
