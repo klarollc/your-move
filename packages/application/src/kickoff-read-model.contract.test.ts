@@ -79,14 +79,20 @@ function synthesized() {
     if (!result.ok) throw new Error(result.code);
     state = result.state;
   }
-  const synthesis = recordKickoffSynthesis(state, {
-    synthesisId: "synthesis_1",
-    authorRoleId: "delivery",
-    proposedGoal: "Build a manager-comprehensible office.",
-    includedContributionIds: roles.map((role) => `contribution_${role}`),
-    disagreementRegister: [{ roleId: "release", statement: "Independent review remains separate" }],
-    unresolvedEvidenceGaps: ["Comprehension study"],
-  });
+  const synthesis = recordKickoffSynthesis(
+    state,
+    {
+      synthesisId: "synthesis_1",
+      authorRoleId: "delivery",
+      proposedGoal: "Build a manager-comprehensible office.",
+      includedContributionIds: roles.map((role) => `contribution_${role}`),
+      disagreementRegister: [
+        { roleId: "release", statement: "Independent review remains separate" },
+      ],
+      unresolvedEvidenceGaps: ["Comprehension study"],
+    },
+    "delivery",
+  );
   if (!synthesis.ok) throw new Error(synthesis.code);
   return synthesis.state;
 }

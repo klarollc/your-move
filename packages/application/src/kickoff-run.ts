@@ -216,7 +216,11 @@ export async function runBoundedKickoff(input: {
     return finish();
   }
 
-  const withSynthesis = recordKickoffSynthesis(state, synthesised.payload as KickoffSynthesis);
+  const withSynthesis = recordKickoffSynthesis(
+    state,
+    synthesised.payload as KickoffSynthesis,
+    input.synthesisRoleId,
+  );
   if (!withSynthesis.ok) {
     note(
       "synthesis",

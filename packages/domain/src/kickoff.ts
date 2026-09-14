@@ -85,9 +85,26 @@ export function recordKickoffContribution(
   });
 }
 
-export function recordKickoffSynthesis(state: KickoffState, synthesis: KickoffSynthesis): Result {
+/**
+ * D-25 gives the synthesis to the delivery lead. Which *identifier* that role carries is a naming
+ * choice the caller owns, so the authority check compares against the id the round was configured
+ * with rather than a literal.
+ *
+ * This was hard-coded as `"delivery"` — the short id this module's own tests use. The promoted roles
+ * are authored as `delivery-lead`, and nothing ever joined the two vocabularies because the live
+ * kickoff had never run. It would have refused the synthesis at turn seven of thirteen, after
+ * spending six turns and the single approved allowance.
+ */
+export function recordKickoffSynthesis(
+  state: KickoffState,
+  synthesis: KickoffSynthesis,
+  synthesisRoleId: string,
+): Result {
   if (state.phase !== "ready_for_synthesis") return failure("KICKOFF_SYNTHESIS_NOT_READY");
-  if (synthesis.authorRoleId !== "delivery") return failure("KICKOFF_SYNTHESIS_AUTHORITY");
+  if (!state.briefing.activeRoleIds.includes(synthesisRoleId)) {
+    return failure("KICKOFF_SYNTHESIS_AUTHORITY");
+  }
+  if (synthesis.authorRoleId !== synthesisRoleId) return failure("KICKOFF_SYNTHESIS_AUTHORITY");
   const expected = Object.values(state.contributions)
     .map(({ contributionId }) => contributionId)
     .sort();

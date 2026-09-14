@@ -40,17 +40,21 @@ describe("D-25 kickoff aggregate", () => {
       new Set(Object.values(state.contributions).map(({ briefingVersion }) => briefingVersion)),
     ).toEqual(new Set([1]));
 
-    const synthesis = recordKickoffSynthesis(state, {
-      synthesisId: "synthesis_1",
-      authorRoleId: "delivery",
-      proposedGoal: "Build the manager attention office slice.",
-      includedContributionIds: roles.map((role) => `contribution_${role}`),
-      disagreementRegister: [
-        { roleId: "visual", statement: "Graybox evidence cannot approve final art." },
-        { roleId: "release", statement: "Release review must remain independent." },
-      ],
-      unresolvedEvidenceGaps: ["Five-person comprehension evidence"],
-    });
+    const synthesis = recordKickoffSynthesis(
+      state,
+      {
+        synthesisId: "synthesis_1",
+        authorRoleId: "delivery",
+        proposedGoal: "Build the manager attention office slice.",
+        includedContributionIds: roles.map((role) => `contribution_${role}`),
+        disagreementRegister: [
+          { roleId: "visual", statement: "Graybox evidence cannot approve final art." },
+          { roleId: "release", statement: "Release review must remain independent." },
+        ],
+        unresolvedEvidenceGaps: ["Five-person comprehension evidence"],
+      },
+      "delivery",
+    );
     expect(synthesis).toMatchObject({ ok: true, state: { phase: "revision" } });
     if (synthesis.ok) {
       expect(synthesis.state.synthesis?.disagreementRegister).toHaveLength(2);
@@ -169,14 +173,20 @@ function synthesized() {
     if (!result.ok) throw new Error(result.code);
     state = result.state;
   }
-  const result = recordKickoffSynthesis(state, {
-    synthesisId: "synthesis_1",
-    authorRoleId: "delivery",
-    proposedGoal: "Build the manager attention office slice.",
-    includedContributionIds: roles.map((role) => `contribution_${role}`),
-    disagreementRegister: [{ roleId: "release", statement: "Independent review remains separate" }],
-    unresolvedEvidenceGaps: ["Comprehension evidence"],
-  });
+  const result = recordKickoffSynthesis(
+    state,
+    {
+      synthesisId: "synthesis_1",
+      authorRoleId: "delivery",
+      proposedGoal: "Build the manager attention office slice.",
+      includedContributionIds: roles.map((role) => `contribution_${role}`),
+      disagreementRegister: [
+        { roleId: "release", statement: "Independent review remains separate" },
+      ],
+      unresolvedEvidenceGaps: ["Comprehension evidence"],
+    },
+    "delivery",
+  );
   if (!result.ok) throw new Error(result.code);
   return result.state;
 }

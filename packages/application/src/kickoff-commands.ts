@@ -44,6 +44,9 @@ export function executeKickoffCommand(
     state: KickoffState;
     currentRevision: number;
     command: KickoffCommand;
+    /** The role this round designates as synthesiser. D-25 gives it to the delivery lead; which
+     *  identifier that role carries is the round's configuration, not the domain's to assume. */
+    synthesisRoleId: string;
   }>,
 ): KickoffCommandResult {
   if (input.command.expectedRevision !== input.currentRevision) {
@@ -65,7 +68,7 @@ export function executeKickoffCommand(
     return { ok: false, code: "KICKOFF_AGENT_AUTHORITY_REQUIRED" };
   }
 
-  const transition = transitionKickoff(input.state, input.command);
+  const transition = transitionKickoff(input.state, input.command, input.synthesisRoleId);
   if (!transition.ok) return transition;
   return {
     ok: true,
@@ -86,6 +89,7 @@ export function executeKickoffCommand(
 function transitionKickoff(
   state: KickoffState,
   command: KickoffCommand,
+  synthesisRoleId: string,
 ): { ok: true; state: KickoffState } | { ok: false; code: string } {
   if (command.intent === "contribute") {
     const contribution = command.payload as KickoffContribution;
@@ -95,7 +99,7 @@ function transitionKickoff(
     return recordKickoffContribution(state, contribution);
   }
   if (command.intent === "synthesize") {
-    return recordKickoffSynthesis(state, command.payload as KickoffSynthesis);
+    return recordKickoffSynthesis(state, command.payload as KickoffSynthesis, synthesisRoleId);
   }
   if (command.intent === "revise") {
     const revision = command.payload as KickoffRevision;

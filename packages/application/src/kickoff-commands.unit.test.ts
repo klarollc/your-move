@@ -25,6 +25,7 @@ describe("executeKickoffCommand", () => {
     const result = executeKickoffCommand({
       state: createKickoff(briefing),
       currentRevision: 8,
+      synthesisRoleId: "delivery",
       command: {
         commandId: "command_contribute_design",
         expectedRevision: 8,
@@ -54,6 +55,7 @@ describe("executeKickoffCommand", () => {
       executeKickoffCommand({
         state,
         currentRevision: 8,
+        synthesisRoleId: "delivery",
         command: {
           commandId: "command_stale",
           expectedRevision: 7,
@@ -72,6 +74,7 @@ describe("executeKickoffCommand", () => {
       executeKickoffCommand({
         state,
         currentRevision: 8,
+        synthesisRoleId: "delivery",
         command: {
           commandId: "command_approve",
           expectedRevision: 8,

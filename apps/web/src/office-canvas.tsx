@@ -167,16 +167,20 @@ function buildKickoffState(roleCount: number, synthesised: boolean): KickoffStat
     state = next.state;
   }
   if (!synthesised) return state;
-  const withSynthesis = recordKickoffSynthesis(state, {
-    synthesisId: "synthesis_graybox",
-    authorRoleId: "delivery",
-    proposedGoal: "Build the Decision Notice as the first isolated slice.",
-    includedContributionIds: kickoffRoleIds.map((roleId) => `contribution_${roleId}`),
-    disagreementRegister: [
-      { roleId: "release", statement: "Independent review must stay separate from delivery" },
-    ],
-    unresolvedEvidenceGaps: ["No rendered evidence exists yet"],
-  });
+  const withSynthesis = recordKickoffSynthesis(
+    state,
+    {
+      synthesisId: "synthesis_graybox",
+      authorRoleId: "delivery",
+      proposedGoal: "Build the Decision Notice as the first isolated slice.",
+      includedContributionIds: kickoffRoleIds.map((roleId) => `contribution_${roleId}`),
+      disagreementRegister: [
+        { roleId: "release", statement: "Independent review must stay separate from delivery" },
+      ],
+      unresolvedEvidenceGaps: ["No rendered evidence exists yet"],
+    },
+    "delivery",
+  );
   if (!withSynthesis.ok) throw new Error(withSynthesis.code);
   return withSynthesis.state;
 }
