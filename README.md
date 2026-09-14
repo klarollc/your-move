@@ -13,11 +13,19 @@ projections of the same canonical state. See MDD §2.
 
 ## Current status
 
-**Phase 4 is near closure and Phase 6 has started in parallel.**
+**Phase 4 is complete, Phase 6 is complete, and Phase 5 is authorized and not yet started.**
 
-Task 15 and the owner graybox gate closed on 2026-09-08, on complete automated evidence and partial human evidence — MDD sections 19 and 20 were waived, not met. All six authored-role exercises performed on 2026-09-13; Phase 4 Tasks 17 and 18 remain open. Phase 6 Tasks 1-7 are authorized as of 2026-09-13.
+The bounded live D-25 kickoff ran its full thirteen turns on 2026-09-14: six promoted roles, six
+distinct bindings, no external effect. The owner approved the charter it produced, with its ten
+evidence gaps as blocking conditions. Phase 6 promoted `reconciliation-b-clarity` to the Active
+visual system.
 
-The live kickoff, role promotion, Task 8 art selection, Phase 5 behavior, Phase 7 high-fidelity art, deployment, and external effects remain explicit decision gates; see `AGENTS.md`, `tasks/phase-4-todo.md`, and `tasks/phase-6-todo.md` before changing behavior.
+Carried forward unresolved: MDD sections 19 and 20 were waived in Phase 4 and are still unmet — Phase
+5 is where that gate is repeated properly. Three Phase 6 provenance gaps also remain open.
+
+**Phase 7 high-fidelity art, deployment, external effects, and any production reuse of fixture code
+remain unauthorized.** Phase 5 Task 10 owner acceptance is owner-run. See `AGENTS.md`,
+`tasks/phase-5-todo.md`, and `docs/evidence/phase-5/approved-charter-v1.md` before changing behavior.
 
 ## Toolchain
 

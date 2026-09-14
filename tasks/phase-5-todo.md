@@ -1,6 +1,6 @@
 # Phase 5 checklist: controlled six-role acceptance project
 
-Status: **PROPOSED, NOT APPROVED. No task below is authorized and nothing has been implemented.**
+Status: **Owner-authorized 2026-09-14.** Charter approved with the ten gaps blocking; Decisions 5-A, 5-B, 5-C and 5-D ruled. Tasks 1-9 are authorized; Task 10 is owner-run. Nothing has been implemented.
 Plan: `tasks/phase-5-plan.md`
 Input: the owner-approved charter from the Task 17 round
 Governing: MDD §24 Phase 5, D-23 representative assignment, D-24 fixture isolation
@@ -10,17 +10,16 @@ approval.
 
 ## Blocking decisions
 
-- [ ] **Phase 5 authorization.** `AGENTS.md` lists Phase 5 behaviour as unauthorized. An explicit
-      owner ruling and an amendment to that document are required before Task 1.
-- [ ] **Manager charter.** The Task 17 round ended at `phase: revision` with
-      `implementationAllowed: false`. No charter exists until the owner approves one.
-- [ ] **5-A — who implements.** Agents, human-driven, or hybrid. Changes the budget, the cost, the
-      evidence provenance, and what the phase proves.
-- [ ] **5-B — turn and cost budget.** Phase 5 has no D-25 cap. Set before the first provider call.
-- [ ] **5-C — the ten evidence gaps** the agents named. Each is a place a passing test would prove
-      nothing.
-- [ ] **5-D — MDD §19/§20.** Waived in Phase 4 and still unmet. Inherit, repeat properly, or record
-      the debt again.
+- [x] **Phase 5 authorized 2026-09-14**; `AGENTS.md` amended the same day.
+- [x] **Manager charter approved 2026-09-14** with the ten gaps as blocking conditions:
+      `docs/evidence/phase-5/approved-charter-v1.md`.
+- [x] **5-A — hybrid.** Agents own design, review and verdict; implementation is driven
+      conventionally. A recorded departure from the literal MDD §24 run: Phase 5 will not prove the
+      agents can write code, and the packet must say so.
+- [x] **5-B — 60 turns.** The run stops at the budget and reports what was reached.
+- [x] **5-C — all ten dispositioned** in the charter. Four were owner rulings; six are answered from
+      already-approved documents and are marked as such rather than as fresh rulings.
+- [x] **5-D — repeat the gate properly.** One screen reader, one walkthrough genuinely performed.
 
 ## Tasks
 

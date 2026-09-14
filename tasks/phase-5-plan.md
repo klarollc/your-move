@@ -1,6 +1,6 @@
 # Implementation plan: Phase 5 controlled six-role acceptance project
 
-Status: **PROPOSED, NOT APPROVED.** Phase 5 behaviour is listed as unauthorized in `AGENTS.md`. Nothing here is authorized, and the decisions in §Open decisions must be ruled before Task 1 begins.
+Status: **Owner-authorized 2026-09-14.** All four decisions are ruled and the charter is approved; `AGENTS.md` is amended the same day. Tasks 1-9 authorized, Task 10 owner-run.
 Governing: MDD §24 Phase 5, §6 D-23/D-24, `docs/implementation-plan-v0.1.md` Phase 5
 Input: the charter the owner approves from the Task 17 round (`docs/evidence/phase-4/live-kickoff/task-17-run/`)
 Prior phase: `tasks/phase-4-plan.md`

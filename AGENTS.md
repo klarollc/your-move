@@ -23,7 +23,23 @@ On 2026-09-12 the owner ruled, Decision 0(a) in `docs/evidence/phase-4/live-kick
 
 Task 17 authorization is narrow: one bounded, text-only, no-tool, no-external-effect live kickoff under the Task 16 packet's preflight and turn-budget limits. It does not authorize Phase 5 behavior, high-fidelity art, final visual tokens/assets, visual-baseline promotion, deployment, or any external effect, all of which remain unauthorized pending separate explicit approval. Role composition and the owner-gated promotion CLI now exist (`35596d8` through `1c6f620`). **Amended 2026-09-13:** `collectHandshakeFacts` and the kickoff harness now exist, and all six authored-role exercises performed under `bcba1f2` after the controlled home was fixed to provision the runtime credential it had been withholding. Promotion remains owner-run and has not been run; `roles:promotion:status` reports an empty promoted set. Owner transcript review and a fresh go/no-go are still required before the one live kickoff run.
 
-**Phase 6 is authorized as of 2026-09-13, Tasks 1-7 only.** The owner approved `docs/visual-reference-production-brief-v0.1.md` as written (6-A) and authorized Phase 6 running in parallel with Phase 5 (6-B), amending MDD section 24 accordingly; the candidate production medium is the hybrid of generated exploration plus in-repo vector composition (6-C). All three rulings are recorded in `docs/evidence/phase-6/decision-request-2026-09-13-phase-6-parallel-start.md`. Candidate art produced under this authority stays Candidate: Task 8 selection and Task 10 promotion to Active are owner-run, and Phase 7 high-fidelity implementation, final tokens and assets, visual-baseline promotion, Phase 5 behavior, deployment, and any external effect remain unauthorized.
+**Phase 4 is complete and Phase 5 is authorized as of 2026-09-14.** The bounded live D-25 round ran
+its full thirteen turns (Task 17) and the Phase 4 evidence packet is delivered (Task 18); the Phase 4
+owner gate is open. The owner approved the charter produced by that round, with its ten evidence gaps
+as blocking conditions, and authorized Phase 5 under four rulings recorded in
+`docs/evidence/phase-5/decision-record-2026-09-14-phase-5-authorization.md`: **5-A hybrid** — agents
+own design, review and verdict while implementation is driven conventionally, a recorded departure
+from the literal MDD §24 run; **5-B a 60-turn budget** that stops rather than negotiates; **5-D the
+MDD §19/§20 gate repeated properly**, with one screen-reader walkthrough actually performed. The
+charter is `docs/evidence/phase-5/approved-charter-v1.md`. Phase 5 Task 10 owner acceptance remains
+owner-run, and **Phase 7, deployment, external effects and production reuse of fixture code remain
+unauthorized.**
+
+**Phase 6 is complete as of 2026-09-14.** `reconciliation-b-clarity` is the Active visual system,
+promoted by owner execution under the Phase 6 gate. Phase 7 high-fidelity implementation remains
+unauthorized.
+
+**Phase 6 was authorized as of 2026-09-13, Tasks 1-7 only.** The owner approved `docs/visual-reference-production-brief-v0.1.md` as written (6-A) and authorized Phase 6 running in parallel with Phase 5 (6-B), amending MDD section 24 accordingly; the candidate production medium is the hybrid of generated exploration plus in-repo vector composition (6-C). All three rulings are recorded in `docs/evidence/phase-6/decision-request-2026-09-13-phase-6-parallel-start.md`. Candidate art produced under this authority stays Candidate: Task 8 selection and Task 10 promotion to Active are owner-run, and Phase 7 high-fidelity implementation, final tokens and assets, visual-baseline promotion, Phase 5 behavior, deployment, and any external effect remain unauthorized.
 
 ## Required delivery method
 
