@@ -105,12 +105,44 @@ export async function buildReleaseBrief(): Promise<string> {
       coverageAssessment: Array<{ criterionId: string; covered: string; gap: string }>;
     } | null;
     assessedVersions?: Record<string, string>;
+    authoredAt?: string;
   }>(`docs/evidence/phase-5/verification/${latestPass}`, { assessment: null });
 
   const stale: string[] = [];
   for (const [file, recorded] of Object.entries(verification.assessedVersions ?? {})) {
     const current = await digest(file).catch(() => "");
     if (current && current !== recorded) stale.push(file);
+  }
+
+  /**
+   * Evidence the pass never saw, which is a different staleness from evidence that changed.
+   *
+   * The digest check above catches a file that moved under an assessment. It cannot catch an
+   * assessment that is accurate about everything it looked at and was written before half the
+   * evidence existed — and that is the shape this phase actually hit: pass 6 marked C-09 and C-11
+   * partial, correctly, hours before the state matrix and the side-effect review were built.
+   *
+   * The provenance ledger dates every artifact's first appearance, so the answer is derivable rather
+   * than remembered. A reviewer told "this pass describes the build" while an artifact it never read
+   * sits in the same brief is being invited to defer to the wrong thing.
+   */
+  const newerEvidence: string[] = [];
+  const provenanceLedger = await readFile(
+    resolve(ROOT, "docs/evidence/provenance.jsonl"),
+    "utf8",
+  ).catch(() => "");
+  if (provenanceLedger !== "" && verification.authoredAt) {
+    const firstSeen = new Map<string, string>();
+    for (const line of provenanceLedger.split("\n").filter((entry) => entry.trim() !== "")) {
+      const entry = JSON.parse(line) as { op: string; artifact: string; recordedAt: string };
+      if (entry.op !== "record" || firstSeen.has(entry.artifact)) continue;
+      firstSeen.set(entry.artifact, entry.recordedAt);
+    }
+    for (const [artifact, recordedAt] of firstSeen) {
+      const isAPass = /\/(?:pass-\d+\.json|verification\.json)$/u.test(artifact);
+      if (!isAPass && recordedAt > verification.authoredAt) newerEvidence.push(artifact);
+    }
+    newerEvidence.sort();
   }
 
   const visualTwo = await readJson<{
@@ -198,6 +230,8 @@ export async function buildReleaseBrief(): Promise<string> {
         await latestIn("visual-qa", "pass-1.json"),
         "docs/evidence/phase-5/browser/capture-manifest.json",
         "docs/evidence/phase-5/browser/determinism.json",
+        "docs/evidence/phase-5/browser/chromium-1440/a11y-state-matrix.json",
+        "docs/evidence/phase-5/side-effect-review.json",
         "docs/evidence/phase-5/provenance/schema.json",
         "docs/evidence/phase-5/c-19-owner-acceptance.json",
       ].map(async (path) => [path, await digest(path)] as const),
@@ -220,8 +254,14 @@ ${coverage}
 
   ${
     stale.length === 0
-      ? "That pass recorded the content digests of every file it assessed, and all of them still match. It describes this build."
+      ? "That pass recorded the content digests of every file it assessed, and all of them still match. Nothing it looked at has moved since."
       : `**That pass no longer describes this build.** These files changed after it was written: ${stale.join(", ")}. Weigh it accordingly.`
+  }
+
+  ${
+    newerEvidence.length === 0
+      ? "No evidence artifact has appeared since it was written, so it saw everything you are being shown."
+      : `**It was written before some of the evidence below existed.** These artifacts first appear in the provenance ledger after that pass was authored, so its assessment was made without them: ${newerEvidence.join(", ")}. Where its coverage line and one of those artifacts disagree, the pass is the older reading and is not the deciding one — read the artifact yourself.`
   }
 
   Earlier passes disagreed with it and with each other — about C-06, C-12, C-14 and C-20 among

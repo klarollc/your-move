@@ -1,0 +1,17 @@
+{
+  // scripts/ is not in the tsconfig.json project graph, so `npm run typecheck` has never covered a
+  // single file in it — every Phase 5 builder, guard and brief is unchecked. It was found on
+  // 2026-09-14 when a duplicate `const` in the release brief passed both lint and typecheck and was
+  // caught only by esbuild at runtime.
+  //
+  // This is deliberately NOT wired into `npm run verify` yet: it reports two pre-existing errors in
+  // Phase 4 and Phase 6 scripts, and both need an owner ruling before anything changes in a
+  // completed phase. A gate that is switched on with known failures is not a gate.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "types": ["node"]
+  },
+  "include": ["scripts/**/*.ts"]
+}
