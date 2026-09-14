@@ -5,8 +5,7 @@
   "charter": "docs/evidence/phase-5/approved-charter-v1.md",
   "evidenceClassRule": "MDD §18: the four classes are never conflated, and only human-visual-acceptance approves art direction. Passing static, behavioral and rendered evidence cannot substitute for it.",
   "blockedGaps": [
-    3,
-    8
+    3
   ],
   "criteria": [
     {
@@ -234,14 +233,14 @@
     {
       "id": "C-20",
       "statement": "Isolation is verified by a defined procedure, with deterministic failure evidence and console and network capture.",
-      "source": "charter goal; approved-charter-v1, owner ruling 2026-09-14 gap 8",
+      "source": "charter goal; approved-charter-v1, owner ruling 2026-09-14 gap 8, closed by the Task 6 isolation procedure",
       "evidenceClasses": [
         "behavioral",
         "rendered"
       ],
-      "testableAssertion": "Pending the gap-8 procedure. The named procedure runs, console and network capture are clean, and a deliberately failing case produces the recorded failure evidence.",
+      "testableAssertion": "The Task 6 isolation procedure runs end to end: every journey completes with zero external requests, zero credential-shaped output, zero writes outside the fixture, and evidence resolution limited to fixture artifacts. A deliberately failing case produces the recorded failure evidence.",
       "dependsOnGap": 8,
-      "status": "blocked-on-gap"
+      "status": "ready"
     },
     {
       "id": "C-21",

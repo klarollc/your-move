@@ -1,0 +1,237 @@
+import { createHash } from "node:crypto";
+import { existsSync } from "node:fs";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
+
+import { parseApprovedRoleExercisePlan } from "@cuckcode/runtime-codex";
+
+import { buildKickoffPreflightInput } from "./phase4-kickoff-preflight.js";
+import { openKickoffSession, parseTurnJson } from "./phase4-kickoff-session.js";
+import { buildVerificationBrief } from "./phase5-verification-brief.js";
+
+/**
+ * Phase 5 Task 6 — the Test Engineer's verification pass.
+ *
+ * Its coverage claims are cross-checked against what actually exists rather than accepted. A role
+ * that reports a criterion as covered when no test exercises it has produced the exact artifact this
+ * project refuses: a green-looking assessment of something nobody verified. The cross-check is how
+ * that becomes visible instead of persuasive.
+ */
+const ROOT = resolve(process.cwd());
+const OUT = resolve(ROOT, "docs/evidence/phase-5/verification");
+const LEDGER = resolve(ROOT, "docs/evidence/phase-5/turn-ledger.json");
+const PACKET_PATH = resolve(ROOT, "docs/evidence/phase-4/live-kickoff/task-16-preflight-packet.md");
+const ROLE_ID = "test-engineer";
+const MAX_TURNS = 3;
+
+if (process.env.CUCKCODE_LIVE_PHASE5 !== "1") {
+  throw new Error("LIVE_PHASE5_EXPLICIT_OPT_IN_REQUIRED");
+}
+
+const sha256 = (value: string): string => createHash("sha256").update(value).digest("hex");
+
+type Ledger = { budget: number; spent: number; entries: Array<Record<string, unknown>> };
+const ledger = JSON.parse(await readFile(LEDGER, "utf8")) as Ledger;
+if (ledger.spent + MAX_TURNS > ledger.budget) {
+  throw new Error(`PHASE5_BUDGET_EXHAUSTED:${ledger.spent}/${ledger.budget}`);
+}
+
+const contract = JSON.parse(
+  await readFile(resolve(ROOT, "docs/evidence/phase-5/acceptance-contract.json"), "utf8"),
+) as { criteria: Array<{ id: string; evidenceClasses: string[]; status: string }> };
+const red = JSON.parse(
+  await readFile(resolve(ROOT, "docs/evidence/phase-5/red-evidence.json"), "utf8"),
+) as { observations: Array<{ criterion: string | null }> };
+
+const criterionIds = contract.criteria.map((criterion) => criterion.id);
+const hasUnitTest = new Set(red.observations.map((entry) => entry.criterion).filter(Boolean));
+/** Nothing in the repository renders this component yet, so no rendered evidence can exist. */
+const renderedArtifactsExist = existsSync(resolve(OUT, "..", "browser"));
+
+const approved = parseApprovedRoleExercisePlan(await readFile(PACKET_PATH, "utf8"));
+if (!approved.ok) throw new Error(approved.code);
+const configuration = approved.plan.find((entry) => entry.roleId === ROLE_ID);
+if (!configuration) throw new Error("ROLE_NOT_IN_APPROVED_PLAN");
+
+const preflight = await buildKickoffPreflightInput();
+const candidate = preflight.bindings.find((entry) => entry.roleId === ROLE_ID);
+if (!candidate) throw new Error("ROLE_NOT_BOUND");
+
+const workspace = await mkdtemp(join(tmpdir(), "cuckcode-phase5-verify-"));
+await mkdir(OUT, { recursive: true });
+
+const opened = await openKickoffSession({
+  roleId: ROLE_ID,
+  agentId: candidate.agentId,
+  bindingId: candidate.bindingId,
+  cwd: workspace,
+  expected: {
+    requestedModel: configuration.model,
+    expectedReasoningEffort: configuration.reasoningEffort,
+    expectedAuthMode: "chatgpt",
+    protocolVersion: "0.146.0",
+    promotedContentSha256: candidate.roleContractVersion.replace(/^content:/u, ""),
+  },
+});
+
+if (!opened.ok) {
+  await rm(workspace, { recursive: true, force: true });
+  process.stderr.write(
+    `${JSON.stringify({ ok: false, code: opened.code, detail: opened.detail })}\n`,
+  );
+  process.exitCode = 1;
+} else {
+  const session = opened.session;
+  const attempts: Array<Record<string, unknown>> = [];
+  let accepted: Record<string, unknown> | null = null;
+  let overclaims: string[] = [];
+  let turnsSpent = 0;
+
+  /** Structural completeness only. Whether the claims are *true* is the cross-check below. */
+  const shortfalls = (value: Record<string, unknown>): string[] => {
+    const missing: string[] = [];
+    const assessment = Array.isArray(value.coverageAssessment) ? value.coverageAssessment : [];
+    const assessed = new Set(
+      assessment.map((entry) => String((entry as { criterionId?: unknown }).criterionId ?? "")),
+    );
+    for (const id of criterionIds) {
+      if (!assessed.has(id)) missing.push(`criterion ${id} was not assessed`);
+    }
+    const procedure = value.isolationProcedure as Record<string, unknown> | undefined;
+    if (!procedure || !Array.isArray(procedure.steps) || procedure.steps.length === 0) {
+      missing.push("isolationProcedure.steps is absent or empty");
+    }
+    if (!procedure || !String(procedure.passCondition ?? "").trim()) {
+      missing.push("isolationProcedure.passCondition is absent");
+    }
+    if (!procedure || !String(procedure.failureEvidence ?? "").trim()) {
+      missing.push("isolationProcedure.failureEvidence is absent");
+    }
+    if (!Array.isArray(value.notCovered)) missing.push("notCovered is absent");
+    return missing;
+  };
+
+  /**
+   * Does the assessment claim coverage that does not exist?
+   *
+   * A criterion claimed `full` with no unit test and no rendered artifact is an overclaim. This is
+   * the check that matters: structural completeness is easy to satisfy and proves nothing.
+   */
+  const claimCrossCheck = (value: Record<string, unknown>): string[] => {
+    const found: string[] = [];
+    const assessment = Array.isArray(value.coverageAssessment) ? value.coverageAssessment : [];
+    for (const entry of assessment) {
+      const id = String((entry as { criterionId?: unknown }).criterionId ?? "");
+      const covered = String((entry as { covered?: unknown }).covered ?? "");
+      if (covered !== "full") continue;
+      const criterion = contract.criteria.find((item) => item.id === id);
+      if (!criterion) continue;
+      const needsRendered = criterion.evidenceClasses.includes("rendered");
+      if (!hasUnitTest.has(id) && !(needsRendered && renderedArtifactsExist)) {
+        found.push(
+          `${id} claimed fully covered, but no test exercises it and no rendered artifact exists`,
+        );
+      }
+      if (needsRendered && !renderedArtifactsExist) {
+        found.push(
+          `${id} claimed fully covered though it requires rendered evidence that does not exist`,
+        );
+      }
+    }
+    return [...new Set(found)];
+  };
+
+  let prompt = await buildVerificationBrief();
+
+  while (turnsSpent < MAX_TURNS && accepted === null) {
+    const turn = await session.turn(prompt);
+    turnsSpent += 1;
+
+    if (!turn.ok || turn.effects.length > 0) {
+      attempts.push({
+        turn: turnsSpent,
+        accepted: false,
+        code: turn.ok ? "EXTERNAL_EFFECT_OBSERVED" : turn.code,
+      });
+      break;
+    }
+
+    const parsed = parseTurnJson(turn.text);
+    if (!parsed.ok) {
+      attempts.push({
+        turn: turnsSpent,
+        accepted: false,
+        code: "PAYLOAD_UNPARSEABLE",
+        detail: parsed.detail,
+      });
+      prompt = `Your reply could not be parsed as one JSON object: ${parsed.detail}. Return the assessment again as a single JSON object, nothing else.`;
+      continue;
+    }
+
+    const missing = shortfalls(parsed.value);
+    overclaims = claimCrossCheck(parsed.value);
+    attempts.push({
+      turn: turnsSpent,
+      accepted: missing.length === 0,
+      shortfalls: missing,
+      overclaims,
+      responseSha256: sha256(turn.text),
+    });
+
+    if (missing.length === 0) {
+      accepted = parsed.value;
+      break;
+    }
+    prompt = `Your assessment is structurally incomplete. Nothing has been filled in for you:\n\n${missing.map((item) => `  - ${item}`).join("\n")}\n\nReturn the complete assessment again as one JSON object. Keep what was already right.`;
+  }
+
+  await session.close();
+  await rm(workspace, { recursive: true, force: true });
+
+  ledger.spent += turnsSpent;
+  ledger.entries.push({
+    task: "phase-5-task-6-verification",
+    roleId: ROLE_ID,
+    turns: turnsSpent,
+    accepted: accepted !== null,
+    at: new Date().toISOString(),
+  });
+  await writeFile(LEDGER, `${JSON.stringify(ledger, null, 2)}\n`, "utf8");
+
+  await writeFile(
+    resolve(OUT, "verification.json"),
+    `${JSON.stringify(
+      {
+        schema: "cuckcode.phase5-verification.v1",
+        status:
+          accepted === null
+            ? "NOT ACCEPTED. The Test Engineer did not produce a complete assessment within its allowance."
+            : "Authored by the promoted test-engineer. Coverage claims were cross-checked against what exists.",
+        roleId: ROLE_ID,
+        authoredAt: new Date().toISOString(),
+        turnsSpent,
+        overclaims,
+        crossCheck: {
+          criteriaWithAUnitTest: [...hasUnitTest],
+          renderedArtifactsExist,
+        },
+        attempts,
+        assessment: accepted,
+      },
+      null,
+      2,
+    )}\n`,
+    "utf8",
+  );
+
+  process.stdout.write(
+    `${JSON.stringify({
+      ok: accepted !== null,
+      turnsSpent,
+      budget: `${ledger.spent}/${ledger.budget}`,
+      overclaims: overclaims.length,
+    })}\n`,
+  );
+  if (accepted === null) process.exitCode = 1;
+}

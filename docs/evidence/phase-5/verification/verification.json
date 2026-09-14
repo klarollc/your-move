@@ -1,0 +1,231 @@
+{
+  "schema": "cuckcode.phase5-verification.v1",
+  "status": "Authored by the promoted test-engineer. Coverage claims were cross-checked against what exists.",
+  "roleId": "test-engineer",
+  "authoredAt": "2026-09-14T05:00:02.813Z",
+  "turnsSpent": 1,
+  "overclaims": [],
+  "crossCheck": {
+    "criteriaWithAUnitTest": [
+      "C-01",
+      "C-02",
+      "C-03",
+      "C-04",
+      "C-05",
+      "C-06",
+      "C-07",
+      "C-08",
+      "C-09",
+      "C-10",
+      "C-11",
+      "C-12",
+      "C-13",
+      "C-14",
+      "C-15",
+      "C-16",
+      "C-21"
+    ],
+    "renderedArtifactsExist": false
+  },
+  "attempts": [
+    {
+      "turn": 1,
+      "accepted": true,
+      "shortfalls": [],
+      "overclaims": [],
+      "responseSha256": "449138b9531e4582e431d3a1008be63bd104a978c50e647b76fbb020d6835ddb"
+    }
+  ],
+  "assessment": {
+    "coverageAssessment": [
+      {
+        "criterionId": "C-01",
+        "covered": "partial",
+        "evidence": "Existing C-01 test checks the seven fields and stable ID in the core output.",
+        "gap": "No component-level accessible-tree verification or re-render evidence."
+      },
+      {
+        "criterionId": "C-02",
+        "covered": "partial",
+        "evidence": "Existing C-02 test checks source order and meaningful names in core output.",
+        "gap": "No browser-rendered link interaction or accessible-tree verification."
+      },
+      {
+        "criterionId": "C-03",
+        "covered": "partial",
+        "evidence": "Existing C-03 test checks that focus does not change state.",
+        "gap": "Keyboard and pointer activation are not tested."
+      },
+      {
+        "criterionId": "C-04",
+        "covered": "partial",
+        "evidence": "Existing C-04 test covers empty, overlong, and non-future reasons/dates.",
+        "gap": "Absent and malformed dates, valid success, named field validation, and bounded reason behavior are incomplete."
+      },
+      {
+        "criterionId": "C-05",
+        "covered": "partial",
+        "evidence": "Existing C-05 test checks reproducibility from the event log.",
+        "gap": "Injected storage, action-by-action reload, and adapter-only persistence are not tested."
+      },
+      {
+        "criterionId": "C-06",
+        "covered": "partial",
+        "evidence": "Existing C-06 test exercises duplicate, stale, malformed, and out-of-order refusals.",
+        "gap": "Exact pre-event state preservation and distinct rejection behavior are not established."
+      },
+      {
+        "criterionId": "C-07",
+        "covered": "partial",
+        "evidence": "Existing C-07 test checks status signatures without colour.",
+        "gap": "No rendered structural verification or proof that all seven states remain distinct in the component."
+      },
+      {
+        "criterionId": "C-08",
+        "covered": "partial",
+        "evidence": "Existing C-08 and C-09 tests cover deterministic inputs and injected-clock status derivation.",
+        "gap": "No static scan proving ambient Date, randomness, or timers are unreachable."
+      },
+      {
+        "criterionId": "C-09",
+        "covered": "none",
+        "evidence": "none",
+        "gap": "No reduced-motion, 200% zoom, viewport, overflow, or content-preservation browser evidence."
+      },
+      {
+        "criterionId": "C-10",
+        "covered": "partial",
+        "evidence": "Existing C-10 test checks focus targeting after a refused action.",
+        "gap": "Focus after validation, success, failure, and reload is not fully tested in the component."
+      },
+      {
+        "criterionId": "C-11",
+        "covered": "partial",
+        "evidence": "Existing C-11 test checks that evidence resolution stays within the supplied fixture.",
+        "gap": "No network-panel capture, credential scan, or isolation write-outside-fixture scan."
+      },
+      {
+        "criterionId": "C-12",
+        "covered": "full",
+        "evidence": "Existing C-12 test checks mutual exclusion of acknowledge and defer.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-13",
+        "covered": "full",
+        "evidence": "Existing C-13 test checks pending restoration and separate undo logging.",
+        "gap": ""
+      },
+      {
+        "criterionId": "C-14",
+        "covered": "partial",
+        "evidence": "Existing C-14 test checks three severity outputs and names unknown severity.",
+        "gap": "No rendered component evidence for distinct visual and structural treatments."
+      },
+      {
+        "criterionId": "C-15",
+        "covered": "partial",
+        "evidence": "Existing C-15 test checks locale-dependent rendering and named malformed dates with raw values.",
+        "gap": "UTC storage format and component-level non-throwing rendering are not verified."
+      },
+      {
+        "criterionId": "C-16",
+        "covered": "partial",
+        "evidence": "Existing C-16 test checks named outcomes for all evidence-link states.",
+        "gap": "No browser/network evidence for all four outcomes and no proof that no external fetch occurs."
+      },
+      {
+        "criterionId": "C-17",
+        "covered": "none",
+        "evidence": "none",
+        "gap": "No screen-reader walkthrough record exists."
+      },
+      {
+        "criterionId": "C-18",
+        "covered": "none",
+        "evidence": "none",
+        "gap": "The provenance/supersession schema is explicitly blocked on gap-3."
+      },
+      {
+        "criterionId": "C-19",
+        "covered": "none",
+        "evidence": "No visual captures, diffs, or owner fidelity acceptance exist.",
+        "gap": "All twenty inventory states require current-build captures at both approved viewports and owner acceptance."
+      },
+      {
+        "criterionId": "C-20",
+        "covered": "none",
+        "evidence": "none",
+        "gap": "No defined isolation procedure, console/network capture, or deliberate failing-case evidence exists."
+      },
+      {
+        "criterionId": "C-21",
+        "covered": "none",
+        "evidence": "none",
+        "gap": "No independent release-review verdict authored by the promoted release-reviewer exists."
+      }
+    ],
+    "missingNegativePaths": [
+      "Keyboard activation of acknowledge and defer is absent.",
+      "Pointer activation of acknowledge and defer is absent.",
+      "Enter or Space activation from unrelated or unfocused elements is absent.",
+      "Escape from the defer editor changing state is absent.",
+      "Absent review date is absent.",
+      "Malformed review date is absent.",
+      "Valid deferral success is absent.",
+      "Reason-boundary and whitespace-only reason cases are absent.",
+      "Reload with missing, malformed, or corrupted persisted state is absent.",
+      "Exact state and event-log preservation after every rejected event is absent.",
+      "Out-of-order events with skipped revisions are not demonstrated.",
+      "Applying acknowledge to acknowledged and defer to deferred states is absent.",
+      "Undo after each action through keyboard and pointer is absent.",
+      "Saving, save-failed, retry, and preserved-input paths are absent.",
+      "Disabled controls being untriggerable and focus-skipped is absent.",
+      "Malformed stored due dates and UTC normalization are incomplete.",
+      "Missing, invalid, and unavailable links under browser execution are absent.",
+      "No network, credential, filesystem-isolation, console, or deliberate-failure negative journeys exist.",
+      "No reduced-motion and 200% zoom negative layout cases exist."
+    ],
+    "isolationProcedure": {
+      "steps": [
+        "Run the component in a fresh temporary fixture workspace with only the approved fixture artifacts and injected adapters.",
+        "Inject clock, ID source, storage adapter, animation policy, and evidence resolver; prohibit ambient providers.",
+        "Attach browser console, network, navigation, download, and filesystem-write capture before loading the component.",
+        "Execute canonical, acknowledge, defer, validation-failure, undo, reload, and each evidence-link outcome journey.",
+        "Assert every evidence resolution is limited to fixture paths and that no request leaves the fixture origin.",
+        "Scan captured output and logs for credential-shaped strings and scan filesystem events for writes outside the fixture.",
+        "Repeat with a deliberately invalid resolver or forbidden external reference to force an isolation failure."
+      ],
+      "passCondition": "All journeys complete with zero external network requests, zero credential-shaped output, zero writes outside the fixture, and evidence resolution limited to approved fixture artifacts; the deliberate failure is detected and reported.",
+      "failureEvidence": "A deterministic record containing the failing journey, fixture and adapter versions, console and network captures, attempted external path or request, filesystem-write event if applicable, and the expected-versus-observed isolation result."
+    },
+    "deterministicBrowserEvidence": {
+      "required": [
+        "C-01: accessible-tree capture and two re-render checks proving all seven fixture fields and stable ID.",
+        "C-02: accessibility-tree link-name and source-order capture.",
+        "C-03: keyboard and pointer journeys plus focus-without-activation event/state capture.",
+        "C-07: colour-removed captures or structural/accessibility assertions for all seven statuses.",
+        "C-09: both approved D-07 viewports at 200% zoom and reduced motion, with overflow and content-preservation evidence.",
+        "C-14: captures of routine, significant, critical, and unknown severity treatments.",
+        "C-16: local fixture captures for resolved, missing, invalid, and unavailable links with network logs.",
+        "C-17: recorded manual screen-reader walkthrough naming screen reader, build, exercised paths, and omissions.",
+        "C-19: named current-build captures for all twenty states at both approved viewports plus owner fidelity acceptance.",
+        "C-20: console/network captures from the defined isolation procedure and its deliberate failing case."
+      ],
+      "blockedBy": "No component tests, browser harness, approved viewport/browser matrix, visual captures, accessibility run, screen-reader record, isolation procedure, or owner/release-review evidence exists."
+    },
+    "notCovered": [
+      "The actual rendered component and accessible tree are not verified.",
+      "Keyboard and pointer activation semantics are not verified.",
+      "Injected storage reload behavior is not verified.",
+      "Complete validation, save, retry, failure, disabled, and focus-transition behavior is not verified.",
+      "Static absence of ambient time, randomness, timers, network, credentials, and destructive side effects is not verified.",
+      "Reduced-motion and 200% zoom behavior is not verified.",
+      "Browser network and console cleanliness is not verified.",
+      "Provenance and supersession tracking is not verified.",
+      "Screen-reader use is not verified.",
+      "Visual fidelity across the twenty-state inventory and both viewports is not verified.",
+      "Independent release eligibility review is not verified."
+    ]
+  }
+}

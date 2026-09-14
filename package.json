@@ -30,6 +30,7 @@
     "phase5:contract:build": "tsx scripts/build-phase5-acceptance-contract.ts",
     "phase5:surface:run": "tsx scripts/run-phase5-surface-contract.ts",
     "phase5:red:capture": "tsx scripts/build-phase5-red-evidence.ts",
+    "phase5:verify:run": "tsx scripts/run-phase5-verification.ts",
     "phase6:fixture:freeze": "tsx scripts/freeze-phase6-fixture.ts",
     "phase6:candidates:build": "tsx scripts/build-phase6-candidates.ts",
     "phase6:a11y:build": "tsx scripts/build-phase6-accessibility.ts",

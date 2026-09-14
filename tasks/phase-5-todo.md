@@ -74,8 +74,22 @@ approval.
   - **Near-miss recorded:** re-running the RED capture after GREEN overwrote the RED evidence with a
     passing run. Recovered from the commit; the script now refuses to overwrite a recorded RED phase.
 
-- [ ] Task 6: Test Engineer verification — deterministic browser and failure evidence, negative
-      paths, and an explicit statement of what is not covered.
+- [x] Task 6: Verification pass **authored by the promoted `test-engineer` agent, 2026-09-14**;
+      `docs/evidence/phase-5/verification/verification.json`.
+  - Accepted on the first turn, **2 of 60 spent**, and its coverage claims were cross-checked against
+    what exists: **zero overclaims.** It did not mark a single criterion covered that nothing
+    exercises.
+  - **Verdict: 2 full, 13 partial, 6 none, of 21.** The honest reading is that Task 5 delivered the
+    pure core only, and most of the contract is unverified until a component exists.
+  - It found real gaps in our own tests, not only the missing component: C-08 has no static scan
+    proving ambient time, randomness and timers are _unreachable_; C-04 never exercises a successful
+    deferral; C-06 does not establish exact pre-event state preservation across all four rejection
+    classes.
+  - **Closes charter gap 8** with a six-step isolation procedure, a pass condition, and what a
+    deliberate failure must produce. C-20 unblocks: **20 criteria ready, 1 blocked** on gap 3.
+  - Its `notCovered` statement is the artifact the charter asked for, and it is blunt: the rendered
+    component, keyboard and pointer semantics, storage reload, reduced motion, zoom, network and
+    console cleanliness, provenance, and screen-reader use are all unverified.
 
 - [ ] Task 7: Visual QA capture at the approved viewports, annotated against the art-direction
       contract.

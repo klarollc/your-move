@@ -35,9 +35,11 @@ export type Criterion = {
  *
  * Gap 7 closed on 2026-09-14 when the Product Designer delivered the surface contract in Task 3 —
  * art direction, responsive and content-length rules, reduced motion, and a twenty-state inventory.
- * Gaps 3 and 8 remain open, and the criteria depending on them stay blocked.
+ * Gap 8 closed the same day when the Test Engineer defined the isolation procedure in Task 6: six
+ * steps, a pass condition, and what a deliberate failure must produce to count as evidence.
+ * Gap 3 remains open, and the criterion depending on it stays blocked.
  */
-export const BLOCKED_GAPS = [3, 8];
+export const BLOCKED_GAPS = [3];
 
 const MDD = "MDD §6 Decision Notice acceptance contract";
 const CHARTER = "approved-charter-v1, owner ruling 2026-09-14";
@@ -253,12 +255,12 @@ export const CRITERIA: Criterion[] = [
     id: "C-20",
     statement:
       "Isolation is verified by a defined procedure, with deterministic failure evidence and console and network capture.",
-    source: `charter goal; ${CHARTER} gap 8`,
+    source: `charter goal; ${CHARTER} gap 8, closed by the Task 6 isolation procedure`,
     evidenceClasses: ["behavioral", "rendered"],
     testableAssertion:
-      "Pending the gap-8 procedure. The named procedure runs, console and network capture are clean, and a deliberately failing case produces the recorded failure evidence.",
+      "The Task 6 isolation procedure runs end to end: every journey completes with zero external requests, zero credential-shaped output, zero writes outside the fixture, and evidence resolution limited to fixture artifacts. A deliberately failing case produces the recorded failure evidence.",
     dependsOnGap: 8,
-    status: "blocked-on-gap",
+    status: "ready",
   },
   {
     id: "C-21",
