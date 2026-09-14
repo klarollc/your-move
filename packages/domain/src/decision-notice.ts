@@ -195,6 +195,39 @@ export function deriveStatus(state: DecisionState, clock: Clock): DecisionStatus
   return now > due ? "overdue" : state.status;
 }
 
+/**
+ * ISO-8601 with an explicit UTC designator, and nothing else.
+ *
+ * Deliberately not "whatever Date.parse accepts". `Date.parse` takes "October 1, 2026" and an offset
+ * like +02:00, and both of those stored in the project record mean a later reader has to know which
+ * machine wrote them. Fractional seconds are optional because a time without them is still UTC.
+ */
+const ISO_8601_UTC = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/u;
+
+export type StoredDateViolation = { field: string; value: string };
+
+/**
+ * Every date this state would persist, checked as stored rather than as rendered. C-15.
+ *
+ * `presentDueDate` names a malformed date for a reader, which is a rendering decision and says
+ * nothing about whether the project should be holding it. This is the other question: is what was
+ * written back something a later reader can interpret without knowing where it came from.
+ */
+export function storedDateViolations(state: DecisionState): StoredDateViolation[] {
+  const violations: StoredDateViolation[] = [];
+  const check = (field: string, value: string): void => {
+    if (!ISO_8601_UTC.test(value) || parsedTime(value) === null) violations.push({ field, value });
+  };
+
+  check("notice.dueAt", state.notice.dueAt);
+  if (state.deferral) check("deferral.reviewAt", state.deferral.reviewAt);
+  state.log.forEach((event, index) => {
+    check(`log[${index}].at`, event.at);
+    if (event.kind === "defer") check(`log[${index}].reviewAt`, event.reviewAt);
+  });
+  return violations;
+}
+
 const SEVERITY_LABELS: Record<Severity, string> = {
   routine: "Routine",
   significant: "Significant",
@@ -271,4 +304,78 @@ export function statusSignature(status: DecisionStatus): {
 } {
   const signature = STATUS_SIGNATURES[status];
   return { ...signature, accessibleName: `Decision status: ${signature.label.toLowerCase()}` };
+}
+
+export type PersistedStateRefusal =
+  | "not-an-object"
+  | "different-decision"
+  | "unknown-status"
+  | "invalid-revision"
+  | "invalid-log"
+  | "invalid-deferral"
+  | "date-not-utc";
+
+export type PersistedStateResult =
+  { ok: true; state: DecisionState } | { ok: false; reason: PersistedStateRefusal };
+
+const STATUSES = new Set(Object.keys(STATUS_SIGNATURES));
+
+const isEvent = (value: unknown): boolean => {
+  if (typeof value !== "object" || value === null) return false;
+  const event = value as Record<string, unknown>;
+  if (event.kind !== "acknowledge" && event.kind !== "defer" && event.kind !== "undo") return false;
+  if (typeof event.actionId !== "string" || event.actionId.length === 0) return false;
+  if (typeof event.at !== "string") return false;
+  if (!Number.isInteger(event.revision) || (event.revision as number) < 1) return false;
+  if (event.kind === "defer") {
+    return typeof event.reason === "string" && typeof event.reviewAt === "string";
+  }
+  return true;
+};
+
+/**
+ * Read a state that came back from storage, or refuse it and say which part was unreadable. C-05.
+ *
+ * This used to be one identity check: if the decision id matched, the whole object was adopted as
+ * the project's belief about that decision. The adapter is injected, so whatever supplies it is
+ * outside this module entirely — a corrupt payload was a decision the component made by accident.
+ *
+ * Refusing names a reason rather than returning a bare false, because the caller's obligation is to
+ * tell someone that stored state was discarded, and "something was wrong with it" is not a thing a
+ * person can act on.
+ */
+export function parsePersistedState(value: unknown, notice: DecisionNotice): PersistedStateResult {
+  if (typeof value !== "object" || value === null) return { ok: false, reason: "not-an-object" };
+  const candidate = value as Record<string, unknown>;
+
+  const savedNotice = candidate.notice as DecisionNotice | undefined;
+  if (savedNotice?.decisionId !== notice.decisionId) {
+    return { ok: false, reason: "different-decision" };
+  }
+  if (typeof candidate.status !== "string" || !STATUSES.has(candidate.status)) {
+    return { ok: false, reason: "unknown-status" };
+  }
+  if (!Number.isInteger(candidate.revision) || (candidate.revision as number) < 0) {
+    return { ok: false, reason: "invalid-revision" };
+  }
+  if (!Array.isArray(candidate.log) || !candidate.log.every(isEvent)) {
+    return { ok: false, reason: "invalid-log" };
+  }
+  const deferral = candidate.deferral;
+  if (deferral !== null && deferral !== undefined) {
+    const record = deferral as Record<string, unknown>;
+    if (typeof record.reason !== "string" || typeof record.reviewAt !== "string") {
+      return { ok: false, reason: "invalid-deferral" };
+    }
+  }
+
+  const state = {
+    ...(candidate as unknown as DecisionState),
+    deferral: (deferral ?? null) as DecisionState["deferral"],
+  };
+  // Every date it carries, checked as stored. A state whose timestamps cannot be interpreted without
+  // knowing which machine wrote them is not a state this project can reason about later. C-15.
+  if (storedDateViolations(state).length > 0) return { ok: false, reason: "date-not-utc" };
+
+  return { ok: true, state };
 }

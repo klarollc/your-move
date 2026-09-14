@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import {
   applyAction,
   createDecisionState,
+  parsePersistedState,
+  storedDateViolations,
   deriveStatus,
   presentDueDate,
   presentSeverity,
@@ -570,6 +572,135 @@ describe("Decision Notice — Phase 5 acceptance criteria", () => {
       label: "Disabled",
       accessibleName: "Decision status: disabled",
     });
+  });
+
+  /**
+   * Decision 9-F. The evidence established that dates *render* correctly and said nothing about how
+   * they are *stored*. The property was very likely already true, which is exactly the situation
+   * where nobody notices it stopping being true.
+   */
+  it("C-15: every date in a persisted state is stored as ISO-8601 UTC", () => {
+    const deferred = applyAction(
+      createDecisionState(notice),
+      {
+        kind: "defer",
+        actionId: "a-defer",
+        at: clock.now(),
+        reason: "Wait for the owner decision record.",
+        reviewAt: "2026-12-01T00:00:00.000Z",
+      },
+      clock,
+    );
+    expect(deferred.ok).toBe(true);
+    if (!deferred.ok) return;
+
+    const undone = applyAction(
+      deferred.state,
+      { kind: "undo", actionId: "a-undo", at: clock.now() },
+      clock,
+    );
+    expect(undone.ok).toBe(true);
+    if (!undone.ok) return;
+
+    expect(storedDateViolations(undone.state)).toStrictEqual([]);
+  });
+
+  it("C-15: a stored date that is not UTC is named, with its field and its value", () => {
+    // The event log's timestamps and an externally supplied due date are where a non-UTC value
+    // would actually arrive from, so both are checked rather than only what the form writes.
+    const localised = createDecisionState({ ...notice, dueAt: "2026-10-01T00:00:00+02:00" });
+    expect(storedDateViolations(localised)).toStrictEqual([
+      { field: "notice.dueAt", value: "2026-10-01T00:00:00+02:00" },
+    ]);
+
+    const acknowledged = applyAction(
+      createDecisionState(notice),
+      { kind: "acknowledge", actionId: "a1", at: clock.now() },
+      clock,
+    );
+    if (!acknowledged.ok) return;
+    const tampered = {
+      ...acknowledged.state,
+      log: acknowledged.state.log.map((event) => ({ ...event, at: "October 1, 2026" })),
+    };
+    expect(storedDateViolations(tampered)).toStrictEqual([
+      { field: "log[0].at", value: "October 1, 2026" },
+    ]);
+  });
+
+  it("C-15: a deferral's review time is checked too, not only the event timestamps", () => {
+    const state = createDecisionState(notice);
+    const tampered = { ...state, deferral: { reason: "r", reviewAt: "2026-12-01" } };
+    expect(storedDateViolations(tampered)).toStrictEqual([
+      { field: "deferral.reviewAt", value: "2026-12-01" },
+    ]);
+  });
+
+  it("C-15: a malformed due date is reported as stored, not silently tolerated", () => {
+    // presentDueDate names it for a reader; that is a rendering decision and says nothing about
+    // whether the project should be storing it.
+    const malformed = createDecisionState({ ...notice, dueAt: "2026-13-45T99:99:99Z" });
+    expect(storedDateViolations(malformed)).toStrictEqual([
+      { field: "notice.dueAt", value: "2026-13-45T99:99:99Z" },
+    ]);
+  });
+
+  /**
+   * Decision 9-A. A persisted state used to be adopted whole if its decision id matched, so a
+   * corrupt payload became the project's belief about a decision. Refusing it is not paranoia about
+   * disk corruption — the adapter is injected, and whatever supplies it is outside this component.
+   */
+  it("C-05: a persisted state is adopted only when every part of it is readable", () => {
+    const acknowledged = applyAction(
+      createDecisionState(notice),
+      { kind: "acknowledge", actionId: "a1", at: clock.now() },
+      clock,
+    );
+    expect(acknowledged.ok).toBe(true);
+    if (!acknowledged.ok) return;
+
+    const parsed = parsePersistedState(
+      JSON.parse(JSON.stringify(acknowledged.state)) as unknown,
+      notice,
+    );
+    expect(parsed).toMatchObject({ ok: true });
+    if (parsed.ok) expect(parsed.state).toStrictEqual(acknowledged.state);
+  });
+
+  it("C-05: every way a persisted state can be unreadable is refused by its own reason", () => {
+    const base = createDecisionState(notice);
+    const cases: Array<{ label: string; value: unknown; reason: string }> = [
+      { label: "not an object", value: "{}", reason: "not-an-object" },
+      { label: "null", value: null, reason: "not-an-object" },
+      {
+        label: "a different decision",
+        value: { ...base, notice: { ...notice, decisionId: "decision_other" } },
+        reason: "different-decision",
+      },
+      { label: "unknown status", value: { ...base, status: "banana" }, reason: "unknown-status" },
+      { label: "negative revision", value: { ...base, revision: -1 }, reason: "invalid-revision" },
+      { label: "log is not an array", value: { ...base, log: {} }, reason: "invalid-log" },
+      {
+        label: "an event with no kind",
+        value: { ...base, log: [{ actionId: "a1", at: clock.now(), revision: 1 }] },
+        reason: "invalid-log",
+      },
+      {
+        label: "a deferral with no review time",
+        value: { ...base, deferral: { reason: "r" } },
+        reason: "invalid-deferral",
+      },
+      {
+        label: "a date that is not stored UTC",
+        value: { ...base, notice: { ...notice, dueAt: "2026-10-01T00:00:00+02:00" } },
+        reason: "date-not-utc",
+      },
+    ];
+
+    for (const testCase of cases) {
+      const parsed = parsePersistedState(testCase.value, notice);
+      expect(parsed, testCase.label).toMatchObject({ ok: false, reason: testCase.reason });
+    }
   });
 
   it("C-21: a refusal never invents state", () => {

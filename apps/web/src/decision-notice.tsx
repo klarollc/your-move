@@ -3,6 +3,7 @@ import {
   applyAction,
   createDecisionState,
   deriveStatus,
+  parsePersistedState,
   presentDueDate,
   presentSeverity,
   resolveEvidenceLink,
@@ -116,7 +117,8 @@ export function DecisionNoticeCard({
   animationPolicy,
   maxReasonLength = DEFAULT_MAX_REASON_LENGTH,
 }: DecisionNoticeCardProps) {
-  const [state, setState] = useState<DecisionState>(() => loadState(notice, storage));
+  const [loaded] = useState(() => loadState(notice, storage));
+  const [state, setState] = useState<DecisionState>(loaded.state);
   const [displayStatus, setDisplayStatus] = useState<DecisionStatus | null>(null);
   const [deferOpen, setDeferOpen] = useState(false);
   const [reason, setReason] = useState("");
@@ -124,7 +126,11 @@ export function DecisionNoticeCard({
   const [validation, setValidation] = useState<ValidationState | null>(null);
   const [pendingSave, setPendingSave] = useState<PendingSave | null>(null);
   const [focusRequest, setFocusRequest] = useState<FocusRequest | null>(null);
-  const [announcement, setAnnouncement] = useState("Decision notice loaded");
+  const [announcement, setAnnouncement] = useState(
+    loaded.refusal === null
+      ? "Decision notice loaded"
+      : `Decision notice loaded. A saved state could not be read (${loaded.refusal}) and was not applied; this decision is shown from the start.`,
+  );
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const statusRef = useRef<HTMLDivElement>(null);
@@ -149,6 +155,17 @@ export function DecisionNoticeCard({
     (lastEvent?.kind === "acknowledge" || lastEvent?.kind === "defer") &&
     status !== "saving" &&
     status !== "save-failed";
+
+  /**
+   * Decision 9-D. C-10 names reload as one of the four transitions focus must handle, and a fresh
+   * mount left focus on the document body — which the criterion forbids in as many words. Only a
+   * mount that *restored* something moves focus; a first visit with nothing saved is not a reload.
+   */
+  useEffect(() => {
+    if (loaded.state.log.length > 0 || loaded.refusal !== null) setFocusRequest("status");
+    // Mount only: `loaded` is read once at construction, so a later save cannot re-trigger this.
+    // Re-running it would end every action on the status rather than where the contract says.
+  }, [loaded]);
 
   useEffect(() => {
     if (!focusRequest) return;
@@ -281,6 +298,7 @@ export function DecisionNoticeCard({
         </div>
         <div
           ref={statusRef}
+          data-focus-target="status"
           className={`decision-notice__status decision-notice__status--${status}`}
           role="status"
           aria-label={signature.accessibleName}
@@ -392,7 +410,7 @@ export function DecisionNoticeCard({
             <strong>Save failed</strong>
           </div>
           <p>{saveError ?? "The fixture storage adapter rejected the save."}</p>
-          <button ref={retryRef} type="button" onClick={retry}>
+          <button ref={retryRef} data-focus-target="retry" type="button" onClick={retry}>
             Retry save
           </button>
         </section>
@@ -431,6 +449,7 @@ export function DecisionNoticeCard({
             </label>
             <textarea
               ref={reasonRef}
+              data-focus-target="reason"
               id="decision-notice-reason"
               name="reason"
               value={reason}
@@ -460,6 +479,7 @@ export function DecisionNoticeCard({
             <label htmlFor="decision-notice-review-date">Review date</label>
             <input
               ref={reviewDateRef}
+              data-focus-target="review-date"
               id="decision-notice-review-date"
               name="review-date"
               type="date"
@@ -528,6 +548,7 @@ export function DecisionNoticeCard({
         {canUndo ? (
           <button
             ref={undoRef}
+            data-focus-target="undo"
             type="button"
             onClick={() => apply({ kind: "undo", actionId: idSource(), at: clock.now() })}
           >
@@ -544,13 +565,34 @@ export function DecisionNoticeCard({
   );
 }
 
-function loadState(notice: DecisionNotice, storage: DecisionNoticeStorage): DecisionState {
+/**
+ * Decision 9-A. A saved state is adopted only when every part of it reads, and a refusal is carried
+ * back rather than swallowed.
+ *
+ * Starting fresh in silence would show a person "pending" for a decision they deferred, and nothing
+ * anywhere would record that something was discarded. That is the substitution this project refuses
+ * everywhere else in its evidence model, and it was happening here on every load.
+ */
+function loadState(
+  notice: DecisionNotice,
+  storage: DecisionNoticeStorage,
+): { state: DecisionState; refusal: string | null } {
+  let saved: unknown;
   try {
-    const saved = storage.load();
-    return saved?.notice.decisionId === notice.decisionId ? saved : createDecisionState(notice);
+    saved = storage.load();
   } catch {
-    return createDecisionState(notice);
+    return { state: createDecisionState(notice), refusal: "adapter-unavailable" };
   }
+  if (saved === null || saved === undefined)
+    return { state: createDecisionState(notice), refusal: null };
+
+  const parsed = parsePersistedState(saved, notice);
+  if (parsed.ok) return { state: parsed.state, refusal: null };
+  // A state belonging to a different decision is not a fault; it is simply not this one's.
+  if (parsed.reason === "different-decision") {
+    return { state: createDecisionState(notice), refusal: null };
+  }
+  return { state: createDecisionState(notice), refusal: parsed.reason };
 }
 
 function successAnnouncement(action: DecisionAction): string {

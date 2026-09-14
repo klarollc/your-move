@@ -1,0 +1,65 @@
+{
+  "schema": "cuckcode.phase5-focus-contract.v1",
+  "status": "An owner-ruled addition to the surface contract, recorded beside the Product Designer's authored artifact rather than edited into it. It declares where focus lands after each transition C-10 names, so a test can read the destination instead of restating it.",
+  "ruledBy": "owner",
+  "ruledOn": "2026-09-14",
+  "decisionRecord": "docs/evidence/phase-5/decision-record-2026-09-14-task-9-remediation.md",
+  "why": "A test that names its own expected focus target proves the code agrees with the test. Reading the destination from the specification proves the code agrees with the specification, which is what C-10 asks and what the Release Reviewer said was missing.",
+  "addressing": "Each target names the value of the data-focus-target attribute on the element that must hold focus. The attribute exists so that focus is addressable as a contract term rather than by a selector a test invents.",
+  "transitions": [
+    {
+      "transition": "validation-reason-empty",
+      "when": "a deferral is submitted with no reason",
+      "target": "reason",
+      "why": "the field the person must correct, so correcting it requires no navigation"
+    },
+    {
+      "transition": "validation-reason-too-long",
+      "when": "a deferral is submitted with a reason past its bound",
+      "target": "reason",
+      "why": "the text is preserved and the caret returns to it"
+    },
+    {
+      "transition": "validation-date-invalid",
+      "when": "a deferral is submitted with an absent, malformed or past review date",
+      "target": "review-date",
+      "why": "the field the person must correct"
+    },
+    {
+      "transition": "acknowledge-success",
+      "when": "an acknowledgement is saved",
+      "target": "undo",
+      "why": "the only action still available, and the one a person who acted by mistake reaches for"
+    },
+    {
+      "transition": "defer-success",
+      "when": "a deferral is saved",
+      "target": "undo",
+      "why": "same destination as acknowledgement; the decision was recorded and is reversible"
+    },
+    {
+      "transition": "undo-success",
+      "when": "an undo is saved",
+      "target": "status",
+      "why": "there is no longer an undo control to hold focus, and the status is what changed"
+    },
+    {
+      "transition": "save-failure",
+      "when": "the storage adapter rejects a save",
+      "target": "retry",
+      "why": "the input is preserved and retry is the next action"
+    },
+    {
+      "transition": "saving",
+      "when": "a save begins and the action controls become disabled",
+      "target": "status",
+      "why": "disabling the focused control would otherwise drop focus to the document body, which C-10 forbids"
+    },
+    {
+      "transition": "reload",
+      "when": "the component mounts and the storage adapter returns a previously saved state",
+      "target": "status",
+      "why": "a person returning to a decision that already carries history is told what it is now, rather than left on the document body"
+    }
+  ]
+}

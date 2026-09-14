@@ -1,7 +1,7 @@
 {
   "schema": "cuckcode.phase5-isolation-failure.v1",
   "viewport": "chromium-1440",
-  "ranAt": "2026-09-14T07:02:39.776Z",
+  "ranAt": "2026-09-14T07:34:43.045Z",
   "journey": "pending, with an injected forbidden external request",
   "injectedViolation": "fetch('https://forbidden.invalid/telemetry') from page init",
   "expectedCondition": "zero requests to any origin other than http://127.0.0.1:4173",

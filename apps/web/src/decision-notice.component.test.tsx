@@ -6,7 +6,7 @@ import { resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { DecisionNoticeCard, type DecisionNoticeStorage } from "./decision-notice.js";
-import { createDecisionState } from "@cuckcode/domain";
+import { createDecisionState, storedDateViolations } from "@cuckcode/domain";
 import type { Clock, DecisionNotice, DecisionState } from "@cuckcode/domain";
 
 const clock: Clock = { now: () => "2026-09-14T12:00:00.000Z" };
@@ -318,6 +318,191 @@ describe("DecisionNoticeCard", () => {
     expect(announced()).not.toContain("focus returns to");
   });
 
+  /** Decision 9-F. What the component writes, and what survives a reload, is the thing C-15 claims. */
+  it("C-15: dates written by the component survive a reload as ISO-8601 UTC", async () => {
+    const user = userEvent.setup();
+    const storage = makeStorage();
+    const first = renderNotice(storage);
+    await user.click(screen.getByRole("button", { name: "Defer" }));
+    await user.type(
+      screen.getByRole("textbox", { name: /Deferral reason/ }),
+      "Wait for the owner decision record.",
+    );
+    fireEvent.change(screen.getByLabelText("Review date"), { target: { value: "2026-12-01" } });
+    await user.click(screen.getByRole("button", { name: "Submit deferral" }));
+
+    const saved = storage.value;
+    expect(saved).not.toBeNull();
+    if (!saved) return;
+    expect(storedDateViolations(saved)).toStrictEqual([]);
+    first.unmount();
+
+    // Round-tripped, not merely written: a reload must return the same bytes, not a re-rendering
+    // of them.
+    renderNotice(storage);
+    expect(screen.getByRole("status", { name: "Decision status: deferred" })).toBeVisible();
+    expect(storage.value?.deferral?.reviewAt).toBe(saved.deferral?.reviewAt);
+    expect(storage.value?.log.map((event) => event.at)).toStrictEqual(
+      saved.log.map((event) => event.at),
+    );
+  });
+
+  /**
+   * Decision 9-D. C-10 requires focus to land on an element "stated in advance", and until now the
+   * advance statement was the test itself — which proves the code agrees with the test, not that it
+   * agrees with the specification. The destinations are read from the focus contract.
+   */
+  it("C-10: focus lands where the focus contract says, for every transition it names", async () => {
+    const contract = JSON.parse(
+      readFileSync(
+        resolve(process.cwd(), "docs/evidence/phase-5/surface-contract/focus-contract.json"),
+        "utf8",
+      ),
+    ) as { transitions: Array<{ transition: string; target: string }> };
+    const target = (transition: string): string => {
+      const declared = contract.transitions.find((entry) => entry.transition === transition);
+      if (!declared) throw new Error(`FOCUS_CONTRACT_MISSING_TRANSITION:${transition}`);
+      return declared.target;
+    };
+    const focused = (): string | undefined =>
+      (document.activeElement as HTMLElement | null)?.dataset.focusTarget;
+
+    const user = userEvent.setup();
+    const storage = makeStorage();
+    const session = renderNotice(storage);
+
+    await user.click(screen.getByRole("button", { name: "Defer" }));
+    await user.click(screen.getByRole("button", { name: "Submit deferral" }));
+    expect(focused()).toBe(target("validation-reason-empty"));
+
+    await user.type(screen.getByRole("textbox", { name: /Deferral reason/ }), "x".repeat(281));
+    await user.click(screen.getByRole("button", { name: "Submit deferral" }));
+    expect(focused()).toBe(target("validation-reason-too-long"));
+
+    fireEvent.change(screen.getByRole("textbox", { name: /Deferral reason/ }), {
+      target: { value: "Wait for the owner decision record." },
+    });
+    await user.click(screen.getByRole("button", { name: "Submit deferral" }));
+    expect(focused()).toBe(target("validation-date-invalid"));
+
+    fireEvent.change(screen.getByLabelText("Review date"), { target: { value: "2026-12-01" } });
+    await user.click(screen.getByRole("button", { name: "Submit deferral" }));
+    expect(focused()).toBe(target("defer-success"));
+
+    await user.click(screen.getByRole("button", { name: "Undo latest decision change" }));
+    expect(focused()).toBe(target("undo-success"));
+
+    await user.click(screen.getByRole("button", { name: "Acknowledge" }));
+    expect(focused()).toBe(target("acknowledge-success"));
+    session.unmount();
+
+    // Reload: the adapter returns a state with history, and the contract says a returning person is
+    // told what the decision is now rather than left on the document body.
+    renderNotice(storage);
+    expect(focused()).toBe(target("reload"));
+    expect(document.activeElement).not.toBe(document.body);
+  });
+
+  it("C-10: a failed save sends focus to retry, as the contract declares", async () => {
+    const contract = JSON.parse(
+      readFileSync(
+        resolve(process.cwd(), "docs/evidence/phase-5/surface-contract/focus-contract.json"),
+        "utf8",
+      ),
+    ) as { transitions: Array<{ transition: string; target: string }> };
+    const declared = contract.transitions.find((entry) => entry.transition === "save-failure");
+
+    const user = userEvent.setup();
+    const storage = makeStorage();
+    storage.failNext();
+    renderNotice(storage);
+    await user.click(screen.getByRole("button", { name: "Acknowledge" }));
+
+    expect((document.activeElement as HTMLElement | null)?.dataset.focusTarget).toBe(
+      declared?.target,
+    );
+  });
+
+  /** Decision 9-A. One reload case was covered. The criterion says every action. */
+  it("C-05: every action survives a reload through the injected adapter", async () => {
+    const user = userEvent.setup();
+
+    for (const action of ["acknowledge", "defer", "undo"] as const) {
+      const storage = makeStorage();
+      const first = renderNotice(storage);
+      if (action === "defer") {
+        await user.click(screen.getByRole("button", { name: "Defer" }));
+        await user.type(
+          screen.getByRole("textbox", { name: /Deferral reason/ }),
+          "Wait for the owner decision record.",
+        );
+        fireEvent.change(screen.getByLabelText("Review date"), { target: { value: "2026-12-01" } });
+        await user.click(screen.getByRole("button", { name: "Submit deferral" }));
+      } else {
+        await user.click(screen.getByRole("button", { name: "Acknowledge" }));
+        if (action === "undo") {
+          await user.click(screen.getByRole("button", { name: "Undo latest decision change" }));
+        }
+      }
+      const saved = storage.value;
+      first.unmount();
+
+      renderNotice(storage);
+      const expected =
+        action === "acknowledge" ? "acknowledged" : action === "defer" ? "deferred" : "pending";
+      expect(
+        screen.getByRole("status", { name: `Decision status: ${expected}` }),
+        `after reloading ${action}`,
+      ).toBeVisible();
+      // The log is what makes this a restoration rather than a coincidence of status.
+      expect(storage.value?.log.map((event) => event.kind)).toStrictEqual(
+        saved?.log.map((event) => event.kind),
+      );
+      cleanup();
+    }
+  });
+
+  it("C-05: a corrupt persisted state is refused and said out loud, never adopted", () => {
+    const corrupt = {
+      ...createDecisionState(notice),
+      status: "banana",
+    } as unknown as DecisionState;
+    const storage = makeStorage(corrupt);
+    const { container } = renderNotice(storage);
+
+    // Not silently substituted: starting fresh without saying so would show a person "pending" for a
+    // decision they deferred, and nothing anywhere would record that something was discarded.
+    expect(screen.getByRole("status", { name: "Decision status: pending" })).toBeVisible();
+    expect(container.querySelector(".decision-notice__announcement")?.textContent).toContain(
+      "saved state could not be read",
+    );
+  });
+
+  it("C-05: an adapter that throws on load is reported rather than silently starting fresh", () => {
+    const storage: DecisionNoticeStorage = {
+      load: () => {
+        throw new Error("adapter unavailable");
+      },
+      save: () => undefined,
+    };
+    const { container } = render(
+      <DecisionNoticeCard
+        notice={notice}
+        fixture={fixture}
+        clock={clock}
+        storage={storage}
+        idSource={() => "fixture-action-1"}
+        locale="en-US"
+        animationPolicy="reduced"
+      />,
+    );
+
+    expect(screen.getByRole("status", { name: "Decision status: pending" })).toBeVisible();
+    expect(container.querySelector(".decision-notice__announcement")?.textContent).toContain(
+      "saved state could not be read",
+    );
+  });
+
   it("C-05, C-13: reloads saved state through the injected storage adapter and makes undo explicit", async () => {
     const user = userEvent.setup();
     const storage = makeStorage();
@@ -384,6 +569,11 @@ describe("DecisionNoticeCard", () => {
     const source = readFileSync(resolve(process.cwd(), "apps/web/src/decision-notice.tsx"), "utf8");
     expect(source).not.toMatch(
       /\bDate\b|Math\.random|setTimeout|setInterval|requestAnimationFrame|fetch\s*\(|localStorage|sessionStorage/,
+    );
+    // Decision 9-A: the injected adapter is the only persistence path, so every other one a browser
+    // offers is named here rather than left to the two that happened to be listed first.
+    expect(source).not.toMatch(
+      /indexedDB|document\.cookie|openDatabase|navigator\.storage|caches\b|showSaveFilePicker/,
     );
   });
 });
