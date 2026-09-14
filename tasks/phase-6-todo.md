@@ -25,15 +25,25 @@ Read each entry's own status line. Nothing here inherits authorization from the 
     than passing over an empty list. Regenerate deliberately with `npm run phase6:fixture:freeze`.
     Evidence: `docs/evidence/phase-4/red-green-log.md`.
 
-- [ ] Task 2: Candidate A — architectural clarity.
+- [x] Task 2: Candidate A — architectural clarity. **Complete 2026-09-13.**
   - Acceptance: twelve candidate-board deliverables; the sterile/diagrammatic risk addressed in writing.
   - Verify: board completeness, provenance entries, documented contrast intent.
   - Depends on: Task 1, 6-C.
+  - Result, all three candidates: generated from one shared geometry module so identical layout is a
+    property of the build, not an inspection. Each has `board.html` (twelve items), standalone
+    compositions at both viewports, and a `manifest.json` pinned to the frozen digest;
+    `candidates/comparison.html` puts all three on one page. Every composition was rendered and
+    looked at, which is how four defects were found — floating figures, clipped zone labels,
+    duplicate SVG filter ids that made B and C inherit A's shadow, and a prop that encoded state.
+    Contrast now measures text at 4.5:1 and the graphical marker at 3:1; palettes were corrected, not
+    waived, and all six pairs pass in all three. **Half the 6-C hybrid is unexercised** — no
+    generated raster was produced, recorded as `generatedExploration: null` rather than implied.
+    Evidence: `docs/evidence/phase-4/red-green-log.md`. Rebuild: `npm run phase6:candidates:build`.
 
-- [ ] Task 3: Candidate B — human studio warmth.
+- [x] Task 3: Candidate B — human studio warmth. **Complete 2026-09-13.**
   - Acceptance: as Task 2; visual-noise and false-anthropomorphism risk addressed.
 
-- [ ] Task 4: Candidate C — miniature craft precision.
+- [x] Task 4: Candidate C — miniature craft precision. **Complete 2026-09-13.**
   - Acceptance: as Task 2; toy/diorama/game risk addressed.
 
 - [ ] Task 5: Provenance and originality review.

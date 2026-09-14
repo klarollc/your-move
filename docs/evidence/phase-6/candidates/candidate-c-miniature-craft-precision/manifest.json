@@ -1,0 +1,126 @@
+{
+  "schema": "cuckcode.phase6-candidate.v1",
+  "candidateId": "candidate-c-miniature-craft-precision",
+  "name": "Miniature craft precision",
+  "emphasis": "Material edges, contained depth, contact shadows, carefully staged objects, and model-like spatial coherence.",
+  "namedRisk": "Reading as a toy, a diorama, or a game rather than a serious work environment.",
+  "status": "Candidate. Not selected, not promoted, not implementable. Phase 7 remains unauthorized.",
+  "fixtureDigest": "13c33cefebf7b13f9d47479d4dc47da1e00022d763c34c5901f6ee1bb20815f4",
+  "medium": {
+    "ruling": "6-C hybrid",
+    "composition": "in-repo-vector",
+    "note": "The fixture-accurate composition is authored in-tree and rendered by the project's own harness, so it is the artifact scored for feasibility and accessibility. No generated raster is included in this board; see the manifest's generatedExploration field.",
+    "generatedExploration": null
+  },
+  "board": {
+    "1-composition": {
+      "artifact": "board.html#composition",
+      "medium": "in-repo-vector"
+    },
+    "2-accommodation-1280": {
+      "artifact": "board.html#accommodation",
+      "medium": "in-repo-vector"
+    },
+    "3-palette-and-contrast": {
+      "artifact": "board.html#palette",
+      "medium": "computed"
+    },
+    "4-material-samples": {
+      "artifact": "board.html#materials",
+      "medium": "in-repo-vector"
+    },
+    "5-typography": {
+      "artifact": "board.html#typography",
+      "medium": "in-repo-vector"
+    },
+    "6-avatar-scale-sheet": {
+      "artifact": "board.html#avatars",
+      "medium": "in-repo-vector"
+    },
+    "7-personalization": {
+      "artifact": "board.html#personalization",
+      "medium": "written"
+    },
+    "8-lighting-and-contact-shadow": {
+      "artifact": "board.html#lighting",
+      "medium": "written"
+    },
+    "9-prop-density-and-negative-space": {
+      "artifact": "board.html#density",
+      "medium": "written"
+    },
+    "10-amber-attention": {
+      "artifact": "board.html#amber",
+      "medium": "in-repo-vector"
+    },
+    "11-motion-and-reduced-motion": {
+      "artifact": "board.html#motion",
+      "medium": "written"
+    },
+    "12-strengths-risks-exclusions": {
+      "artifact": "board.html#analysis",
+      "medium": "written"
+    }
+  },
+  "contrast": [
+    {
+      "pair": "Agent label on scene ground",
+      "kind": "text",
+      "threshold": 4.5,
+      "ratio": 10.33,
+      "passesAA": true
+    },
+    {
+      "pair": "Zone label on floor",
+      "kind": "text",
+      "threshold": 4.5,
+      "ratio": 4.55,
+      "passesAA": true
+    },
+    {
+      "pair": "Zone label on alternate floor",
+      "kind": "text",
+      "threshold": 4.5,
+      "ratio": 5.71,
+      "passesAA": true
+    },
+    {
+      "pair": "Body text on plaster",
+      "kind": "text",
+      "threshold": 4.5,
+      "ratio": 13.11,
+      "passesAA": true
+    },
+    {
+      "pair": "Attention marker on scene ground",
+      "kind": "non-text",
+      "threshold": 3,
+      "ratio": 3.1,
+      "passesAA": true
+    },
+    {
+      "pair": "Attention marker on its own halo",
+      "kind": "non-text",
+      "threshold": 3,
+      "ratio": 3.09,
+      "passesAA": true
+    }
+  ],
+  "provenance": [
+    {
+      "source": "docs/visual-reference-production-brief-v0.1.md",
+      "basis": "owner-approved project artifact",
+      "referenced": "visual thesis, comparative emphasis, candidate board, avatar contract"
+    },
+    {
+      "source": ".ui-craft/tokens.md",
+      "basis": "owner-approved project artifact",
+      "referenced": "material family, reserved accent rule, motion durations, contrast floor"
+    },
+    {
+      "source": "scripts/phase6-candidate-geometry.ts",
+      "basis": "authored in-tree for this project",
+      "referenced": "camera, floor plan, zone rectangles, agent placement"
+    }
+  ]
+}

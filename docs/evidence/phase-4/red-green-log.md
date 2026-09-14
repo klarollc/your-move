@@ -879,3 +879,53 @@ passed, 3 skipped.
 
 **Limits.** This freezes the frame. It produces no art, scores nothing, and selects nothing. Tasks
 2–4 add candidate manifests, each of which must name this digest; Task 8 selection remains owner-run.
+
+## Phase 6 Tasks 2–4 — the three candidates
+
+Date: 2026-09-13. Authorized by Decisions 6-A, 6-B and 6-C.
+
+**Generated, not hand-built.** Three separately drawn offices would drift — a desk nudged, an agent
+moved — and the drift would be invisible until a reviewer scored one candidate higher for a reason
+that was not art. `scripts/phase6-candidate-geometry.ts` holds the camera, floor plan, zone
+rectangles, agent placement, labels and props once; `scripts/phase6-candidate-styles.ts` holds three
+*treatments* and cannot move anything. Identical layout is therefore a property of the build, not a
+thing anyone has to check.
+
+Artifacts per candidate, under `docs/evidence/phase-6/candidates/<id>/`: `board.html` with all twelve
+board deliverables, `composition-1440x900.svg` and `composition-1280x800.svg` standalone, and
+`manifest.json` naming the frozen digest. `candidates/comparison.html` puts all three on one page in
+the brief's order, because choosing between three files means remembering the first while looking at
+the third.
+
+**Four defects found by looking, which is the only way they were going to be found.**
+
+1. *Figures floated beside their desks and labels crossed other zones.* Placement put the figure in
+   the aisle and the label a metre above the head, so "Implementation Engineer" sat over the Project
+   Library. Figures now sit behind the desk in depth order and labels sit on a plate above the head.
+2. *Zone labels were clipped* — "PROJECT LIBRARY" rendered as "ROJECT LIBRARY" — because the text was
+   anchored at a corner and ran outside the diamond. Centred on the zone's top vertex instead.
+3. *All three inline SVGs declared `<filter id="soft">`.* On `comparison.html` the duplicate ids meant
+   B and C silently rendered with **A's** shadow blur — cross-contaminating the single treatment that
+   most distinguishes the three emphases. Filter ids are now namespaced per candidate. This is the
+   controlled-comparison failure the frame exists to prevent, arriving through the renderer rather
+   than through the geometry.
+4. *A prop encoded state.* The manager's board carried a "1 priority" caption while board item 9 of
+   the same page states that props never encode state. The caption is removed; the rule stands.
+
+**Contrast: a real failure and a wrong threshold, separately.** The first measurement scored every
+pair against 4.5:1 and reported four failures per candidate. Two were real — zone labels at 3.4–4.5
+— and two were measured against the wrong rule: the attention marker is a graphical object under
+WCAG 2.2 SC 1.4.11, which requires 3:1, not the SC 1.4.3 text threshold. Correcting the threshold did
+not clear it: the original accent was at 2.5–2.9 and failed 3:1 too. Both were fixed in the palettes
+rather than waived, and the table now reports each pair's kind and its own threshold. All six pairs
+pass in all three candidates.
+
+**Verification.** Every composition was rendered in a browser and looked at; the DOM was queried to
+confirm all three SVGs paint at 1178×736 with their own filters and with 157/196/198 shapes — the
+shape-count difference being the declared prop-density difference, not an accident. Corrupting one
+candidate's `fixtureDigest` fails the Task 1 guard, so the three manifests are now checked against
+the frozen frame on every run rather than by inspection.
+
+**Limits.** No generated raster was produced, so the 6-C hybrid is half-exercised; each manifest
+records `generatedExploration: null` rather than implying coverage. Nothing is scored — Task 7 is a
+separate task — and nothing is selected. Selection is the owner's at Task 8.

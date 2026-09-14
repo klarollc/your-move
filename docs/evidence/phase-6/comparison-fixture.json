@@ -68,15 +68,15 @@
   "candidates": [
     {
       "candidateId": "candidate-a-architectural-clarity",
-      "manifestPath": null
+      "manifestPath": "docs/evidence/phase-6/candidates/candidate-a-architectural-clarity/manifest.json"
     },
     {
       "candidateId": "candidate-b-human-studio-warmth",
-      "manifestPath": null
+      "manifestPath": "docs/evidence/phase-6/candidates/candidate-b-human-studio-warmth/manifest.json"
     },
     {
       "candidateId": "candidate-c-miniature-craft-precision",
-      "manifestPath": null
+      "manifestPath": "docs/evidence/phase-6/candidates/candidate-c-miniature-craft-precision/manifest.json"
     }
   ]
 }

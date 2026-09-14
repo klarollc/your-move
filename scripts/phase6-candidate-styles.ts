@@ -1,0 +1,194 @@
+/**
+ * The three candidate styles.
+ *
+ * Every field here is a *treatment*: colour, edge, shadow, density, lighting. Nothing here can move
+ * a desk, add an agent, or change a label — that lives in `phase6-candidate-geometry.ts` and is
+ * shared. The brief's three comparative emphases survive because the styles are the only variable.
+ *
+ * Amber is a single reserved accent in all three. It marks manager attention and focus only, never
+ * role identity, never severity, never decoration. That constraint is approved
+ * (`.ui-craft/tokens.md`) and none of these candidates reopens it.
+ */
+
+export type CandidateStyle = {
+  candidateId: string;
+  name: string;
+  emphasis: string;
+  namedRisk: string;
+  /** Semantic palette. Keys are roles in the scene, not raw colour names. */
+  palette: {
+    pageGround: string;
+    sceneGround: string;
+    floorBase: string;
+    floorZoneA: string;
+    floorZoneB: string;
+    zoneEdge: string;
+    plaster: string;
+    plasterShade: string;
+    wood: string;
+    woodShade: string;
+    woodEdge: string;
+    metal: string;
+    metalShade: string;
+    textile: string;
+    greenery: string;
+    greeneryShade: string;
+    paper: string;
+    glass: string;
+    figure: string;
+    figureShade: string;
+    /** The one reserved accent. */
+    attention: string;
+    attentionSoft: string;
+    ink: string;
+    inkMuted: string;
+    shadow: string;
+  };
+  /** Stroke width on solid faces. 0 means no outline. */
+  edgeWidth: number;
+  /** Contact-shadow treatment under objects and figures. */
+  shadow: { blur: number; opacity: number; spread: number };
+  /** Whether `warm`-density props are drawn. */
+  includeWarmProps: boolean;
+  /** Visible plinth thickness under the floor, in px. 0 means the floor sits flush. */
+  plinth: number;
+  /** Top-face lightening applied to lit surfaces, 0–1. */
+  lift: number;
+  /** Practical lamp glow radius, 0 for none. */
+  practicalGlow: number;
+  typography: { display: string; mono: string; labelWeight: number; labelSize: number };
+};
+
+const SHARED_TYPE = {
+  display:
+    "'Iowan Old Style', 'Palatino Linotype', 'Segoe UI', -apple-system, system-ui, sans-serif",
+  mono: "'Cascadia Mono', 'Consolas', 'SF Mono', ui-monospace, monospace",
+};
+
+export const CANDIDATE_A: CandidateStyle = {
+  candidateId: "candidate-a-architectural-clarity",
+  name: "Architectural clarity",
+  emphasis:
+    "Strong floor-plane zoning, clean silhouettes, restrained props, and immediate role and location comprehension.",
+  namedRisk: "Becoming sterile or diagrammatic.",
+  palette: {
+    pageGround: "#eceae5",
+    sceneGround: "#e4e1da",
+    floorBase: "#dcd8cf",
+    floorZoneA: "#d3cec3",
+    floorZoneB: "#e6e2d9",
+    zoneEdge: "#b3ab9b",
+    plaster: "#f4f2ed",
+    plasterShade: "#ddd9d0",
+    wood: "#cbb392",
+    woodShade: "#b09874",
+    woodEdge: "#95815f",
+    metal: "#6f7377",
+    metalShade: "#55585c",
+    textile: "#9fa79c",
+    greenery: "#7d9476",
+    greeneryShade: "#63785d",
+    paper: "#fbfaf7",
+    glass: "#d7e1e3",
+    figure: "#8a8f94",
+    figureShade: "#6e7378",
+    attention: "#b06a1b",
+    attentionSoft: "#f0d9b6",
+    ink: "#2f2e2b",
+    inkMuted: "#595751",
+    shadow: "#8d877b",
+  },
+  edgeWidth: 1.1,
+  shadow: { blur: 1.5, opacity: 0.16, spread: 1 },
+  includeWarmProps: false,
+  plinth: 0,
+  lift: 0.06,
+  practicalGlow: 0,
+  typography: { ...SHARED_TYPE, labelWeight: 600, labelSize: 12 },
+};
+
+export const CANDIDATE_B: CandidateStyle = {
+  candidateId: "candidate-b-human-studio-warmth",
+  name: "Human studio warmth",
+  emphasis:
+    "Muted textiles, individual desk objects, soft practical lighting, and agent-authored identity details.",
+  namedRisk: "Visual noise, or false anthropomorphic sentiment.",
+  palette: {
+    pageGround: "#f2ece2",
+    sceneGround: "#efe7d9",
+    floorBase: "#e7dccb",
+    floorZoneA: "#e0d3be",
+    floorZoneB: "#efe6d6",
+    zoneEdge: "#cbb99e",
+    plaster: "#f8f3ea",
+    plasterShade: "#e6dccd",
+    wood: "#d2b183",
+    woodShade: "#b49062",
+    woodEdge: "#9a7749",
+    metal: "#7b7368",
+    metalShade: "#605950",
+    textile: "#b08a72",
+    greenery: "#7f9a70",
+    greeneryShade: "#647c57",
+    paper: "#fdfbf6",
+    glass: "#dde6e2",
+    figure: "#94897d",
+    figureShade: "#776d62",
+    attention: "#ba711b",
+    attentionSoft: "#f6e2c0",
+    ink: "#332e27",
+    inkMuted: "#625b51",
+    shadow: "#9c8a72",
+  },
+  edgeWidth: 0,
+  shadow: { blur: 5, opacity: 0.2, spread: 2 },
+  includeWarmProps: true,
+  plinth: 0,
+  lift: 0.1,
+  practicalGlow: 46,
+  typography: { ...SHARED_TYPE, labelWeight: 500, labelSize: 12 },
+};
+
+export const CANDIDATE_C: CandidateStyle = {
+  candidateId: "candidate-c-miniature-craft-precision",
+  name: "Miniature craft precision",
+  emphasis:
+    "Material edges, contained depth, contact shadows, carefully staged objects, and model-like spatial coherence.",
+  namedRisk: "Reading as a toy, a diorama, or a game rather than a serious work environment.",
+  palette: {
+    pageGround: "#e8e5de",
+    sceneGround: "#ded9cf",
+    floorBase: "#d9d2c4",
+    floorZoneA: "#cec6b5",
+    floorZoneB: "#e3ddd0",
+    zoneEdge: "#a89d88",
+    plaster: "#f6f3ec",
+    plasterShade: "#d8d2c6",
+    wood: "#c9a778",
+    woodShade: "#a5814f",
+    woodEdge: "#7d5f34",
+    metal: "#686c70",
+    metalShade: "#4a4d51",
+    textile: "#98a08f",
+    greenery: "#748c69",
+    greeneryShade: "#546b4b",
+    paper: "#fcfaf4",
+    glass: "#d4dee0",
+    figure: "#8b8378",
+    figureShade: "#6a635a",
+    attention: "#b16714",
+    attentionSoft: "#efd6ac",
+    ink: "#2b2924",
+    inkMuted: "#57524c",
+    shadow: "#6f6553",
+  },
+  edgeWidth: 0.9,
+  shadow: { blur: 1, opacity: 0.34, spread: 0.5 },
+  includeWarmProps: true,
+  plinth: 14,
+  lift: 0.14,
+  practicalGlow: 26,
+  typography: { ...SHARED_TYPE, labelWeight: 600, labelSize: 11.5 },
+};
+
+export const CANDIDATE_STYLES = [CANDIDATE_A, CANDIDATE_B, CANDIDATE_C];

@@ -26,6 +26,7 @@
     "roles:promote": "node scripts/promote-authored-roles.mjs",
     "roles:exercise": "tsx scripts/run-role-exercises.ts",
     "phase6:fixture:freeze": "tsx scripts/freeze-phase6-fixture.ts",
+    "phase6:candidates:build": "tsx scripts/build-phase6-candidates.ts",
     "test:roles": "node --test scripts/agency-agents-import.test.mjs scripts/promote-roles.test.mjs scripts/promote-authored-roles.test.mjs scripts/promotion-status.test.mjs && npm run roles:agency-agents:check",
     "roles:promotion:status": "node scripts/promotion-status.mjs",
     "protocol:codex:generate": "node scripts/generate-codex-protocol.mjs",

@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
@@ -52,11 +53,19 @@ const record = {
     agentCount: Object.keys(frame.snapshot.staffing.agents).length,
     assignmentCount: Object.keys(frame.snapshot.staffing.assignments).length,
   },
+  // Registered from what is on disk, not from a hand-maintained list. The Task 1 guard asserts the
+  // registry and the filesystem agree, so a list edited by hand would only move the lie.
   candidates: [
-    { candidateId: "candidate-a-architectural-clarity", manifestPath: null },
-    { candidateId: "candidate-b-human-studio-warmth", manifestPath: null },
-    { candidateId: "candidate-c-miniature-craft-precision", manifestPath: null },
-  ],
+    "candidate-a-architectural-clarity",
+    "candidate-b-human-studio-warmth",
+    "candidate-c-miniature-craft-precision",
+  ].map((candidateId) => {
+    const relative = `docs/evidence/phase-6/candidates/${candidateId}/manifest.json`;
+    return {
+      candidateId,
+      manifestPath: existsSync(resolve(ROOT, relative)) ? relative : null,
+    };
+  }),
 };
 
 await mkdir(resolve(ROOT, "docs/evidence/phase-6"), { recursive: true });
