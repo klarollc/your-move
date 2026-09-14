@@ -1,0 +1,200 @@
+{
+  "schema": "cuckcode.phase5-surface-contract.v1",
+  "status": "Authored by the promoted product-designer. Candidate: the owner accepts fidelity, not this record.",
+  "roleId": "product-designer",
+  "authoredAt": "2026-09-14T04:40:04.864Z",
+  "turnsSpent": 1,
+  "requiredStates": [
+    "pending",
+    "acknowledged",
+    "deferred",
+    "overdue",
+    "saving",
+    "save-failed",
+    "disabled",
+    "severity-routine",
+    "severity-significant",
+    "severity-critical",
+    "severity-unknown",
+    "date-malformed",
+    "link-resolved",
+    "link-missing",
+    "link-invalid",
+    "link-unavailable",
+    "validation-reason-empty",
+    "validation-reason-too-long",
+    "validation-date-invalid",
+    "undo-available"
+  ],
+  "attempts": [
+    {
+      "turn": 1,
+      "accepted": true,
+      "shortfalls": [],
+      "responseSha256": "b5427c2c892121414e83130eb78d41e6abc7008dbe9d3d182742f894cb4e83a1"
+    }
+  ],
+  "contract": {
+    "interactionContract": {
+      "keyboard": "All actionable controls are reachable in logical order with visible focus; Enter or Space activates only the focused control, never focus itself. Escape closes the defer editor without changing state.",
+      "pointer": "Acknowledge and Defer activate only on click or explicit pointer activation. Pointer hover, press, or focus never commits an action.",
+      "acknowledge": "From pending or deferred, explicit Acknowledge opens a confirmation step or commits deterministically; success records acknowledged, preserves an undo event, and restores focus to the status heading or undo control.",
+      "defer": "Explicit Defer opens an editor requiring a bounded reason and a valid future review time. Empty, overlong, absent, malformed, or past values refuse submission and expose the named validation state beside the invalid field.",
+      "undo": "Undo is an explicit keyboard- and pointer-activated action available after either transition. It records a separate undo event, restores the prior state deterministically, and returns focus to the restored action/status context.",
+      "failure": "Saving exposes saving, then either the committed state or save-failed. Save failure preserves the user's input, announces the failure, and returns focus to the retry control without inventing state.",
+      "disabled": "Disabled controls are skipped only when non-actionable, expose disabled semantics and an explanation, and cannot be triggered by keyboard or pointer."
+    },
+    "artDirectionContract": {
+      "surface": "A compact warm matte office artifact: off-white plaster-like surface on a neutral ground, light wood or charcoal-metal framing, restrained contact shadow, and a 0.7px defining edge on solid faces. No glassmorphism, glossy gradients, dark neon, generic dashboard cards, or status-dependent scene lighting.",
+      "typography": "Warm humanist sans-serif carries title, summary, labels, statuses, and actions. Restrained monospace is limited to decision IDs, timestamps, technical evidence paths, and provenance.",
+      "accent": "One warm amber accent marks manager attention, keyboard focus, selection, and the primary action only. It never marks severity, role identity, lifecycle status, links, decoration, or ambient activity.",
+      "spacing": "Use calm, generous grouping: title and status first, summary next, evidence and metadata in readable clusters, actions last. Preserve clear separation between lifecycle status, severity, validation, and evidence; avoid dense dashboard grids.",
+      "severity": "Severity uses semantic shape, label, icon or rule treatment and approved semantic colors only; severity must never use the reserved amber accent or role branding.",
+      "accessibility": "Maintain WCAG 2.2 AA contrast, visible focus, readable hierarchy, and meaning that survives greyscale and 200% zoom."
+    },
+    "stateInventory": [
+      {
+        "id": "pending",
+        "visualTreatment": "Open notice with active action row and an unfilled status marker.",
+        "nonColourCue": "Text label 'Pending', open-circle icon, and available Acknowledge/Defer controls.",
+        "accessibleName": "Decision status: pending"
+      },
+      {
+        "id": "acknowledged",
+        "visualTreatment": "Settled notice with completed status marker and acknowledgement metadata.",
+        "nonColourCue": "Text label 'Acknowledged', checkmark icon, and acknowledgement timestamp.",
+        "accessibleName": "Decision status: acknowledged"
+      },
+      {
+        "id": "deferred",
+        "visualTreatment": "Settled notice with next-review metadata and defer reason exposed.",
+        "nonColourCue": "Text label 'Deferred', calendar-pause icon, future review time, and reason.",
+        "accessibleName": "Decision status: deferred"
+      },
+      {
+        "id": "overdue",
+        "visualTreatment": "Urgency treatment with a prominent review-date row and escalation affordance.",
+        "nonColourCue": "Text label 'Overdue', warning-triangle icon, and explicit past-due wording.",
+        "accessibleName": "Decision status: overdue"
+      },
+      {
+        "id": "saving",
+        "visualTreatment": "Action area becomes progress treatment while content remains stable.",
+        "nonColourCue": "Text label 'Saving', inline progress indicator, and disabled duplicate submission.",
+        "accessibleName": "Decision status: saving"
+      },
+      {
+        "id": "save-failed",
+        "visualTreatment": "Failure panel appears beside preserved input and retry action.",
+        "nonColourCue": "Text label 'Save failed', error icon, explanatory message, and Retry button.",
+        "accessibleName": "Decision status: save failed"
+      },
+      {
+        "id": "disabled",
+        "visualTreatment": "Muted but legible notice with inactive controls and explanatory note.",
+        "nonColourCue": "Text label 'Disabled', lock icon, and reason text; controls expose disabled semantics.",
+        "accessibleName": "Decision status: disabled"
+      },
+      {
+        "id": "severity-routine",
+        "visualTreatment": "Low-emphasis severity row with neutral semantic marker.",
+        "nonColourCue": "Text label 'Routine', single-line dot-and-label marker, and no amber treatment.",
+        "accessibleName": "Severity: routine"
+      },
+      {
+        "id": "severity-significant",
+        "visualTreatment": "Medium-emphasis severity row with a distinct double-rule marker.",
+        "nonColourCue": "Text label 'Significant', double-rule icon, and explicit severity wording.",
+        "accessibleName": "Severity: significant"
+      },
+      {
+        "id": "severity-critical",
+        "visualTreatment": "High-emphasis severity row with strong boundary and escalation marker.",
+        "nonColourCue": "Text label 'Critical', diamond-exclamation icon, and explicit escalation wording.",
+        "accessibleName": "Severity: critical"
+      },
+      {
+        "id": "severity-unknown",
+        "visualTreatment": "Diagnostic severity row with an outlined question marker.",
+        "nonColourCue": "Text label 'Unknown severity', question-mark icon, and source-value disclosure.",
+        "accessibleName": "Severity: unknown"
+      },
+      {
+        "id": "date-malformed",
+        "visualTreatment": "Date field uses an inline diagnostic treatment without substituting a date.",
+        "nonColourCue": "Text label 'Date unavailable: malformed', calendar-slash icon, and raw-value or source diagnostic.",
+        "accessibleName": "Due date: malformed"
+      },
+      {
+        "id": "link-resolved",
+        "visualTreatment": "Evidence row shows an available artifact affordance and source metadata.",
+        "nonColourCue": "Text label 'Evidence available', document-check icon, and artifact name.",
+        "accessibleName": "Evidence link: resolved, [artifact name]"
+      },
+      {
+        "id": "link-missing",
+        "visualTreatment": "Evidence row remains in source order with a missing-artifact placeholder.",
+        "nonColourCue": "Text label 'Evidence missing', document-minus icon, and expected artifact identifier.",
+        "accessibleName": "Evidence link: missing, [artifact name]"
+      },
+      {
+        "id": "link-invalid",
+        "visualTreatment": "Evidence row shows a rejected reference diagnostic.",
+        "nonColourCue": "Text label 'Evidence reference invalid', broken-link icon, and validation detail.",
+        "accessibleName": "Evidence link: invalid, [artifact name]"
+      },
+      {
+        "id": "link-unavailable",
+        "visualTreatment": "Evidence row shows an unavailable local artifact state without a fetch affordance.",
+        "nonColourCue": "Text label 'Evidence unavailable', offline-box icon, and local-resolution explanation.",
+        "accessibleName": "Evidence link: unavailable, [artifact name]"
+      },
+      {
+        "id": "validation-reason-empty",
+        "visualTreatment": "Defer editor keeps the reason field visibly invalid and submission blocked.",
+        "nonColourCue": "Inline text 'Reason required', empty-field outline, and required marker.",
+        "accessibleName": "Deferral reason error: reason required"
+      },
+      {
+        "id": "validation-reason-too-long",
+        "visualTreatment": "Defer editor displays bounded-length failure with preserved text and count.",
+        "nonColourCue": "Inline text 'Reason too long', character counter, and limit statement.",
+        "accessibleName": "Deferral reason error: reason too long"
+      },
+      {
+        "id": "validation-date-invalid",
+        "visualTreatment": "Review-date control displays a date-validation diagnostic and blocked submission.",
+        "nonColourCue": "Inline text 'Review date invalid', calendar-alert icon, and absent/malformed/past explanation.",
+        "accessibleName": "Deferral review date error: invalid future date required"
+      },
+      {
+        "id": "undo-available",
+        "visualTreatment": "A distinct confirmation tray appears with a separated Undo action.",
+        "nonColourCue": "Text label 'Change saved; undo available', history-arrow icon, and event timestamp.",
+        "accessibleName": "Undo available for the latest decision change"
+      }
+    ],
+    "responsiveRules": [
+      "At the approved desktop boundary, preserve the notice's readable single-column hierarchy and keep evidence and action groups distinct.",
+      "At narrower widths, stack metadata, evidence rows, validation messages, and actions; never hide status, severity, due date, or evidence state.",
+      "Keep primary and undo actions reachable without horizontal scrolling; allow long evidence names to wrap rather than truncate meaning.",
+      "At 200% zoom, preserve all content and operation within the approved desktop boundary without overlapping controls or requiring hidden hover content.",
+      "Use the approved viewport and browser matrix for final measurements; unlisted breakpoints are deferred until explicitly approved."
+    ],
+    "contentLengthRules": [
+      "Decision title is concise and remains fully readable; do not replace it with an ellipsis that removes identifying meaning.",
+      "Summary is plain language and bounded to a short readable block; preserve the full text through wrapping or an explicit accessible expansion.",
+      "Decision IDs, ISO timestamps, artifact names, and provenance values may wrap or use controlled overflow, but must remain copyable and identifiable.",
+      "Evidence link accessible names include the artifact name and state; never use 'click here' or silently omit a failed link.",
+      "Deferral reasons have a documented maximum length; show remaining count and reject overlong input rather than truncate it.",
+      "Validation messages name the failed field and correction; do not rely on color, icon, or placeholder text alone.",
+      "Long locale-rendered dates and future review times wrap predictably without replacing the stored ISO-8601 UTC value."
+    ],
+    "reducedMotion": [
+      "Remove all transitions, progress animation, avatar travel, parallax, and ambient motion; retain static progress and state markers.",
+      "State changes remain observable through immediate text, structure, icons, focus movement, and announcements rather than animation.",
+      "Do not use motion to communicate severity, role, or attention; the reserved amber accent and structural cues remain unchanged.",
+      "Saving, success, failure, validation, and undo feedback render immediately with deterministic clocks and no bounce or delayed reveal."
+    ]
+  }
+}

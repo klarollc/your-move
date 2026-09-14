@@ -1,0 +1,13 @@
+{
+  "budget": 60,
+  "spent": 1,
+  "entries": [
+    {
+      "task": "phase-5-task-3-surface-contract",
+      "roleId": "product-designer",
+      "turns": 1,
+      "accepted": true,
+      "at": "2026-09-14T04:40:04.862Z"
+    }
+  ]
+}

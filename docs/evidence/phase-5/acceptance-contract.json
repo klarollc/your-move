@@ -6,7 +6,6 @@
   "evidenceClassRule": "MDD §18: the four classes are never conflated, and only human-visual-acceptance approves art direction. Passing static, behavioral and rendered evidence cannot substitute for it.",
   "blockedGaps": [
     3,
-    7,
     8
   ],
   "criteria": [
@@ -222,14 +221,14 @@
     {
       "id": "C-19",
       "statement": "The rendered component matches the art-direction contract for every state in the inventory.",
-      "source": "charter goal; approved-charter-v1, owner ruling 2026-09-14 gap 7",
+      "source": "charter goal; approved-charter-v1, owner ruling 2026-09-14 gap 7, closed by the Task 3 surface contract",
       "evidenceClasses": [
         "rendered",
         "human-visual-acceptance"
       ],
-      "testableAssertion": "Pending the gap-7 state inventory and art-direction contract. Every state in the inventory has a named current-build capture, and the owner accepts fidelity.",
+      "testableAssertion": "Every one of the twenty states in the Task 3 inventory has a named current-build capture at both D-07 viewports, each matching its declared visual treatment and non-colour cue, and the owner accepts fidelity. Captures and diffs cannot satisfy the acceptance half.",
       "dependsOnGap": 7,
-      "status": "blocked-on-gap",
+      "status": "ready",
       "approvesArtDirection": true
     },
     {

@@ -30,8 +30,14 @@ export type Criterion = {
   approvesArtDirection?: boolean;
 };
 
-/** Gaps 3, 7 and 8 were dispositioned as work to produce an answer, so they are still open. */
-export const BLOCKED_GAPS = [3, 7, 8];
+/**
+ * Gaps dispositioned as work to produce an answer rather than as answers.
+ *
+ * Gap 7 closed on 2026-09-14 when the Product Designer delivered the surface contract in Task 3 —
+ * art direction, responsive and content-length rules, reduced motion, and a twenty-state inventory.
+ * Gaps 3 and 8 remain open, and the criteria depending on them stay blocked.
+ */
+export const BLOCKED_GAPS = [3, 8];
 
 const MDD = "MDD §6 Decision Notice acceptance contract";
 const CHARTER = "approved-charter-v1, owner ruling 2026-09-14";
@@ -235,12 +241,12 @@ export const CRITERIA: Criterion[] = [
     id: "C-19",
     statement:
       "The rendered component matches the art-direction contract for every state in the inventory.",
-    source: `charter goal; ${CHARTER} gap 7`,
+    source: `charter goal; ${CHARTER} gap 7, closed by the Task 3 surface contract`,
     evidenceClasses: ["rendered", "human-visual-acceptance"],
     testableAssertion:
-      "Pending the gap-7 state inventory and art-direction contract. Every state in the inventory has a named current-build capture, and the owner accepts fidelity.",
+      "Every one of the twenty states in the Task 3 inventory has a named current-build capture at both D-07 viewports, each matching its declared visual treatment and non-colour cue, and the owner accepts fidelity. Captures and diffs cannot satisfy the acceptance half.",
     dependsOnGap: 7,
-    status: "blocked-on-gap",
+    status: "ready",
     approvesArtDirection: true,
   },
   {
