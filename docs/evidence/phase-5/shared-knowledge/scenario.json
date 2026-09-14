@@ -1,0 +1,226 @@
+{
+  "schema": "cuckcode.phase5-knowledge-scenario.v1",
+  "status": "The Phase 5 gate's shared-knowledge scenario, assembled from the two Test Engineer passes. Every record derives from a file in docs/evidence; none was authored for the scenario.",
+  "builtAt": "2026-09-14T06:56:33.204Z",
+  "sources": {
+    "docs/evidence/phase-5/verification/verification.json": "cbd3a4fc3ca48eeb5f4b1528f03bbd07fd6d3c25b9a527a033210dc35fd22a9c",
+    "docs/evidence/phase-5/verification/pass-2.json": "9b4e8f7556e3acfc0e7c9da2bdb24ec488c4b3190cc8cc088a8a99f845c7547b"
+  },
+  "disputedSubjects": [
+    "C-06",
+    "C-12",
+    "C-14",
+    "C-20"
+  ],
+  "contribution": {
+    "events": 8,
+    "records": 8,
+    "statuses": {
+      "knowledge_c06_pass1": "provisional",
+      "knowledge_c06_pass2": "provisional",
+      "knowledge_c12_pass1": "provisional",
+      "knowledge_c12_pass2": "provisional",
+      "knowledge_c14_pass1": "provisional",
+      "knowledge_c14_pass2": "provisional",
+      "knowledge_c20_pass1": "provisional",
+      "knowledge_c20_pass2": "provisional"
+    },
+    "issues": [
+      "AGENT_FINDING_REQUIRES_PROMOTION",
+      "AGENT_FINDING_REQUIRES_PROMOTION",
+      "AGENT_FINDING_REQUIRES_PROMOTION",
+      "AGENT_FINDING_REQUIRES_PROMOTION",
+      "AGENT_FINDING_REQUIRES_PROMOTION",
+      "AGENT_FINDING_REQUIRES_PROMOTION",
+      "AGENT_FINDING_REQUIRES_PROMOTION",
+      "AGENT_FINDING_REQUIRES_PROMOTION"
+    ]
+  },
+  "retrievalBeforeResolution": {
+    "subject": "C-06",
+    "results": [
+      {
+        "knowledgeId": "knowledge_c06_pass1",
+        "status": "provisional",
+        "provenance": {
+          "sourceId": "artifact_verification-pass-1",
+          "sourceVersion": 1
+        },
+        "statement": "C-06 is partial: Existing C-06 test exercises duplicate, stale, malformed, and out-of-order refusals."
+      },
+      {
+        "knowledgeId": "knowledge_c06_pass2",
+        "status": "provisional",
+        "provenance": {
+          "sourceId": "artifact_verification-pass-2",
+          "sourceVersion": 2
+        },
+        "statement": "C-06 is full: Domain tests exercise duplicate, stale, malformed, and out-of-order events, named rejection codes, and exact pre-event state preservation."
+      }
+    ],
+    "omissions": [],
+    "openConflicts": 4
+  },
+  "conflictsBeforeResolution": [
+    {
+      "subject": "C-06",
+      "knowledgeIds": [
+        "knowledge_c06_pass1",
+        "knowledge_c06_pass2"
+      ],
+      "statements": [
+        "C-06 is partial: Existing C-06 test exercises duplicate, stale, malformed, and out-of-order refusals.",
+        "C-06 is full: Domain tests exercise duplicate, stale, malformed, and out-of-order events, named rejection codes, and exact pre-event state preservation."
+      ],
+      "resolution": null,
+      "proposedResolutions": []
+    },
+    {
+      "subject": "C-12",
+      "knowledgeIds": [
+        "knowledge_c12_pass1",
+        "knowledge_c12_pass2"
+      ],
+      "statements": [
+        "C-12 is full: Existing C-12 test checks mutual exclusion of acknowledge and defer.",
+        "C-12 is partial: Domain tests verify acknowledge/defer mutual exclusion."
+      ],
+      "resolution": null,
+      "proposedResolutions": []
+    },
+    {
+      "subject": "C-14",
+      "knowledgeIds": [
+        "knowledge_c14_pass1",
+        "knowledge_c14_pass2"
+      ],
+      "statements": [
+        "C-14 is partial: Existing C-14 test checks three severity outputs and names unknown severity.",
+        "C-14 is full: Tests verify distinct routine, significant, critical, and named unknown severity presentations."
+      ],
+      "resolution": null,
+      "proposedResolutions": []
+    },
+    {
+      "subject": "C-20",
+      "knowledgeIds": [
+        "knowledge_c20_pass1",
+        "knowledge_c20_pass2"
+      ],
+      "statements": [
+        "C-20 is none: none",
+        "C-20 is partial: Component tests inspect source restrictions and fixture-only evidence resolution."
+      ],
+      "resolution": null,
+      "proposedResolutions": []
+    }
+  ],
+  "conflictsAfterResolution": [
+    {
+      "subject": "C-06",
+      "knowledgeIds": [
+        "knowledge_c06_pass1",
+        "knowledge_c06_pass2"
+      ],
+      "statements": [
+        "C-06 is partial: Existing C-06 test exercises duplicate, stale, malformed, and out-of-order refusals.",
+        "C-06 is full: Domain tests exercise duplicate, stale, malformed, and out-of-order events, named rejection codes, and exact pre-event state preservation."
+      ],
+      "resolution": {
+        "survivingKnowledgeId": "knowledge_c06_pass2",
+        "disposedOf": [
+          {
+            "knowledgeId": "knowledge_c06_pass1",
+            "status": "superseded",
+            "supersededBy": "knowledge_c06_pass2"
+          }
+        ]
+      },
+      "proposedResolutions": []
+    },
+    {
+      "subject": "C-12",
+      "knowledgeIds": [
+        "knowledge_c12_pass1",
+        "knowledge_c12_pass2"
+      ],
+      "statements": [
+        "C-12 is full: Existing C-12 test checks mutual exclusion of acknowledge and defer.",
+        "C-12 is partial: Domain tests verify acknowledge/defer mutual exclusion."
+      ],
+      "resolution": {
+        "survivingKnowledgeId": "knowledge_c12_pass2",
+        "disposedOf": [
+          {
+            "knowledgeId": "knowledge_c12_pass1",
+            "status": "superseded",
+            "supersededBy": "knowledge_c12_pass2"
+          }
+        ]
+      },
+      "proposedResolutions": []
+    },
+    {
+      "subject": "C-14",
+      "knowledgeIds": [
+        "knowledge_c14_pass1",
+        "knowledge_c14_pass2"
+      ],
+      "statements": [
+        "C-14 is partial: Existing C-14 test checks three severity outputs and names unknown severity.",
+        "C-14 is full: Tests verify distinct routine, significant, critical, and named unknown severity presentations."
+      ],
+      "resolution": {
+        "survivingKnowledgeId": "knowledge_c14_pass2",
+        "disposedOf": [
+          {
+            "knowledgeId": "knowledge_c14_pass1",
+            "status": "superseded",
+            "supersededBy": "knowledge_c14_pass2"
+          }
+        ]
+      },
+      "proposedResolutions": []
+    },
+    {
+      "subject": "C-20",
+      "knowledgeIds": [
+        "knowledge_c20_pass1",
+        "knowledge_c20_pass2"
+      ],
+      "statements": [
+        "C-20 is none: none",
+        "C-20 is partial: Component tests inspect source restrictions and fixture-only evidence resolution."
+      ],
+      "resolution": {
+        "survivingKnowledgeId": "knowledge_c20_pass2",
+        "disposedOf": [
+          {
+            "knowledgeId": "knowledge_c20_pass1",
+            "status": "superseded",
+            "supersededBy": "knowledge_c20_pass2"
+          }
+        ]
+      },
+      "proposedResolutions": []
+    }
+  ],
+  "retrievalAfterResolution": {
+    "subject": "C-06",
+    "results": [
+      {
+        "knowledgeId": "knowledge_c06_pass2",
+        "status": "authoritative"
+      }
+    ],
+    "omissions": [
+      {
+        "knowledgeId": "knowledge_c06_pass1",
+        "status": "superseded",
+        "reason": "superseded by a named newer record; retained for history",
+        "supersededBy": "knowledge_c06_pass2"
+      }
+    ],
+    "openConflicts": 0
+  }
+}

@@ -15,6 +15,10 @@ export type KnowledgeTruthRecord = {
   revision: number;
   updatedByEventId: string;
   supersededBy?: string;
+  /** What this record is about. Two records sharing a subject can disagree; without one they cannot. */
+  subject?: string;
+  /** The records this one summarises. A synthesis cites its inputs and does not outrank them. */
+  synthesisOf?: string[];
 };
 export type KnowledgeTruth = {
   records: Record<string, KnowledgeTruthRecord>;
@@ -61,6 +65,8 @@ function recordKnowledge(state: KnowledgeTruth, event: ProjectEvent): void {
     );
     return;
   }
+  const subject = text(event.payload.subject);
+  const synthesisOf = citations(event.payload.synthesisOf);
   const initial = determineInitialKnowledgeStatus(event.source, requestedStatus);
   state.records[knowledgeId] = {
     knowledgeId,
@@ -70,6 +76,8 @@ function recordKnowledge(state: KnowledgeTruth, event: ProjectEvent): void {
     authorized,
     revision: 0,
     updatedByEventId: event.eventId,
+    ...(subject === undefined ? {} : { subject }),
+    ...(synthesisOf === undefined ? {} : { synthesisOf }),
   };
   if (initial.issue)
     addIssue(state, initial.issue, event, "agent finding remains provisional", knowledgeId);
@@ -144,6 +152,14 @@ function status(value: unknown): KnowledgeLifecycleStatus | undefined {
     knowledgeLifecycleStatuses.includes(value as KnowledgeLifecycleStatus)
     ? (value as KnowledgeLifecycleStatus)
     : undefined;
+}
+/** A citation list is a list of ids or it is nothing. A partly-readable one is not half-accepted. */
+function citations(value: unknown): string[] | undefined {
+  if (!Array.isArray(value) || value.length === 0) return undefined;
+  const ids = value.filter(
+    (entry): entry is string => typeof entry === "string" && entry.length > 0,
+  );
+  return ids.length === value.length ? ids : undefined;
 }
 function text(value: unknown): string | undefined {
   return typeof value === "string" && value.length > 0 ? value : undefined;

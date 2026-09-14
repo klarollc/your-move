@@ -12,7 +12,7 @@ live state, the next action, and the things a fresh session pays for twice if no
 | 0–3 | Accepted 2026-08-13 |
 | 4 | **Complete.** Bounded live D-25 round ran the full thirteen turns; evidence packet delivered. Owner gate open. |
 | 6 | **Complete.** `reconciliation-b-clarity` is the **Active** visual system, promoted by owner execution. |
-| 5 | **In progress.** Tasks 1–7 done. Task 6 ran twice; Task 7 returned **NEEDS WORK**. |
+| 5 | **In progress.** Tasks 1–8 done. Task 6 ran twice; Task 7 returned **NEEDS WORK** and its four findings are ruled and implemented. |
 | 7, 8 | **Unauthorized.** Phase 7 needs its own specification, plan and owner approval. |
 
 Phase 5 turn ledger: **4 of 60**. Acceptance criteria: **20 ready, 1 blocked** (C-18, on gap 3).
@@ -21,21 +21,23 @@ Phase 5 turn ledger: **4 of 60**. Acceptance criteria: **20 ready, 1 blocked** (
 
 ## The immediate next action
 
-**Task 8 — the shared-knowledge scenario**, then Task 9's independent release verdict. Task 7 is
-done, its four findings were ruled by the owner on 2026-09-14, and all four are implemented:
-`docs/evidence/phase-5/decision-record-2026-09-14-task-7-findings.md`.
+**Task 9 — the Release Reviewer's independent verdict.** The reviewer may not be the implementer,
+and a green suite is not a verdict. It is the last authorized task; Task 10 is owner-run.
 
-Nothing from Task 7 is outstanding. All twenty contract states are now reachable and captured at both
-viewports, and `npm run phase5:fidelity` reports forty checked and none drifting.
+Task 8 is done with no agent turns spent — `docs/evidence/phase-5/task-8-outcome.md`. The
+shared-knowledge scenario replays a disagreement that actually happened: the two Test Engineer passes
+reached different conclusions about C-06, C-12, C-14 and C-20, and the script discovers which rather
+than being told.
 
-The Visual QA verdict is still **NEEDS WORK**, and deliberately not re-run: it records what the build
-was on the day it was annotated, and re-running it so the verdict agrees with the fix is the same
-overwrite that destroyed the RED capture. A second pass is a second pass, and costs one turn when
-someone wants one.
+**Before Task 9, decide one thing.** The Release Reviewer will read the Visual QA verdict, and that
+verdict describes a build that no longer exists — all four of its findings were ruled and fixed. A
+second Visual QA pass costs one turn and would give the release reviewer a current annotation. Left
+as is, the reviewer must be told in its brief that the verdict it is reading is historical, which is
+the third time in this phase that a brief's accuracy has been the precondition of an answer's.
 
-**A clean pass is still the suspicious outcome.** Two verification passes have disagreed with each
-other in both directions, Task 7 found a blocking defect that eleven passing criteria and a green
-suite had not, and acting on the rulings surfaced a defect in the capture harness itself (DF-014).
+**A clean pass is still the suspicious outcome.** Two verification passes disagreed with each other
+in both directions, Task 7 found a blocking defect that eleven passing criteria had not, and the
+knowledge scenario's own mutation run found two behaviours designed and never pinned.
 
 ## Open debts, none of them closed
 
@@ -153,6 +155,8 @@ error and there is no inline env-var prefix — write `$env:X='1'; cmd` and clea
 | `npm run phase5:capture` | Recapture the 40 browser cells and rebuild the manifest |
 | `npm run phase5:fidelity` | Contract names, as amended by the overlay, against the captured trees |
 | `npm run phase5:visualqa:run` | Visual QA Reviewer annotation (live, debits the ledger) |
+| `npm run phase5:knowledge` | Rebuild the shared-knowledge scenario from the two passes |
+| `npm run test:knowledge` | The Phase 5 shared-knowledge gate condition (also in `verify`) |
 | `npm run phase5:verify:run` | Test Engineer verification pass (live, debits the ledger) |
 | `npm run phase5:surface:run` | Product Designer surface contract (live, debits the ledger) |
 | `npm run roles:promotion:status` | Which roles are promoted, derived from `roles/authored` |

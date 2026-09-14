@@ -116,7 +116,16 @@ approval.
   - Sixteen of twenty states were returned `cannot-tell-without-seeing`. C-19 still needs the owner.
   - The NEEDS WORK verdict stands as the record of the build on the day it was annotated.
 
-- [ ] Task 8: Shared-knowledge contribution, retrieval and conflict-resolution scenario passing.
+- [x] Task 8: Shared-knowledge contribution, retrieval and conflict-resolution scenario passing.
+      `docs/evidence/phase-5/task-8-outcome.md`
+  - Built from a disagreement that actually happened: the two Test Engineer passes reached different
+    conclusions about C-06, C-12, C-14 and C-20, and the script discovers which rather than being
+    told. Sources are digested, so a scenario built from superseded inputs fails.
+  - `packages/domain/src/knowledge-retrieval.ts` is new — the contribution half of MDD §15 existed;
+    retrieval and conflict surfacing did not. Seven mutants, all killed.
+  - **Promotion alone never settles a dispute**, a synthesis never competes as a claim, and stale is
+    returned labelled rather than withheld. Only rejected and superseded are withheld, both reported.
+  - `npm run test:knowledge` is part of `npm run verify`. No agent turns spent; ledger stays 4 of 60.
 
 - [ ] Task 9: Release Reviewer verdict — NEEDS WORK or eligible-for-owner-approval.
   - Acceptance: **the reviewer is not the implementer**, and a green suite alone is not a verdict.

@@ -101,4 +101,23 @@ describe("knowledge truth", () => {
     expect(state.records.knowledge_private?.authorized).toBe(false);
     expect(selectCurrentKnowledge(state)).toEqual([]);
   });
+
+  it("refuses a citation list that is only partly readable", () => {
+    // Half a citation list is not half a synthesis. Keeping the readable entries would leave a
+    // record claiming to summarise inputs it never named, which is the one thing a citation exists
+    // to prevent.
+    const state = reduceKnowledgeTruth([
+      event("event_01", "knowledge.recorded", {
+        knowledgeId: "knowledge_partial",
+        subject: "C-08",
+        statement: "A synthesis with an unreadable citation.",
+        provenance: { sourceId: "artifact_contract", sourceVersion: 1 },
+        requestedStatus: "provisional",
+        authorized: true,
+        synthesisOf: ["knowledge_real", 42],
+      }),
+    ]);
+
+    expect(state.records.knowledge_partial?.synthesisOf).toBeUndefined();
+  });
 });
