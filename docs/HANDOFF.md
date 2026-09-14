@@ -22,10 +22,14 @@ gaps are closed. Ready means assessable. It does not mean met.
 
 ## The immediate next action
 
-**Task 10 is owner-run and is the only authorized step left in Phase 5.** Do not perform it. The
-Release Reviewer's verdict is `NEEDS WORK` — `docs/evidence/phase-5/task-9-outcome.md` — so what the
-owner is being asked to accept is a phase that its own independent reviewer says is not ready, with
-eleven of twenty-one criteria satisfied.
+**Task 10 is owner-run and is the only authorized step left in Phase 5.** Do not perform it.
+
+The standing verdict is `NEEDS WORK` at eleven of twenty-one — `docs/evidence/phase-5/task-9-outcome.md`
+— but **that verdict is now stale in the owner's favour**. It predates the seven remediation items,
+the provenance ledger, the C-17 waiver and the C-19 acceptance. Every one of the ten things the
+reviewer said would change its verdict has been closed or ruled on. A refreshed release review, run
+against the completed evidence versions, is the honest next artifact and would cost one agent turn.
+It has not been authorized.
 
 Nothing else is authorized. The ten items the reviewer says would change its verdict are ordinary
 work nobody has ruled on, except these three, which cannot be closed by an agent at all:
@@ -37,8 +41,12 @@ work nobody has ruled on, except these three, which cannot be closed by an agent
 - **C-18 is unblocked, 2026-09-14.** Gap 3 closed: the owner ruled a sidecar append-only ledger and
   the schema is `docs/evidence/phase-5/provenance/schema.json`. Whether the ledger's forty-three
   `unknown` producers satisfy "every evidence artifact" is a release-review judgement, not settled.
-- **C-19 still needs the owner to look.** `npm run phase5:contact-sheet` builds the forty plates
-  paired with their declared treatments; the look itself and the ruling are owner work.
+- **C-19 is closed, 2026-09-14.** The owner looked at the forty plates on the contact sheet and
+  accepted fidelity for the whole inventory, no exceptions:
+  `docs/evidence/phase-5/c-19-owner-acceptance.json`. The human-visual-acceptance half of the
+  criterion exists for the first time. Per-state marks live in the viewer's browser and were not
+  supplied, so none are claimed. Whether C-19 is *satisfied* against the whole of its assertion is
+  still a release-review judgement.
 
 **Read DF-015 before writing any brief.** Four briefs in this phase described a world that did not
 exist, cost three agent turns, and nearly cost the release verdict: the first release pass reported

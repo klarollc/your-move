@@ -72,7 +72,8 @@
     "phase5:determinism": "tsx scripts/phase5-determinism.ts",
     "phase5:contact-sheet": "tsx scripts/phase5-contact-sheet.ts",
     "phase5:provenance": "tsx scripts/build-phase5-provenance.ts",
-    "phase5:provenance:write": "tsx scripts/build-phase5-provenance.ts --write"
+    "phase5:provenance:write": "tsx scripts/build-phase5-provenance.ts --write",
+    "phase5:c19:record": "tsx scripts/record-phase5-c19-acceptance.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

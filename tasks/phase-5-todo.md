@@ -49,8 +49,10 @@ approval.
     "must never use the reserved amber accent". The required states are derived from the Task 2
     criteria rather than hand-listed, so the checklist cannot drift from the contract it checks.
   - **Closes charter gap 7**, which unblocks C-19: 19 criteria ready, 2 still blocked on gaps 3 and 8.
-  - [ ] **Owner acceptance of fidelity is still outstanding.** The record is Candidate; only the owner
-        accepts art direction, and C-19 requires current-build captures that do not exist yet.
+  - [x] **Owner accepted fidelity 2026-09-14** after looking at the forty plates on the contact
+        sheet: `docs/evidence/phase-5/c-19-owner-acceptance.json`. Whole-inventory acceptance, no
+        exceptions. Per-state marks live in the viewer's browser and were not supplied, so none are
+        claimed. Every plate was verified against its manifest digest before the ruling was filed.
 
 - [x] Task 4: RED evidence recorded **2026-09-14**; `docs/evidence/phase-5/red-evidence.json`.
   - Acceptance: each test fails for its stated reason first. A test that never failed for the right
@@ -194,6 +196,14 @@ approval.
   - Two findings while building it: `amendments.json` carries a `supersedes` field that does not
     mean supersession, and the P-3 guard caught its own schema citing a superseded pass on the
     first run. The fix was to name the field for what it holds, not to widen the exemption.
+
+- [x] **C-19 closed 2026-09-14.** The human-visual-acceptance half exists for the first time.
+      `docs/evidence/phase-5/decision-record-2026-09-14-c-19-fidelity-acceptance.md`
+  - Visual QA pass 2 marked all twenty states `partial`, deferring every visual judgement to a human.
+    This answers that deferral; it does not replace the rendered or static evidence beside it.
+  - The recorder refuses to file a ruling about a plate that has drifted from the manifest, and the
+    refusal was exercised before the record was written.
+  - Whether C-19 is _satisfied_ against the whole of its assertion stays a release-review judgement.
 
 - [ ] Task 10: **Owner acceptance. Owner-run.** Accept the fixture outcome or record bounded
       revisions. Atomically creates the D-24 review that Phase 8 closes.

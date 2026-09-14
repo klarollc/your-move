@@ -1,0 +1,186 @@
+{
+  "schema": "cuckcode.phase5-c19-owner-look.v1",
+  "criterion": "C-19",
+  "statement": "The rendered component matches the art-direction contract for every state in the inventory.",
+  "evidenceClass": "human-visual-acceptance",
+  "evidenceClassRule": "MDD §18. This is the only class that approves art direction. The fidelity check, the determinism record and the forty captures are rendered and static evidence; none of them substitutes for this record, and this record does not substitute for any of them.",
+  "lookedAt": {
+    "surface": "the contact sheet, npm run phase5:contact-sheet",
+    "artifacts": "docs/evidence/phase-5/browser, twenty states at both D-07 viewports",
+    "capturedAt": "2026-09-14T07:35:17.263Z",
+    "plates": 40
+  },
+  "ruling": "Accepted. The owner looked at the forty plates on the contact sheet, at both approved viewports, and accepts the rendered component as matching the art-direction contract for every state in the inventory. No exceptions recorded.",
+  "ruledBy": "owner",
+  "ruledOn": "2026-09-14",
+  "decisionRecord": "docs/evidence/phase-5/decision-record-2026-09-14-c-19-fidelity-acceptance.md",
+  "perStateMarks": "not supplied. The contact sheet keeps marks in the viewer's own browser and they never reach the repository, so no per-state judgement is claimed here. The ruling is a whole-inventory acceptance with no exceptions recorded.",
+  "whatThisDoesNotEstablish": [
+    "Nothing about behaviour. Every behavioural claim about these states rests on the component and core tests, which this record neither strengthens nor replaces.",
+    "Nothing about what the component sounds like. C-17 was waived on the same day; no human listener has heard it.",
+    "Nothing about future builds. The ruling is pinned to the plate digests below and says nothing about a capture taken after them."
+  ],
+  "visualQaContext": "Visual QA pass 2 marked all twenty states `partial`, stating for each one that the visual treatment could not be judged from an accessibility tree. That deferral is what this record answers.",
+  "states": {
+    "pending": {
+      "fidelity": "accepted-without-a-per-state-mark",
+      "note": "",
+      "plates": {
+        "chromium-1440": "a16546d9fac20ccc",
+        "chromium-1280": "8a56e1bf565d3edc"
+      }
+    },
+    "acknowledged": {
+      "fidelity": "accepted-without-a-per-state-mark",
+      "note": "",
+      "plates": {
+        "chromium-1440": "a395bb62ed8cc3f6",
+        "chromium-1280": "29f1da2b70e554b9"
+      }
+    },
+    "deferred": {
+      "fidelity": "accepted-without-a-per-state-mark",
+      "note": "",
+      "plates": {
+        "chromium-1440": "c1dcbf6956222c67",
+        "chromium-1280": "fbb21b8ac17fe79a"
+      }
+    },
+    "overdue": {
+      "fidelity": "accepted-without-a-per-state-mark",
+      "note": "",
+      "plates": {
+        "chromium-1440": "c1889485f06d1b01",
+        "chromium-1280": "012955494ae6ea98"
+      }
+    },
+    "saving": {
+      "fidelity": "accepted-without-a-per-state-mark",
+      "note": "",
+      "plates": {
+        "chromium-1440": "0fe25b3e88f71961",
+        "chromium-1280": "fbfcbbe811da061b"
+      }
+    },
+    "save-failed": {
+      "fidelity": "accepted-without-a-per-state-mark",
+      "note": "",
+      "plates": {
+        "chromium-1440": "4ef6ad35aac62700",
+        "chromium-1280": "98e5a90b29494049"
+      }
+    },
+    "disabled": {
+      "fidelity": "accepted-without-a-per-state-mark",
+      "note": "",
+      "plates": {
+        "chromium-1440": "8b75c2f264c1930d",
+        "chromium-1280": "19c48d950891fbd9"
+      }
+    },
+    "severity-routine": {
+      "fidelity": "accepted-without-a-per-state-mark",
+      "note": "",
+      "plates": {
+        "chromium-1440": "9557ff155bf252db",
+        "chromium-1280": "d1e0ef0c038fffe4"
+      }
+    },
+    "severity-significant": {
+      "fidelity": "accepted-without-a-per-state-mark",
+      "note": "",
+      "plates": {
+        "chromium-1440": "43e81ba674bb7b34",
+        "chromium-1280": "571b193ffae6f2c5"
+      }
+    },
+    "severity-critical": {
+      "fidelity": "accepted-without-a-per-state-mark",
+      "note": "",
+      "plates": {
+        "chromium-1440": "e8226aa79d44f564",
+        "chromium-1280": "aeb140a1f5d802e8"
+      }
+    },
+    "severity-unknown": {
+      "fidelity": "accepted-without-a-per-state-mark",
+      "note": "",
+      "plates": {
+        "chromium-1440": "aa987e5b39f9f3a8",
+        "chromium-1280": "a43d720ced7d61ae"
+      }
+    },
+    "date-malformed": {
+      "fidelity": "accepted-without-a-per-state-mark",
+      "note": "",
+      "plates": {
+        "chromium-1440": "e118cd96a3fbd9a1",
+        "chromium-1280": "e6a99007763a72cb"
+      }
+    },
+    "link-resolved": {
+      "fidelity": "accepted-without-a-per-state-mark",
+      "note": "",
+      "plates": {
+        "chromium-1440": "f26b70a12059e212",
+        "chromium-1280": "f2d5445c2f7edef3"
+      }
+    },
+    "link-missing": {
+      "fidelity": "accepted-without-a-per-state-mark",
+      "note": "",
+      "plates": {
+        "chromium-1440": "9723e59875af8167",
+        "chromium-1280": "3c903d7fd62bf751"
+      }
+    },
+    "link-invalid": {
+      "fidelity": "accepted-without-a-per-state-mark",
+      "note": "",
+      "plates": {
+        "chromium-1440": "bdb9a15cfc9569ed",
+        "chromium-1280": "7ee9674161f58d9f"
+      }
+    },
+    "link-unavailable": {
+      "fidelity": "accepted-without-a-per-state-mark",
+      "note": "",
+      "plates": {
+        "chromium-1440": "b4fccaa96972b603",
+        "chromium-1280": "3f673dd789c5bdb9"
+      }
+    },
+    "validation-reason-empty": {
+      "fidelity": "accepted-without-a-per-state-mark",
+      "note": "",
+      "plates": {
+        "chromium-1440": "be9fa976e8f9bee2",
+        "chromium-1280": "9cad553f199baf0c"
+      }
+    },
+    "validation-reason-too-long": {
+      "fidelity": "accepted-without-a-per-state-mark",
+      "note": "",
+      "plates": {
+        "chromium-1440": "2b2d6fcd816ea7f4",
+        "chromium-1280": "12ddffd52c7d658f"
+      }
+    },
+    "validation-date-invalid": {
+      "fidelity": "accepted-without-a-per-state-mark",
+      "note": "",
+      "plates": {
+        "chromium-1440": "91fb60e359c6ff0a",
+        "chromium-1280": "7a29b0df4b71c442"
+      }
+    },
+    "undo-available": {
+      "fidelity": "accepted-without-a-per-state-mark",
+      "note": "",
+      "plates": {
+        "chromium-1440": "917522556bc7f3dc",
+        "chromium-1280": "9c167955eebd9463"
+      }
+    }
+  }
+}

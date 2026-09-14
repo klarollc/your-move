@@ -109,6 +109,12 @@ const PRODUCERS: Array<{
     authorizedBy: "phase-5/decision-record-2026-09-14-c-18-provenance.md",
   },
   {
+    prefix: "phase-5/c-19-owner-acceptance.json",
+    kind: "owner",
+    producedBy: "owner fidelity ruling, recorded by scripts/record-phase5-c19-acceptance.ts",
+    authorizedBy: "phase-5/decision-record-2026-09-14-c-19-fidelity-acceptance.md",
+  },
+  {
     prefix: "phase-5/acceptance-contract-waivers.json",
     kind: "owner",
     producedBy: "owner waiver, recorded beside the frozen contract",
