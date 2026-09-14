@@ -1,6 +1,6 @@
 # Handoff — state, next action, and what would otherwise be relearned expensively
 
-Written 2026-09-14 against `9c07691`. Read `AGENTS.md` first for authority; this document is the
+Written 2026-09-14, last updated after the Task 6 second verification pass. Read `AGENTS.md` first for authority; this document is the
 live state, the next action, and the things a fresh session pays for twice if nobody wrote them down.
 
 ---
@@ -12,35 +12,37 @@ live state, the next action, and the things a fresh session pays for twice if no
 | 0–3 | Accepted 2026-08-13 |
 | 4 | **Complete.** Bounded live D-25 round ran the full thirteen turns; evidence packet delivered. Owner gate open. |
 | 6 | **Complete.** `reconciliation-b-clarity` is the **Active** visual system, promoted by owner execution. |
-| 5 | **In progress.** Tasks 1–4 and 6 done; Task 5 under-delivered and being completed now. |
+| 5 | **In progress.** Tasks 1–6 done. Task 5's component landed in `37c0dca`; Task 6 has been run twice. |
 | 7, 8 | **Unauthorized.** Phase 7 needs its own specification, plan and owner approval. |
 
-Phase 5 turn ledger: **2 of 60**. Acceptance criteria: **20 ready, 1 blocked** (C-18, on gap 3).
+Phase 5 turn ledger: **3 of 60**. Acceptance criteria: **20 ready, 1 blocked** (C-18, on gap 3).
 
 ---
 
 ## The immediate next action
 
-**Complete Task 5.** It was marked done when only the pure core existed; the Test Engineer's Task 6
-pass is what made that visible. The owner agreed on 2026-09-14 to build the component as a Task 5
-completion. Three steps, RED first for each:
+**Task 7 — browser evidence.** Everything the second verification pass still calls uncovered is
+rendered-class or human-class, and none of it can be produced by another unit test.
 
-1. **Close the core gaps.** Four implemented branches have no test at all — `stale-event`, the defer
-   success path, `deriveStatus`'s deferred → overdue branch, and `out-of-order-event` beyond a single
-   reference. Plus the Test Engineer's three: a successful deferral (C-04), pre-event state
-   preservation across all four rejection classes (C-06), and a static scan proving ambient `Date`,
-   `Math.random` and timers are *unreachable* (C-08 — the current test only proves two runs agree,
-   which is a weaker claim than the criterion makes).
-2. **Build the component.** React, against the Product Designer's twenty-state inventory in
-   `docs/evidence/phase-5/surface-contract/surface-contract.json`. Component tests are what C-01,
-   C-02, C-03, C-07 and C-10 actually need.
-3. **Browser evidence** via the isolation procedure the Test Engineer defined in Task 6, which is
-   what unblocks the rendered criteria.
+The second pass (`docs/evidence/phase-5/verification/pass-2.json`) returned **three full, thirteen
+partial, five none**, with **one overclaim** — C-14 claimed fully covered on behavioral tests alone
+when the criterion also requires rendered evidence. It did not come back clean, which was the stated
+expectation. It also *downgraded* C-12 from full to partial, correctly: the only mutual-exclusion
+test covers acknowledge-then-defer and none of the other three already-actioned transitions.
 
-**Expect the next Test Engineer pass to still find gaps.** If a re-run comes back clean on the first
-attempt, treat that as suspicious rather than as success.
+Ordered by what unblocks what:
 
----
+1. **The three cheap behavioral gaps**, which are not Task 7 and can be closed immediately: C-12's
+   three untested transitions, deferral with an absent and with a malformed review date, and undo
+   focus restoration from both actioned states.
+2. **Task 7 capture** via the isolation procedure the Test Engineer defined, which is what moves
+   C-01, C-07, C-09, C-10, C-14, C-19 and C-20 off partial. `docs/evidence/phase-5/browser` does not
+   exist; the cross-check reads that path to decide whether rendered evidence exists at all.
+3. **C-17** needs the screen-reader walkthrough Decision 5-D already committed to. **C-18** needs
+   gap 3. **C-21** needs a promoted non-implementer to issue the release verdict — Task 9.
+
+**A clean pass is still the suspicious outcome.** Two passes have now disagreed with each other on
+three criteria, in both directions. That is the assessment working.
 
 ## Open debts, none of them closed
 
@@ -95,6 +97,13 @@ at least eight more times in Phase 6 alone. Its variants, each of which cost rea
 - **A mutation that fails to apply is indistinguishable from a guard that does not work.** Verify the
   mutation landed before believing a survivor. This happened once with a prettier-wrapped string.
 
+**And the variant that had been running the longest (DF-013):** `npm run verify` — the eighteen-stage
+gate that claims the whole project passes — had never completed since Phase 1. Playwright's default
+`testMatch` collected a Vitest file out of `tests/` and died at collection, so no e2e, accessibility
+or visual test ran under it. Every session reported suite health from the individual stages instead,
+and every one of those numbers was true and none of them was the gate. Fixed by naming `testMatch`.
+**Report suite health from `verify`, and name the command beside any count.**
+
 **And the newest variant, from Task 5:** every guard in this repository checks that a claim matches
 reality *now*. None notices when a historical record is replaced by a current one. Re-running the RED
 capture after GREEN silently overwrote "seventeen failed" with "seventeen passed" — true at the time
@@ -133,6 +142,7 @@ error and there is no inline env-var prefix — write `$env:X='1'; cmd` and clea
 | --- | --- |
 | `npm run kickoff:preflight` | Task 17 preconditions, no provider calls |
 | `npm run phase5:contract:build` | Rebuild the acceptance contract and traceability matrix |
+| `npm run verify` | The whole gate. 509 unit/component/integration + 46 e2e + 18 a11y + 22 visual |
 | `npm run phase5:verify:run` | Test Engineer verification pass (live, debits the ledger) |
 | `npm run phase5:surface:run` | Product Designer surface contract (live, debits the ledger) |
 | `npm run roles:promotion:status` | Which roles are promoted, derived from `roles/authored` |
@@ -145,6 +155,16 @@ where applicable. **A budget nobody debits is discovered rather than set.**
 Git: work happens on `hermes/phase-4-task-15-evidence`; fast-forward `main` at the **end** of a
 session, not the start, or it silently falls behind. Remote is `klarollc/CuckCode`, private, over
 HTTPS — SSH has no key registered and `ssh -T git@github.com` fails.
+
+Each verification pass writes its own file — `verification.json` is pass 1, then `pass-N.json`. The
+runner used to overwrite one path, which would have replaced the Task 6 assessment with a later one
+and erased the record that the component was ever unverified. The brief and the overclaim
+cross-check both read the live test inventory through `scripts/phase5-test-inventory.ts` rather than
+from `red-evidence.json`, which stopped being the inventory the moment a test was added.
+
+Playwright and Vitest share `tests/`. `.spec.ts` is Playwright, `.test.ts` is Vitest, and
+`playwright.config.ts` now enforces it. Port 4173 is the preview server; a leftover one from an
+earlier session will fail `test:e2e` with "already used".
 
 Golden-state capture digests cover the **rendered SVG string**, not the file, which gains an XML
 declaration and `xmlns` on write. Hashing a capture directly will not match; a guard reverses the

@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -8,6 +8,7 @@ import { parseApprovedRoleExercisePlan } from "@cuckcode/runtime-codex";
 
 import { buildKickoffPreflightInput } from "./phase4-kickoff-preflight.js";
 import { openKickoffSession, parseTurnJson } from "./phase4-kickoff-session.js";
+import { criteriaWithATest, readTestInventory } from "./phase5-test-inventory.js";
 import { buildVerificationBrief } from "./phase5-verification-brief.js";
 
 /**
@@ -25,6 +26,24 @@ const PACKET_PATH = resolve(ROOT, "docs/evidence/phase-4/live-kickoff/task-16-pr
 const ROLE_ID = "test-engineer";
 const MAX_TURNS = 3;
 
+/**
+ * Each pass is written to its own file and no pass ever overwrites another.
+ *
+ * This runner used to write `verification.json` unconditionally. A second pass would have replaced
+ * the Task 6 assessment — two full, thirteen partial, six none — with a later one, and the record
+ * that the component was once unverified would simply be gone. That is the same defect that
+ * destroyed the RED capture: a guard that checks the present against the present, and cannot see a
+ * history being overwritten. `verification.json` is pass 1 and stays where it is.
+ */
+const nextPassPath = async (): Promise<{ path: string; pass: number; previous: string[] }> => {
+  const existing = await readdir(OUT).catch(() => [] as string[]);
+  const previous = existing.filter((name) => name.endsWith(".json")).sort();
+  const pass = previous.length + 1;
+  const path = resolve(OUT, `pass-${pass}.json`);
+  if (existsSync(path)) throw new Error(`VERIFICATION_PASS_PATH_OCCUPIED:${path}`);
+  return { path, pass, previous };
+};
+
 if (process.env.CUCKCODE_LIVE_PHASE5 !== "1") {
   throw new Error("LIVE_PHASE5_EXPLICIT_OPT_IN_REQUIRED");
 }
@@ -40,12 +59,14 @@ if (ledger.spent + MAX_TURNS > ledger.budget) {
 const contract = JSON.parse(
   await readFile(resolve(ROOT, "docs/evidence/phase-5/acceptance-contract.json"), "utf8"),
 ) as { criteria: Array<{ id: string; evidenceClasses: string[]; status: string }> };
-const red = JSON.parse(
-  await readFile(resolve(ROOT, "docs/evidence/phase-5/red-evidence.json"), "utf8"),
-) as { observations: Array<{ criterion: string | null }> };
-
 const criterionIds = contract.criteria.map((criterion) => criterion.id);
-const hasUnitTest = new Set(red.observations.map((entry) => entry.criterion).filter(Boolean));
+/**
+ * Which criteria have a test named for them, read from the test files rather than from the RED
+ * record. The RED record lists the seventeen tests that existed at RED and nothing since; a guard
+ * built on it would report an honest citation of a component test as an overclaim.
+ */
+const inventory = await readTestInventory(ROOT);
+const hasUnitTest = criteriaWithATest(inventory);
 /** Nothing in the repository renders this component yet, so no rendered evidence can exist. */
 const renderedArtifactsExist = existsSync(resolve(OUT, "..", "browser"));
 
@@ -189,9 +210,12 @@ if (!opened.ok) {
   await session.close();
   await rm(workspace, { recursive: true, force: true });
 
+  const destination = await nextPassPath();
+
   ledger.spent += turnsSpent;
   ledger.entries.push({
     task: "phase-5-task-6-verification",
+    pass: destination.pass,
     roleId: ROLE_ID,
     turns: turnsSpent,
     accepted: accepted !== null,
@@ -200,10 +224,12 @@ if (!opened.ok) {
   await writeFile(LEDGER, `${JSON.stringify(ledger, null, 2)}\n`, "utf8");
 
   await writeFile(
-    resolve(OUT, "verification.json"),
+    destination.path,
     `${JSON.stringify(
       {
         schema: "cuckcode.phase5-verification.v1",
+        pass: destination.pass,
+        previousPasses: destination.previous,
         status:
           accepted === null
             ? "NOT ACCEPTED. The Test Engineer did not produce a complete assessment within its allowance."
@@ -228,6 +254,8 @@ if (!opened.ok) {
   process.stdout.write(
     `${JSON.stringify({
       ok: accepted !== null,
+      pass: destination.pass,
+      wrote: destination.path,
       turnsSpent,
       budget: `${ledger.spent}/${ledger.budget}`,
       overclaims: overclaims.length,

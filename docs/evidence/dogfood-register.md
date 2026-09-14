@@ -540,3 +540,61 @@ The drift guard was mutation-tested and killed four tests.
 artifact — *what still reads the thing we just superseded?* Q1 marked the imported roles superseded
 and nothing swept the call sites. The same sweep, run against documents rather than code, is what
 the 2026-09-13 evaluation had to do by hand for five stale boundary lines.
+
+---
+
+### DF-013 — The top-level gate had never run to completion
+
+Observed 2026-09-14, while re-running the Test Engineer's verification pass.
+
+`npm run verify` is this repository's whole-project gate: eighteen stages, ending in the Playwright
+e2e, accessibility and visual suites. It fails at stage sixteen, and has failed there since
+`35596d8`, which is a Phase 1 commit.
+
+```
+> playwright test --grep @e2e --project chromium-1440 --project chromium-1280
+TypeError: Cannot read properties of undefined (reading 'config')
+   at roles\authored-roles.integration.test.ts:38
+```
+
+## What actually happened
+
+`playwright.config.ts` sets `testDir: "./tests"` and never sets `testMatch`. Playwright's default
+pattern matches `*.test.ts` as well as `*.spec.ts`, so it collected
+`tests/roles/authored-roles.integration.test.ts` — a **Vitest** file — and died trying to load
+`describe` from the wrong runner. Collection is fatal, so no e2e, accessibility or visual test ran.
+
+That file arrived in `35596d8`, the commit that authored the six role briefs. Every Playwright suite
+in this repository has been uncollectable since.
+
+## Why nobody noticed
+
+Because the stages were always run individually. `test:unit`, `test:component`, `test:e2e`,
+`lint`, `typecheck` and the Phase 4 capture suites were each invoked directly, each passed, and the
+composition of them was never invoked. Four hundred and eighty-nine passing tests were reported to
+the owner across several sessions on that basis, and the number was true — it was simply never the
+number `verify` produces, because `verify` produced no number at all.
+
+The e2e suites were not silently broken: run on their own they pass, 46 + 18 + 22 after the fix. The
+broken thing was the only command that claims to check everything.
+
+## Why this is the same shape again
+
+The register's standing sentence is *a guard is exact inside a boundary nobody examined*. Here the
+guard is exact and the boundary is **the gate itself**. Nothing in this project ran the thing that
+runs the things. A composite command is a claim — "all of this passes" — and an unexecuted claim
+looks identical to a satisfied one in every artifact that cites it.
+
+It is also the DF-012 direction: a gate that reported nothing at all while the project reported
+itself green. DF-012 took hours to surface because a status command misreported a gate. This took
+months because nothing asked the gate anything.
+
+## Product response
+
+`testMatch: "**/*.spec.ts"` added to `playwright.config.ts`, which separates the two runners by the
+naming convention the repository already follows. `npm run verify` now completes: 509 Vitest tests
+passing with 3 skipped, then 46 e2e, 18 accessibility and 22 visual.
+
+**Proposed and not authorized:** `verify` should be the only command a session is allowed to cite
+when reporting suite health, and any report of a test count should name the command that produced
+it. A count with no command attached is what let this run for four phases.

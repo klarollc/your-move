@@ -2,6 +2,13 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests",
+  /**
+   * Playwright's default testMatch is `*.test.ts` as well as `*.spec.ts`, so it collected the Vitest
+   * files under `tests/` and died loading `describe` from the wrong runner. Every Playwright test
+   * here is a `.spec.ts`; every Vitest one is a `.test.ts`. Naming the pattern is what keeps the two
+   * runners out of each other's directories.
+   */
+  testMatch: "**/*.spec.ts",
   outputDir: "./test-results",
   reporter: [["list"], ["html", { open: "never" }]],
   use: {

@@ -1,6 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
+import { readTestInventory } from "./phase5-test-inventory.js";
+
 const ROOT = resolve(process.cwd());
 
 /**
@@ -24,9 +26,11 @@ export async function buildVerificationBrief(): Promise<string> {
     }>;
   };
 
-  const red = JSON.parse(
-    await readFile(resolve(ROOT, "docs/evidence/phase-5/red-evidence.json"), "utf8"),
-  ) as { observations: Array<{ criterion: string | null; title: string }> };
+  // Read from the test files themselves, through the same reader the overclaim cross-check uses.
+  const inventory = (await readTestInventory(ROOT)).flatMap((entry) => [
+    `  ${entry.file} — ${entry.titles.length} test(s)`,
+    ...entry.titles.map((title) => `    ${title}`),
+  ]);
 
   const surface = await readFile(
     resolve(ROOT, "docs/evidence/phase-5/surface-contract/surface-contract.json"),
@@ -47,7 +51,7 @@ export async function buildVerificationBrief(): Promise<string> {
     )
     .join("\n");
 
-  const tests = red.observations.map((entry) => `  ${entry.title}`).join("\n");
+  const tests = inventory.join("\n");
 
   return `THE ACCEPTANCE CONTRACT — twenty-one criteria
 
@@ -65,8 +69,10 @@ THE TESTS THAT EXIST — every test currently in the repository for this compone
 
 ${tests}
 
-That is the complete list. There are no other tests for this component: no component tests, no
-browser tests, no visual captures, no accessibility runs.
+That is the complete automated inventory, read from the test files themselves. Beyond it there are
+no browser or end-to-end runs, no visual captures, no axe or accessibility runs, and no
+screen-reader record. Whether the tests listed actually establish their criteria is your judgement,
+not something this brief asserts.
 
 YOUR TASK
 

@@ -1,6 +1,6 @@
 {
   "budget": 60,
-  "spent": 2,
+  "spent": 3,
   "entries": [
     {
       "task": "phase-5-task-3-surface-contract",
@@ -15,6 +15,14 @@
       "turns": 1,
       "accepted": true,
       "at": "2026-09-14T05:00:02.812Z"
+    },
+    {
+      "task": "phase-5-task-6-verification",
+      "pass": 2,
+      "roleId": "test-engineer",
+      "turns": 1,
+      "accepted": true,
+      "at": "2026-09-14T05:49:51.190Z"
     }
   ]
 }
