@@ -65,6 +65,10 @@ export async function runRoleExercise(input: {
   bindingId: string;
   roleId: string;
   expected: BindingExpectation;
+  /** Defaults to the standard one-turn exercise. A different bounded task may be posed here. */
+  taskPrompt?: string;
+  /** Text sent as the turn input. Defaults to the exercise's own opening line. */
+  turnInput?: string;
 }): Promise<RoleExerciseResult> {
   if (input.expected.expectedReasoningEffort === null) {
     return {
@@ -87,7 +91,7 @@ export async function runRoleExercise(input: {
 
     const threadStart = await input.supervisor.request(
       "thread/start",
-      exerciseThreadStartParams(input.cwd, input.expected),
+      exerciseThreadStartParams(input.cwd, input.expected, input.taskPrompt),
       30_000,
     );
     if (!hasExactInstructionSource(threadStart, input.expectedInstructionSource)) {
@@ -133,7 +137,7 @@ export async function runRoleExercise(input: {
       "turn/start",
       {
         threadId,
-        input: [{ type: "text", text: "Begin the bounded role exercise." }],
+        input: [{ type: "text", text: input.turnInput ?? "Begin the bounded role exercise." }],
       },
       30_000,
     );
@@ -170,6 +174,7 @@ export async function runRoleExercise(input: {
 export function exerciseThreadStartParams(
   cwd: string,
   expected: BindingExpectation,
+  taskPrompt: string = STANDARD_ROLE_EXERCISE_PROMPT,
 ): Record<string, unknown> {
   return {
     cwd,
@@ -179,9 +184,11 @@ export function exerciseThreadStartParams(
     sandbox: "read-only",
     approvalPolicy: "never",
     approvalsReviewer: "user",
-    // The role's identity comes only from its controlled home; this common task contract is
-    // deliberately attached at thread/start, as the approved channel split requires.
-    baseInstructions: STANDARD_ROLE_EXERCISE_PROMPT,
+    // The role's identity comes only from its controlled home; the task is attached at
+    // thread/start, as the approved channel split requires. Parameterised so a second bounded
+    // caller can pose a different task without a second copy of the posture above — the sandbox,
+    // approval policy and effort are the parts that must never vary by caller.
+    baseInstructions: taskPrompt,
     config: { model_reasoning_effort: expected.expectedReasoningEffort },
   };
 }

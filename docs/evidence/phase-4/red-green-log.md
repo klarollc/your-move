@@ -1006,3 +1006,44 @@ waived. The frozen fixture digest is unchanged, because the frame is state and t
 Verified in a browser at both approved viewports: 13 board sections, the Task 6 table rendering all
 twenty rows, no horizontal overflow at 1280×800. No claim is made about any viewport outside the
 approved D-07 matrix.
+
+## Phase 6 Task 7 — scored review, run by the two promoted roles
+
+Date: 2026-09-13. Owner authorized running the agents rather than producing the reviews by hand.
+
+**Two live provider turns.** `product-designer` and `visual-qa-reviewer`, one bounded text-only turn
+each: `gpt-5.6-luna` at `medium`, read-only sandbox, `approvalPolicy: never`, no tools, no external
+effect, each isolated in a controlled Codex home carrying only its composed brief. Independent —
+neither saw the other's output, and the runs did not share a thread. Both received the identical
+packet, digest `d52648c7811f13a4…`.
+
+- RED: two tests against `exerciseThreadStartParams`, which hard-coded the exercise prompt and had
+  no way to pose a different bounded task. Both failed.
+- GREEN: the task prompt and turn input are parameters, defaulting to the exercise's own. The
+  sandbox, approval policy and effort remain fixed, because those are the parts that must never vary
+  by caller.
+
+**Both reviewers refused most of the rubric, which is the result.** Each returned 9 scores and 33
+refusals across 3 candidates × 14 criteria. Every perceptual criterion — clarity, glance
+readability, calmness, warmth, material coherence, reciprocal legibility, collaboration clarity —
+was marked NOT-ASSESSABLE by both, in all three candidates, because a text-only turn cannot open an
+image and they were told so. A review that had scored "warmth without toy-like character" from a
+palette listing would have been the green run that proves nothing, produced by the machinery built
+to prevent it.
+
+**Four disagreements, recorded and not averaged** (`scored-review/disagreement-register.md`). The
+sharpest: on inclusive agent expression the Product Designer scored 5 from the avatar specification
+while the Visual QA Reviewer refused, holding that a specification is not rendered evidence. On this
+project's own rule the reviewer is right, and the designer's 5 reads as "the contract is sound", not
+"the avatars work". On feasibility the positions reverse — the designer refuses, the reviewer scores
+and marks Candidate C down for its plinth and layered shadows. That is the **only** criterion on
+which the three candidates separate at all.
+
+**The honest conclusion: Task 7 cannot complete its purpose in a text-only turn.** The review is
+real, independent and well-founded on the data it had, and it gives the owner no basis for choosing
+between the candidates on how they look. Reporting it as though it narrowed the field would
+misrepresent it.
+
+**Mutation evidence.** Making both transcript digests identical fails the independence check;
+dropping one reviewer fails two checks. Coverage is counted from the review body only, so the header
+that explains the limit is not miscounted as a refusal.

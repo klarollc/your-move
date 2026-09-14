@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { BindingExpectation } from "./binding.js";
 import {
   STANDARD_ROLE_EXERCISE_PROMPT,
+  exerciseThreadStartParams,
   runRoleExercise,
   type ExerciseSupervisor,
 } from "./role-exercise.js";
@@ -158,5 +159,36 @@ describe("role exercise runner", () => {
     });
 
     expect(result).toMatchObject({ performed: false, code: "EXTERNAL_EFFECT_OBSERVED" });
+  });
+});
+
+describe("bounded turn task prompt", () => {
+  it("carries an explicit task prompt into baseInstructions", () => {
+    const params = exerciseThreadStartParams(
+      "C:/synthetic/workspace",
+      {
+        requestedModel: "gpt-5.6-luna",
+        expectedReasoningEffort: "medium",
+        expectedAuthMode: "chatgpt",
+        protocolVersion: "0.146.0",
+        promotedContentSha256: "authored-delivery-lead-v1",
+      },
+      "Score the three candidates against the rubric.",
+    );
+
+    expect(params.baseInstructions).toBe("Score the three candidates against the rubric.");
+  });
+
+  it("falls back to the standard exercise prompt when no task is given", () => {
+    // The exercise contract must not change shape because a second caller appeared.
+    const params = exerciseThreadStartParams("C:/synthetic/workspace", {
+      requestedModel: "gpt-5.6-luna",
+      expectedReasoningEffort: "medium",
+      expectedAuthMode: "chatgpt",
+      protocolVersion: "0.146.0",
+      promotedContentSha256: "authored-delivery-lead-v1",
+    });
+
+    expect(params.baseInstructions).toBe(STANDARD_ROLE_EXERCISE_PROMPT);
   });
 });

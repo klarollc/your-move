@@ -69,9 +69,16 @@ Read each entry's own status line. Nothing here inherits authorization from the 
     counting rendered text in both compositions, not asserted. Frozen digest unchanged.
     Evidence: `docs/evidence/phase-4/red-green-log.md`. Rebuild: `npm run phase6:a11y:build`.
 
-- [ ] Task 7: Independent scored review.
+- [x] Task 7: Independent scored review. **Complete 2026-09-13, run by the two promoted agents.**
   - Acceptance: fourteen rubric criteria scored 1–5 with written evidence, Product Designer and Visual QA Reviewer separately; disagreements recorded, never averaged.
   - Note: scores support discussion. They select nothing.
+  - Result: two live bounded text-only turns, independent, both bound to the approved model and
+    effort. Each returned 9 scores and 33 refusals across 3 candidates × 14 criteria. **Both refused
+    every perceptual criterion**, because a text-only turn cannot see the compositions and they were
+    told so. Four disagreements recorded in `scored-review/disagreement-register.md`, not averaged.
+    **Task 7 cannot complete its purpose in a text-only turn**: the review gives no basis for
+    choosing between candidates on how they look, and Task 8 rests entirely on the owner viewing
+    them. Evidence: `docs/evidence/phase-4/red-green-log.md`.
 
 - [ ] Task 8: **Owner selection gate. Owner-run.** Select A, B, or C; reject all; or name a coherent reconciliation with its retained traits and base candidate.
   - Nothing below begins until this is recorded.

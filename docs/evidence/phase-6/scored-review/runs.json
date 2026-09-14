@@ -1,0 +1,27 @@
+{
+  "schema": "cuckcode.phase6-scored-review.v1",
+  "status": "Task 7 runs recorded. Scores support discussion and select nothing; the owner selects at Task 8.",
+  "recordedAt": "2026-09-14",
+  "packetSha256": "d52648c7811f13a47728f3b08277422ba25ab9ad6416c9097044d273a5431093",
+  "independent": true,
+  "reviewers": [
+    {
+      "roleId": "product-designer",
+      "performed": true,
+      "evidencePath": "docs/evidence/phase-6/scored-review/2026-09-14T03-12-23-535Z-product-designer.md",
+      "transcriptSha256": "eb946db81aae508e59c2b4d37cdc6fa650e6775b4a6cd777215040b6826055d6",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "medium",
+      "bindingFingerprint": "e5f417603a321e99ddaf51dceb019b94db4915d337dd83a9d2441b6a15f489d0"
+    },
+    {
+      "roleId": "visual-qa-reviewer",
+      "performed": true,
+      "evidencePath": "docs/evidence/phase-6/scored-review/2026-09-14T03-13-22-016Z-visual-qa-reviewer.md",
+      "transcriptSha256": "92312943657399b0b4763cff2f08649ba20ab7063e504dcf2f6e5cd2b1d99a6d",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "medium",
+      "bindingFingerprint": "f7956f43f9de4769cc2f6d1a9329448903f7ae3c593b93478c96f7c9f31f3b1a"
+    }
+  ]
+}
