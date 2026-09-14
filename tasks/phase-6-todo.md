@@ -105,10 +105,21 @@ Read each entry's own status line. Nothing here inherits authorization from the 
     transition to the holding agent, so the first blocked fixture animated an agent beside stopped
     work. **Two states rendered identically** — the collaboration drew nothing. A Task 6 cue that
     would have required fake proximity was corrected.
-  - [ ] **Owner approval of each golden state is still outstanding.** All five carry
-        `ownerApproval: null` and a guard asserts it.
+  - [x] **Owner approved all five golden states 2026-09-13**, recorded in
+        `docs/evidence/phase-6/decision-record-2026-09-13-golden-states-approved.md`. The approval is
+        referenced, not written inline, and a guard refuses any approval whose record is not on disk.
 
-- [ ] Task 10: Promotion to Active and the Phase 6 evidence packet.
+- [x] Task 10: Promotion built and the Phase 6 evidence packet delivered. **2026-09-13.**
   - Acceptance: manifests promoted Candidate → Active, environments fixed, baselines reviewed.
+  - Result: `docs/evidence/phase-6/phase-6-evidence-packet.md` states what the phase proves, what it
+    does not, and the eight defects found and fixed. `scripts/promote-phase6-visual-system.ts`
+    recomputes eight preconditions from the artifacts on disk rather than trusting a summary, is
+    all-or-nothing, and **all eight are satisfied**. Two mutations confirmed it refuses: stripping one
+    state's approval fails P2, giving two states the same capture digest fails P6 — both with the
+    owner flag set.
+  - [ ] **The promotion itself is owner-run and has not been executed.** The Phase 6 gate is worded
+        as explicit owner promotion; an agent promoting on the owner's behalf would convert an
+        approval into an action the owner never took. Run:
+        `CUCKCODE_OWNER_PROMOTION=1 npm run phase6:promote`
 
 - [ ] Owner Phase 6 gate: explicit promotion of one coherent visual system from Candidate to Active. **Phase 7 high-fidelity implementation remains unauthorized.**

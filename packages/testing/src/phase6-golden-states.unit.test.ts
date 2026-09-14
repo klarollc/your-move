@@ -33,7 +33,7 @@ type GoldenState = {
   semanticMotionSubjects: string[];
   captures: Record<string, Capture>;
   environment: Record<string, string>;
-  ownerApproval: null | string;
+  ownerApproval: null | { approvedAt: string; record: string; scope: string };
 };
 
 const report = (): { states: GoldenState[]; motionOnlyFindings: string[] } =>
@@ -132,12 +132,20 @@ describe("Phase 6 golden states", () => {
     }
   });
 
-  it("records each state as Candidate, awaiting the owner", () => {
+  it("cannot claim an approval that has no decision record on disk", () => {
+    // An approval written inline is one a build script could invent. Every non-null approval must
+    // point at a record that exists, so the claim and the evidence cannot drift apart.
     for (const state of report().states) {
-      expect(state.ownerApproval, `${state.id} claims an approval that was never given`).toBeNull();
       expect(state.visibleChecklist.length).toBeGreaterThan(0);
       expect(state.eventIds.length).toBeGreaterThan(0);
       expect(state.environment.node).toBeTruthy();
+      if (state.ownerApproval === null) continue;
+      expect(
+        existsSync(resolve(REPOSITORY_ROOT, state.ownerApproval.record)),
+        `${state.id} cites approval record ${state.ownerApproval.record}, which is not on disk`,
+      ).toBe(true);
+      expect(state.ownerApproval.approvedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/u);
+      expect(state.ownerApproval.scope.trim().length).toBeGreaterThan(0);
     }
   });
 });

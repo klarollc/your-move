@@ -25,6 +25,19 @@ const VIEWPORTS: Array<[string, number, number]> = [
 
 const sha256 = (value: string): string => createHash("sha256").update(value).digest("hex");
 
+/**
+ * The owner's approval of these states, recorded once and referenced.
+ *
+ * An approval written inline per state would be an approval a build script could invent. This points
+ * at the decision record instead, and the suite refuses any approval whose record is not on disk.
+ */
+const OWNER_APPROVAL = {
+  approvedAt: "2026-09-13",
+  record: "docs/evidence/phase-6/decision-record-2026-09-13-golden-states-approved.md",
+  scope:
+    "The five golden states as rendered in reconciliation-b-clarity at both approved viewports. Does not promote the visual system to Active and does not authorize Phase 7.",
+};
+
 /** Turns canonical descriptors into the declared render state. Nothing is invented here. */
 function sceneStateFrom(projected: ProjectedGoldenState): SceneState {
   const agentStates: Record<string, string> = {};
@@ -121,7 +134,7 @@ for (const projected of projectAllGoldenStates()) {
       .map((descriptor) => `${descriptor.subjectType}:${descriptor.state}`),
     captures,
     environment: ENVIRONMENT,
-    ownerApproval: null,
+    ownerApproval: OWNER_APPROVAL,
   });
 }
 
@@ -131,7 +144,7 @@ await writeFile(
     {
       schema: "cuckcode.phase6-golden-states.v1",
       status:
-        "Task 9 produced. Every state is Candidate and carries ownerApproval: null. Task 10 promotion and Phase 7 remain unauthorized.",
+        "Task 9 produced and owner-approved 2026-09-13. The states are approved; the visual system is still Candidate until the Task 10 promotion, which is owner-run. Phase 7 remains unauthorized.",
       producedAt: "2026-09-13",
       system: style.candidateId,
       environment: ENVIRONMENT,
@@ -167,7 +180,7 @@ await writeFile(
 <div class="wrap">
   <h1>Phase 6 golden states — ${style.name}</h1>
   <p class="lede">Five canonical states rendered in the approved system, each built from canonical events through the same projectors the graybox uses. Every capture contains zero animation constructs, which is why the reduced-motion equivalent of each state is the same frame: there is no motion to remove, so nothing in these states is carried by motion alone.</p>
-  <p class="status">Candidate — every state awaits owner approval; Task 10 and Phase 7 unauthorized</p>
+  <p class="status">Owner-approved 2026-09-13 — the visual system is still Candidate until the Task 10 promotion; Phase 7 unauthorized</p>
   ${projectAllGoldenStates()
     .map((projected) => {
       const scene = sceneStateFrom(projected);

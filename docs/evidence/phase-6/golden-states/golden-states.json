@@ -1,6 +1,6 @@
 {
   "schema": "cuckcode.phase6-golden-states.v1",
-  "status": "Task 9 produced. Every state is Candidate and carries ownerApproval: null. Task 10 promotion and Phase 7 remain unauthorized.",
+  "status": "Task 9 produced and owner-approved 2026-09-13. The states are approved; the visual system is still Candidate until the Task 10 promotion, which is owner-run. Phase 7 remains unauthorized.",
   "producedAt": "2026-09-13",
   "system": "reconciliation-b-clarity",
   "environment": {
@@ -215,7 +215,11 @@
         "systemStatus": "Approved by the owner 2026-09-13 as the Task 8 reconciliation. Still Candidate until Task 10 promotion.",
         "capturedAt": "2026-09-13"
       },
-      "ownerApproval": null
+      "ownerApproval": {
+        "approvedAt": "2026-09-13",
+        "record": "docs/evidence/phase-6/decision-record-2026-09-13-golden-states-approved.md",
+        "scope": "The five golden states as rendered in reconciliation-b-clarity at both approved viewports. Does not promote the visual system to Active and does not authorize Phase 7."
+      }
     },
     {
       "id": "02-active-collaboration",
@@ -442,7 +446,11 @@
         "systemStatus": "Approved by the owner 2026-09-13 as the Task 8 reconciliation. Still Candidate until Task 10 promotion.",
         "capturedAt": "2026-09-13"
       },
-      "ownerApproval": null
+      "ownerApproval": {
+        "approvedAt": "2026-09-13",
+        "record": "docs/evidence/phase-6/decision-record-2026-09-13-golden-states-approved.md",
+        "scope": "The five golden states as rendered in reconciliation-b-clarity at both approved viewports. Does not promote the visual system to Active and does not authorize Phase 7."
+      }
     },
     {
       "id": "03-manager-escalation",
@@ -645,7 +653,11 @@
         "systemStatus": "Approved by the owner 2026-09-13 as the Task 8 reconciliation. Still Candidate until Task 10 promotion.",
         "capturedAt": "2026-09-13"
       },
-      "ownerApproval": null
+      "ownerApproval": {
+        "approvedAt": "2026-09-13",
+        "record": "docs/evidence/phase-6/decision-record-2026-09-13-golden-states-approved.md",
+        "scope": "The five golden states as rendered in reconciliation-b-clarity at both approved viewports. Does not promote the visual system to Active and does not authorize Phase 7."
+      }
     },
     {
       "id": "04-blocked-work",
@@ -848,7 +860,11 @@
         "systemStatus": "Approved by the owner 2026-09-13 as the Task 8 reconciliation. Still Candidate until Task 10 promotion.",
         "capturedAt": "2026-09-13"
       },
-      "ownerApproval": null
+      "ownerApproval": {
+        "approvedAt": "2026-09-13",
+        "record": "docs/evidence/phase-6/decision-record-2026-09-13-golden-states-approved.md",
+        "scope": "The five golden states as rendered in reconciliation-b-clarity at both approved viewports. Does not promote the visual system to Active and does not authorize Phase 7."
+      }
     },
     {
       "id": "05-visual-review",
@@ -1051,7 +1067,11 @@
         "systemStatus": "Approved by the owner 2026-09-13 as the Task 8 reconciliation. Still Candidate until Task 10 promotion.",
         "capturedAt": "2026-09-13"
       },
-      "ownerApproval": null
+      "ownerApproval": {
+        "approvedAt": "2026-09-13",
+        "record": "docs/evidence/phase-6/decision-record-2026-09-13-golden-states-approved.md",
+        "scope": "The five golden states as rendered in reconciliation-b-clarity at both approved viewports. Does not promote the visual system to Active and does not authorize Phase 7."
+      }
     }
   ]
 }

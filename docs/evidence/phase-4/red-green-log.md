@@ -1133,3 +1133,33 @@ viewports.
 **Every state is Candidate.** `ownerApproval` is `null` on all five, and a guard asserts it, so a
 state cannot quietly claim an approval that was never given. Task 10 promotion and Phase 7 remain
 unauthorized.
+
+## Phase 6 Task 10 — promotion built, evidence packet delivered
+
+Date: 2026-09-13. The owner approved the five golden states; this is the gate that would make the
+visual system Active.
+
+**The approval is recorded by reference, not written inline.** Each golden state now points at
+`decision-record-2026-09-13-golden-states-approved.md`, and the suite refuses any approval whose
+record is not on disk. An approval a build script could invent is not an approval.
+
+**Eight preconditions, recomputed rather than trusted.** The promotion reads the golden states, the
+reconciliation, the accessibility report, the provenance register, the frozen fixture and the Task 7
+runs, and recomputes each condition from those artifacts — it does not accept a summary's word for
+any of them. All-or-nothing: one failure refuses the whole promotion, because a partial promotion
+would leave part of the system Active under an approval given for the whole.
+
+**Not executed.** The Phase 6 gate is worded as *explicit owner promotion*. The script refuses
+without `CUCKCODE_OWNER_PROMOTION=1`, exactly as role promotion does. An agent that promoted here
+would have converted the owner's approval of the states into an action on the system that the owner
+never took — a different thing, and the one the gate exists to keep separate.
+
+**Mutation evidence, run with the owner flag set so only the preconditions could refuse.** Stripping
+one state's approval fails P2. Giving two states the same capture digest fails P6 — which matters
+because identical baselines would make a later visual diff unable to tell those states apart.
+
+**The evidence packet states what the phase does not prove.** No external visual reference informed
+any candidate; the generated half of the approved hybrid was never produced; four of six typefaces
+cannot be embedded in Phase 7; Task 7 could not complete its purpose in a text-only turn; and none of
+these captures is a regression baseline in the running product. A packet listing only outcomes would
+be the shape this project exists to refuse.
