@@ -25,6 +25,7 @@
     "roles:agency-agents:check": "node scripts/check-agency-agents.mjs",
     "roles:promote": "node scripts/promote-authored-roles.mjs",
     "roles:exercise": "tsx scripts/run-role-exercises.ts",
+    "kickoff:preflight": "tsx scripts/phase4-kickoff-preflight.ts",
     "phase6:fixture:freeze": "tsx scripts/freeze-phase6-fixture.ts",
     "phase6:candidates:build": "tsx scripts/build-phase6-candidates.ts",
     "phase6:a11y:build": "tsx scripts/build-phase6-accessibility.ts",
