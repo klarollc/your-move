@@ -430,6 +430,136 @@ describe("Decision Notice — Phase 5 acceptance criteria", () => {
     ).toBe("invalid");
   });
 
+  /**
+   * Added after the second verification pass, which downgraded C-12 from full to partial.
+   *
+   * The original test covered acknowledge-then-defer and nothing else. Three of the four
+   * already-actioned transitions were unexercised, so a refusal that fired only on that one pairing
+   * would have looked fully covered. The criterion is about the pair being mutually exclusive in
+   * both directions and each action being unrepeatable, which is four cases, not one.
+   */
+  it("C-12: every second action on an actioned decision is refused, in both directions", () => {
+    const deferral = {
+      reason: "Wait for the owner decision record.",
+      reviewAt: "2026-12-01T00:00:00.000Z",
+    };
+    const acknowledged = applyAction(
+      createDecisionState(notice),
+      { kind: "acknowledge", actionId: "first-ack", at: clock.now() },
+      clock,
+    );
+    const deferred = applyAction(
+      createDecisionState(notice),
+      { kind: "defer", actionId: "first-defer", at: clock.now(), ...deferral },
+      clock,
+    );
+    expect(acknowledged.ok && deferred.ok).toBe(true);
+    if (!acknowledged.ok || !deferred.ok) return;
+
+    const transitions = [
+      { from: "acknowledged", state: acknowledged.state, kind: "acknowledge" as const },
+      { from: "acknowledged", state: acknowledged.state, kind: "defer" as const },
+      { from: "deferred", state: deferred.state, kind: "acknowledge" as const },
+      { from: "deferred", state: deferred.state, kind: "defer" as const },
+    ];
+
+    for (const transition of transitions) {
+      const before = JSON.stringify(transition.state);
+      const action =
+        transition.kind === "defer"
+          ? {
+              kind: "defer" as const,
+              actionId: `second-${transition.from}`,
+              at: clock.now(),
+              ...deferral,
+            }
+          : {
+              kind: "acknowledge" as const,
+              actionId: `second-${transition.from}`,
+              at: clock.now(),
+            };
+      const result = applyAction(transition.state, action, clock);
+
+      expect(result).toMatchObject({ ok: false, code: "already-actioned" });
+      if (!result.ok) expect(result.detail).toContain(transition.from);
+      // No state exists in which both are set, so the refusal must leave the first one alone.
+      expect(JSON.stringify(transition.state)).toBe(before);
+    }
+  });
+
+  /**
+   * C-04 names three date faults: absent, malformed, and not in the future. Only the third had a
+   * test. The first two are refused earlier and by a different code than the third, which is exactly
+   * the kind of boundary a single test for "a bad date" would have hidden.
+   */
+  it("C-04: an absent and a malformed review date are each refused by name", () => {
+    const cases = [
+      { label: "absent", reviewAt: "" },
+      { label: "malformed", reviewAt: "2026-13-45" },
+      { label: "not a date at all", reviewAt: "next Tuesday" },
+    ];
+
+    for (const testCase of cases) {
+      const state = createDecisionState(notice);
+      const before = JSON.stringify(state);
+      const result = applyAction(
+        state,
+        {
+          kind: "defer",
+          actionId: `a-${testCase.label}`,
+          at: clock.now(),
+          reason: "Wait for the owner decision record.",
+          reviewAt: testCase.reviewAt,
+        },
+        clock,
+      );
+
+      expect(result).toMatchObject({ ok: false, code: "malformed-event" });
+      // The refusal discloses the value it could not read rather than reporting a generic fault.
+      if (!result.ok) expect(result.detail).toContain(testCase.reviewAt);
+      expect(JSON.stringify(state)).toBe(before);
+    }
+  });
+
+  /**
+   * C-13 held for undo-after-acknowledge only. Undo after a deferral has a second obligation the
+   * acknowledge path does not: the deferral itself must be cleared, while the event that created it
+   * stays in the log. Erasing the event would be the easy way to clear the deferral.
+   */
+  it("C-13: undo after a deferral clears the deferral and keeps both events", () => {
+    const deferred = applyAction(
+      createDecisionState(notice),
+      {
+        kind: "defer",
+        actionId: "a-defer",
+        at: clock.now(),
+        reason: "Wait for the owner decision record.",
+        reviewAt: "2026-12-01T00:00:00.000Z",
+      },
+      clock,
+    );
+    expect(deferred.ok).toBe(true);
+    if (!deferred.ok) return;
+
+    const undone = applyAction(
+      deferred.state,
+      { kind: "undo", actionId: "a-undo", at: clock.now() },
+      clock,
+    );
+    expect(undone.ok).toBe(true);
+    if (!undone.ok) return;
+
+    expect(undone.state.status).toBe("pending");
+    expect(undone.state.deferral).toBeNull();
+    expect(undone.state.log.map((event) => event.kind)).toStrictEqual(["defer", "undo"]);
+    expect(undone.state.log.map((event) => event.revision)).toStrictEqual([1, 2]);
+    // The deferral is gone from the state and still recoverable from the log.
+    expect(undone.state.log[0]).toMatchObject({
+      kind: "defer",
+      reviewAt: "2026-12-01T00:00:00.000Z",
+    });
+  });
+
   it("C-21: a refusal never invents state", () => {
     // The release reviewer's standing objection, expressed as a property: whatever is refused, the
     // state the caller holds afterwards is the state it held before.

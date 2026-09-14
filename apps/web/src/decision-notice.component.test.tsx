@@ -143,6 +143,81 @@ describe("DecisionNoticeCard", () => {
     expect(screen.getByText("December 1, 2026")).toBeVisible();
   });
 
+  /**
+   * Added after the second verification pass. The existing C-04 test proves the empty *reason* path
+   * and then jumps straight to a valid deferral, so neither date fault was exercised at the surface.
+   *
+   * The two faults are refused in different places — an empty date by the form, a past date by the
+   * core — and the criterion requires both to name the date field and return focus to it. A test
+   * that only covered the form's own check would pass with the core's refusal wired to nothing.
+   */
+  it("C-04, C-10: an empty and a past review date each name the date field and take focus", async () => {
+    const user = userEvent.setup();
+    const storage = makeStorage();
+    const { container } = renderNotice(storage);
+    const announced = () =>
+      container.querySelector(".decision-notice__announcement")?.textContent ?? "";
+    await user.click(screen.getByRole("button", { name: "Defer" }));
+
+    const reason = screen.getByRole("textbox", { name: /Deferral reason/ });
+    const reviewDate = screen.getByLabelText("Review date");
+    await user.type(reason, "Wait for the owner decision record.");
+
+    await user.click(screen.getByRole("button", { name: "Submit deferral" }));
+    expect(screen.getByRole("alert", { name: /date/i })).toBeVisible();
+    expect(reviewDate).toHaveFocus();
+    expect(reviewDate).toHaveAttribute("aria-invalid", "true");
+    // What is announced matters as much as where focus went, and it is read from the live region
+    // rather than the inline error, which renders the same sentence either way. The core refuses an
+    // absent date as an unreadable event and says so in its own words; a person hearing
+    // `review time "" is not a valid time` has been told about the event log, not about the field
+    // they are standing in. The form's own check is what keeps that sentence out of the ear.
+    expect(announced()).toBe("Review date invalid. Choose a future date.");
+
+    // A past date passes the form's own check and is refused by the core instead. Same destination.
+    fireEvent.change(reviewDate, { target: { value: "2026-01-01" } });
+    await user.click(screen.getByRole("button", { name: "Submit deferral" }));
+    expect(screen.getByRole("alert", { name: /date/i })).toBeVisible();
+    expect(reviewDate).toHaveFocus();
+    expect(announced()).toBe(
+      "a review time must be in the future; focus returns to the date field",
+    );
+    expect(screen.getByRole("status", { name: "Decision status: pending" })).toBeVisible();
+    expect(storage.value).toBeNull();
+
+    fireEvent.change(reviewDate, { target: { value: "2026-12-01" } });
+    await user.click(screen.getByRole("button", { name: "Submit deferral" }));
+    expect(screen.getByRole("status", { name: "Decision status: deferred" })).toBeVisible();
+  });
+
+  /**
+   * C-13 was only exercised from the acknowledged state. Undo after a deferral has to clear the
+   * displayed deferral as well as the status, and C-10's fourth transition — focus after a
+   * successful save — has a different destination for undo than for the actions it reverses.
+   */
+  it("C-10, C-13: undo after a deferral clears it, keeps the log, and moves focus to the status", async () => {
+    const user = userEvent.setup();
+    const storage = makeStorage();
+    renderNotice(storage);
+    await user.click(screen.getByRole("button", { name: "Defer" }));
+    await user.type(
+      screen.getByRole("textbox", { name: /Deferral reason/ }),
+      "Wait for the owner decision record.",
+    );
+    fireEvent.change(screen.getByLabelText("Review date"), { target: { value: "2026-12-01" } });
+    await user.click(screen.getByRole("button", { name: "Submit deferral" }));
+
+    const undo = screen.getByRole("button", { name: "Undo latest decision change" });
+    expect(undo).toHaveFocus();
+
+    await user.click(undo);
+    expect(screen.getByRole("status", { name: "Decision status: pending" })).toBeVisible();
+    expect(screen.queryByText("Wait for the owner decision record.")).not.toBeInTheDocument();
+    expect(screen.getByTestId("decision-status-icon")).toHaveFocus();
+    expect(storage.value?.log.map(({ kind }) => kind)).toEqual(["defer", "undo"]);
+    expect(storage.value?.deferral).toBeNull();
+  });
+
   it("C-05, C-13: reloads saved state through the injected storage adapter and makes undo explicit", async () => {
     const user = userEvent.setup();
     const storage = makeStorage();
