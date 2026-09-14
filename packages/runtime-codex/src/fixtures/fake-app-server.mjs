@@ -2,6 +2,8 @@ import { createInterface } from "node:readline";
 import { join } from "node:path";
 
 const mode = process.env.CUCKCODE_FAKE_MODE ?? "normal";
+// `multiturn` gives each turn a distinct id, so a caller can be tested for consuming the right one.
+let turnSequence = 0;
 const lines = createInterface({ input: process.stdin });
 
 for await (const line of lines) {
@@ -41,11 +43,16 @@ for await (const line of lines) {
       `${JSON.stringify({ id: message.id, result: { thread: { id: "thread_fixture" }, ...exercise } })}\n`,
     );
   } else if (message.method === "turn/start") {
+    turnSequence += 1;
+    const turnId = mode === "multiturn" ? `turn_${turnSequence}` : "turn_fixture";
+    const text =
+      mode === "multiturn" ? `TURN_${turnSequence}_OK` : mode === "exercise" ? "EXERCISE_OK" : null;
+    const items = text === null ? [] : [{ id: `item_${turnSequence}`, type: "agentMessage", text }];
     process.stdout.write(
-      `${JSON.stringify({ id: message.id, result: { turn: { id: "turn_fixture" } } })}\n`,
+      `${JSON.stringify({ id: message.id, result: { turn: { id: turnId } } })}\n`,
     );
     process.stdout.write(
-      `${JSON.stringify({ method: "turn/completed", params: { threadId: "thread_fixture", turn: { id: "turn_fixture", status: "completed", items: mode === "exercise" ? [{ id: "item_fixture", type: "agentMessage", text: "EXERCISE_OK" }] : [] } } })}\n`,
+      `${JSON.stringify({ method: "turn/completed", params: { threadId: "thread_fixture", turn: { id: turnId, status: "completed", items } } })}\n`,
     );
   }
 }

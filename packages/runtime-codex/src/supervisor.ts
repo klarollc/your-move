@@ -40,7 +40,9 @@ export class CodexStdioSupervisor {
     { resolve: (value: unknown) => void; reject: (reason: Error) => void }
   >();
   readonly #notifications: JsonRecord[] = [];
-  readonly #notificationWaiters = new Map<string, ((value: JsonRecord) => void)[]>();
+  readonly #notificationWaiters = new Map<string, ((value: JsonRecord) => boolean | void)[]>();
+  /** Notifications already handed to a waiter, so a later wait cannot pick the same one up. */
+  readonly #consumedNotifications = new WeakSet<JsonRecord>();
   #child: ChildProcessWithoutNullStreams | undefined;
   #stdoutBuffer = "";
   #requestId = 0;
@@ -126,6 +128,46 @@ export class CodexStdioSupervisor {
     return { ok: true, mode: "api_key_managed" };
   }
 
+  /**
+   * Waits for the completion of one specific turn.
+   *
+   * `waitForNotification` returns the first cached notification of a method and never consumes it,
+   * which is correct for a single-turn session and silently wrong for a thread that takes several.
+   * A thirteen-turn kickoff would have replayed turn one twelve times and reported success — a run
+   * that is green and means nothing. Matching on the turn id makes each wait pick out its own turn,
+   * and consuming it means a later wait cannot pick it up again.
+   */
+  async waitForTurnCompleted(turnId: string, timeoutMs = 90_000): Promise<JsonRecord> {
+    const matches = (notification: JsonRecord): boolean => {
+      if (notification.method !== "turn/completed") return false;
+      const params = notification.params;
+      if (!isRecord(params)) return false;
+      const turn = params.turn;
+      return isRecord(turn) && turn.id === turnId;
+    };
+
+    const existing = this.#notifications.find(
+      (notification) => matches(notification) && !this.#consumedNotifications.has(notification),
+    );
+    if (existing) {
+      this.#consumedNotifications.add(existing);
+      return existing;
+    }
+
+    return await new Promise<JsonRecord>((resolve, reject) => {
+      const waiters = this.#notificationWaiters.get("turn/completed") ?? [];
+      const timer = setTimeout(() => reject(new Error("NOTIFICATION_TIMEOUT")), timeoutMs);
+      waiters.push((value) => {
+        if (!matches(value) || this.#consumedNotifications.has(value)) return false;
+        clearTimeout(timer);
+        this.#consumedNotifications.add(value);
+        resolve(value);
+        return true;
+      });
+      this.#notificationWaiters.set("turn/completed", waiters);
+    });
+  }
+
   async waitForNotification(method: string, timeoutMs = 1_000): Promise<JsonRecord> {
     const existing = this.#notifications.find((notification) => notification.method === method);
     if (existing) return existing;
@@ -201,7 +243,10 @@ export class CodexStdioSupervisor {
         this.#notifications.push(message);
         const waiters = this.#notificationWaiters.get(message.method) ?? [];
         this.#notificationWaiters.delete(message.method);
-        for (const resolve of waiters) resolve(message);
+        // A waiter that declines this notification stays queued. Dropping it would leave a
+        // turn-scoped wait pending forever against a notification meant for a different turn.
+        const undelivered = waiters.filter((resolve) => resolve(message) === false);
+        if (undelivered.length > 0) this.#notificationWaiters.set(message.method, undelivered);
       }
     }
   }

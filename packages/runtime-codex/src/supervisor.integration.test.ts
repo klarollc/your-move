@@ -132,3 +132,32 @@ describe("Codex stdio supervisor", () => {
     expect(seen[1]?.env).toBeUndefined();
   });
 });
+
+describe("multi-turn notification consumption", () => {
+  it("returns each turn's own completion, not the first one cached", async () => {
+    const supervisor = new CodexStdioSupervisor({
+      executable: "codex.exe",
+      spawnProcess: fixtureSpawner("multiturn"),
+    });
+    await supervisor.start();
+
+    const first = (await supervisor.request("turn/start", { threadId: "thread_fixture" })) as {
+      turn: { id: string };
+    };
+    const firstCompleted = await supervisor.waitForTurnCompleted(first.turn.id, 2_000);
+
+    const second = (await supervisor.request("turn/start", { threadId: "thread_fixture" })) as {
+      turn: { id: string };
+    };
+    const secondCompleted = await supervisor.waitForTurnCompleted(second.turn.id, 2_000);
+
+    // Without consuming by turn id, the second wait returns the first turn's completion and a
+    // thirteen-turn kickoff would replay turn one twelve times while reporting success.
+    expect(first.turn.id).toBe("turn_1");
+    expect(second.turn.id).toBe("turn_2");
+    expect((firstCompleted.params as { turn: { id: string } }).turn.id).toBe("turn_1");
+    expect((secondCompleted.params as { turn: { id: string } }).turn.id).toBe("turn_2");
+
+    await supervisor.stop();
+  });
+});
