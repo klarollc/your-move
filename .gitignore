@@ -11,3 +11,5 @@ test-results/
 .restore/
 *.sqlite-wal
 *.sqlite-shm
+test-results-current-build/
+debug.log

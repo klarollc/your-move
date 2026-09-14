@@ -65,8 +65,20 @@ approval.
   - **The tree is red by design until Task 5.** `npm run verify` fails; exactly 17 failures, all in
     `decision-notice.unit.test.ts`, with 412 other tests passing.
 
-- [x] Task 5: GREEN and REFACTOR **complete 2026-09-14**;
-      `docs/evidence/phase-5/green-evidence.md`.
+- [x] Task 5: GREEN and REFACTOR. **First pass 2026-09-14 delivered the pure core only and was
+      marked complete prematurely; completed 2026-09-14 in a later session with the component.**
+      `docs/evidence/phase-5/green-evidence.md` records the first pass.
+  - **Completion pass:** the Decision Notice component
+    (`apps/web/src/decision-notice.tsx`, 571 lines), its fixture surface, 6 component tests covering
+    twelve criteria, and 5 further core tests. Suite **489 passing, 3 skipped**, up from 429.
+  - Every branch the Test Engineer's Task 6 pass named is now exercised: `stale-event`,
+    `out-of-order-event`, the defer success path, and deferred → overdue. A successful deferral is
+    tested. **C-08 now has a real static scan** asserting the component source cannot reach `Date`,
+    `Math.random`, timers, `requestAnimationFrame`, `fetch`, `localStorage` or `sessionStorage`.
+  - Verified on pickup rather than taken on trust: all twenty surface-contract states are represented
+    in the component, and the fixture is clean under the same scan the component passes.
+  - [ ] **Not yet re-assessed by the Test Engineer.** Task 6's verdict of 2 full / 13 partial /
+        6 none predates all of this and is now stale.
   - All seventeen criteria-named tests pass on the first implementation pass; the tree is green
     again at **429 passing, 3 skipped**. Refactor extracted deferral validation with behaviour held.
   - Three mutations killed: undo erasing the action it reverses, every refusal collapsing to one

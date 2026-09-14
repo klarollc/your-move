@@ -1,0 +1,23 @@
+.decision-notice-fixture {
+  min-height: 100vh;
+  overflow: auto;
+  padding: 24px;
+  background: #deddd7;
+}
+
+.decision-notice-fixture__reload {
+  display: block;
+  margin: 18px auto 0;
+  min-height: 44px;
+  border: 0.7px solid #74766f;
+  border-radius: 6px;
+  padding: 9px 15px;
+  color: #292b2d;
+  background: #faf9f5;
+  font: inherit;
+}
+
+.decision-notice-fixture__reload:focus-visible {
+  outline: 3px solid #b87827;
+  outline-offset: 3px;
+}

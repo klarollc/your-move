@@ -24,6 +24,7 @@ import {
 
 const clock: Clock = { now: () => "2026-09-14T12:00:00.000Z" };
 const lateClock: Clock = { now: () => "2027-01-01T00:00:00.000Z" };
+const deferredLateClock: Clock = { now: () => "2026-09-25T00:00:00.000Z" };
 
 const notice: DecisionNotice = {
   decisionId: "decision_fixture_001",
@@ -157,6 +158,89 @@ describe("Decision Notice — Phase 5 acceptance criteria", () => {
     });
   });
 
+  it("C-06: preserves the exact pre-event state for every rejection class", () => {
+    const acknowledged = applyAction(
+      createDecisionState(notice),
+      { kind: "acknowledge", actionId: "a1", at: "2026-09-14T12:01:00.000Z" },
+      clock,
+    );
+    expect(acknowledged.ok).toBe(true);
+    if (!acknowledged.ok) return;
+
+    const cases = [
+      {
+        code: "duplicate-event" as const,
+        action: { kind: "acknowledge" as const, actionId: "a1", at: "2026-09-14T12:02:00.000Z" },
+      },
+      {
+        code: "stale-event" as const,
+        state: createDecisionState(notice),
+        action: { kind: "undo" as const, actionId: "a-stale", at: "2026-09-14T12:02:00.000Z" },
+      },
+      {
+        code: "malformed-event" as const,
+        action: {
+          kind: "defer" as const,
+          actionId: "a-malformed",
+          at: "not-a-date",
+          reason: "r",
+          reviewAt: "also-not-a-date",
+        },
+      },
+      {
+        code: "out-of-order-event" as const,
+        action: { kind: "undo" as const, actionId: "a-old", at: "2026-09-14T12:00:30.000Z" },
+      },
+    ];
+
+    for (const testCase of cases) {
+      const before = testCase.state ?? acknowledged.state;
+      const beforeJson = JSON.stringify(before);
+      const result = applyAction(before, testCase.action, clock);
+      expect(result).toMatchObject({ ok: false, code: testCase.code });
+      expect(JSON.stringify(before)).toBe(beforeJson);
+    }
+  });
+
+  it("C-04: accepts a valid deferral and records its reason and review time", () => {
+    const state = createDecisionState(notice);
+    const result = applyAction(
+      state,
+      {
+        kind: "defer",
+        actionId: "a-defer",
+        at: clock.now(),
+        reason: "Wait for the owner decision record.",
+        reviewAt: "2026-12-01T00:00:00.000Z",
+      },
+      clock,
+    );
+
+    expect(result).toMatchObject({
+      ok: true,
+      state: {
+        status: "deferred",
+        deferral: {
+          reason: "Wait for the owner decision record.",
+          reviewAt: "2026-12-01T00:00:00.000Z",
+        },
+      },
+    });
+    if (result.ok) expect(result.state.log[0]?.kind).toBe("defer");
+  });
+
+  it("C-06: refuses stale undo without inventing a revision", () => {
+    const state = createDecisionState(notice);
+    const result = applyAction(
+      state,
+      { kind: "undo", actionId: "a-stale", at: clock.now() },
+      clock,
+    );
+
+    expect(result).toMatchObject({ ok: false, code: "stale-event" });
+    expect(state).toEqual(createDecisionState(notice));
+  });
+
   it("C-07: all seven statuses are distinguishable without colour", () => {
     const statuses: DecisionStatus[] = [
       "pending",
@@ -195,6 +279,25 @@ describe("Decision Notice — Phase 5 acceptance criteria", () => {
     const state = createDecisionState(notice);
     expect(deriveStatus(state, clock)).toBe("pending");
     expect(deriveStatus(state, lateClock)).toBe("overdue");
+  });
+
+  it("C-09: derives overdue from a deferred review time", () => {
+    const deferred = applyAction(
+      createDecisionState(notice),
+      {
+        kind: "defer",
+        actionId: "a-defer-overdue",
+        at: clock.now(),
+        reason: "Review after the acceptance gate.",
+        reviewAt: "2026-09-20T00:00:00.000Z",
+      },
+      clock,
+    );
+    expect(deferred.ok).toBe(true);
+    if (!deferred.ok) return;
+
+    expect(deriveStatus(deferred.state, deferredLateClock)).toBe("overdue");
+    expect(deriveStatus(deferred.state, clock)).toBe("deferred");
   });
 
   it("C-10: a refused action reports which field to return focus to", () => {
@@ -266,6 +369,33 @@ describe("Decision Notice — Phase 5 acceptance criteria", () => {
     // Append-only: the original action survives the undo.
     expect(undone.state.log).toHaveLength(2);
     expect(undone.state.log[0]?.kind).toBe("acknowledge");
+  });
+
+  it("C-06: rejects an event older than the newest event after a multi-event history", () => {
+    const initial = createDecisionState(notice);
+    const acknowledged = applyAction(
+      initial,
+      { kind: "acknowledge", actionId: "a-first", at: "2026-09-14T12:01:00.000Z" },
+      clock,
+    );
+    expect(acknowledged.ok).toBe(true);
+    if (!acknowledged.ok) return;
+    const undone = applyAction(
+      acknowledged.state,
+      { kind: "undo", actionId: "a-second", at: "2026-09-14T12:02:00.000Z" },
+      clock,
+    );
+    expect(undone.ok).toBe(true);
+    if (!undone.ok) return;
+
+    const before = JSON.stringify(undone.state);
+    const result = applyAction(
+      undone.state,
+      { kind: "acknowledge", actionId: "a-old", at: "2026-09-14T12:01:30.000Z" },
+      clock,
+    );
+    expect(result).toMatchObject({ ok: false, code: "out-of-order-event" });
+    expect(JSON.stringify(undone.state)).toBe(before);
   });
 
   it("C-14: the three severities render distinctly and an unknown one is named", () => {

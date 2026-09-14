@@ -4,6 +4,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import { LayoutTrial } from "./layout-trial.js";
+import { DecisionNoticeFixture } from "./decision-notice-fixture.js";
 import { OfficeWorkspace, type KickoffFixtureId } from "./office-canvas.js";
 import type { OfficeShellState } from "./office-shell.js";
 import { PixiSceneProbe } from "./pixi-scene-probe.js";
@@ -28,6 +29,8 @@ createRoot(container).render(
       <PixiSceneProbe />
     ) : surface === "layout-trial" ? (
       <LayoutTrial />
+    ) : surface === "decision-notice" ? (
+      <DecisionNoticeFixture />
     ) : (
       <OfficeWorkspace
         initialState={initialState}
