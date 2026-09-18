@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseTurnJson } from "./phase4-kickoff-session.js";
+import { describeTurnCompletionFailure, parseTurnJson } from "./phase4-kickoff-session.js";
 
 /**
  * The parser between a role's turn and the kickoff domain.
@@ -59,5 +59,22 @@ describe("kickoff turn payload parsing", () => {
     // required fields — so the parser must hand it on rather than inventing a failure of its own.
     const parsed = parseTurnJson("{}");
     expect(parsed).toEqual({ ok: true, value: {} });
+  });
+});
+
+describe("kickoff turn completion diagnostics", () => {
+  it("preserves the provider failure message without treating it as a verdict", () => {
+    expect(
+      describeTurnCompletionFailure("turn_1", {
+        status: "failed",
+        error: { message: "context window exceeded" },
+      }),
+    ).toBe("turn turn_1 reported status failed: context window exceeded");
+  });
+
+  it("falls back to the status when the provider supplies no message", () => {
+    expect(describeTurnCompletionFailure("turn_2", { status: "interrupted" })).toBe(
+      "turn turn_2 reported status interrupted",
+    );
   });
 });

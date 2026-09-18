@@ -1196,6 +1196,13 @@ is not happening — therefore have no human verification of any kind, and rest 
 automated assertions over deterministic fixtures. Recorded in
 `docs/evidence/phase-4/red-green-log.md`.
 
+**Amended 2026-09-18:** the Phase 5 Decision Notice screen-reader walkthrough was performed by the
+owner with NVDA 2026.2.0.57664 and recorded in
+`docs/evidence/phase-5/screen-reader-walkthrough-2026-09-18.md`. The owner marked C-17 met in
+`docs/evidence/phase-5/c-17-owner-acceptance.json`. This supersedes the Phase 5 C-17 waiver for
+current status only; the historical waiver, walkthrough findings, environment omissions, and
+independent-review requirement remain preserved.
+
 ## 20. Observability and product measures
 
 ### Operational measures
@@ -1432,5 +1439,9 @@ Gate: disposition within the governed review period; production reuse remains a 
 **Amended 2026-08-13:** D-26 reciprocal usability and true collaboration is approved as a cross-cutting requirement; corresponding planning artifacts were updated.
 
 **Amended 2026-09-13:** the visual-reference production brief is owner-approved as written, and section 24 is amended so Phase 6 runs in parallel with Phase 5. Phase 6 Tasks 1-7 are authorized; Task 8 selection, Task 10 promotion, and all of Phase 7 are not.
+
+**Amended 2026-09-18:** the owner accepted the bounded Phase 5 C-17 screen-reader walkthrough as
+met. This is an evidence disposition, not a release verdict or authorization for code, deployment,
+or production reuse.
 
 This approval does not authorize production implementation. Dependency installation, project scaffolding, runtime connection, imported role material, or production code requires approval of the next implementation-plan gate.

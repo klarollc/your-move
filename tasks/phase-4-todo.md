@@ -1,6 +1,6 @@
 # Phase 4 checklist: Graybox office and collaborative kickoff
 
-Status: **Tasks 1–16 complete and owner-accepted. Task 17 authorized and unblocked; Tasks 17–18 and the Phase 4 gate remain open.** Corrected 2026-09-13 — this header still read "Tasks 16–17 remain unauthorized" while the entries below recorded both as authorized, the same contradiction already corrected once in this file on 2026-09-12.
+Status: **Phase 4 complete 2026-09-14. Tasks 1–18 are complete; the manager approved the Task 17 charter and the Phase 4 evidence packet was delivered.** Historical status notes below are retained as evidence of the work sequence.
 Specification: `docs/phase-4-graybox-office-and-kickoff-spec-v0.1.md`
 Plan: `tasks/phase-4-plan.md`
 Composition: `.ui-craft/spec.md`
@@ -88,7 +88,7 @@ The initial approval does not authorize the following tasks, except where a late
 recorded against one. **Corrected 2026-09-12** under Decision 0(a): this header previously made a
 blanket claim that no task below was authorized, which stopped being true when the Task 16 packet
 was approved on 2026-09-08 and Task 17 with it. Read each entry's own status line; Task 18 and the
-Phase 4 gate below remain unauthorized.
+Phase 4 gate below are now complete.
 
 - [x] Owner authorized **Task 16** on 2026-09-08, scoped to producing the preflight packet. That
       same approval authorized Task 17 (one bounded live kickoff), conditional on the packet's §7
@@ -110,7 +110,7 @@ Phase 4 gate below remain unauthorized.
   - Acceptance: six exact reviewed role versions, six qualified distinct identities, bounded permissions, shared briefing, max 13 turns, no tools/effects.
   - Verify: promotion/preflight matrix and owner decision record.
 
-- [x] Task 17: Bounded live kickoff **complete 2026-09-14**; manager charter outstanding. **AUTHORIZED, not yet runnable.** Owner
+- [x] Task 17: Bounded live kickoff **complete 2026-09-14**; manager charter approved 2026-09-14. **AUTHORIZED and complete.** Owner
       approval of the Task 16 packet on 2026-09-08 authorized Task 17 conditional on §7
       (machine-enforced preflight and promotion checks); `e994188` completed §7. Owner ruling
       2026-09-12, Decision 0(a) in
@@ -127,9 +127,8 @@ Phase 4 gate below remain unauthorized.
       `auth.json` and nothing else (see Task 17c-6 in
       `docs/evidence/phase-4/red-green-log.md`). **All six bounded exercises then performed**, each
       binding verified against the approved packet, with six substantively distinct transcripts in
-      `docs/evidence/phase-4/live-kickoff/role-exercises/`. This is exercise evidence, not kickoff
-      evidence: no D-25 round has run, nothing is promoted, and owner transcript review plus a
-      fresh go/no-go remain required before the one live kickoff.
+      `docs/evidence/phase-4/live-kickoff/role-exercises/`. This was exercise evidence before the
+      bounded D-25 round below; no role promotion or external effect was inferred from it.
   - Acceptance: six contributions, one synthesis, six explicit revisions/affirmations, full attribution, no prohibited effect, manager disposition.
   - Verify: exact `CUCKCODE_LIVE_KICKOFF=1` supervised run and canonical evidence.
   - **Result: attempt 2 ran the full thirteen turns — 6 contributions, 1 synthesis, 6 revisions, 0
@@ -138,16 +137,16 @@ Phase 4 gate below remain unauthorized.
     verified against the approved packet. **No external effect observed in either attempt.**
     Attempt 1 stopped at turn 7 on a prompt defect of ours, not a domain or agent fault; it is
     preserved unmodified. Evidence: `docs/evidence/phase-4/live-kickoff/task-17-run/`.
-  - [ ] **Manager disposition outstanding.** `phase: revision`, `implementationAllowed: false`. The
-        round produced a proposed goal, a register attributing disagreement to all six roles, and ten
-        unresolved evidence gaps. Only the manager approves a charter; no agent can.
+  - [x] **Manager disposition recorded 2026-09-14.** The owner approved the proposed charter and its
+        ten evidence gaps as blocking conditions in `docs/evidence/phase-5/approved-charter-v1.md`.
 
 - [x] Task 18: Phase 4 evidence packet **delivered 2026-09-14**;
       `docs/evidence/phase-4/phase-4-evidence-packet.md`.
   - Acceptance: deterministic rerun, exact evidence binding, documented limits, charter record, no Phase 5 or high-fidelity claim.
   - Verify: final Phase 4 evidence packet.
-  - Result: states what the phase proves and what it does not — MDD §19/§20 still unmet by waiver,
-    no charter approved, ten evidence gaps open, one live round is one sample. Lists the six defects
-    found and fixed, and which were caught without spending a live turn.
+  - Result: states what the phase proves and what it does not — MDD §19/§20 remain open, the charter
+    was subsequently approved with ten evidence gaps as blocking conditions, and one live round is
+    one sample. Lists the six defects found and fixed, and which were caught without spending a live turn.
 
-- [ ] Owner Phase 4 gate: accept evidence or request corrections. Phase 5 and high-fidelity art remain unauthorized.
+- [x] Owner Phase 4 gate: closed 2026-09-14 through the delivered evidence packet and subsequent charter
+      approval. Phase 5 is separately authorized; Phase 7 high-fidelity art remains unauthorized.

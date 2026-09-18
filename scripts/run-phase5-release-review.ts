@@ -127,6 +127,7 @@ if (!opened.ok) {
         turn: turnsSpent,
         accepted: false,
         code: turn.ok ? "EXTERNAL_EFFECT_OBSERVED" : turn.code,
+        ...(turn.ok ? {} : { detail: turn.detail }),
       });
       break;
     }

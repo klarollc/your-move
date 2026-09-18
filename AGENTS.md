@@ -37,6 +37,13 @@ charter is `docs/evidence/phase-5/approved-charter-v1.md`. Phase 5 Task 10 owner
 owner-run, and **Phase 7, deployment, external effects and production reuse of fixture code remain
 unauthorized.**
 
+**Amended 2026-09-18:** the owner ruled C-17 **met** after the bounded NVDA screen-reader
+walkthrough was performed and recorded in `docs/evidence/phase-5/screen-reader-walkthrough-2026-09-18.md`.
+The owner disposition is `docs/evidence/phase-5/c-17-owner-acceptance.json`; the prior waiver remains
+historical. The walkthrough's V0/V1 findings and environment omissions remain open, and this ruling
+does not replace an independent release-review refresh or authorize code, deployment, or production
+reuse changes.
+
 **Phase 6 is complete as of 2026-09-14.** `reconciliation-b-clarity` is the Active visual system,
 promoted by owner execution under the Phase 6 gate. Phase 7 high-fidelity implementation remains
 unauthorized.

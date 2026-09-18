@@ -4,7 +4,7 @@
   "evidenceClass": "static",
   "status": "The static half of C-11, ruled by the owner on 2026-09-14 after release review pass 4. It does not replace the behavioral isolation records; those show the defined journeys are clean, and this says the effect is absent from code no journey reached.",
   "decisionRecord": "docs/evidence/phase-5/decision-record-2026-09-14-c-09-c-11.md",
-  "ranAt": "2026-09-14T17:14:09.307Z",
+  "ranAt": "2026-09-18T23:20:47.719Z",
   "entryPoints": [
     "apps/web/src/decision-notice.tsx",
     "apps/web/src/decision-notice-capture.tsx",

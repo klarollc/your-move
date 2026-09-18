@@ -1,6 +1,6 @@
 {
   "budget": 60,
-  "spent": 15,
+  "spent": 18,
   "entries": [
     {
       "task": "phase-5-task-3-surface-contract",
@@ -111,6 +111,30 @@
       "turns": 2,
       "accepted": true,
       "at": "2026-09-14T17:12:55.787Z"
+    },
+    {
+      "task": "phase-5-task-9-release-review",
+      "pass": 6,
+      "roleId": "release-reviewer",
+      "turns": 1,
+      "accepted": false,
+      "at": "2026-09-18T22:50:49.458Z"
+    },
+    {
+      "task": "phase-5-task-9-release-review",
+      "pass": 7,
+      "roleId": "release-reviewer",
+      "turns": 1,
+      "accepted": false,
+      "at": "2026-09-18T22:54:42.591Z"
+    },
+    {
+      "task": "phase-5-task-9-release-review",
+      "pass": 8,
+      "roleId": "release-reviewer",
+      "turns": 1,
+      "accepted": false,
+      "at": "2026-09-18T22:56:33.742Z"
     }
   ]
 }

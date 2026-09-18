@@ -1,0 +1,30 @@
+{
+  "schema": "cuckcode.phase5-release-review.v1",
+  "pass": 8,
+  "previousPasses": [
+    "pass-1.json",
+    "pass-2.json",
+    "pass-3.json",
+    "pass-4.json",
+    "pass-5.json",
+    "pass-6.json",
+    "pass-7.json"
+  ],
+  "status": "NOT ACCEPTED. The Release Reviewer did not produce a complete verdict within its allowance.",
+  "roleId": "release-reviewer",
+  "authoredAt": "2026-09-18T22:56:33.759Z",
+  "turnsSpent": 1,
+  "overclaims": [],
+  "crossCheck": {
+    "unmetAtReviewTime": []
+  },
+  "attempts": [
+    {
+      "turn": 1,
+      "accepted": false,
+      "code": "TURN_COMPLETION_INVALID",
+      "detail": "turn 01a0b6bb-e193-7f43-a2a7-12e0d87c2a80 reported status failed: stream disconnected before completion: error sending request for url (https://chatgpt.com/backend-api/codex/responses)"
+    }
+  ],
+  "verdict": null
+}

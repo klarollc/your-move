@@ -1,6 +1,6 @@
 # Phase 5 checklist: controlled six-role acceptance project
 
-Status: **Owner-authorized 2026-09-14.** Charter approved with the ten gaps blocking; Decisions 5-A, 5-B, 5-C and 5-D ruled. Tasks 1-9 are authorized; Task 10 is owner-run. Nothing has been implemented.
+Status: **Owner-authorized 2026-09-14.** Charter approved with the ten gaps blocking; Decisions 5-A, 5-B, 5-C and 5-D ruled. Tasks 1-9 are authorized; overall Task 10 is owner-run. C-17 received a separate owner disposition on 2026-09-18.
 Plan: `tasks/phase-5-plan.md`
 Input: the owner-approved charter from the Task 17 round
 Governing: MDD §24 Phase 5, D-23 representative assignment, D-24 fixture isolation
@@ -23,9 +23,12 @@ approval.
 
 ## Tasks
 
-- [ ] Task 1: Record the approved charter, versioned, with a disposition for each of the ten gaps.
+- [x] Task 1: Record the approved charter, versioned, with a disposition for each of the ten gaps;
+      `docs/evidence/phase-5/approved-charter-v1.md`.
   - Acceptance: no implementation may begin before this record exists.
   - Verify: charter record test; `implementationAllowed` cannot be true without it.
+  - Result: owner-approved 2026-09-14; all ten gaps are dispositioned and implementation remains
+    separately governed by the Phase 5 authorization.
 
 - [x] Task 2: Acceptance contract frozen **2026-09-14**;
       `docs/evidence/phase-5/acceptance-contract.json`.
@@ -79,8 +82,9 @@ approval.
     `Math.random`, timers, `requestAnimationFrame`, `fetch`, `localStorage` or `sessionStorage`.
   - Verified on pickup rather than taken on trust: all twenty surface-contract states are represented
     in the component, and the fixture is clean under the same scan the component passes.
-  - [ ] **Not yet re-assessed by the Test Engineer.** Task 6's verdict of 2 full / 13 partial /
-        6 none predates all of this and is now stale.
+  - [x] **Re-assessed by the Test Engineer.** Verification pass 6 records 16 full, 3 partial and
+        2 none against the completed component and later evidence; the earlier 2 full / 13 partial /
+        6 none result is retained as historical.
   - All seventeen criteria-named tests pass on the first implementation pass; the tree is green
     again at **429 passing, 3 skipped**. Refactor extracted deferral validation with behaviour held.
   - Three mutations killed: undo erasing the action it reverses, every refusal collapsing to one
@@ -154,7 +158,8 @@ approval.
   - **9-C** C-09: real browser zoom via `setDeviceMetricsOverride`, and the test asserts the
     emulation took effect. The reflow check survives under its own name.
 
-- [ ] C-19 owner look: contact sheet built, `npm run phase5:contact-sheet`.
+- [x] C-19 owner look: contact sheet built and owner fidelity acceptance recorded
+      `2026-09-14`, `npm run phase5:contact-sheet`.
   - Forty plates, twenty states paired at both D-07 viewports, each sitting beside the treatment the
     surface contract declared for it and beside the gap the Visual QA agent said it could not settle
     from an accessibility tree. Writes to the ignored `test-results/`; it is a **lens over committed
@@ -178,6 +183,12 @@ approval.
     against this build and all three refused to certify, each naming C-17 unmet. None reached for
     the axe results. The owner elected not to walk it — a different fact, and kept separate.
   - Every brief and verdict must report C-17 as **waived by owner**, never folded into a count.
+
+- [x] **C-17 owner disposition recorded met 2026-09-18** after the bounded NVDA walkthrough.
+      `docs/evidence/phase-5/decision-record-2026-09-18-c-17-owner-disposition.md` and
+      `docs/evidence/phase-5/c-17-owner-acceptance.json` supersede the waiver for current status;
+      the waiver remains historical. The walkthrough's V0/V1 findings and omissions remain open, and
+      the prior release-review verdict is not rewritten.
 
 - [x] **C-18 and charter gap 3 closed 2026-09-14.** Owner ruled the sidecar shape;
       `docs/evidence/phase-5/provenance/schema.json` and the append-only ledger
@@ -258,6 +269,13 @@ approval.
     permitted verdict string. The second was clean.
   - **No technical work remains in Phase 5.** The distance to ELIGIBLE FOR OWNER APPROVAL is one
     human with a screen reader.
+
+- [x] **Release-review refresh attempts 6–8, 2026-09-18 — incomplete, no verdict.** Each attempt
+      stopped on its first turn with `TURN_COMPLETION_INVALID`; pass 8 records the provider detail
+      `stream disconnected before completion` for the ChatGPT Codex backend. The attempts remain
+      append-only evidence, the ledger is **18 of 60**, and `npm run phase5:provenance` passes.
+  - This does not replace or rewrite pass 5, does not establish eligibility, and does not change the
+    owner-run boundary for Task 10. Retry only after the runtime connection is available.
 
 - [ ] Task 10: **Owner acceptance. Owner-run.** Accept the fixture outcome or record bounded
       revisions. Atomically creates the D-24 review that Phase 8 closes.

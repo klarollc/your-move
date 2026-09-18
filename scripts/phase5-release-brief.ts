@@ -33,6 +33,25 @@ const readJson = async <T>(path: string, fallback: T): Promise<T> => {
 
 export type UnmetCriterion = { id: string; why: string };
 
+export type C17CurrentDisposition = Readonly<{
+  criterionId?: string;
+  disposition?: string;
+  ruledOn?: string;
+}>;
+
+export function formatC17Status(
+  disposition: C17CurrentDisposition | null,
+  walkthroughPresent: boolean,
+): string {
+  if (disposition?.criterionId === "C-17" && disposition.disposition === "met") {
+    return `C-17 is met by owner disposition on ${disposition.ruledOn ?? "an unrecorded date"}; the historical waiver remains preserved, the walkthrough's findings and environment omissions remain open, and this does not replace the independent release review.`;
+  }
+  if (walkthroughPresent) {
+    return "A C-17 screen-reader walkthrough record exists, but no current owner disposition records the criterion as met; independent release review remains required.";
+  }
+  return "C-17 remains unestablished because no screen-reader walkthrough record exists.";
+}
+
 /** Read from the contract and the evidence tree, never asserted here. */
 export async function unmetCriteria(): Promise<UnmetCriterion[]> {
   const contract = await readJson<{
@@ -57,14 +76,23 @@ export async function unmetCriteria(): Promise<UnmetCriterion[]> {
     waivers: Array<{ criterionId: string; disposition: string; ownerReasoning?: string }>;
   }>("docs/evidence/phase-5/acceptance-contract-waivers.json", { waivers: [] });
   const waived = new Map(waivers.waivers.map((waiver) => [waiver.criterionId, waiver]));
+  const currentC17Disposition = await readJson<C17CurrentDisposition | null>(
+    "docs/evidence/phase-5/c-17-owner-acceptance.json",
+    null,
+  );
 
-  if (!has("screen-reader")) {
+  const walkthroughPresent = has("screen-reader");
+  const c17Met =
+    walkthroughPresent &&
+    currentC17Disposition?.criterionId === "C-17" &&
+    currentC17Disposition.disposition === "met";
+  if (!c17Met) {
     const waiver = waived.get("C-17");
     unmet.push({
       id: "C-17",
-      why: waiver
-        ? `no screen-reader walkthrough record exists; the owner ${waiver.disposition} the criterion on the record. Report it as "waived by owner", never as satisfied. See acceptance-contract-waivers.json for what the waiver leaves unestablished.`
-        : "no screen-reader walkthrough record exists anywhere under docs/evidence/phase-5",
+      why: !walkthroughPresent
+        ? `no screen-reader walkthrough record exists; the owner ${waiver?.disposition ?? "did not disposition"} the criterion on the record. Report it as "waived by owner", never as satisfied. See acceptance-contract-waivers.json for what the waiver leaves unestablished.`
+        : "a screen-reader walkthrough record exists, but no current owner disposition records C-17 as met",
     });
   }
   if (!has("owner-acceptance")) {
@@ -180,6 +208,17 @@ export async function buildReleaseBrief(): Promise<string> {
     "docs/evidence/phase-5/turn-ledger.json",
     { budget: 0, spent: 0 },
   );
+  const c17Disposition = await readJson<C17CurrentDisposition | null>(
+    "docs/evidence/phase-5/c-17-owner-acceptance.json",
+    null,
+  );
+  const c17Walkthrough = await readFile(
+    resolve(PHASE5, "screen-reader-walkthrough-2026-09-18.md"),
+    "utf8",
+  )
+    .then(() => true)
+    .catch(() => false);
+  const c17Status = formatC17Status(c17Disposition, c17Walkthrough);
 
   const criteria = contract.criteria
     .map(
@@ -234,6 +273,9 @@ export async function buildReleaseBrief(): Promise<string> {
         "docs/evidence/phase-5/side-effect-review.json",
         "docs/evidence/phase-5/provenance/schema.json",
         "docs/evidence/phase-5/c-19-owner-acceptance.json",
+        "docs/evidence/phase-5/c-17-owner-acceptance.json",
+        "docs/evidence/phase-5/decision-record-2026-09-18-c-17-owner-disposition.md",
+        "docs/evidence/phase-5/screen-reader-walkthrough-2026-09-18.md",
       ].map(async (path) => [path, await digest(path)] as const),
     ),
   );
@@ -321,14 +363,14 @@ WHAT THIS PHASE DELIBERATELY DID NOT DO
   implementation was written conventionally, not by an agent. **Phase 5 therefore does not show that
   agents can write this code.** That is a recorded departure from the literal MDD section 24 run.
 
-  MDD sections 19 and 20 were waived in Phase 4 with comprehension tasks never performed and the
-  screen-reader walkthrough never run. Decision 5-D committed Phase 5 to repeating that gate
-  properly. **On 2026-09-14 the owner waived it again, on the record**, amending 5-D. The waiver is
-  an artifact you should read (phase-5/acceptance-contract-waivers.json) and it is blunt about what
-  it leaves open: no human listener has ever heard this interface, the nine declared focus
-  destinations are asserted by tests and unconfirmed by ear, and Phase 8 inherits the debt. Waived is
-  not met. Whether a waived criterion can sit inside an eligible-for-approval verdict is exactly the
-  kind of question this role exists to answer, and you are not being told the answer.
+  MDD section 20's comprehension tasks remain unperformed. The Phase 5 C-17 screen-reader status is
+  current only as stated below; the historical waiver remains preserved and must not be rewritten:
+
+  ${c17Status}
+
+  This bounded Decision Notice walkthrough does not by itself close the project-level MDD section 19
+  or section 20 debt, establish the omitted browser/viewport and reduced-motion/zoom coverage, or
+  authorize code, deployment, production reuse, or Phase 7 work.
 
   One live round is one sample. Everything known about these roles behaving as distinct agents comes
   from a single thirteen-turn day.

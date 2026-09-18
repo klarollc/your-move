@@ -163,7 +163,15 @@ export async function openKickoffSession(input: {
 
           // Matching on the turn id is what keeps a thirteen-turn round from replaying turn one.
           const completed = await live.waitForTurnCompleted(turnId, 180_000);
-          const turn = (completed.params as { turn?: { status?: string; items?: unknown[] } }).turn;
+          const turn = (
+            completed.params as {
+              turn?: {
+                status?: string;
+                items?: unknown[];
+                error?: { message?: string } | null;
+              };
+            }
+          ).turn;
           const items = Array.isArray(turn?.items) ? turn.items : [];
 
           for (const item of items) {
@@ -177,7 +185,7 @@ export async function openKickoffSession(input: {
             return {
               ok: false,
               code: "TURN_COMPLETION_INVALID",
-              detail: `turn ${turnId} reported status ${String(turn?.status)}`,
+              detail: describeTurnCompletionFailure(turnId, turn),
               effects,
             };
           }
@@ -221,6 +229,17 @@ export async function openKickoffSession(input: {
     if (supervisor) await supervisor.stop();
     if (home) await home.dispose();
   }
+}
+
+export function describeTurnCompletionFailure(
+  turnId: string,
+  turn: { status?: string; error?: { message?: string } | null } | undefined,
+): string {
+  const status = String(turn?.status);
+  const message = turn?.error?.message?.trim();
+  return message
+    ? `turn ${turnId} reported status ${status}: ${message}`
+    : `turn ${turnId} reported status ${status}`;
 }
 
 function itemKindFor(type: string): string {

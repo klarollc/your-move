@@ -13,18 +13,24 @@ projections of the same canonical state. See MDD §2.
 
 ## Current status
 
-**Phase 4 is complete, Phase 6 is complete, and Phase 5 is authorized and not yet started.**
+**Phase 4 is complete, Phase 6 is complete, and Phase 5 is authorized. The owner has now marked C-17
+met after the bounded Decision Notice NVDA walkthrough; the walkthrough findings remain open and the
+independent release-review verdict has not been refreshed.**
 
 The bounded live D-25 kickoff ran its full thirteen turns on 2026-09-14: six promoted roles, six
 distinct bindings, no external effect. The owner approved the charter it produced, with its ten
 evidence gaps as blocking conditions. Phase 6 promoted `reconciliation-b-clarity` to the Active
 visual system.
 
-Carried forward unresolved: MDD sections 19 and 20 were waived in Phase 4 and are still unmet — Phase
-5 is where that gate is repeated properly. Three Phase 6 provenance gaps also remain open.
+Carried forward unresolved: MDD section 20 and the walkthrough's V0/V1 findings and environment
+omissions remain open. The C-17 owner disposition and record are
+`docs/evidence/phase-5/c-17-owner-acceptance.json` and
+`docs/evidence/phase-5/screen-reader-walkthrough-2026-09-18.md`. Three Phase 6 provenance gaps also
+remain open.
 
 **Phase 7 high-fidelity art, deployment, external effects, and any production reuse of fixture code
-remain unauthorized.** Phase 5 Task 10 owner acceptance is owner-run. See `AGENTS.md`,
+remain unauthorized.** Phase 5 overall Task 10 owner acceptance remains separate from the C-17
+disposition and is still owner-run. See `AGENTS.md`,
 `tasks/phase-5-todo.md`, and `docs/evidence/phase-5/approved-charter-v1.md` before changing behavior.
 
 ## Toolchain
@@ -47,4 +53,3 @@ Run `npm run check:toolchain` first when starting work. `npm run verify` runs th
 ## Working principle
 
 The office is a truthful projection of inspectable workflow state. It must never use animation, avatar behavior, or spatial placement to imply work, progress, collaboration, urgency, or availability that is not supported by real events.
-

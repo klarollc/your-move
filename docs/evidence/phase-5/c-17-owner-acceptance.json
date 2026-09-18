@@ -1,0 +1,18 @@
+{
+  "schema": "cuckcode.phase5-owner-disposition.v1",
+  "criterionId": "C-17",
+  "disposition": "met",
+  "ruledBy": "owner",
+  "ruledOn": "2026-09-18",
+  "decisionRecord": "docs/evidence/phase-5/decision-record-2026-09-18-c-17-owner-disposition.md",
+  "evidence": "docs/evidence/phase-5/screen-reader-walkthrough-2026-09-18.md",
+  "supersedesForCurrentStatus": "docs/evidence/phase-5/decision-record-2026-09-14-c-17-waiver.md",
+  "basis": "The owner considers the bounded NVDA run a genuine full screen-reader walkthrough of the Decision Notice surface and accepts the record of screen reader, build, exercised journeys and states, findings, and omissions.",
+  "preserveHistoricalWaiver": true,
+  "doesNotEstablish": [
+    "The provisional V0/V1 findings are fixed or waived.",
+    "The browser version or approved viewport.",
+    "Human reduced-motion or 200% zoom coverage.",
+    "An independent release-review refresh or eligible-for-owner-approval verdict."
+  ]
+}

@@ -1,10 +1,11 @@
 {
   "schema": "cuckcode.phase5-acceptance-waivers.v1",
-  "status": "Owner waivers against the frozen acceptance contract, recorded beside it and never edited into it. A waived criterion is NOT a met criterion, and nothing here may be read as evidence that the underlying property holds.",
+  "status": "Historical owner waivers against the frozen acceptance contract, recorded beside it and never edited into it. The C-17 waiver below is superseded for current status by docs/evidence/phase-5/c-17-owner-acceptance.json; the historical record remains preserved. A waived criterion was NOT a met criterion at the time of the waiver.",
   "ruledBy": "owner",
   "ruledOn": "2026-09-14",
   "appliesTo": "docs/evidence/phase-5/acceptance-contract.json",
-  "readingRule": "Any brief, verdict or packet that reports criterion status must report a waived criterion as 'waived by owner', with its shortfall, and must never fold it into a satisfied count.",
+  "readingRule": "Historical briefs and verdicts must report the waiver as 'waived by owner' with its shortfall. Current status records must read the successor owner disposition and report C-17 as met by owner disposition on 2026-09-18; historical records must not be rewritten.",
+  "currentDisposition": "docs/evidence/phase-5/c-17-owner-acceptance.json",
 
   "waivers": [
     {

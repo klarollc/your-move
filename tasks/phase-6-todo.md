@@ -86,13 +86,14 @@ Read each entry's own status line. Nothing here inherits authorization from the 
       `docs/evidence/phase-6/decision-record-2026-09-13-task-8-selection.md`.
   - The ruling rests on the owner viewing the rendered comparison, which is the evidence class Task
     7's agent reviewers correctly refused to substitute for.
-  - **The reconciliation is built and proposed, not approved.** Base B with three clarity traits
+  - **The reconciliation was built and owner-approved through the golden-state gate.** Base B with three clarity traits
     named and imported from A — a 0.7px edge on solid faces, a tightened contact shadow, and wider
     floor-zone separation. Prop density deliberately not reduced. Thirteen fields changed; shape
     count is identical to B, so nothing structural moved. All seventeen measured contrast pairs pass
     after marker and label colours were re-solved against the darker floor.
     `docs/evidence/phase-6/reconciliation/` — see `before-after.html`.
-  - [ ] **Owner approval of the reconciled system is still required before Task 9 begins.**
+  - [x] **Owner approval of the reconciled system is recorded through the golden-state approval on
+        2026-09-13; promotion to Active followed on 2026-09-14.**
 
 - [x] Task 9: Golden states. **Produced 2026-09-13 in the approved reconciliation.**
   - Acceptance: each carries fixture/event sequence, scene descriptor, DOM-outline expectation, environment manifest, visible-state checklist, accessibility notes, owner approval record.
