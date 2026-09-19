@@ -11,6 +11,7 @@ import {
   ledgerEntriesWithoutAFile,
   normaliseArtifactPath,
   parseLedger,
+  retractedEdges,
   serialiseLedger,
   currentRecords,
   staleRecords,
@@ -295,16 +296,91 @@ for (const artifact of files) {
   });
 }
 
+/**
+ * What a review's product is called, declared per schema. Mirrors `supersessionDerivation
+ * .withinAClass.productFieldBySchema` in the schema document, ruled 2026-09-19.
+ *
+ * The three review kinds name their product differently, so there is no single key to read. The
+ * tempting shortcut — every failed pass begins its status with "NOT ACCEPTED." — is the greps-prose
+ * defect: it passes on whatever phrasing it is handed and fails silently on the next wording.
+ */
+const PRODUCT_FIELD_BY_SCHEMA = new Map([
+  ["cuckcode.phase5-release-review.v1", "verdict"],
+  ["cuckcode.phase5-verification.v1", "assessment"],
+  ["cuckcode.phase5-visual-qa.v1", "annotation"],
+]);
+
+const PASS_NAME = /^pass-(\d+)\.json$/u;
+
+const passNumbers = new Map<string, number>();
+const passClasses = new Map<string, string>();
+const unclassifiedPasses: string[] = [];
+
+for (const artifact of files) {
+  const path = normaliseArtifactPath(artifact);
+  const name = path.slice(path.lastIndexOf("/") + 1);
+  const numbered = PASS_NAME.exec(name);
+  const pass = numbered ? Number(numbered[1]) : PASS_ALIASES.get(path);
+  if (pass === undefined) continue;
+  passNumbers.set(path, pass);
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(await readFile(resolve(EVIDENCE, path), "utf8"));
+  } catch {
+    unclassifiedPasses.push(`${path}: not readable as JSON`);
+    continue;
+  }
+  const schema = (parsed as { schema?: unknown }).schema;
+  if (typeof schema !== "string" || !PRODUCT_FIELD_BY_SCHEMA.has(schema)) {
+    // Refused, never defaulted. Defaulting to carries-a-product would let a new failed review kind
+    // retire a verdict; defaulting the other way would stop a new review kind superseding anything
+    // at all. Both are silent, so neither is allowed.
+    unclassifiedPasses.push(
+      `${path}: schema ${JSON.stringify(schema)} has no declared product field`,
+    );
+    continue;
+  }
+  const field = PRODUCT_FIELD_BY_SCHEMA.get(schema) as string;
+  if (!(field in (parsed as Record<string, unknown>))) {
+    unclassifiedPasses.push(`${path}: schema ${schema} declares ${field}, which the file omits`);
+    continue;
+  }
+  passClasses.set(
+    path,
+    (parsed as Record<string, unknown>)[field] === null ? "productless" : "product",
+  );
+}
+
 const alreadySuperseded = supersededArtifacts(existing);
-const derived = derivePassSupersessions(files, PASS_ALIASES);
+const retracted = retractedEdges(existing);
+const retractionConflicts: string[] = [];
+
+/**
+ * Derivation is skipped entirely when any pass could not be classified. A partial derivation would
+ * emit some edges and not others, and a half-applied ordering is harder to see than none at all.
+ */
+const derived =
+  unclassifiedPasses.length === 0
+    ? derivePassSupersessions(files, PASS_ALIASES, (path) => passClasses.get(path) as string)
+    : [];
+
 for (const edge of derived) {
+  if (retracted.has(`${edge.artifact}\u0000${edge.supersededBy}`)) {
+    // The rule and the ruling disagree. Skipping quietly would let the next build undo a
+    // retraction, which is the abuse P-6 exists to forbid, so it is reported and the gate fails.
+    retractionConflicts.push(
+      `${edge.artifact} -> ${edge.supersededBy} is retracted, and the derivation still produces it`,
+    );
+    continue;
+  }
   if (alreadySuperseded.get(edge.artifact) === edge.supersededBy) continue;
   additions.push({
     op: "supersede",
     artifact: edge.artifact,
     supersededBy: edge.supersededBy,
     recordedAt,
-    why: "a later pass of the same review; the highest-numbered pass is the current one",
+    why: "a later pass of the same review; the highest-numbered pass of its class is the current one",
   });
 }
 
@@ -338,15 +414,33 @@ for (const artifact of files.filter((path) => path.endsWith(".json"))) {
   }
   const declared = (parsed as { previousPasses?: unknown }).previousPasses;
   if (!Array.isArray(declared)) continue;
-  const directory = artifact.slice(0, artifact.lastIndexOf("/"));
+  const citing = normaliseArtifactPath(artifact);
+  const directory = citing.slice(0, citing.lastIndexOf("/"));
   for (const previous of declared) {
     if (typeof previous !== "string") continue;
     const path = normaliseArtifactPath(
       previous.includes("/") ? previous : `${directory}/${previous}`,
     );
-    if (superseded.get(path) === undefined) {
+    // `previousPasses` declares ordering, which is the first half. Requiring supersession outright
+    // was the earlier rule and it is wrong across classes: passes 6, 7 and 8 each declare pass-5 a
+    // previous pass and must not supersede it.
+    const citingNumber = passNumbers.get(citing);
+    const declaredNumber = passNumbers.get(path);
+    if (declaredNumber === undefined || citingNumber === undefined) {
+      declarationConflicts.push(`${citing} declares ${path} a previous pass; it is not a pass`);
+      continue;
+    }
+    if (declaredNumber >= citingNumber) {
       declarationConflicts.push(
-        `${artifact} declares ${path} a previous pass; the ledger does not`,
+        `${citing} declares ${path} a previous pass; it is not earlier in the sequence`,
+      );
+      continue;
+    }
+    // The second half, and the one that still cross-checks the ledger: an earlier pass of the
+    // *same* class is one this pass replaced, so the ledger has to say so.
+    if (passClasses.get(citing) === passClasses.get(path) && superseded.get(path) === undefined) {
+      declarationConflicts.push(
+        `${citing} declares ${path} a previous pass of the same class; the ledger does not record it superseded`,
       );
     }
   }
@@ -378,6 +472,8 @@ const ok =
   orphaned.length === 0 &&
   stale.length === 0 &&
   citations.length === 0 &&
+  retractionConflicts.length === 0 &&
+  unclassifiedPasses.length === 0 &&
   declarationConflicts.length === 0;
 
 process.stdout.write(
@@ -399,6 +495,9 @@ process.stdout.write(
       ledgerEntriesWithoutAFile: orphaned,
       staleDigests: stale,
       supersededCitations: citations,
+      retractions: retracted.size,
+      retractionConflicts,
+      unclassifiedPasses,
       declarationConflicts,
     },
     null,

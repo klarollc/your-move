@@ -59,6 +59,18 @@ the first turn before producing a verdict. Pass 8 records the concrete runtime f
 preserved and provenance is clean; no eligibility claim is made here. A later refresh requires a
 working runtime connection, then Task 10 remains owner-run.
 
+**The ledger disagreed about this until 2026-09-19, and the ledger was wrong.** Because passes 6, 7
+and 8 are named `pass-<N>.json`, the supersession derivation retired everything below them, so
+`provenance.jsonl` recorded pass 5 as superseded by pass 8 — a failed connection standing as the
+current release review, and every honest citation of the real verdict reading as a stale one under
+P-3. Ruled and closed the same day:
+`docs/evidence/phase-5/decision-record-2026-09-19-supersession-retraction.md`. Supersession now
+applies **within a class** — a pass retires an earlier pass only when both carry the product their
+review exists to produce, or neither does — and the fifteen wrong edges are withdrawn by a new
+`unsupersede` op under P-6 rather than edited out. Recorded as DF-020. **Pass 5 is current again and
+passes 6 to 8 supersede only each other.** Nothing about the verdict changed; what changed is that
+the ledger can say which artifact is current. `npm run phase5:provenance` reports the live state.
+
 **Ruled and closed 2026-09-14**, `docs/evidence/decision-record-2026-09-14-scripts-typecheck.md`.
 `scripts/` was not in the tsconfig project graph and had never been typechecked;
 `npm run typecheck:scripts` made it visible and reported two pre-existing errors in completed
@@ -130,6 +142,12 @@ exists any more — `scripts/phase5-evidence-inventory.ts` reads the tree and re
   artifacts, both of which are attributed. `npm run phase5:provenance` reports the live numbers.
   One of the forty-four, `phase-5/side-effect-review.json`, has **five recorded digests at an
   identical 4498 bytes** and no producer rule, so every run of its producer re-records it. Unruled.
+  The ledger gained a retraction op on 2026-09-19 (P-6, DF-020). It is the one op that can change
+  what the ledger says is current, so two things bound it: a test asserts a retraction alters no
+  record entry, and the builder **refuses** rather than skips a derived edge that is currently
+  retracted, so no later build can quietly undo a ruling. **Unruled and worth knowing:**
+  `authorizedBy` is required to be a non-empty string and is not resolved against the tree, so a
+  retraction citing a decision record that does not exist would be accepted.
 - **Three Phase 6 provenance gaps** carry forward: no external visual reference informed any
   candidate; the generated half of the approved hybrid medium was never produced; four of six named
   typefaces cannot be embedded, with Phase 7 embedding as the named trigger.

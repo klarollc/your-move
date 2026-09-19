@@ -920,3 +920,65 @@ did this surface publish, in order, during this transition*. One characterizatio
 for this channel. Nothing generalizes it, and the owner has separately indicated that
 screen-reader behaviour may be out of scope for a single-user tool — which, if ruled, should amend
 C-17 and MDD section 19 rather than leave them asserted and unenforced.
+
+### DF-020 — The instrument that says which artifact is current said the wrong one, for a day
+
+Observed 2026-09-19, reading the provenance ledger at the start of a session, before doing anything
+with it.
+
+`docs/evidence/provenance.jsonl` recorded `phase-5/release-review/pass-5.json` as superseded by
+`pass-8.json`, and `pass-1.json` through `pass-4.json` as superseded by `pass-8.json` rather than by
+`pass-5.json`. Passes 6, 7 and 8 are records that an attempt was made and produced nothing: each
+carries `"verdict": null` after a single turn, and pass 8 names the runtime failure
+`stream disconnected before completion`. They are honest artifacts. What was wrong is that
+`derivePassSupersessions` ordered every `pass-<N>.json` in a directory and retired all but the
+highest, so each failed attempt silently retired the verdict below it.
+
+The consequence reaches further than the ledger. P-3 forbids a current artifact citing a superseded
+one, so for one day the rule said that the current release review was a connection error and that
+every citation of the actual verdict was a stale citation. `docs/HANDOFF.md` cited pass 5 as current
+throughout. Both could not be right, and nothing in the repository could tell which.
+
+## What it cost
+
+Nothing yet, and only because nobody built a brief in that window. DF-015 is what it would have
+cost: four briefs describing a world that did not exist, three wasted agent turns, and two release
+verdicts thirty percentage points apart on an unchanged implementation. The ledger exists to make
+that impossible, and it was the thing that was wrong.
+
+## The shape
+
+It is the recurring defect in its purest form so far. Every test of the derivation passed, because
+every test asked whether the rule was applied correctly. None asked whether the rule fit the
+material it was being applied to. A convention — the highest pass wins — was written when every pass
+in the tree had produced something, and it stayed correct until the first pass that did not.
+
+It is also a gate reporting closed while open, DF-012's variant, and it arrived the same way: a
+guard exact inside a boundary nobody examined. The boundary here is the difference between a pass
+and an attempt, which no artifact in the tree had ever needed to name.
+
+Worth stating plainly: this was found by reading, not by anything failing. Nine gates ran green over
+it. The repository has no check of the form *is the rule we are applying the right rule for this
+material*, and it is not obvious that one can exist.
+
+## Product response
+
+Ruled 2026-09-19:
+`docs/evidence/phase-5/decision-record-2026-09-19-supersession-retraction.md`.
+
+Supersession now applies within a class — a pass retires an earlier pass only when both carry the
+product their review exists to produce, or neither does — and what counts as that product is a
+declared map from schema id to field, with an unknown schema refused rather than defaulted. The
+fifteen wrong edges are withdrawn by a new `unsupersede` op under P-6, appended rather than edited,
+each naming the ruling that authorised it.
+
+**The structural half is what matters.** Retracting fifteen edges fixes today. The class rule is
+what stops the next failed attempt from recreating the defect, and it is the reason this was not
+closed with fifteen hand-written lines alone.
+
+**Recorded and unruled:** a retraction op in an append-only ledger is an edit mechanism if nobody
+bounds it. P-6 bounds it in prose and one test asserts the bound — that a retraction changes no
+record entry. The builder refuses, rather than skips, a derived edge that is currently retracted, so
+a future build cannot quietly undo a ruling. Neither guard covers the case of a retraction that is
+authorised by a decision record that does not exist; `authorizedBy` is required to be a non-empty
+string and is not resolved against the tree.

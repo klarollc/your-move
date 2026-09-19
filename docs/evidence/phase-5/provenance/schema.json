@@ -2,19 +2,18 @@
   "schema": "cuckcode.evidence-provenance-schema.v1",
   "status": "Authored 2026-09-14 to close charter gap 3, which the charter dispositioned as design work inside Phase 5 rather than as an owner decision. Ruled by the owner on 2026-09-14: the sidecar ledger, append-only.",
   "closesGap": 3,
-  "unblocks": ["C-18"],
+  "unblocks": [
+    "C-18"
+  ],
   "ruledBy": "owner",
   "ruledOn": "2026-09-14",
   "decisionRecord": "docs/evidence/phase-5/decision-record-2026-09-14-c-18-provenance.md",
   "ledger": "docs/evidence/provenance.jsonl",
-
   "whyASidecarAndNotAFieldOnEachArtifact": "Recording that an artifact has been superseded means writing into an artifact whose owner gate has already closed. That is the mutation defects D4-P-001 and D4-P-003 were, and the evidence-immutability guard exists to prevent it. An append-only ledger records the same fact by adding a line, so no accepted artifact is ever edited. The repository had already converged on this shape four separate times by hand — amendments.json, focus-contract.json, journeys.json and pass-2-crosscheck-correction.json are all records placed beside an artifact rather than into it.",
-
   "notToBeConfusedWith": {
     "artifact": "docs/evidence/phase-6/provenance-register.json",
     "why": "That register is about creative provenance — originality attestation, references consulted, licence basis for the visual candidates. This schema is about artifact provenance — what produced a file, from which inputs, under whose authorization, and what replaced it. The shared word covers two unrelated obligations."
   },
-
   "entries": {
     "record": {
       "op": "record",
@@ -32,9 +31,16 @@
       "supersededBy": "the artifact that replaced it",
       "recordedAt": "ISO-8601 UTC",
       "why": "why it was replaced, in a sentence"
+    },
+    "unsupersede": {
+      "op": "unsupersede",
+      "artifact": "the artifact whose supersession is being withdrawn",
+      "supersededBy": "the artifact the retracted edge named; the pair is the key, so an edge to any other artifact is unaffected",
+      "recordedAt": "ISO-8601 UTC",
+      "why": "why the edge should never have been derived, in a sentence",
+      "authorizedBy": "path to the decision record that ruled the retraction; never null"
     }
   },
-
   "rules": [
     {
       "id": "P-1",
@@ -50,7 +56,14 @@
       "id": "P-3",
       "rule": "No artifact that is still current may cite a superseded artifact, except in a field declared historical.",
       "why": "This is the enforcement half of C-18 — 'a superseded artifact can never be cited as current'. It is not hypothetical: release pass 1 reported 4 of 21 and pass 3 reported 11 of 21 on an unchanged implementation, and briefs built from superseded inputs are DF-015.",
-      "historicalFields": ["previousPasses", "supersedes", "supersededBy", "supersededPasses", "supersededPassAliases", "notToBeConfusedWith"]
+      "historicalFields": [
+        "previousPasses",
+        "supersedes",
+        "supersededBy",
+        "supersededPasses",
+        "supersededPassAliases",
+        "notToBeConfusedWith"
+      ]
     },
     {
       "id": "P-4",
@@ -62,9 +75,17 @@
       "rule": "Producers are attributed from a declared map, and anything unmatched is recorded as producerKind 'unknown' and counted in the build output.",
       "why": "Guessing an origin is worse than recording that it is not established. The count is surfaced so that unattributed artifacts stay visible rather than becoming the silent majority.",
       "knownShortfall": "Most pre-Phase-5 evidence is recorded as unknown. No code in the tree writes those files and their authorship is recorded nowhere, so the ledger states that the origin is not established rather than inventing one. Whether that satisfies C-18's 'every evidence artifact' is a release-review judgement and is deliberately not asserted here."
+    },
+    {
+      "id": "P-6",
+      "rule": "A supersession edge may be withdrawn by an unsupersede entry naming the same pair, and by nothing else. A retraction withdraws a derivation that was wrong; it never removes a line, never changes what any artifact said, and never alters a record entry.",
+      "why": "Supersession here is derived from a convention, and a convention can be applied to material it does not fit — which is what happened on 2026-09-18, when three failed attempts retired the verdict below them. Without a retraction the only remedies are editing the ledger, which P-4 forbids, or editing the artifacts, which is the mutation D4-P-001 and D4-P-003 were. The danger is that a retraction op becomes a general edit mechanism, so its reach is stated here and asserted by test: an unsupersede entry affects exactly one supersede pair, and no record entry digest, producer or authorization.",
+      "ruledBy": "owner",
+      "ruledOn": "2026-09-19",
+      "decisionRecord": "docs/evidence/phase-5/decision-record-2026-09-19-supersession-retraction.md",
+      "readerSemantics": "The superseding artifact is the last edge naming it that has not been retracted. Retracting a wrong edge falls back to the earlier correct edge rather than dropping the artifact from the superseded set."
     }
   ],
-
   "supersessionDerivation": {
     "from": "the pass-N convention only",
     "rule": "Within one directory, files named pass-<N>.json are ordered by N and every pass but the highest is superseded by the highest.",
@@ -82,9 +103,21 @@
         "example": "phase-5/surface-contract/amendments.json",
         "why": "It reads 'supersedes: surface-contract.json', but the amendments file does not supersede the surface contract — it amends two names in it, and the contract remains the authored artifact that everything else cites. Treating that field as a supersession edge would mark the live contract superseded and forbid every current citation of it. A field named for a relation it does not express is exactly the ambiguity C-18 exists to remove; it is recorded here rather than acted on."
       }
-    ]
+    ],
+    "withinAClass": {
+      "rule": "A pass supersedes an earlier pass only when both carry the product their review exists to produce, or neither does. Failed attempts form their own sequence and never retire a pass that carries a product.",
+      "why": "Passes 6, 7 and 8 of the release review each carry verdict null, turnsSpent 1 and a TURN_COMPLETION_INVALID attempt. They are honest records that an attempt produced nothing. Ordering them alongside the passes that produced verdicts made each failed connection the current release review, which is the state the ledger exists to make impossible.",
+      "ruledBy": "owner",
+      "ruledOn": "2026-09-19",
+      "productFieldBySchema": {
+        "cuckcode.phase5-release-review.v1": "verdict",
+        "cuckcode.phase5-verification.v1": "assessment",
+        "cuckcode.phase5-visual-qa.v1": "annotation"
+      },
+      "unknownSchema": "refused, not defaulted. Defaulting to carries-a-product would let a new failed review kind retire a verdict; defaulting the other way would stop a new review kind superseding anything at all. Both are silent, so neither is allowed.",
+      "notDerivedFromStatus": "Every failed pass so far begins its status with NOT ACCEPTED. A prefix test over that string would work today and is the greps-prose defect: it passes on whatever phrasing it is handed. The product field is structured and is what the review is for."
+    }
   },
-
   "retention": {
     "policy": "Superseded artifacts are kept indefinitely. Nothing is pruned.",
     "ruledBy": "owner",
