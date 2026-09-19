@@ -249,3 +249,62 @@ describe("supersession derivation", () => {
     ).toStrictEqual([]);
   });
 });
+
+describe("a field that holds preserved history", () => {
+  const entries: LedgerEntry[] = parseLedger(
+    [
+      JSON.stringify({
+        op: "record",
+        artifact: "phase-5/old.json",
+        sha256: "a".repeat(64),
+        bytes: 1,
+        recordedAt: "2026-09-14T00:00:00.000Z",
+        producerKind: "unknown",
+        producedBy: null,
+        authorizedBy: null,
+      }),
+      JSON.stringify({
+        op: "supersede",
+        artifact: "phase-5/old.json",
+        supersededBy: "phase-5/new.json",
+        recordedAt: "2026-09-14T00:00:01.000Z",
+        why: "a later pass",
+      }),
+    ].join("\n"),
+  );
+
+  /**
+   * P-3 exists so a CURRENT claim cannot rest on a superseded artifact. A field whose declared
+   * purpose is to name what is preserved as history makes no current claim, and the scope overlay
+   * needs one: the waiver, the disposition and the refusing review passes are exactly what it must
+   * point at. The field is named for what it holds rather than borrowing a name that means
+   * something else — `amendments.json` already carried a `supersedes` that did not mean
+   * supersession, and that was recorded as a defect, not a pattern to copy.
+   */
+  it("C-18, P-3: a citation inside historyPreserved is not a current claim", () => {
+    expect(
+      supersededCitations(
+        "phase-5/scope.json",
+        { historyPreserved: ["phase-5/old.json"] },
+        entries,
+      ),
+    ).toStrictEqual([]);
+  });
+
+  /**
+   * The anti-blinding half. Widening an exemption is how a guard stops guarding, so the same
+   * citation in an ordinary field must still be caught. This passes before the widening too, and is
+   * recorded as the mutation check rather than as evidence of the new behaviour.
+   */
+  it("C-18, P-3: the same citation in an ordinary field is still refused", () => {
+    expect(
+      supersededCitations("phase-5/scope.json", { seeAlso: ["phase-5/old.json"] }, entries),
+    ).toStrictEqual([
+      {
+        citedBy: "phase-5/scope.json",
+        cited: "phase-5/old.json",
+        supersededBy: "phase-5/new.json",
+      },
+    ]);
+  });
+});

@@ -369,3 +369,21 @@ export function composeSideEffectReview(input: SideEffectReviewInput) {
     ],
   };
 }
+
+export type ReviewCheck = Readonly<{ ok: boolean; reason: "CURRENT" | "STALE" | "MISSING" }>;
+
+/**
+ * DF-018's root, not its symptom.
+ *
+ * Removing the wall-clock field made this artifact's bytes stable, so the gate became idempotent.
+ * But that only holds while the output happens to be deterministic: the next field someone adds
+ * takes it away again, silently, and the failure surfaces one stage earlier on a later run. A
+ * verify stage should not write into the committed evidence tree at all. It should read what is
+ * there and refuse when it disagrees, the way phase5:provenance does in check mode.
+ *
+ * Decided by the agent under owner delegation, 2026-09-18.
+ */
+export function checkReview(rendered: string, onDisk: string | null): ReviewCheck {
+  if (onDisk === null) return { ok: false, reason: "MISSING" };
+  return onDisk === rendered ? { ok: true, reason: "CURRENT" } : { ok: false, reason: "STALE" };
+}

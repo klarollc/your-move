@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  checkReview,
   composeSideEffectReview,
   importSpecifiers,
   resolveSpecifier,
@@ -164,5 +165,28 @@ describe("the review projection", () => {
     });
     expect(review.ok).toBe(false);
     expect(review.findings.network).toEqual(["m.ts:1 fetch"]);
+  });
+});
+
+describe("the gate reads the artifact rather than rewriting it", () => {
+  /**
+   * DF-018 again, at the root. A stage that rewrites committed evidence on every run is only
+   * idempotent by luck; a stage that reads it and refuses is idempotent by construction. This is
+   * also the rule the repository already states for browser captures and does not enforce for
+   * scripts: evidence-immutability.test.mjs polices specs, not builders.
+   */
+  it("C-11, DF-018: an artifact matching a fresh render is current", () => {
+    expect(checkReview("same bytes\n", "same bytes\n")).toEqual({
+      ok: true,
+      reason: "CURRENT",
+    });
+  });
+
+  it("C-11, DF-018: an artifact that has drifted is refused, not rewritten", () => {
+    expect(checkReview("fresh\n", "older\n")).toEqual({ ok: false, reason: "STALE" });
+  });
+
+  it("C-11, DF-018: a missing artifact is refused by its own reason", () => {
+    expect(checkReview("fresh\n", null)).toEqual({ ok: false, reason: "MISSING" });
   });
 });

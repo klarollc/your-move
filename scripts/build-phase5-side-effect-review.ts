@@ -2,6 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 import {
+  checkReview,
   composeSideEffectReview,
   reachableModules,
   scanModule,
@@ -69,18 +70,38 @@ const review = composeSideEffectReview({
 });
 const { ok, findings: byCategory } = review;
 
-await writeFile(OUT, `${JSON.stringify(review, null, 2)}\n`, "utf8");
+/**
+ * Checks by default; writes only with --write.
+ *
+ * DF-018: a verify stage that rewrites committed evidence on every run is idempotent only while its
+ * output happens to be deterministic, and the failure surfaces a stage early on a later run. The
+ * repository already states this rule for browser captures — they route through
+ * tests/support/evidence-output.ts and write into docs/evidence only under
+ * CUCKCODE_REGENERATE_EVIDENCE — and scripts/evidence-immutability.test.mjs enforces it against
+ * specs but not against builders, which is how this script sat outside a rule it violated.
+ * Regenerating is now a deliberate act: npm run phase5:sideeffects:write.
+ */
+const WRITE = process.argv.includes("--write");
+const rendered = `${JSON.stringify(review, null, 2)}\n`;
+const onDisk = await readFile(OUT, "utf8").catch(() => null);
+const artifact = WRITE ? { ok: true, reason: "WRITTEN" as const } : checkReview(rendered, onDisk);
+
+if (WRITE) await writeFile(OUT, rendered, "utf8");
 
 process.stdout.write(
   `${JSON.stringify({
-    ok,
+    ok: ok && artifact.ok,
+    mode: WRITE ? "write" : "check",
+    artifact: artifact.reason,
+    findingsPass: ok,
     modulesScanned: reachable.modules.length,
     externalPackages: reachable.external.length,
     unreadable: reachable.unreadable,
     findings: Object.fromEntries(
       Object.entries(byCategory).map(([category, found]) => [category, found.length]),
     ),
+    ...(artifact.ok ? {} : { remedy: "npm run phase5:sideeffects:write" }),
   })}\n`,
 );
 
-if (!ok) process.exitCode = 1;
+if (!ok || !artifact.ok) process.exitCode = 1;

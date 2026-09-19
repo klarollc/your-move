@@ -75,6 +75,7 @@
     "phase5:provenance:write": "tsx scripts/build-phase5-provenance.ts --write",
     "phase5:c19:record": "tsx scripts/record-phase5-c19-acceptance.ts",
     "phase5:sideeffects": "tsx scripts/build-phase5-side-effect-review.ts",
+    "phase5:sideeffects:write": "tsx scripts/build-phase5-side-effect-review.ts --write",
     "typecheck:scripts": "tsc -p tsconfig.scripts.json"
   },
   "devDependencies": {
