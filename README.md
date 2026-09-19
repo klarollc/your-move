@@ -22,8 +22,10 @@ distinct bindings, no external effect. The owner approved the charter it produce
 evidence gaps as blocking conditions. Phase 6 promoted `reconciliation-b-clarity` to the Active
 visual system.
 
-Carried forward unresolved: MDD section 20 and the walkthrough's V0/V1 findings and environment
-omissions remain open. The C-17 owner disposition and record are
+Carried forward unresolved: MDD section 20's comprehension debt remains open. The human
+screen-reader walkthrough was ruled **out of scope** on 2026-09-18 for this single-user tool, which
+is not the same as met — screen-reader behaviour has never been verified and is not claimed.
+Automated accessibility checks and keyboard operability remain required. The C-17 owner disposition and record are
 `docs/evidence/phase-5/c-17-owner-acceptance.json` and
 `docs/evidence/phase-5/screen-reader-walkthrough-2026-09-18.md`. Three Phase 6 provenance gaps also
 remain open.

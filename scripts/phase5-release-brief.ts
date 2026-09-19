@@ -39,10 +39,23 @@ export type C17CurrentDisposition = Readonly<{
   ruledOn?: string;
 }>;
 
+/** An out-of-scope ruling from the scope overlay. Out of scope is never satisfaction. */
+export type C17Scope = Readonly<{
+  criterionId?: string;
+  disposition?: string;
+  ruledOn?: string;
+}>;
+
 export function formatC17Status(
   disposition: C17CurrentDisposition | null,
   walkthroughPresent: boolean,
+  scope: C17Scope | null = null,
 ): string {
+  // Scope outranks the waiver and the met disposition alike: a criterion nobody intends to satisfy
+  // must never be reported as satisfied, and the reviewer is told what has not been verified.
+  if (scope?.criterionId === "C-17" && scope.disposition === "out-of-scope") {
+    return `C-17 is out of scope by owner ruling on ${scope.ruledOn ?? "an unrecorded date"}: the human screen-reader walkthrough obligation is retired for this single-user tool. This is not satisfaction and must not be counted as one. What a screen reader announces for this surface has never been verified. Automated accessibility checks, keyboard operability and accessible naming remain in scope, and the historical waiver, disposition and walkthrough records are preserved.`;
+  }
   if (disposition?.criterionId === "C-17" && disposition.disposition === "met") {
     return `C-17 is met by owner disposition on ${disposition.ruledOn ?? "an unrecorded date"}; the historical waiver remains preserved, the walkthrough's findings and environment omissions remain open, and this does not replace the independent release review.`;
   }
@@ -80,13 +93,20 @@ export async function unmetCriteria(): Promise<UnmetCriterion[]> {
     "docs/evidence/phase-5/c-17-owner-acceptance.json",
     null,
   );
+  const scopeOverlay = await readJson<{ exclusions: C17Scope[] }>(
+    "docs/evidence/phase-5/acceptance-contract-scope.json",
+    { exclusions: [] },
+  );
+  const c17OutOfScope = scopeOverlay.exclusions.some(
+    (exclusion) => exclusion.criterionId === "C-17" && exclusion.disposition === "out-of-scope",
+  );
 
   const walkthroughPresent = has("screen-reader");
   const c17Met =
     walkthroughPresent &&
     currentC17Disposition?.criterionId === "C-17" &&
     currentC17Disposition.disposition === "met";
-  if (!c17Met) {
+  if (!c17Met && !c17OutOfScope) {
     const waiver = waived.get("C-17");
     unmet.push({
       id: "C-17",
@@ -218,7 +238,15 @@ export async function buildReleaseBrief(): Promise<string> {
   )
     .then(() => true)
     .catch(() => false);
-  const c17Status = formatC17Status(c17Disposition, c17Walkthrough);
+  const c17Scope = await readJson<{ exclusions: C17Scope[] }>(
+    "docs/evidence/phase-5/acceptance-contract-scope.json",
+    { exclusions: [] },
+  );
+  const c17Status = formatC17Status(
+    c17Disposition,
+    c17Walkthrough,
+    c17Scope.exclusions.find((exclusion) => exclusion.criterionId === "C-17") ?? null,
+  );
 
   const criteria = contract.criteria
     .map(
@@ -276,6 +304,7 @@ export async function buildReleaseBrief(): Promise<string> {
         "docs/evidence/phase-5/c-17-owner-acceptance.json",
         "docs/evidence/phase-5/decision-record-2026-09-18-c-17-owner-disposition.md",
         "docs/evidence/phase-5/screen-reader-walkthrough-2026-09-18.md",
+        "docs/evidence/phase-5/acceptance-contract-scope.json",
       ].map(async (path) => [path, await digest(path)] as const),
     ),
   );

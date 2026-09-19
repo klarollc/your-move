@@ -864,3 +864,59 @@ evidence tree on every run. `scripts/evidence-immutability.test.mjs` polices tha
 browser specs, so an evidence builder in `scripts/` was never in scope for it. The honest question
 is whether a builder inside the gate should write at all, or check and refuse the way
 `phase5:provenance` does in check mode.
+### DF-019 — A channel with no memory of what it published, and a suite that only reads final state
+
+Observed 2026-09-18, while writing a characterization test for the Decision Notice announcement
+channel after the screen-reader walkthrough.
+
+The surface has exactly one spoken channel: a single `aria-live="polite"` paragraph whose text is
+replaced. `reportFailure` writes the refusal wording into it. Writing an identical string to the
+same text node is not a DOM mutation, so **the same refusal twice announces once.** Submit a
+deferral with an empty reason, get the correction, submit it empty again, and the channel is silent.
+
+The visible channel has the same defect in a different sense: the `role="alert"` paragraph already
+holds that exact text, so the second submit produces no visible change either. A person clicking
+Submit a second time gets no response in any modality.
+
+## What it cost
+
+Nothing yet, and that is the point. It was found by reading the source and writing one assertion,
+not by anything failing.
+
+## The shape
+
+**Every UI assertion in this repository reads final state.** 71 component tests, 46 accessibility
+tests and 62 visual plates all ask what the DOM *is* after a transition. None asks what it
+*published on the way* — and a channel whose whole job is to emit a sequence of transient
+announcements cannot be falsified by a test that only looks at the end.
+
+That is why this survived an owner-performed NVDA walkthrough: the walkthrough exercised each
+refusal once, which is the only case that works. And it is the concrete instance behind the
+prioritise-the-UI finding, which until now was an argument from a test-to-source ratio. The ratio
+said the UI was under-tested. This says what kind of test is missing.
+
+It is also the recurring defect once more. The channel is correct at every moment anyone inspected
+it. Nobody examined the boundary — the transition between two moments — and there was no artifact
+recording what crossed it.
+
+## Product response
+
+Fixed under owner ruling 2026-09-18: the announcement state carries a sequence number that keys the
+rendered child, so React replaces the node and the mutation is real. C-08 forbids timers in this
+component, which rules out the usual clear-then-reset remedy; the keyed child needs none.
+`docs/evidence/phase-5/decision-record-2026-09-18-announcement-republish.md`.
+
+**The fix is necessary and not shown to be sufficient.** Whether a node replacement inside a polite
+region actually makes a screen reader speak is real-browser behaviour, and the test asserts only
+that a DOM mutation occurred. No suite here can close that gap: jsdom has no assistive technology
+and neither does Playwright. It is queued for the next human walkthrough alongside the unresolved
+C17-SR-01 re-walk.
+
+**Recorded and unruled:** the visible `role="alert"` channel still produces no change on a repeated
+identical refusal. The same remedy applies and was not authorized here.
+
+**Standing gap, stated rather than fixed:** there is no test in this repository of the form *what
+did this surface publish, in order, during this transition*. One characterization test now exists
+for this channel. Nothing generalizes it, and the owner has separately indicated that
+screen-reader behaviour may be out of scope for a single-user tool — which, if ruled, should amend
+C-17 and MDD section 19 rather than leave them asserted and unenforced.

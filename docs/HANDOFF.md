@@ -109,12 +109,17 @@ exists any more — `scripts/phase5-evidence-inventory.ts` reads the tree and re
 
 ## Open debts, none of them closed
 
-- **MDD §19 and §20 remain unmet at the project level.** Comprehension tasks T3/T5/T6 were never
-  performed. A bounded NVDA walkthrough of the Decision Notice surface did run on 2026-09-18 and
-  the owner recorded C-17 met, but that narrow disposition does not close the project-level gate or
-  the walkthrough's V0/V1 findings and environment omissions. **Phase 8 inherits this debt.** What
-  survives: governance did not close the gate by itself, and the independent refresh is still
-  blocked on a working runtime connection rather than treated as a verdict.
+- **MDD §20 remains unmet at the project level.** Comprehension tasks T3/T5/T6 were never
+  performed, and **Phase 8 inherits that.**
+- **MDD §19's walkthrough obligation was retired 2026-09-18**, owner ruling, screen readers out of
+  scope for a single-user tool. **Phase 8 no longer inherits it.** C-17 is excluded by overlay, not
+  satisfied: screen-reader behaviour has never been verified and no brief may claim otherwise. The
+  walkthrough's V0/V1 findings were separately addressed — SR-03 and SR-04 by the 2026-09-18
+  tab-order fix, SR-02 and SR-05 reclassified, SR-01 still unresolved. Automated accessibility
+  tests, keyboard operability and accessible naming stay in scope.
+  What survives from the earlier gate: governance did not close it by itself, three review passes
+  refused to certify against it, and the independent refresh is still blocked on a working runtime
+  connection rather than treated as a verdict.
 - **Gap 3 closed 2026-09-14** with the sidecar ledger. `npm run phase5:provenance` runs inside
   `npm run verify`: 282 artifacts recorded with digest and producer, six supersession edges, and the
   enforcement that matters — no current artifact may cite a superseded one outside a declared

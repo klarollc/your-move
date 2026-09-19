@@ -289,6 +289,17 @@ approval.
   - **Does not establish what a screen reader announces.** No suite here can; that is the
     announcement-sequence work still to come.
 
+- [x] **C-17 ruled out of scope 2026-09-18.** The human screen-reader walkthrough obligation is
+      retired for this single-user tool.
+      `docs/evidence/phase-5/decision-record-2026-09-18-screen-reader-scope.md`, overlay in
+      `acceptance-contract-scope.json` beside the frozen contract.
+  - **Out of scope is not met.** No brief or verdict may count C-17 as satisfied; the release brief
+    enforces it and the wording states that screen-reader behaviour has never been verified.
+  - In scope still: the 46 automated accessibility tests, keyboard operability, accessible naming.
+    MDD section 19's walkthrough is retired; **section 20's comprehension debt is untouched.**
+  - The waiver, the met disposition, the walkthrough record and the three refusing review passes are
+    preserved as history. SR-01 stays open in the record rather than closed by the scope change.
+
 - [ ] Task 10: **Owner acceptance. Owner-run.** Accept the fixture outcome or record bounded
       revisions. Atomically creates the D-24 review that Phase 8 closes.
 

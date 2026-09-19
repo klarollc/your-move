@@ -635,3 +635,55 @@ describe("non-actionable controls stay reachable", () => {
     expect(storage.value).toBeNull();
   });
 });
+
+describe("the announcement channel", () => {
+  /**
+   * The surface has exactly one spoken channel: a single aria-live="polite" paragraph whose text is
+   * replaced. Nothing in this repository asserts the SEQUENCE of values it publishes, only its final
+   * text, which is why 67 component, 46 accessibility and 62 visual tests could not have caught
+   * C17-SR-01 whatever its cause.
+   *
+   * WHAT THESE TESTS CANNOT ESTABLISH, and no suite here can: whether a screen reader announces any
+   * of it. jsdom has no assistive technology and neither does Playwright. What is asserted is that
+   * the DOM publishes a distinguishable mutation for each thing a person is meant to hear. Delivery
+   * remains unverified and is the standing gap behind MDD section 19.
+   */
+  const recordPublications = () => {
+    const region = screen.getByTestId("decision-announcement");
+    const published: string[] = [];
+    const observer = new MutationObserver(() => published.push(region.textContent ?? ""));
+    observer.observe(region, { characterData: true, childList: true, subtree: true });
+    return { published, stop: () => observer.disconnect() };
+  };
+
+  it("C-10: a transient announcement is always followed by a settled one", async () => {
+    const user = userEvent.setup();
+    renderNotice(makeStorage());
+    const recorder = recordPublications();
+
+    await user.click(screen.getByRole("button", { name: "Acknowledge" }));
+
+    recorder.stop();
+    expect(recorder.published.length).toBeGreaterThan(0);
+    // Whatever is published last must be a settled state, never the in-flight one.
+    expect(recorder.published.at(-1)).not.toContain("Saving");
+  });
+
+  it("C-10: the same refusal twice publishes twice, so it can be heard twice", async () => {
+    const user = userEvent.setup();
+    renderNotice(makeStorage());
+    await user.click(screen.getByRole("button", { name: "Defer" }));
+    const recorder = recordPublications();
+
+    await user.click(screen.getByRole("button", { name: "Submit deferral" }));
+    const afterFirst = recorder.published.length;
+    await user.click(screen.getByRole("button", { name: "Submit deferral" }));
+    const afterSecond = recorder.published.length;
+
+    recorder.stop();
+    expect(afterFirst).toBeGreaterThan(0);
+    // An identical string written to the same node is not a mutation, so a person who repeats a
+    // mistake hears nothing the second time. The region must republish rather than go silent.
+    expect(afterSecond).toBeGreaterThan(afterFirst);
+  });
+});

@@ -1172,6 +1172,15 @@ V0/V1 block the gate. V2 requires owner disposition. V3 may be scheduled with ex
 
 ### Manual screen-reader walkthrough
 
+**Retired 2026-09-18 by owner ruling.** CuckCode is a single-user tool and its one user does not
+use a screen reader, so the walkthrough obligation is withdrawn from this section going forward.
+`docs/evidence/phase-5/decision-record-2026-09-18-screen-reader-scope.md`, overlay in
+`docs/evidence/phase-5/acceptance-contract-scope.json`. **Out of scope is not met:** what a screen
+reader announces for any CuckCode surface has never been verified and no document may claim it has.
+Automated accessibility scans, keyboard operability and accessible naming all remain required. The
+requirement below, its standing waiver, and the 2026-09-18 met disposition are preserved as the
+record of what was required when, and the paragraphs that follow are historical from this date.
+
 A recorded manual screen-reader walkthrough is required for any build presented as meeting this
 section. Automated accessibility scans are evidence and are not a substitute; the walkthrough
 covers precisely what those scans cannot perform.

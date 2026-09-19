@@ -32,7 +32,9 @@ as blocking conditions, and authorized Phase 5 under four rulings recorded in
 `docs/evidence/phase-5/decision-record-2026-09-14-phase-5-authorization.md`: **5-A hybrid** — agents
 own design, review and verdict while implementation is driven conventionally, a recorded departure
 from the literal MDD §24 run; **5-B a 60-turn budget** that stops rather than negotiates; **5-D the
-MDD §19/§20 gate repeated properly**, with one screen-reader walkthrough actually performed. The
+MDD §19/§20 gate repeated properly**, with one screen-reader walkthrough actually performed —
+**the walkthrough half of 5-D was retired on 2026-09-18 when the owner ruled screen readers out of
+scope for this single-user tool; §20's comprehension debt is untouched and still open.** The
 charter is `docs/evidence/phase-5/approved-charter-v1.md`. Phase 5 Task 10 owner acceptance remains
 owner-run, and **Phase 7, deployment, external effects and production reuse of fixture code remain
 unauthorized.**
@@ -43,6 +45,12 @@ The owner disposition is `docs/evidence/phase-5/c-17-owner-acceptance.json`; the
 historical. The walkthrough's V0/V1 findings and environment omissions remain open, and this ruling
 does not replace an independent release-review refresh or authorize code, deployment, or production
 reuse changes.
+
+**Amended again 2026-09-18:** the owner ruled the human screen-reader walkthrough **out of scope**.
+C-17 is excluded by overlay in `docs/evidence/phase-5/acceptance-contract-scope.json`; MDD §19's
+walkthrough requirement is retired; Phase 8 no longer inherits it. **Out of scope is not met** — no
+brief or verdict may count C-17 as satisfied, and the release brief enforces that. The 46 automated
+accessibility tests, keyboard operability and accessible naming remain in scope and in the gate.
 
 **Phase 6 is complete as of 2026-09-14.** `reconciliation-b-clarity` is the Active visual system,
 promoted by owner execution under the Phase 6 gate. Phase 7 high-fidelity implementation remains

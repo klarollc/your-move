@@ -1,0 +1,31 @@
+{
+  "schema": "cuckcode.phase5-acceptance-contract-scope.v1",
+  "kind": "overlay",
+  "recordedAt": "2026-09-18",
+  "recordedBy": "owner ruling, in session",
+  "ruling": "docs/evidence/phase-5/decision-record-2026-09-18-screen-reader-scope.md",
+  "why": "Recorded beside the frozen acceptance contract rather than edited into it, the same way acceptance-contract-waivers.json is. Editing an accepted artifact is the mutation behind D4-P-001 and D4-P-003.",
+  "exclusions": [
+    {
+      "criterionId": "C-17",
+      "disposition": "out-of-scope",
+      "ruledOn": "2026-09-18",
+      "scope": "The obligation to perform a human screen-reader walkthrough is retired. CuckCode is a single-user tool and its one user does not use a screen reader.",
+      "stillInScope": [
+        "The 46 automated accessibility tests, including every axe scan. They catch ordinary markup defects and have found real ones.",
+        "Keyboard operability, which the owner does rely on. The 2026-09-18 aria-disabled change was a keyboard-reachability fix and stands on its own merits.",
+        "Accessible names, roles and semantic structure, which the C-09 state matrix and the surface contract both depend on."
+      ],
+      "notSatisfaction": "Out of scope is not met. No brief or verdict may count C-17 as satisfied. What a screen reader announces for this surface has never been verified and is not claimed.",
+      "historyPreserved": [
+        "docs/evidence/phase-5/acceptance-contract-waivers.json",
+        "docs/evidence/phase-5/decision-record-2026-09-14-c-17-waiver.md",
+        "docs/evidence/phase-5/c-17-owner-acceptance.json",
+        "docs/evidence/phase-5/decision-record-2026-09-18-c-17-owner-disposition.md",
+        "docs/evidence/phase-5/screen-reader-walkthrough-2026-09-18.md",
+        "docs/evidence/phase-5/release-review/pass-5.json"
+      ],
+      "prospectiveOnly": "The waiver, the met disposition, the walkthrough record and the three review passes that refused to certify all stand as the record of what was decided when. This ruling changes what is required from 2026-09-18 onward and rewrites none of them."
+    }
+  ]
+}

@@ -126,11 +126,24 @@ export function DecisionNoticeCard({
   const [validation, setValidation] = useState<ValidationState | null>(null);
   const [pendingSave, setPendingSave] = useState<PendingSave | null>(null);
   const [focusRequest, setFocusRequest] = useState<FocusRequest | null>(null);
-  const [announcement, setAnnouncement] = useState(
-    loaded.refusal === null
-      ? "Decision notice loaded"
-      : `Decision notice loaded. A saved state could not be read (${loaded.refusal}) and was not applied; this decision is shown from the start.`,
-  );
+  /**
+   * The spoken channel carries a sequence number, not just text.
+   *
+   * Writing an identical string to the same node is not a DOM mutation, so a live region goes
+   * silent when the same refusal happens twice — a person who repeats a mistake hears nothing
+   * exactly when the correction matters. The sequence keys the rendered child, so React replaces
+   * the node and the mutation is real. C-08 forbids timers in this component, which rules out the
+   * usual clear-then-reset remedy.
+   */
+  const [announcement, setAnnouncementState] = useState<{ text: string; seq: number }>({
+    text:
+      loaded.refusal === null
+        ? "Decision notice loaded"
+        : `Decision notice loaded. A saved state could not be read (${loaded.refusal}) and was not applied; this decision is shown from the start.`,
+    seq: 0,
+  });
+  const setAnnouncement = (text: string) =>
+    setAnnouncementState((previous) => ({ text, seq: previous.seq + 1 }));
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const statusRef = useRef<HTMLDivElement>(null);
@@ -567,8 +580,12 @@ export function DecisionNoticeCard({
         {status === "saving" ? <span className="decision-notice__saving-copy">Saving…</span> : null}
       </footer>
 
-      <p className="decision-notice__announcement" aria-live="polite">
-        {announcement}
+      <p
+        className="decision-notice__announcement"
+        data-testid="decision-announcement"
+        aria-live="polite"
+      >
+        <span key={announcement.seq}>{announcement.text}</span>
       </p>
     </article>
   );
