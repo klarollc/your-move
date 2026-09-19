@@ -57,6 +57,11 @@ export const HISTORICAL_FIELDS = new Set([
   "supersededPasses",
   "supersededPassAliases",
   "notToBeConfusedWith",
+  // Added 2026-09-18 for the C-17 scope overlay, which must point at the waiver, the disposition
+  // and the review passes that refused to certify. A field named for the history it holds makes no
+  // current claim; borrowing an existing name that means something else is the `amendments.json`
+  // defect, where a `supersedes` field did not mean supersession.
+  "historyPreserved",
 ]);
 
 /** The ledger cannot record itself without regress. Excluded by name, never by a pattern. */

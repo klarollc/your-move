@@ -251,27 +251,7 @@ describe("supersession derivation", () => {
 });
 
 describe("a field that holds preserved history", () => {
-  const entries: LedgerEntry[] = parseLedger(
-    [
-      JSON.stringify({
-        op: "record",
-        artifact: "phase-5/old.json",
-        sha256: "a".repeat(64),
-        bytes: 1,
-        recordedAt: "2026-09-14T00:00:00.000Z",
-        producerKind: "unknown",
-        producedBy: null,
-        authorizedBy: null,
-      }),
-      JSON.stringify({
-        op: "supersede",
-        artifact: "phase-5/old.json",
-        supersededBy: "phase-5/new.json",
-        recordedAt: "2026-09-14T00:00:01.000Z",
-        why: "a later pass",
-      }),
-    ].join("\n"),
-  );
+  const entries = [record("phase-5/old.json"), supersede("phase-5/old.json", "phase-5/new.json")];
 
   /**
    * P-3 exists so a CURRENT claim cannot rest on a superseded artifact. A field whose declared
