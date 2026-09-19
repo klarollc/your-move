@@ -1,0 +1,102 @@
+{
+  "schema": "cuckcode.evidence-correction.v1",
+  "kind": "correction",
+  "recordedAt": "2026-09-18",
+  "recordedBy": "agent, under owner approval to record a correction. NOT an owner ruling on the attribution itself: the surface attribution below is derived from the source tree and contradicts the owner's recollection, which is stated rather than overridden.",
+  "summary": "The C-17 screen-reader walkthrough record names the server it was served from but not which surface or query string produced each row. apps/web/src/main.tsx exposes two Decision Notice surfaces and ignores the state parameter on one of them, so the record cannot say what was exercised. This correction records what the source makes derivable, marks the rest unresolved, and alters nothing in the walkthrough record.",
+  "correctsArtifact": "docs/evidence/phase-5/screen-reader-walkthrough-2026-09-18.md",
+  "doesNotAlter": "The walkthrough record, its findings, its disposition, or the owner's C-17 met disposition in docs/evidence/phase-5/c-17-owner-acceptance.json.",
+  "theGap": {
+    "recorded": "Build serving method: loopback Vite dev server at http://127.0.0.1:4173",
+    "notRecorded": "The surface query parameter, and therefore the state parameter, for any row.",
+    "whyItMatters": "main.tsx routes surface=decision-notice to DecisionNoticeFixture and surface=decision-notice-capture to DecisionNoticeCapture. The state parameter is read only for the capture surface; on the interactive surface it is silently ignored, with no error and nothing on screen to say so. A walkthrough driven by URL therefore cannot be reconstructed from the record.",
+    "ownerRecollection": "Asked on 2026-09-18, the owner stated the later states used ?surface=decision-notice. The derivation below contradicts that for eight rows. Recollection is recorded, not treated as the authority, because the announced values are checkable and memory is not."
+  },
+  "method": "For each row, ask whether the value NVDA announced is reachable on the interactive fixture at all. apps/web/src/decision-notice-fixture.tsx hardcodes severity significant, dueAt 2026-10-01, a clock at 2026-09-14T12:00:00.000Z, and a synchronous storage.save that cannot throw and cannot hang. Any row whose announced value requires something else could not have come from that surface.",
+  "rowsDerivedToCaptureSurface": [
+    {
+      "row": "Overdue read-only",
+      "basis": "The interactive clock is 2026-09-14 against a 2026-10-01 due date, which is not overdue. CAPTURE_STATES overdue substitutes a 2026-11-01 clock."
+    },
+    {
+      "row": "Unknown severity",
+      "basis": "NVDA announced the source value blocker. The literal blocker as a severity appears only in CAPTURE_STATES severity-unknown."
+    },
+    {
+      "row": "Critical severity",
+      "basis": "The interactive fixture hardcodes severity significant."
+    },
+    {
+      "row": "Routine severity",
+      "basis": "The interactive fixture hardcodes severity significant."
+    },
+    {
+      "row": "Malformed date",
+      "basis": "NVDA announced the raw value 2026-13-45T99:99:99Z, which appears only in CAPTURE_STATES date-malformed."
+    },
+    {
+      "row": "Disabled state",
+      "basis": "The interactive fixture persists createDecisionState(notice), which is pending, and has no path to status disabled. CAPTURE_STATES disabled sets it directly."
+    },
+    {
+      "row": "Save failure",
+      "basis": "The interactive storage.save assigns and returns; it cannot throw. CAPTURE_STATES save-failed substitutes a rejecting adapter."
+    },
+    {
+      "row": "Saving transition, second run",
+      "basis": "The interactive storage.save is synchronous, so the saving state exists for one microtask and cannot be held. CAPTURE_STATES saving substitutes new Promise(() => {}), a save that never settles, with a source comment saying that is the only way to observe the state. The reported observation, stuck in Saving with no settled state and a reload returning to pending, is that adapter's declared behavior and is unreachable on the interactive surface.",
+      "contested": true
+    }
+  ],
+  "rowsNotDerivable": [
+    "Pending baseline",
+    "Defer with an empty reason",
+    "Defer with an overlong reason",
+    "Defer with an invalid or absent review date",
+    "Defer success",
+    "Undo deferral",
+    "Acknowledge success, first run",
+    "Resolved evidence inspection",
+    "Invalid evidence state"
+  ],
+  "whyNotDerivable": "Both surfaces present the same four evidence links and the same pending start, and the capture surface reaches the three validation states by driving the editor rather than by injecting state. Nothing in the announced values distinguishes the surfaces for these rows.",
+  "effectOnTheFindings": [
+    {
+      "id": "C17-SR-01",
+      "recordedSeverity": "V0 Critical, provisional",
+      "effect": "Derived to the capture saving state, whose adapter never settles by design. If that derivation holds, the observation is the harness working as written and not a product defect. The owner recollects the interactive surface, where the observation is unreachable. UNRESOLVED: settled only by a re-walk with the URL recorded, not by argument.",
+      "status": "unresolved"
+    },
+    {
+      "id": "C17-SR-02",
+      "recordedSeverity": "V1 High, provisional",
+      "effect": "Derived to the capture save-failed state, which mounts directly into save-failed. No commit ran, so nothing requested focus. The transition path is separately covered by a passing component test, C-10: preserves deferral input and focuses retry when saving fails, which asserts the Retry control has focus. Reclassified as an artifact of entering a state rather than transitioning into it.",
+      "status": "reclassified"
+    },
+    {
+      "id": "C17-SR-03",
+      "recordedSeverity": "V1 High, provisional",
+      "effect": "Derived to the capture disabled state, which does not excuse it. Decision 7-A ruled that controls are disabled rather than removed, so a disabled Defer must still be exposed to a screen reader while remaining non-activatable. SURVIVES as recorded.",
+      "status": "open"
+    },
+    {
+      "id": "C17-SR-04",
+      "recordedSeverity": "V1 High, provisional",
+      "effect": "Not derivable to either surface, and unaffected by which one it was. The visual spec asserts row text and the disabled attribute; neither can falsify what a screen reader announces. SURVIVES as recorded.",
+      "status": "open"
+    },
+    {
+      "id": "C17-SR-05",
+      "recordedSeverity": "V1 High, provisional",
+      "effect": "Reported against several direct states, all of which are derived to the capture surface. The mount effect moves focus only when a saved state was restored or refused; most capture states carry an empty log, so focus correctly stays put. Reclassified as a property of direct-state entry rather than a focus defect.",
+      "status": "reclassified"
+    }
+  ],
+  "whatThisDoesNotEstablish": [
+    "Which surface produced any row that is listed as not derivable. The record does not say and this correction does not guess.",
+    "That C17-SR-01 is or is not a product defect. The derivation and the owner's recollection disagree and the record cannot arbitrate between them.",
+    "That the two surviving findings are less serious than recorded. Neither depends on which surface was used.",
+    "Anything about the walkthrough's environment omissions, which remain exactly as the record states them: browser version not captured, neither approved viewport verified, no reduced-motion or 200 percent zoom walkthrough performed, and only NVDA exercised."
+  ],
+  "recommendation": "Any future human walkthrough record carries the surface and full query string per row. That is a field in the record, not a habit, and it costs nothing at capture time. Recorded as a recommendation; not authorized as a change to the record's template."
+}

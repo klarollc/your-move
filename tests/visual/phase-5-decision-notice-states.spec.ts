@@ -87,7 +87,10 @@ const JOURNEYS: Journey[] = [
       await statusNamed(page, "Decision status: saving");
       // Decision 7-C: duplicate submission is disabled rather than removed, so the control the
       // person just activated is still under their focus instead of gone.
-      await expect(page.getByRole("button", { name: "Acknowledge" })).toBeDisabled();
+      await expect(page.getByRole("button", { name: "Acknowledge" })).toHaveAttribute(
+        "aria-disabled",
+        "true",
+      );
     },
   },
   {
@@ -108,8 +111,14 @@ const JOURNEYS: Journey[] = [
       // disabled semantics. Both were ruled and both moved.
       await statusNamed(page, "Decision status: disabled");
       await expect(page.getByRole("note")).toBeVisible();
-      await expect(page.getByRole("button", { name: "Acknowledge" })).toBeDisabled();
-      await expect(page.getByRole("button", { name: "Defer" })).toBeDisabled();
+      await expect(page.getByRole("button", { name: "Acknowledge" })).toHaveAttribute(
+        "aria-disabled",
+        "true",
+      );
+      await expect(page.getByRole("button", { name: "Defer" })).toHaveAttribute(
+        "aria-disabled",
+        "true",
+      );
     },
   },
   {
@@ -169,7 +178,7 @@ const JOURNEYS: Journey[] = [
       await expect(evidenceRow(page, "missing")).toContainText("Evidence missing");
       await expect(
         page.getByRole("button", { name: "Evidence link: missing, Missing report" }),
-      ).toBeDisabled();
+      ).toHaveAttribute("aria-disabled", "true");
     },
   },
   {

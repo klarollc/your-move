@@ -277,6 +277,18 @@ approval.
   - This does not replace or rewrite pass 5, does not establish eligibility, and does not change the
     owner-run boundary for Task 10. Retry only after the runtime connection is available.
 
+- [x] **Decision 7-C amended 2026-09-18: a non-actionable control keeps its place in the tab order.**
+      `docs/evidence/phase-5/decision-record-2026-09-18-non-actionable-controls.md`
+  - 7-C was implemented with the native `disabled` attribute, which is not focusable, so its own
+    stated rationale — that removal drops focus — was unsatisfied. Seven controls now carry
+    `aria-disabled` with refusing handlers and stay in the tab order.
+  - Closes C17-SR-03 and C17-SR-04 from the screen-reader walkthrough. RED first, 4 assertions;
+    ten existing assertions moved from `toBeDisabled()` to asserting the attribute.
+  - Forty committed plates byte-compared after the change: zero differing, so C-19's fidelity
+    acceptance still holds. Full `verify` green.
+  - **Does not establish what a screen reader announces.** No suite here can; that is the
+    announcement-sequence work still to come.
+
 - [ ] Task 10: **Owner acceptance. Owner-run.** Accept the fixture outcome or record bounded
       revisions. Atomically creates the D-24 review that Phase 8 closes.
 

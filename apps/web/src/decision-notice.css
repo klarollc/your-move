@@ -46,12 +46,12 @@
   cursor: pointer;
 }
 
-.decision-notice button:hover:not(:disabled) {
+.decision-notice button:hover:not(:disabled):not([aria-disabled="true"]) {
   border-color: #4d504c;
   box-shadow: 0 2px 6px rgb(41 43 45 / 12%);
 }
 
-.decision-notice button:active:not(:disabled) {
+.decision-notice button:active:not(:disabled):not([aria-disabled="true"]) {
   transform: translateY(1px);
 }
 
@@ -62,7 +62,8 @@
   outline-offset: 3px;
 }
 
-.decision-notice button:disabled {
+.decision-notice button:disabled,
+.decision-notice button[aria-disabled="true"] {
   color: #6f716e;
   background: #e4e3de;
   cursor: not-allowed;
@@ -394,7 +395,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .decision-notice button:active:not(:disabled) {
+  .decision-notice button:active:not(:disabled):not([aria-disabled="true"]) {
     transform: none;
   }
 }

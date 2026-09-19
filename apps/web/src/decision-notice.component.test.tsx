@@ -83,9 +83,11 @@ function renderNotice(
   );
 }
 
-describe("DecisionNoticeCard", () => {
-  afterEach(() => cleanup());
+// Registered at module scope, not inside one describe: a sibling block otherwise renders into a
+// DOM the previous test left behind, and the queries then find several of everything.
+afterEach(() => cleanup());
 
+describe("DecisionNoticeCard", () => {
   it("C-01, C-02, C-07, C-14, C-15, C-16: renders the contract fields and ordered evidence states", () => {
     renderNotice();
 
@@ -111,10 +113,10 @@ describe("DecisionNoticeCard", () => {
     ).toBeEnabled();
     expect(
       screen.getByRole("button", { name: "Evidence link: missing, Missing report" }),
-    ).toBeDisabled();
+    ).toHaveAttribute("aria-disabled", "true");
     expect(
       screen.getByRole("button", { name: "Evidence link: unavailable, External report" }),
-    ).toBeDisabled();
+    ).toHaveAttribute("aria-disabled", "true");
   });
 
   it("C-03: focus does not commit, while explicit keyboard and pointer activation do", async () => {
@@ -277,7 +279,7 @@ describe("DecisionNoticeCard", () => {
    * finds nothing where a control should be, and in `saving` focus is left on a button that vanished
    * underneath the person who just activated it.
    */
-  it("C-07, C-10: saving and unavailable disable their controls rather than removing them", async () => {
+  it("C-07, C-10: saving and unavailable make their controls inert rather than removing them", async () => {
     const user = userEvent.setup();
     const storage = makeStorage();
     storage.hangForever();
@@ -285,8 +287,11 @@ describe("DecisionNoticeCard", () => {
     await user.click(screen.getByRole("button", { name: "Acknowledge" }));
 
     expect(screen.getByRole("status", { name: "Decision status: saving" })).toBeVisible();
-    expect(screen.getByRole("button", { name: "Acknowledge" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Defer" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Acknowledge" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
+    expect(screen.getByRole("button", { name: "Defer" })).toHaveAttribute("aria-disabled", "true");
     // Focus never lands on the body: the control the person activated is still there, inert.
     expect(document.activeElement).not.toBe(document.body);
     saving.unmount();
@@ -294,8 +299,11 @@ describe("DecisionNoticeCard", () => {
     const unavailable = makeStorage({ ...createDecisionState(notice), status: "disabled" });
     renderNotice(unavailable);
     expect(screen.getByRole("status", { name: "Decision status: disabled" })).toBeVisible();
-    expect(screen.getByRole("button", { name: "Acknowledge" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Defer" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Acknowledge" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
+    expect(screen.getByRole("button", { name: "Defer" })).toHaveAttribute("aria-disabled", "true");
     expect(screen.getByRole("note")).toBeVisible();
   });
 
@@ -575,5 +583,55 @@ describe("DecisionNoticeCard", () => {
     expect(source).not.toMatch(
       /indexedDB|document\.cookie|openDatabase|navigator\.storage|caches\b|showSaveFilePicker/,
     );
+  });
+});
+
+describe("non-actionable controls stay reachable", () => {
+  /**
+   * Decision 7-C ruled that controls are disabled rather than removed, because "removal also drops
+   * focus: a person who activates Acknowledge is standing on a button that disappears underneath
+   * them." It was implemented with the native disabled attribute, which is not focusable and is not
+   * in the tab order — so for a keyboard user the control is still not there, and the ruling's own
+   * rationale is unsatisfied. The walkthrough's C17-SR-03 and C17-SR-04 are both this one mechanism.
+   *
+   * The ruled behaviour: the control keeps its place in the tab order, announces that it is
+   * unavailable through aria-disabled, and refuses activation. Reachable and inert, not absent.
+   */
+  it.each(["saving", "save-failed", "disabled"] as const)(
+    "C-10, 7-C: Acknowledge and Defer are focusable and aria-disabled in %s",
+    (status) => {
+      const state: DecisionState = { notice, status, revision: 0, log: [], deferral: null };
+      renderNotice(makeStorage(state));
+
+      for (const name of ["Acknowledge", "Defer"]) {
+        const control = screen.getByRole("button", { name });
+        expect(control).toHaveAttribute("aria-disabled", "true");
+        expect(control).not.toHaveAttribute("disabled");
+        control.focus();
+        expect(control).toHaveFocus();
+      }
+    },
+  );
+
+  it("C-10, 7-C: an unresolved evidence control is focusable, aria-disabled, and inert", async () => {
+    const user = userEvent.setup();
+    const storage = makeStorage();
+    renderNotice(storage);
+
+    const unresolved = screen
+      .getAllByRole("button", { name: /^Evidence link:/ })
+      .filter((button) => !(button.getAttribute("aria-label") ?? "").includes("resolved"));
+    expect(unresolved.length).toBeGreaterThan(0);
+
+    for (const control of unresolved) {
+      expect(control).toHaveAttribute("aria-disabled", "true");
+      expect(control).not.toHaveAttribute("disabled");
+      control.focus();
+      expect(control).toHaveFocus();
+      await user.click(control);
+    }
+
+    // Activation is refused rather than absent. The announcement channel is asserted separately.
+    expect(storage.value).toBeNull();
   });
 });

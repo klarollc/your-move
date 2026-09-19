@@ -368,8 +368,11 @@ export function DecisionNoticeCard({
                 <button
                   type="button"
                   aria-label={accessibleName}
-                  disabled={resolved.state !== "resolved"}
-                  onClick={() => setAnnouncement(`${link.label} is available in the local fixture`)}
+                  aria-disabled={resolved.state !== "resolved" || undefined}
+                  onClick={() => {
+                    if (resolved.state !== "resolved") return;
+                    setAnnouncement(`${link.label} is available in the local fixture`);
+                  }}
                 >
                   {resolved.state === "resolved" ? "Inspect" : "Unavailable"}
                 </button>
@@ -510,7 +513,12 @@ export function DecisionNoticeCard({
             </button>
             <button
               type="submit"
-              disabled={status === "saving" || status === "save-failed" || status === "disabled"}
+              aria-disabled={
+                status === "saving" ||
+                status === "save-failed" ||
+                status === "disabled" ||
+                undefined
+              }
             >
               Submit deferral
             </button>
@@ -528,14 +536,15 @@ export function DecisionNoticeCard({
           type="button"
           className="decision-notice__primary"
           onClick={acknowledge}
-          disabled={!canAct}
+          aria-disabled={!canAct || undefined}
         >
           Acknowledge
         </button>
         <button
           type="button"
-          disabled={!canAct}
+          aria-disabled={!canAct || undefined}
           onClick={() => {
+            if (!canAct) return;
             setDeferOpen(true);
             setValidation(null);
             setSaveError(null);
