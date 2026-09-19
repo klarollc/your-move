@@ -2,10 +2,9 @@ import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 import {
-  EFFECT_PATTERNS,
+  composeSideEffectReview,
   reachableModules,
   scanModule,
-  type EffectCategory,
   type ModuleScan,
 } from "./phase5-side-effect-review.ts";
 
@@ -61,59 +60,14 @@ for (const file of reachable.modules) {
   scans.push(scanModule(file, source));
 }
 
-const hits = scans.filter((scan) => scan.hits.length > 0);
-const byCategory = Object.fromEntries(
-  (["network", "credential", "deployment", "destructive", "paid"] as EffectCategory[]).map(
-    (category) => [
-      category,
-      hits.flatMap((scan) =>
-        scan.hits
-          .filter((hit) => hit.category === category)
-          .map((hit) => `${scan.file}:${hit.line} ${hit.name}`),
-      ),
-    ],
-  ),
-) as Record<EffectCategory, string[]>;
-
-const ok = hits.length === 0 && reachable.unreadable.length === 0;
-
-const review = {
-  schema: "cuckcode.phase5-side-effect-review.v1",
-  criterion: "C-11",
-  evidenceClass: "static",
-  status:
-    "The static half of C-11, ruled by the owner on 2026-09-14 after release review pass 4. It does not replace the behavioral isolation records; those show the defined journeys are clean, and this says the effect is absent from code no journey reached.",
-  decisionRecord: "docs/evidence/phase-5/decision-record-2026-09-14-c-09-c-11.md",
-  ranAt: new Date().toISOString(),
+const review = composeSideEffectReview({
   entryPoints: ENTRY_POINTS,
   entryPointsWhy:
     "The component as the browser loads it, the capture surface the evidence is taken through, and the pure core beneath both. 'All reachable code' means nothing without saying reachable from where, and a reader can disagree with a list they can see.",
-  categories: EFFECT_PATTERNS.reduce<Record<string, string[]>>((all, effect) => {
-    all[effect.category] = [...(all[effect.category] ?? []), effect.name];
-    return all;
-  }, {}),
-  modulesScanned: reachable.modules.length,
-  modules: reachable.modules,
-  externalPackagesImported: reachable.external,
-  nonCodeImports: reachable.assets,
-  unreadableModules: reachable.unreadable,
-  findings: byCategory,
-  findingDetail: hits,
-  passCondition:
-    "No module reachable from the declared entry points contains a network, credential, deployment, destructive, or paid surface, and every reachable module was readable.",
-  ok,
-
-  /**
-   * The limits, in the artifact rather than in a footnote. A static scan that does not state what
-   * it cannot see invites being read as a proof it is not.
-   */
-  whatThisCannotEstablish: [
-    "Anything reached through dynamic dispatch, computed member access, or eval. The scan reads source text; a call assembled at runtime from strings is invisible to it.",
-    "The internals of the external packages listed in externalPackagesImported. Their source is not walked, so this review speaks only for first-party code.",
-    "Anything about code not reachable from the declared entry points. Widening the entry list widens the claim, and neither is done silently.",
-    "That the behavioral result and this agree by more than coincidence. They are independent evidence of the same criterion and are both required; neither is a substitute for the other.",
-  ],
-};
+  reachable,
+  scans,
+});
+const { ok, findings: byCategory } = review;
 
 await writeFile(OUT, `${JSON.stringify(review, null, 2)}\n`, "utf8");
 

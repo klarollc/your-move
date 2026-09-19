@@ -299,3 +299,73 @@ export const repositoryRelative = (root: string, file: string): string =>
   relative(root, file).replaceAll("\\", "/");
 
 export const moduleDirectory = (file: string): string => dirname(file).replaceAll("\\", "/");
+
+/**
+ * The review projection, extracted from the build script so that it can be asserted at all.
+ *
+ * `build-phase5-side-effect-review.ts` was a top-level side-effecting module with the projection
+ * written inline, so no test could state a property of the artifact without running the writer.
+ * That is the shape HANDOFF records for `run-phase4-kickoff.ts`, and it is why DF-018 — a gate that
+ * cannot pass twice consecutively — was reachable only by running `npm run verify` twice and
+ * reading the second failure.
+ */
+export type SideEffectReviewInput = {
+  readonly entryPoints: readonly string[];
+  readonly entryPointsWhy: string;
+  readonly reachable: ReachabilityResult;
+  readonly scans: readonly ModuleScan[];
+};
+
+export function composeSideEffectReview(input: SideEffectReviewInput) {
+  const hits = input.scans.filter((scan) => scan.hits.length > 0);
+  const byCategory = Object.fromEntries(
+    (["network", "credential", "deployment", "destructive", "paid"] as EffectCategory[]).map(
+      (category) => [
+        category,
+        hits.flatMap((scan) =>
+          scan.hits
+            .filter((hit) => hit.category === category)
+            .map((hit) => `${scan.file}:${hit.line} ${hit.name}`),
+        ),
+      ],
+    ),
+  ) as Record<EffectCategory, string[]>;
+
+  const ok = hits.length === 0 && input.reachable.unreadable.length === 0;
+
+  return {
+    schema: "cuckcode.phase5-side-effect-review.v1",
+    criterion: "C-11",
+    evidenceClass: "static",
+    status:
+      "The static half of C-11, ruled by the owner on 2026-09-14 after release review pass 4. It does not replace the behavioral isolation records; those show the defined journeys are clean, and this says the effect is absent from code no journey reached.",
+    decisionRecord: "docs/evidence/phase-5/decision-record-2026-09-14-c-09-c-11.md",
+    entryPoints: input.entryPoints,
+    entryPointsWhy: input.entryPointsWhy,
+    categories: EFFECT_PATTERNS.reduce<Record<string, string[]>>((all, effect) => {
+      all[effect.category] = [...(all[effect.category] ?? []), effect.name];
+      return all;
+    }, {}),
+    modulesScanned: input.reachable.modules.length,
+    modules: input.reachable.modules,
+    externalPackagesImported: input.reachable.external,
+    nonCodeImports: input.reachable.assets,
+    unreadableModules: input.reachable.unreadable,
+    findings: byCategory,
+    findingDetail: hits,
+    passCondition:
+      "No module reachable from the declared entry points contains a network, credential, deployment, destructive, or paid surface, and every reachable module was readable.",
+    ok,
+
+    /**
+     * The limits, in the artifact rather than in a footnote. A static scan that does not state what
+     * it cannot see invites being read as a proof it is not.
+     */
+    whatThisCannotEstablish: [
+      "Anything reached through dynamic dispatch, computed member access, or eval. The scan reads source text; a call assembled at runtime from strings is invisible to it.",
+      "The internals of the external packages listed in externalPackagesImported. Their source is not walked, so this review speaks only for first-party code.",
+      "Anything about code not reachable from the declared entry points. Widening the entry list widens the claim, and neither is done silently.",
+      "That the behavioral result and this agree by more than coincidence. They are independent evidence of the same criterion and are both required; neither is a substitute for the other.",
+    ],
+  };
+}

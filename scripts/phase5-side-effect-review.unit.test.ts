@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  composeSideEffectReview,
   importSpecifiers,
   resolveSpecifier,
   scanModule,
@@ -126,5 +127,42 @@ describe("the scan", () => {
     expect(
       scanModule("m.ts", `const u = "https://example.test/a";\nfetch(u);\n`).hits,
     ).toHaveLength(1);
+  });
+});
+
+describe("the review projection", () => {
+  const input = {
+    entryPoints: ["apps/web/src/decision-notice.tsx"],
+    entryPointsWhy: "the declared entry point",
+    reachable: {
+      modules: ["apps/web/src/decision-notice.tsx"],
+      external: ["react"],
+      unreadable: [],
+      assets: [],
+    },
+    scans: [scanModule("apps/web/src/decision-notice.tsx", "const a = 1;")],
+  };
+
+  /**
+   * DF-018. The gate cannot pass twice in a row: `phase5:provenance` checks the ledger at stage 16
+   * and `phase5:sideeffects` rewrites this artifact at stage 17, so a wall-clock field in the
+   * digested body guarantees the next run fails on a stale digest. The property that matters is not
+   * that one named key is absent; it is that the same inputs produce the same bytes. Asserted
+   * across a clock tick, because a same-millisecond comparison would pass on the broken version.
+   */
+  it("C-11, DF-018: the same inputs produce the same bytes across a clock tick", async () => {
+    const first = JSON.stringify(composeSideEffectReview(input), null, 2);
+    await new Promise((resolve) => setTimeout(resolve, 2));
+    const second = JSON.stringify(composeSideEffectReview(input), null, 2);
+    expect(second).toBe(first);
+  });
+
+  it("C-11: the projection still reports the scan it was given", () => {
+    const review = composeSideEffectReview({
+      ...input,
+      scans: [scanModule("m.ts", "await fetch(url);")],
+    });
+    expect(review.ok).toBe(false);
+    expect(review.findings.network).toEqual(["m.ts:1 fetch"]);
   });
 });

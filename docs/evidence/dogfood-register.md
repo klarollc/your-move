@@ -801,3 +801,66 @@ name C-18 in their titles, which is the convention by which a test declares what
 byte-order-mark scan DF-016 proposed, both run early in `verify` so the failure names its cause. And
 a standing rule already worth following: do not write source files through shell heredocs. Use the
 editing tools, which do not transform the bytes.
+### DF-018 — The gate could not pass twice, and the failure pointed at the wrong stage
+
+Observed 2026-09-18, while trying to get a complete `npm run verify` before committing.
+
+`npm run verify` is the eighteen-stage gate that claims the whole project passes. Stage 16 checks
+the provenance ledger against the evidence tree. Stage 17 rebuilds
+`docs/evidence/phase-5/side-effect-review.json`, whose builder writes a wall-clock `ranAt` into the
+digested body. So a completed gate moved that artifact's digest, and the next gate failed at stage
+16 reporting a stale digest — one stage earlier than, and one whole run after, the stage that caused
+it.
+
+The state had existed since 2026-09-14. Its visible residue was a permanently modified file in the
+worktree.
+
+## What it cost
+
+Three `verify` attempts across one session. The first died at stage 20 on a leftover preview server
+holding port 4173 — a separate, known problem — so the provenance failure did not surface until the
+second attempt, by which point the first attempt had itself caused it. Two sessions before this one
+had read the modified artifact as evidence churn and left it alone.
+
+The reasoning it invited was wrong in a specific way. The obvious repair is to restore the committed
+file, and that does not work: the ledger recorded `684399fb`, the committed file hashed `f60e713c`,
+and the worktree file hashed `393016ad`. Three digests, none matching, because the artifact had been
+rewritten and committed at some point without the ledger following. Anyone reaching for
+`git checkout` would have had the same failure back with an extra minute spent.
+
+## The shape
+
+It is DF-013 again — a gate claiming the whole project passes while structurally unable to do so —
+with a twist that made it harder to see. DF-013's gate never completed, which at least produced a
+failure every time. This one **passes on a clean checkout and fails on the second run**, so whether
+it works depends on whether anyone ran it before, and its failure accuses the stage before the
+offender. Nobody noticed because a session that runs `verify`, commits, and moves on never sees the
+second run.
+
+It is also the recurring defect in its usual form: a guard exact inside a boundary nobody examined.
+The provenance check is correct — it caught a real digest drift and refused. What nobody checked is
+whether the gate's own stages are allowed to mutate the tree the gate then verifies.
+
+And one variant worth naming separately: **a wall-clock field is a mutation nobody thinks of as
+one.** `ranAt` is write-only. Nothing in the tree reads it, in this artifact or in the five others
+that carry it. It exists to describe the run and it is the only reason the artifact's identity was
+unstable.
+
+## Product response
+
+Ruled by the owner on 2026-09-18: the wall-clock field leaves the digested body, and the ledger
+entry's `recordedAt` carries when the artifact was produced.
+`docs/evidence/phase-5/decision-record-2026-09-18-side-effect-review-determinism.md` records the
+ruling, the RED/GREEN evidence, and the byte-level proof that the change was a no-op.
+
+The projection was extracted out of the top-level side-effecting build script into a pure
+`composeSideEffectReview`, because the defect had been reachable only by running the writer. That is
+the same untestability HANDOFF records for `run-phase4-kickoff.ts`, and it is the reason this went
+four days without a test that could have stated the property. The assertion that now guards it is
+idempotence across a clock tick, not the absence of a named key.
+
+**Open and unruled, recorded rather than fixed:** a `verify` stage still writes into the committed
+evidence tree on every run. `scripts/evidence-immutability.test.mjs` polices that rule only for
+browser specs, so an evidence builder in `scripts/` was never in scope for it. The honest question
+is whether a builder inside the gate should write at all, or check and refuse the way
+`phase5:provenance` does in check mode.
