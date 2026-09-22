@@ -13,9 +13,9 @@ projections of the same canonical state. See MDD §2.
 
 ## Current status
 
-**Phase 4 is complete, Phase 6 is complete, and Phase 5 is authorized. The owner has now marked C-17
-met after the bounded Decision Notice NVDA walkthrough; the walkthrough findings remain open and the
-independent release-review verdict has not been refreshed.**
+**Phase 4 is complete, Phase 6 is complete, and Phase 5 is authorized. C-17 was ruled out of scope
+on 2026-09-18, which is not met; the independent release-review verdict has not been refreshed and
+Task 10 owner acceptance is outstanding.**
 
 The bounded live D-25 kickoff ran its full thirteen turns on 2026-09-14: six promoted roles, six
 distinct bindings, no external effect. The owner approved the charter it produced, with its ten

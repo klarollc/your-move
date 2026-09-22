@@ -1,6 +1,6 @@
 # Handoff — state, next action, and what would otherwise be relearned expensively
 
-Written 2026-09-18, last updated after the Phase 5 release-review refresh attempts. Read `AGENTS.md` first for authority; this document is the
+Written 2026-09-18, last updated 2026-09-22 to align C-17 with the later out-of-scope ruling. Read `AGENTS.md` first for authority; this document is the
 live state, the next action, and the things a fresh session pays for twice if nobody wrote them down.
 
 ---
@@ -12,32 +12,31 @@ live state, the next action, and the things a fresh session pays for twice if no
 | 0–3 | Accepted 2026-08-13 |
 | 4 | **Complete.** Bounded live D-25 round ran the full thirteen turns; evidence packet delivered. Owner gate open. |
 | 6 | **Complete.** `reconciliation-b-clarity` is the **Active** visual system, promoted by owner execution. |
-| 5 | **Tasks 1–9 done; C-17 owner disposition recorded met on 2026-09-18.** Release verdict remains the historical **NEEDS WORK** pass 5; overall Task 10 is still owner-run. |
+| 5 | **Tasks 1–9 done; C-17 ruled out of scope (not met) on 2026-09-18.** Current release verdict is the **NEEDS WORK** pass 5; overall Task 10 is still owner-run. |
 | 7, 8 | **Unauthorized.** Phase 7 needs its own specification, plan and owner approval. |
 
 Phase 5 turn ledger: **18 of 60**. Acceptance criteria: **21 ready, 0 blocked** — all ten charter
 gaps are closed. Ready means assessable. It does not mean met.
 
-**Current owner amendment, 2026-09-18:** C-17 is now recorded **met** by owner disposition after the
-bounded NVDA walkthrough. The prior waiver and pass-5 verdict remain historical. The walkthrough's
-V0/V1 findings, browser/viewport omissions, and the need for an independent release-review refresh
-remain current.
+**Current owner ruling, 2026-09-18 (the later of two that day):** C-17 is **out of scope, not met**.
+The human screen-reader walkthrough is retired for this single-user tool. The same-day met
+disposition, the earlier waiver and the pass-5 verdict remain historical. The walkthrough's SR-01
+finding and the need for an independent release-review refresh remain current.
 
 ---
 
 ## The immediate next action
 
-**Overall Task 10 remains owner-run.** The owner has separately completed the C-17 disposition; do not
-read that narrow ruling as overall Phase 5 fixture acceptance.
+**Overall Task 10 remains owner-run.** The C-17 scope ruling is narrow; do not read it as overall
+Phase 5 fixture acceptance.
 
 The current verdict is release review **pass 5, 2026-09-14: `NEEDS WORK`, 20 of 21 satisfied**, zero
 overclaims, citing sixteen artifact versions by content address.
 
 Pass 5's statement that C-17 was the only outstanding criterion was historical: it was waived at the
-time, and the reviewer correctly refused to count that waiver as satisfaction. The owner has now
-performed and accepted the bounded walkthrough under the successor disposition record. This closes
-the C-17 evidence obligation only; it does not change the historical pass-5 verdict or make the
-project eligible for owner approval.
+time, and the reviewer correctly refused to count that waiver as satisfaction. C-17 is now out of
+scope by owner ruling, which removes the obligation without satisfying it. It does not change the
+historical pass-5 verdict or make the project eligible for owner approval.
 
 C-09 and C-11 were closed by owner ruling on 2026-09-14 and pass 5 confirms both:
 
@@ -48,16 +47,17 @@ C-09 and C-11 were closed by owner ruling on 2026-09-14 and pass 5 confirms both
   points and reads all 36 reachable first-party modules, whether or not a journey executed them.
   Zero findings in all five categories. It is the static half and does not replace the behavioral
   isolation records.
-- **C-17 — met by owner disposition 2026-09-18.** The walkthrough record names NVDA, the build,
-  exercised journeys/states, findings, and omissions. The prior waiver remains historical; the
-  successor is `docs/evidence/phase-5/c-17-owner-acceptance.json`.
+- **C-17 — out of scope, not met, owner ruling 2026-09-18.** Excluded by the overlay in
+  `docs/evidence/phase-5/acceptance-contract-scope.json`. Earlier the same day the owner had marked it
+  met (`c-17-owner-acceptance.json`); the scope ruling came later and outranks it, and
+  `formatC17Status` in `scripts/phase5-release-brief.ts` enforces that ordering. No brief or verdict
+  may count C-17 as satisfied.
 
-**Nothing technical is authorized or outstanding for C-17.** The record now exists and the owner has
-ruled it met. An independent release-review refresh was attempted in passes 6–8, but each stopped on
-the first turn before producing a verdict. Pass 8 records the concrete runtime failure as
-`stream disconnected before completion` while calling the ChatGPT Codex backend. The attempts are
-preserved and provenance is clean; no eligibility claim is made here. A later refresh requires a
-working runtime connection, then Task 10 remains owner-run.
+**Nothing technical is authorized or outstanding for C-17.** An independent release-review refresh
+was attempted in passes 6–8, but each stopped on the first turn before producing a verdict. Pass 8
+records the concrete runtime failure as `stream disconnected before completion` while calling the
+ChatGPT Codex backend. The attempts are preserved and provenance is clean; no eligibility claim is
+made here. A later refresh requires a working runtime connection, then Task 10 remains owner-run.
 
 **The ledger disagreed about this until 2026-09-19, and the ledger was wrong.** Because passes 6, 7
 and 8 are named `pass-<N>.json`, the supersession derivation retired everything below them, so
@@ -99,10 +99,11 @@ stage is the guard. Extracting the projection into a pure function is unruled wo
 Nothing else is authorized. The ten items the reviewer says would change its verdict are ordinary
 work nobody has ruled on, except these three, which cannot be closed by an agent at all:
 
-- **C-17's 2026-09-14 waiver is historical and superseded for current status by the owner's
-  2026-09-18 met disposition.** The historical waiver remains in
-  `docs/evidence/phase-5/acceptance-contract-waivers.json`; the current disposition is
-  `docs/evidence/phase-5/c-17-owner-acceptance.json`. The V0/V1 findings and omissions remain open.
+- **C-17 is out of scope, not met — owner ruling 2026-09-18.** The ruling
+  (`docs/evidence/phase-5/decision-record-2026-09-18-screen-reader-scope.md`, overlay
+  `docs/evidence/phase-5/acceptance-contract-scope.json`) outranks both the 2026-09-14 waiver and the
+  earlier same-day met disposition (`docs/evidence/phase-5/c-17-owner-acceptance.json`), which remain
+  as history. Screen-reader behaviour has never been verified. SR-01 stays open in the record.
 - **C-18 is unblocked, 2026-09-14.** Gap 3 closed: the owner ruled a sidecar append-only ledger and
   the schema is `docs/evidence/phase-5/provenance/schema.json`. Whether the ledger's forty-three
   `unknown` producers satisfy "every evidence artifact" is a release-review judgement, not settled.
