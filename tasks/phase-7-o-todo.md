@@ -139,13 +139,39 @@ Specification: `docs/phase-7-o-operability-spec-v0.2.md`, **owner-approved 2026-
       "current" to be reachable, and moving a presence event before registration only reorders the
       log, so freshness is now varied through the clock and the record time within the log.
     - Seven mutations, each confirmed applied, all killed.
-- [ ] Task 5: Fixture logs and decision sufficiency (P-3, P-5, spec §5, §8.4).
+- [x] Task 5: Fixture logs and decision sufficiency (P-3, P-5, spec §5, §8.4).
   - Acceptance: the default office and the canonical named states are event logs in
     `apps/web/src/office-fixtures/`, each declaring its comprehension purpose; shell-only states
     layer over a log; overlap with the Phase 6 golden states is asserted.
   - Verify: the decision-sufficiency test fails first because today's default has no conditions,
     then passes on the new logs.
 
+  - Result, 2026-09-26: `apps/web/src/office-fixtures/` (`index.ts`, `registry.ts`).
+    - **Logs:** `default`, `empty`, `partial`, `stale`, `permission-denied`, `missing-artifact`,
+      `test-failure`, `reviewer-disagreement`, `conflict`, `cancelled`. Each declares its purpose
+      and the comprehension tasks it serves. `conflict` declares the one issue it exists to produce
+      (`INVALID_WORK_TRANSITION`); every other log replays with no issue. `stale` is the default
+      office read an hour after its last event.
+    - **Two additions to P-5's list, stated:** `empty` (an empty log) and `cancelled` (a manager
+      cancellation) are canonical, so they get logs rather than overlays.
+    - **Overlays:** `loading`, `error`, `offline`, `canvas-loss`, `rate-limit`, `budget-limit` and
+      `restart` render over the default log (`officeFixtureFor`).
+    - **The default office, now truthful.** The graybox slice is `review_requested`, held by the
+      Implementation Engineer, with passed unit and visual evidence and a recorded condition. The
+      browser evidence is `blocked`, held by the Test Engineer, waiting on the failed capture
+      `evidence_browser`, with a recorded condition. The Test Engineer's presence is `blocked`, so
+      the Task 2 contradiction cannot be expressed.
+    - **`OFFICE_REGISTRY`:** the thirteen office entities as layout only, for Task 6.
+    - **RED was real:** against a naive translation of today's default (the same two items with no
+      recorded conditions or evidence), criterion 4 failed with "no recorded condition", and T4
+      failed on missing unit evidence. GREEN 6/6.
+    - **P-3 overlap, narrower than proposed and stated in the test:**
+      `scripts/office-fixtures-golden-overlap.unit.test.ts` asserts every office log records the
+      Phase 6 frame's six agents and six role assignments identically. No office state reproduces a
+      golden state's work sequence, because the office's default carries two items and the golden
+      states one.
+    - Five mutations, each confirmed applied, all killed. `lint`, `typecheck` and
+      `typecheck:scripts` clean.
 - [ ] Task 6: Web — render rail, outline, scene cue and inspector from the model (spec §6).
   - Acceptance: no literal in any inspector field; condition text shown with its source and trust;
     precise absence wording; `officeShellEntities` holds IDs, labels and layout only; the Test
