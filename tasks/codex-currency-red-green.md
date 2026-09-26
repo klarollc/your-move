@@ -47,3 +47,41 @@ which reports `codex-cli 0.157.1`.
 `vendor/<triple>/codex-package.json` states its version, so a stale install refuses at resolution,
 before the R3 preflight spawns anything. It also names the entrypoint, so no executable path is
 hardcoded.
+
+## Task 4 — Upgrade command and surface diff
+
+**RED**, container mirror, `node --test scripts/codex-surface-diff.test.mjs` against a stub
+that returns empty values everywhere:
+
+```text
+not ok 1 - the consumed surface names the files the harness actually reads
+ok 2 - an unchanged bundle has an empty diff
+not ok 3 - a new turn item type needs a classification ruling before the pin can move
+not ok 4 - a new failure class needs a ruling on whether it is a transport failure
+not ok 5 - a server request that disappears is flagged, because the refusal list is derived from it
+not ok 6 - losing a client method the harness calls is breaking
+not ok 7 - a new required parameter the harness does not send is breaking; a new optional one is an addition
+not ok 8 - the report is deterministic and leads with what needs a ruling
+not ok 9 - the upgrade takes one exact version and an optional baseline
+not ok 10 - the upgrade writes only inside the new bundle and never touches the pin
+# pass 1
+# fail 9
+```
+
+Nine of ten are assertion failures. **Not RED:** test 2 ("an unchanged bundle has an empty
+diff") cannot fail against a stub that returns an empty diff; it is a guard against false
+positives, named here rather than counted.
+
+The fixtures are the committed 0.146.0 bundle, edited in memory, so the diff is tested against the
+real schema shapes rather than invented ones.
+
+**GREEN**, container mirror: 10/10; `test:protocol` 14/14; `test:runner` 26/26 (the allowlist guard
+still passes with `protocol:codex:generate` renamed to `protocol:codex:upgrade`); ESLint, Prettier
+and `tsc -p tsconfig.scripts.json` clean.
+
+**Rehearsal, container mirror, not committed:** `tsx scripts/generate-codex-protocol.mjs 0.157.1`
+against a linux-x64 install produced a bundle with `bundleHash`
+`98111ca770d4d181fa42551a666d8c9be42d1333540ef70fd93cffda53fba24f`, 314 files — identical to an
+independent generation made during diagnosis. The report listed exactly three entries needing a
+ruling (`functionCallOutput`, `rateLimitExceeded`, `misalignmentPolicyViolation`) and no breaking
+entries, matching spec §1. The committed bundle comes from the owner's Windows run.
