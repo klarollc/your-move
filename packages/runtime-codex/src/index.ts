@@ -10,3 +10,4 @@ export * from "./item-classification.js";
 export * from "./failure-classification.js";
 export * from "./turn-runner.js";
 export * from "./attempt-record.js";
+export * from "./session-log.js";

@@ -10,6 +10,7 @@ import {
   parseApprovedRoleExercisePlan,
   runRoleExercise,
   CODEX_PIN,
+  openSessionLog,
   resolveInstalledCodexExecutable,
 } from "@cuckcode/runtime-codex";
 
@@ -18,6 +19,8 @@ import { assertNoCodexDrift } from "./codex-drift.js";
 const ROOT = resolve(process.cwd());
 const ROLES_ROOT = resolve(ROOT, "roles");
 const EVIDENCE_ROOT = resolve(ROOT, "docs/evidence/phase-4/live-kickoff/role-exercises");
+const SESSIONS_ROOT = resolve(ROOT, "docs/evidence/runtime/sessions");
+const SCRIPT_NAME = "run-role-exercises";
 const PACKET_PATH = resolve(ROOT, "docs/evidence/phase-4/live-kickoff/task-16-preflight-packet.md");
 // The pinned, installed Codex (R1.2). CUCKCODE_CODEX_EXE overrides the path, never the pin.
 const EXECUTABLE = resolveInstalledCodexExecutable();
@@ -70,9 +73,17 @@ for (const configuration of approved.plan) {
     credentialSourcePath: CREDENTIAL_SOURCE,
   });
   const observedAt = new Date().toISOString();
+  const supervisor = new CodexStdioSupervisor({ executable: EXECUTABLE, codexHome: home.path });
+  // CX-5: the session's diagnostic log, closed before the controlled home is deleted.
+  const sessionLog = openSessionLog(supervisor, {
+    root: SESSIONS_ROOT,
+    script: SCRIPT_NAME,
+    roleId: configuration.roleId,
+    pin: CODEX_PIN,
+  });
   try {
     const result = await runRoleExercise({
-      supervisor: new CodexStdioSupervisor({ executable: EXECUTABLE, codexHome: home.path }),
+      supervisor,
       cwd: workspace,
       expectedInstructionSource: home.instructionPath,
       agentId: `exercise-${configuration.roleId}`,
@@ -122,6 +133,7 @@ for (const configuration of approved.plan) {
       }) + "\n",
     );
   } finally {
+    await sessionLog.close();
     await home.dispose();
     await rm(workspace, { recursive: true, force: true });
   }

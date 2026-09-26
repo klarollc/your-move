@@ -205,7 +205,7 @@ fallback`, chromium-1280) never saw its canvas within 5 s; the commit touches no
     suite (`lastMethod` overwritten by the interrupt's reply). **Gate:** runner `verify` exit 0,
     clean tree at `7fbdbb4` — unit 442, integration 75 + 3 skipped, others unchanged.
 
-- [ ] **Task 11 — Classification in records and the normalizer** (R6.1, R6.7, R7.1).
+- [x] **Task 11 — Classification in records and the normalizer** (R6.1, R6.7, R7.1).
   - Files: `describeTurnCompletionFailure` and its callers, the three run-artifact writers,
     `normalizer.ts`.
   - Acceptance: failed attempts carry `codexErrorInfo` variant, `httpStatusCode`,
@@ -214,6 +214,11 @@ fallback`, chromium-1280) never saw its canvas within 5 s; the commit touches no
     every committed pass.
   - RED: a stub that keeps only `message`.
   - Verify: runner `test:unit`, `phase5:provenance`.
+  - **Result:** `3c66e27`. **R6.7 withdrawn by owner ruling 2026-09-26** (the normalizer's
+    `retryable` is only on parse failures, where `false` is true, and the normalizer has no caller);
+    erratum in the specification. RED 3/4 (one test cannot fail against its stub). All six turn-
+    recording writers embed `runtime`, not the three named. **Gate:** runner `verify` exit 0, clean
+    tree at `3c66e27` — unit 447, others unchanged; `phase5:provenance` green on every committed pass.
 
 - [ ] **Task 12 — Session log** (R6.8, CX-5).
   - Files: `session-log.ts` and its tests; `phase4-kickoff-session.ts`, `role-exercise.ts` callers.

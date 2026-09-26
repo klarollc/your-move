@@ -428,3 +428,53 @@ Nothing is rewritten: the new fields appear only in records written by future ru
 
 Mirror totals: unit 446 (+ the Task 10 guard, 447 at the gate); runtime-codex integration 20 + 3
 skipped; `tsc -b`, scripts typecheck, ESLint and Prettier clean.
+
+## Task 12 — Session log (R6.8, CX-5)
+
+`openSessionLog(supervisor, { root, script, roleId, pin })` subscribes for the life of a session
+and, on `close()`, writes `docs/evidence/runtime/sessions/<script>/<timestamp>-<roleId>.jsonl`.
+The file holds a header (script, role, Codex pin, start and end times, per-method delta counts,
+refused server requests), every non-delta notification in arrival order with its elapsed
+milliseconds, and the supervisor's already-redacted stderr. The timestamp's `:` and `.` become `-`,
+so the name is valid on Windows.
+
+**Beyond CX-5, stated for review:** the log is diagnostic evidence, not a transcript. Beyond
+counting deltas, it replaces every `text`, `delta`, `content`, `summary`, `aggregatedOutput` or
+`output` string, and any string over 160 characters, with `{ redactedLength }`. `item/completed`
+and `turn/completed` carry the model's full answer, and committing that would contradict how the
+project already treats transcripts (a hash in the record; role exercises refuse secret-shaped
+text).
+
+**RED**, container mirror, against a stub whose `close()` writes an empty record. A first stub
+that wrote nothing gave four `ENOENT` errors, which are not assertion failures, so it was replaced
+before any RED was recorded:
+
+```text
+AssertionError: expected '' to be '/r/run-codex-smoke/2026-09-26T12-00-0…' // Object.is equality
+AssertionError: expected {} to match object { kind: 'session', …(6) }
+AssertionError: expected undefined to deeply equal { 'item/agentMessage/delta': 3, …(1) }
+AssertionError: expected undefined to deeply equal { threadId: 'th', turnId: 't1', …(1) }
+AssertionError: expected undefined to deeply equal [ 'item/tool/requestUserInput' ]
+AssertionError: expected +0 to be 1 // Object.is equality
+Tests  6 failed (6)
+```
+
+**GREEN** 6/6.
+
+**Credential canary, over a real child process:** a controlled home whose `auth.json` holds a
+sentinel, and the fake server's `Authorization: Bearer secret-canary` stderr line. The log contains
+`turn/completed` and `[REDACTED]`, and contains neither the sentinel, `secret-canary`, nor the
+agent's text `TURN_1_OK`.
+
+**Wiring:** the shared session opener opens the log before the handshake and closes it after the
+supervisor stops and before the controlled home is disposed, on both the handed-back and the failed
+path. The two scripts that build their own supervisor do the same. A structural test asserts the
+ordering.
+
+**Mutations, each confirmed applied before its result was read:** removing the handed-back
+`liveLog.close()` failed the wiring test (1/2); removing `text` from the redacted keys failed the
+canary; removing the supervisor's bearer redaction failed the canary. One attempted mutation did
+not apply because of shell quoting; it was redone and counted only once applied.
+
+Mirror totals: unit 455 (447 + 8); runtime-codex integration 21 + 3 skipped; `test:protocol` and
+`test:runner` green; `tsc -b`, scripts typecheck, ESLint and Prettier clean.

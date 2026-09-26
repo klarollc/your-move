@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { basename, join, resolve } from "node:path";
 
 import { composeRole, type RoleBrief } from "@cuckcode/domain";
 import {
@@ -16,7 +16,9 @@ import {
   type BindingExpectation,
   type ControlledCodexHome,
   type TurnAttempt,
+  openSessionLog,
   resolveInstalledCodexExecutable,
+  CODEX_PIN,
 } from "@cuckcode/runtime-codex";
 import type { RuntimeBindingReport } from "@cuckcode/contracts";
 
@@ -36,6 +38,9 @@ import { KICKOFF_TASK_CONTRACT } from "./phase4-kickoff-briefing.js";
  */
 const ROOT = resolve(process.cwd());
 const ROLES_ROOT = resolve(ROOT, "roles");
+/** CX-5: one diagnostic log per session, written before the controlled home is deleted. */
+const SESSIONS_ROOT = resolve(ROOT, "docs/evidence/runtime/sessions");
+const SCRIPT_NAME = basename(process.argv[1] ?? "unknown").replace(/\.[cm]?[jt]s$/u, "");
 
 const CREDENTIAL_SOURCE = resolve(
   process.env.CUCKCODE_CODEX_AUTH ??
@@ -88,6 +93,7 @@ export async function openKickoffSession(input: {
 
   let home: ControlledCodexHome | undefined;
   let supervisor: CodexStdioSupervisor | undefined;
+  let log: { close: () => Promise<string> } | undefined;
 
   try {
     home = await createControlledCodexHome({
@@ -102,6 +108,12 @@ export async function openKickoffSession(input: {
       // installed. CUCKCODE_CODEX_EXE overrides the path, never the pin (R1.3).
       executable: resolveInstalledCodexExecutable(),
       codexHome: controlledHome.path,
+    });
+    log = openSessionLog(supervisor, {
+      root: SESSIONS_ROOT,
+      script: SCRIPT_NAME,
+      roleId: input.roleId,
+      pin: CODEX_PIN,
     });
     const initialized = await supervisor.start();
 
@@ -148,6 +160,7 @@ export async function openKickoffSession(input: {
     }
 
     const live = supervisor;
+    const liveLog = log;
     const session: KickoffSession = {
       roleId: input.roleId,
       agentId: input.agentId,
@@ -201,12 +214,14 @@ export async function openKickoffSession(input: {
       },
       close: async (): Promise<void> => {
         await live.stop();
+        await liveLog.close();
         await controlledHome.dispose();
       },
     };
 
     home = undefined;
     supervisor = undefined;
+    log = undefined;
     return { ok: true, session };
   } catch (cause) {
     return {
@@ -217,6 +232,7 @@ export async function openKickoffSession(input: {
   } finally {
     // Only reached when the session was not handed back; a live session owns its own teardown.
     if (supervisor) await supervisor.stop();
+    if (log) await log.close();
     if (home) await home.dispose();
   }
 }
