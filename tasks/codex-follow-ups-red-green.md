@@ -54,3 +54,20 @@ once, at Task 6's provenance write, when these entries move into its "Follow-ups
   test (losing `mcpServerStatus/list` is breaking) failed 1 of 19 against real code.
 - GREEN: the six files 51/51; surface diff 19/19. Whole mirror: `tsc -b`, `typecheck:scripts`,
   `eslint --max-warnings 0` clean; unit 478, integration 77 (3 skipped), contract 78, all pass.
+
+## Task 6 — The probe (F1.5, F1.6), build
+
+- RED: the probe core's 8 unit tests and the fake-server rehearsal failed 9 of 9, every one an
+  `AssertionError`, against a stub core that answered `PROBE_OK` without doing anything; the
+  runner guard (`codex:probe-surface` cannot be allow-listed) failed 1 of 28 against real code
+  before the script existed.
+- GREEN: 9 of 9; runner 28 of 28.
+- Rehearsed with the real script against the real linux-x64 0.157.1 binary in the mirror, with a
+  dummy credential: without `CUCKCODE_LIVE_PROBE=1` it throws before anything runs; with it, drift
+  preflight, controlled home, supervisor and redacted session log all ran, and it stopped at
+  `account/read` (`PROBE_RUNTIME_FAILURE`), as a non-credential should. That record said only
+  `PROVIDER_REQUEST_FAILED`, so the record now names the step it stopped at: RED 1 of 8
+  (`AssertionError`), GREEN 8 of 8; the rerun recorded `step: "account/read"`.
+- The drift-placement guard (`codex-drift.unit.test.ts`) caught the new script constructing its own
+  supervisor; the script now calls `await assertNoCodexDrift()` in the form the guard checks, and
+  the guard lists it. Whole mirror: unit 486, integration 78 (3 skipped), typecheck, lint clean.

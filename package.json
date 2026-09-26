@@ -44,6 +44,7 @@
     "protocol:codex:check": "tsx scripts/check-codex-protocol.mjs",
     "protocol:codex:drift": "tsx scripts/codex-drift.ts",
     "codex:smoke": "tsx scripts/run-codex-smoke.ts",
+    "codex:probe-surface": "tsx scripts/run-codex-probe-surface.ts",
     "test:protocol": "node --test scripts/protocol-codex.test.mjs scripts/codex-surface-diff.test.mjs scripts/codex-pin.test.mjs && npm run protocol:codex:check",
     "test:scaffold": "node --test scripts/scaffold-contract.test.mjs",
     "test:runner": "node --test scripts/agent-runner.test.mjs",

@@ -43,7 +43,8 @@ const ROLES_ROOT = resolve(ROOT, "roles");
 const SESSIONS_ROOT = resolve(ROOT, "docs/evidence/runtime/sessions");
 const SCRIPT_NAME = basename(process.argv[1] ?? "unknown").replace(/\.[cm]?[jt]s$/u, "");
 
-const CREDENTIAL_SOURCE = resolve(
+// Exported so every live script copies the credential from the same place.
+export const CREDENTIAL_SOURCE = resolve(
   process.env.CUCKCODE_CODEX_AUTH ??
     join(process.env.CODEX_HOME ?? join(homedir(), ".codex"), "auth.json"),
 );

@@ -5,7 +5,10 @@ import { join } from "node:path";
 const mode = process.env.CUCKCODE_FAKE_MODE ?? "normal";
 // `tool-surface` is `exercise` with one MCP server started, as a signed-in Codex starts codex_apps
 // when its tool features are on (F1.4).
-const exerciseLike = mode === "exercise" || mode === "tool-surface";
+// `apps-by-feature` is a signed-in Codex whose codex_apps server starts unless the latest
+// thread/start turned the `apps` feature off: the shape the surface probe proves (F1.5).
+const exerciseLike = mode === "exercise" || mode === "tool-surface" || mode === "apps-by-feature";
+let latestFeatures;
 // Reports the pinned version, as the real binary would. Read from the declaration, never copied.
 const pinned = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"))
   .devDependencies["@openai/codex"];
@@ -61,6 +64,7 @@ for await (const line of lines) {
     const account = exerciseLike ? { type: "chatgpt" } : null;
     process.stdout.write(`${JSON.stringify({ id: message.id, result: { account } })}\n`);
   } else if (message.method === "thread/start") {
+    latestFeatures = message.params?.config?.features;
     const exercise = exerciseLike
       ? {
           model: message.params.model,
@@ -75,19 +79,20 @@ for await (const line of lines) {
       `${JSON.stringify({ id: message.id, result: { thread: { id: "thread_fixture" }, ...exercise } })}\n`,
     );
   } else if (message.method === "mcpServerStatus/list") {
-    const data =
-      mode === "tool-surface"
-        ? [
-            {
-              name: "codex_apps",
-              authStatus: "oAuth",
-              runtimeStatus: "connected",
-              tools: { github_search: {}, gmail_send: {} },
-              resources: [],
-              resourceTemplates: [],
-            },
-          ]
-        : [];
+    const appsOn =
+      mode === "tool-surface" || (mode === "apps-by-feature" && latestFeatures?.apps !== false);
+    const data = appsOn
+      ? [
+          {
+            name: "codex_apps",
+            authStatus: "oAuth",
+            runtimeStatus: "connected",
+            tools: { github_search: {}, gmail_send: {} },
+            resources: [],
+            resourceTemplates: [],
+          },
+        ]
+      : [];
     write({ id: message.id, result: { data, nextCursor: null } });
   } else if (message.method === "turn/start" && mode === "tool-surface") {
     // A session that reaches a turn in this mode has skipped the refusal.

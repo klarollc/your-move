@@ -132,7 +132,11 @@ describe("where the drift preflight runs", () => {
     const direct = readdirSync(scripts).filter(
       (name) => /^run-.*\.ts$/u.test(name) && source(name).includes("new CodexStdioSupervisor("),
     );
-    expect(direct.sort()).toEqual(["run-phase6-review.ts", "run-role-exercises.ts"]);
+    expect(direct.sort()).toEqual([
+      "run-codex-probe-surface.ts",
+      "run-phase6-review.ts",
+      "run-role-exercises.ts",
+    ]);
     for (const name of direct) {
       const text = source(name);
       const check = text.indexOf("await assertNoCodexDrift()");

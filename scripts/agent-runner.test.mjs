@@ -56,6 +56,17 @@ test("an entry naming a live provider run is refused, and the reason names the o
   );
 });
 
+test("the signed-in surface probe cannot be run by the runner (F1.5)", async () => {
+  const { scripts } = await readJson("package.json");
+  const allowlist = { commands: { probe: { kind: "npm", script: "codex:probe-surface" } } };
+  const violations = await allowlistViolations({ allowlist, scripts, readSource });
+  assert.equal(violations.length, 1);
+  assert.match(
+    violations[0],
+    /^probe: .*scripts\/run-codex-probe-surface\.ts.*process\.env\.CUCKCODE_LIVE_PROBE/,
+  );
+});
+
 test("an entry naming an owner-run promotion is refused", async () => {
   const { scripts } = await readJson("package.json");
   const allowlist = { commands: { promote: { kind: "npm", script: "roles:promote" } } };
