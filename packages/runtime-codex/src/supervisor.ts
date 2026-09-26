@@ -31,6 +31,11 @@ export type SpawnRuntimeProcess = (
 
 type JsonRecord = Record<string, unknown>;
 
+/** What a subscriber sees, in arrival order. */
+export type SupervisorEvent =
+  | { kind: "notification"; method: string; params: unknown }
+  | { kind: "serverRequestRefused"; method: string; id: string | number; params: unknown };
+
 export class CodexStdioSupervisor {
   readonly #executable: string;
   readonly #spawnProcess: SpawnRuntimeProcess;
@@ -46,6 +51,8 @@ export class CodexStdioSupervisor {
   readonly #notificationWaiters = new Map<string, ((value: JsonRecord) => boolean | void)[]>();
   /** Notifications already handed to a waiter, so a later wait cannot pick the same one up. */
   readonly #consumedNotifications = new WeakSet<JsonRecord>();
+  readonly #subscribers = new Set<(event: SupervisorEvent) => void>();
+  readonly #refused: { method: string; id: string | number }[] = [];
   #child: ChildProcessWithoutNullStreams | undefined;
   #stdoutBuffer = "";
   #requestId = 0;
@@ -188,6 +195,23 @@ export class CodexStdioSupervisor {
     });
   }
 
+  /**
+   * Every notification and every refused server request, in arrival order, until the returned
+   * function is called. This is how a turn sees Codex's own retries (`error` with `willRetry`) and
+   * its liveness, which a wait for `turn/completed` alone cannot.
+   */
+  subscribe(listener: (event: SupervisorEvent) => void): () => void {
+    this.#subscribers.add(listener);
+    return () => {
+      this.#subscribers.delete(listener);
+    };
+  }
+
+  /** Server requests answered with a refusal during this session, oldest first. */
+  get refusedServerRequests(): readonly { method: string; id: string | number }[] {
+    return this.#refused;
+  }
+
   async stop(): Promise<void> {
     const child = this.#child;
     this.#child = undefined;
@@ -239,7 +263,14 @@ export class CodexStdioSupervisor {
         return;
       }
       if (!isRecord(message)) continue;
-      if (typeof message.id === "number") {
+      const hasId = typeof message.id === "number" || typeof message.id === "string";
+      if (hasId && typeof message.method === "string") {
+        // A request from the server. Its id lives in the server's id space, not ours, so it is
+        // never matched against our pending requests. CuckCode answers none of them: each is
+        // refused, recorded and published, so the turn that caused it fails by name instead of
+        // waiting for an answer that will never come (R6.5).
+        this.#refuseServerRequest(message.id as string | number, message.method, message.params);
+      } else if (typeof message.id === "number") {
         const pending = this.#pending.get(message.id);
         if (!pending) continue;
         this.#pending.delete(message.id);
@@ -247,6 +278,7 @@ export class CodexStdioSupervisor {
         else pending.resolve(message.result);
       } else if (typeof message.method === "string") {
         this.#notifications.push(message);
+        this.#publish({ kind: "notification", method: message.method, params: message.params });
         const waiters = this.#notificationWaiters.get(message.method) ?? [];
         this.#notificationWaiters.delete(message.method);
         // A waiter that declines this notification stays queued. Dropping it would leave a
@@ -255,6 +287,23 @@ export class CodexStdioSupervisor {
         if (undelivered.length > 0) this.#notificationWaiters.set(message.method, undelivered);
       }
     }
+  }
+
+  #refuseServerRequest(id: string | number, method: string, params: unknown): void {
+    this.#refused.push({ method, id });
+    try {
+      this.#write({
+        id,
+        error: { code: -32601, message: `CuckCode does not answer server requests: ${method}` },
+      });
+    } catch {
+      // The process is already gone; the refusal is still recorded and published.
+    }
+    this.#publish({ kind: "serverRequestRefused", method, id, params });
+  }
+
+  #publish(event: SupervisorEvent): void {
+    for (const listener of [...this.#subscribers]) listener(event);
   }
 
   #failPending(error: Error): void {

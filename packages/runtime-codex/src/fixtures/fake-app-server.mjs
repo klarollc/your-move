@@ -10,9 +10,35 @@ const pinned = JSON.parse(readFileSync(new URL("../../package.json", import.meta
 let turnSequence = 0;
 const lines = createInterface({ input: process.stdin });
 
+// `server-request` holds the turn/start answer until its own request to the client is answered.
+let heldTurnStart;
+const write = (value) => process.stdout.write(`${JSON.stringify(value)}\n`);
+
 for await (const line of lines) {
   const message = JSON.parse(line);
   if (mode === "silent") continue;
+  if (message.method === undefined && message.id !== undefined) {
+    // A response from the client to this server's own request. Report what arrived, then finish
+    // the turn the request interrupted.
+    write({ method: "fixture/serverRequestAnswered", params: { response: message } });
+    if (heldTurnStart !== undefined) {
+      write({ id: heldTurnStart, result: { turn: { id: "turn_fixture" } } });
+      write({
+        method: "turn/completed",
+        params: {
+          threadId: "thread_fixture",
+          turn: {
+            id: "turn_fixture",
+            status: "failed",
+            items: [],
+            error: { message: "input refused" },
+          },
+        },
+      });
+      heldTurnStart = undefined;
+    }
+    continue;
+  }
   if (message.method === "initialize") {
     process.stderr.write("Authorization: Bearer secret-canary\n");
     const response = `${JSON.stringify({
@@ -46,6 +72,49 @@ for await (const line of lines) {
     process.stdout.write(
       `${JSON.stringify({ id: message.id, result: { thread: { id: "thread_fixture" }, ...exercise } })}\n`,
     );
+  } else if (message.method === "turn/start" && mode === "server-request") {
+    // Deliberately reuses the client's own request id: a client that routes by id alone would take
+    // this request for the answer to turn/start.
+    heldTurnStart = message.id;
+    write({
+      id: message.id,
+      method: "item/tool/requestUserInput",
+      params: { threadId: "thread_fixture", turnId: "turn_fixture", itemId: "item_ask" },
+    });
+  } else if (message.method === "turn/start" && mode === "retry-then-fail") {
+    write({ id: message.id, result: { turn: { id: "turn_fixture" } } });
+    const disconnected = { responseStreamDisconnected: { httpStatusCode: null } };
+    for (const willRetry of [true, true, false]) {
+      write({
+        method: "error",
+        params: {
+          threadId: "thread_fixture",
+          turnId: "turn_fixture",
+          willRetry,
+          error: {
+            message: "stream disconnected before completion",
+            codexErrorInfo: disconnected,
+            additionalDetails: null,
+          },
+        },
+      });
+    }
+    write({
+      method: "turn/completed",
+      params: {
+        threadId: "thread_fixture",
+        turn: {
+          id: "turn_fixture",
+          status: "failed",
+          items: [],
+          error: {
+            message: "stream disconnected before completion",
+            codexErrorInfo: disconnected,
+            additionalDetails: "error sending request",
+          },
+        },
+      },
+    });
   } else if (message.method === "turn/start") {
     turnSequence += 1;
     const turnId = mode === "multiturn" ? `turn_${turnSequence}` : "turn_fixture";

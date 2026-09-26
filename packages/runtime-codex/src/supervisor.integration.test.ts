@@ -4,7 +4,11 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import { CODEX_PIN } from "./codex-pin.js";
-import { CodexStdioSupervisor, type SpawnRuntimeProcess } from "./supervisor.js";
+import {
+  CodexStdioSupervisor,
+  type SpawnRuntimeProcess,
+  type SupervisorEvent,
+} from "./supervisor.js";
 
 const fixture = fileURLToPath(new URL("./fixtures/fake-app-server.mjs", import.meta.url));
 
@@ -160,5 +164,89 @@ describe("multi-turn notification consumption", () => {
     expect((secondCompleted.params as { turn: { id: string } }).turn.id).toBe("turn_2");
 
     await supervisor.stop();
+  });
+
+  it("answers a server request with an error instead of dropping it, and never mistakes it for a reply", async () => {
+    const supervisor = new CodexStdioSupervisor({
+      executable: "C:/fixture/codex.exe",
+      spawnProcess: fixtureSpawner("server-request"),
+    });
+    const events: SupervisorEvent[] = [];
+    try {
+      await supervisor.start();
+      supervisor.subscribe((event) => events.push(event));
+      await supervisor.request("thread/start", {}, 2_000);
+
+      // The fake reuses turn/start's request id for its own request. Routed by id alone, the
+      // request would be taken as turn/start's answer, and this would resolve without a turn.
+      await expect(supervisor.request("turn/start", {}, 2_000)).resolves.toMatchObject({
+        turn: { id: "turn_fixture" },
+      });
+
+      const answered = await supervisor.waitForNotification("fixture/serverRequestAnswered", 2_000);
+      expect(answered.params).toMatchObject({
+        response: { error: { code: -32601 } },
+      });
+      expect(events).toContainEqual(
+        expect.objectContaining({
+          kind: "serverRequestRefused",
+          method: "item/tool/requestUserInput",
+        }),
+      );
+    } finally {
+      await supervisor.stop();
+    }
+  });
+
+  it("delivers every notification to a subscriber, in arrival order", async () => {
+    const supervisor = new CodexStdioSupervisor({
+      executable: "C:/fixture/codex.exe",
+      spawnProcess: fixtureSpawner("retry-then-fail"),
+    });
+    const events: SupervisorEvent[] = [];
+    try {
+      await supervisor.start();
+      await supervisor.request("thread/start", {}, 2_000);
+      const unsubscribe = supervisor.subscribe((event) => events.push(event));
+      await supervisor.request("turn/start", {}, 2_000);
+      await supervisor.waitForTurnCompleted("turn_fixture", 2_000);
+      unsubscribe();
+
+      const notifications = events.filter((event) => event.kind === "notification");
+      expect(notifications.map((event) => event.method)).toEqual([
+        "error",
+        "error",
+        "error",
+        "turn/completed",
+      ]);
+      expect(
+        notifications
+          .filter((event) => event.method === "error")
+          .map((event) => (event.params as { willRetry: boolean }).willRetry),
+      ).toEqual([true, true, false]);
+    } finally {
+      await supervisor.stop();
+    }
+  });
+
+  it("stops delivering to a subscriber once it unsubscribes", async () => {
+    const supervisor = new CodexStdioSupervisor({
+      executable: "C:/fixture/codex.exe",
+      spawnProcess: fixtureSpawner("retry-then-fail"),
+    });
+    const events: SupervisorEvent[] = [];
+    try {
+      await supervisor.start();
+      // The fake announces readiness after the handshake; let it land before subscribing.
+      await supervisor.waitForNotification("fixture/ready", 2_000);
+      const unsubscribe = supervisor.subscribe((event) => events.push(event));
+      await supervisor.request("thread/start", {}, 2_000);
+      unsubscribe();
+      await supervisor.request("turn/start", {}, 2_000);
+      await supervisor.waitForTurnCompleted("turn_fixture", 2_000);
+      expect(events).toEqual([]);
+    } finally {
+      await supervisor.stop();
+    }
   });
 });

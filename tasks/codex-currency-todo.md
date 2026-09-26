@@ -155,7 +155,7 @@ Authority: `docs/evidence/runtime/decision-record-2026-09-25-codex-currency.md`.
     passed, the first harness check of the pinned binary on the owner's machine; unit 419, others
     unchanged.
 
-- [ ] **Task 8 — Item classification** (R5, CX-2).
+- [x] **Task 8 — Item classification** (R5, CX-2).
   - Files: `item-classification.ts` and its unit test; `phase4-kickoff-session.ts` and
     `role-exercise.ts` (both local sets deleted).
   - Acceptance: table keys equal the pinned schema's `ThreadItem` enum; `text` is exactly
@@ -164,6 +164,13 @@ Authority: `docs/evidence/runtime/decision-record-2026-09-25-codex-currency.md`.
     unchanged.
   - RED: a stub table missing `functionCallOutput`.
   - Verify: runner `test:unit`, `test:integration`.
+  - **Result:** `7dea88f`. RED 5/5 against an empty table; role-exercise RED 1/7 (the old code
+    stopped the turn but as `TEXT_ONLY_VIOLATION`; the real gap was the kickoff session's
+    allow-list). **Gate:** first `verify` exit 1 — one a11y test (`Phase 4 camera controls … in
+fallback`, chromium-1280) never saw its canvas within 5 s; the commit touches nothing the web app
+    loads. Re-run on the same clean commit: exit 0, unit 425, a11y 46/46, visual 62/62. Second
+    browser-timing flake in eight gate runs; both recorded, neither reproduced; goes to the Task 13
+    dogfood entry.
 
 - [ ] **Task 9 — Supervisor: server requests and notification subscription** (R6.5, R6.2).
   - Files: `supervisor.ts`, `supervisor.integration.test.ts`, `fake-app-server.mjs` (modes

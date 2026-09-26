@@ -252,3 +252,40 @@ allow-lists are deleted.
 **Transfer note:** one handoff tarball arrived stale — the device held the previous upload under
 the same name — and the hash check caught it before anything was committed. Transfers now use a
 unique file name each time.
+
+## Task 9 — Supervisor: server requests and notification subscription
+
+The fake app server gains two modes. `server-request` answers `turn/start` only after its own
+request to the client (`item/tool/requestUserInput`) is answered, and deliberately gives that
+request **the same id as the client's pending `turn/start`**. `retry-then-fail` emits three `error`
+notifications (`willRetry` true, true, false) carrying `responseStreamDisconnected`, then a
+failed `turn/completed` — the shape of pass 8, which the harness never saw.
+
+**RED**, container mirror, `vitest run --project integration packages/runtime-codex/src/supervisor.integration.test.ts`
+against a `subscribe` stub that delivers nothing and the unchanged message routing:
+
+```text
+AssertionError: expected undefined to match object { turn: { id: 'turn_fixture' } }
+AssertionError: expected [] to deeply equal [ 'error', 'error', 'error', …(1) ]
+Tests  2 failed | 7 passed (9)
+```
+
+The first line is **a second defect this task found**, beyond the one it was written for. The old
+routing matched any message with a numeric id against its pending requests, so a server request
+whose id coincided with `turn/start`'s resolved `turn/start` as `undefined`, and the server then
+waited forever for an answer to a request nobody had seen. Server ids and client ids are separate
+spaces; they are now routed apart by the presence of `method`. **Not RED:** "stops delivering to a
+subscriber once it unsubscribes" cannot fail against a stub that never delivers.
+
+**GREEN**, container mirror: supervisor integration 9/9 (6 existing + 3), stable over three
+consecutive runs; runtime-codex integration 15 + 3 skipped; `test:runtime` green; unit 425.
+
+**A test corrected during GREEN, stated:** the unsubscribe test first failed against the real
+implementation because the fake's `fixture/ready` notification arrives asynchronously after the
+handshake, inside the subscribed window. The test now waits for it before subscribing. The
+implementation was not changed to make it pass.
+
+A refused request is answered `{ id, error: { code: -32601 } }`, recorded in
+`refusedServerRequests`, and published to subscribers as `serverRequestRefused` naming the method.
+Failing the active turn on that event is the turn runner's job (Task 10). `CODEX_ARGS` and the
+request allow-list are unchanged.
