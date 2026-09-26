@@ -284,10 +284,66 @@ Specification: `docs/phase-7-o-operability-spec-v0.2.md`, **owner-approved 2026-
       fixtures in `office-canvas.tsx`. They are not office read-model records; the library is
       Task 8.
 
-- [ ] Task 8: Evidence Library opens at item and version (spec §6).
+- [x] Task 8: Evidence Library opens at item and version (spec §6).
   - Acceptance: `initialEvidence: { evidenceId, version }`; an unresolvable reference shows
     `Evidence link unavailable` with the ID and never substitutes another record.
   - Verify: component and e2e tests.
+
+  - Scope, owner ruling 2026-09-26: narrow, as written; Task 8b (below) is drafted for approval
+    to build the library's evidence from the log.
+  - Result, 2026-09-26:
+    - **Library.** `EvidenceLibrary` takes `initialEvidence: { evidenceId, version }` and opens the
+      record with that ID **and** version. Otherwise it opens an `Evidence link unavailable` dialog
+      with the ID, the version, and the versions the library does hold, and states that no other
+      record was opened. The focused-evidence dialog now shows the version. Escape and
+      `Close evidence` close both dialogs.
+    - **Version on library records.** `BrowserLibraryProjection` evidence (and its input) gains a
+      required `version`, passed through by `projectBrowserLibrary`. Every existing literal gained
+      `version: 1`: `packages/application/src/evidence-library.unit.test.ts`,
+      `apps/web/src/evidence-library.component.test.tsx`,
+      `apps/web/src/office-shell.component.test.tsx` and the Phase 4 `libraryProjection` in
+      `office-canvas.tsx`. No assertion changed.
+    - **Inspector links.** When a library is available, the inspector's Evidence field has one
+      `Open {evidenceId} v{version}` button per recorded evidence item. It opens the library at
+      that item and version; closing the library returns focus to the button.
+    - **Today, in the default office, every such link shows `Evidence link unavailable`**, because
+      the library is still the Phase 4 list (`evidence_task_11_*`). That is the truthful result
+      until Task 8b.
+    - **Not changed:** the zone buttons (`Open Visual QA evidence`, `Open Release evidence`) still
+      select by kind. They are not an inspector Evidence link; Task 8b addresses them.
+    - **RED, against a stub accepting and ignoring `initialEvidence`:** `evidence-link.component.test.tsx`,
+      5 tests, "Tests 5 failed | 81 passed (86)"; each failed because the dialog or the link did
+      not exist, with the prop type-checking. GREEN 86/86.
+    - **e2e** `tests/e2e/phase-7o-evidence-link.spec.ts` (both viewports) was written after GREEN,
+      so its failing case is shown by mutation 3 instead: 2 failed under it.
+    - **Three mutations, each confirmed applied, all killed:** matching by ID alone (2 component
+      tests); falling back to another record for an absent version (1); not recording the link as
+      the focus trigger (1 component test, and both e2e runs).
+    - `test:component` 86, `test:unit` 450, `test:e2e` 52, `test:a11y` 46, `typecheck`,
+      `typecheck:scripts`, `lint` clean on the dirty tree; `verify` at the commit.
+
+- [ ] Task 8b (**PROPOSED, awaiting owner approval**): the library's evidence from the office log.
+  - Why: spec §1 says the Evidence Library reads the same canonical data as the rail and
+    inspector. Today its evidence is the Phase 4 list, so no inspector link resolves.
+  - Proposal: a projection in `packages/application` from `snapshot.work` evidence records
+    (`evidenceId`, `version`, `kind`, `result`, `eventId`, `workItemId`) to library records. The
+    origin entity is the work item's holder through its role assignment. `approved` only with the
+    matching approval record covering that evidence version; otherwise completed and approved stay
+    distinct.
+  - Decisions needed:
+    - **8b-1, lanes.** Library lanes are fixed as `test`, `visual`, `release`; the log records
+      `unit`, `visual`, `browser`. Recommendation: lanes are the recorded kinds, derived. Mapping
+      `unit` and `browser` to `test` would be an invented equivalence.
+    - **8b-2, summary.** `evidence.recorded` has no summary text. Recommendation: no contract
+      change; show kind, result, version, work item and cause event, and `No summary recorded`.
+    - **8b-3, zone buttons.** `Open Visual QA evidence` and `Open Release evidence` select the first
+      record of a kind. Recommendation: they open the library unfocused, and focused views come
+      only from item-and-version links.
+  - Moves expected (P-4), to be listed at the time: the Phase 4 library e2e and a11y lane names and
+    `Complete — not approved`, and the review-station and delivery-area focused-evidence tests.
+    Knowledge records stay Phase 4 data and are out of scope.
+  - Sequencing: before Task 9's captures and Task 10's answer key, which would otherwise record
+    the Phase 4 list.
 
 - [ ] Task 9: Browser evidence at 1440×900 and 1280×800 (spec §8.6). **Captures owner-run.**
   - Acceptance: every state the spec lists is captured; console, network, keyboard, pointer, focus

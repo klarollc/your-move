@@ -7,7 +7,7 @@ import {
   type OfficeAttentionItem,
   type OfficeDispositionResult,
 } from "./attention-rail.js";
-import { EvidenceLibrary } from "./evidence-library.js";
+import { EvidenceLibrary, type EvidenceLink } from "./evidence-library.js";
 import { KickoffPanel } from "./kickoff-panel.js";
 import { OFFICE_REGISTRY } from "./office-fixtures/registry.js";
 import {
@@ -216,6 +216,7 @@ export function OfficeShell({
   const [libraryOpen, setLibraryOpen] = useState(false);
   const kickoffTriggerRef = useRef<HTMLButtonElement>(null);
   const [kickoffOpen, setKickoffOpen] = useState(false);
+  const [initialEvidence, setInitialEvidence] = useState<EvidenceLink | undefined>(undefined);
   const [initialEvidenceKind, setInitialEvidenceKind] = useState<
     "test" | "visual" | "release" | undefined
   >(undefined);
@@ -499,6 +500,17 @@ export function OfficeShell({
             entityId={selectedEntity.entityId}
             freshnessNote={state === "ready" ? null : state}
             revision={revision}
+            {...(library
+              ? {
+                  onOpenEvidence: (link: EvidenceLink, trigger: HTMLButtonElement) => {
+                    libraryTriggerRef.current = trigger;
+                    setInitialEvidenceKind(undefined);
+                    setInitialEvidence(link);
+                    setLibraryOpen(true);
+                    setAnnouncement(`Evidence ${link.evidenceId} version ${link.version} opened`);
+                  },
+                }
+              : {})}
           />
           <button
             type="button"
@@ -512,6 +524,7 @@ export function OfficeShell({
               ref={libraryTriggerRef}
               type="button"
               onClick={() => {
+                setInitialEvidence(undefined);
                 setInitialEvidenceKind(
                   selectedEntity.entityId === "zone_review"
                     ? "visual"
@@ -558,8 +571,13 @@ export function OfficeShell({
       ) : null}
       {libraryOpen && library ? (
         <EvidenceLibrary
-          key={initialEvidenceKind ?? "library"}
+          key={
+            initialEvidence
+              ? `${initialEvidence.evidenceId}@${initialEvidence.version}`
+              : (initialEvidenceKind ?? "library")
+          }
           projection={library}
+          {...(initialEvidence ? { initialEvidence } : {})}
           {...(initialEvidenceKind ? { initialEvidenceKind } : {})}
           onClose={() => {
             setLibraryOpen(false);
@@ -586,11 +604,14 @@ function InspectorFields({
   entityId,
   freshnessNote,
   revision,
+  onOpenEvidence,
 }: Readonly<{
   model: OfficeModel["model"];
   entityId: string;
   freshnessNote: string | null;
   revision: number;
+  /** Present when a Project Library is available to open the evidence in. */
+  onOpenEvidence?: (link: EvidenceLink, trigger: HTMLButtonElement) => void;
 }>) {
   const entity = entityOf(model, entityId);
   const trail = `workspace revision ${revision} · last event ${model.source.lastEventId ?? "none"} · ${entityId}`;
@@ -649,7 +670,22 @@ function InspectorFields({
       <dt>Approval</dt>
       <dd>{approvalText(entity)}</dd>
       <dt>Evidence</dt>
-      <dd>{evidenceText(entity)}</dd>
+      <dd>
+        {evidenceText(entity)}
+        {onOpenEvidence
+          ? entity.work
+              .flatMap((work) => work.evidence)
+              .map(({ evidenceId, version }) => (
+                <button
+                  key={`${evidenceId}@${version}`}
+                  type="button"
+                  onClick={(event) => onOpenEvidence({ evidenceId, version }, event.currentTarget)}
+                >
+                  Open {evidenceId} v{version}
+                </button>
+              ))
+          : null}
+      </dd>
       <dt>Runtime binding</dt>
       <dd>
         {runtime.status === "recorded"

@@ -30,6 +30,8 @@ type EvidenceInput = Readonly<{
   status: EvidenceStatus;
   summary: string;
   hiddenReasoning?: string;
+  /** The evidence record's own version: an Evidence link resolves by ID and version (spec §6). */
+  version: number;
   revision: number;
   originatingEntityId: string;
   authorized: boolean;
@@ -52,6 +54,7 @@ export type BrowserLibraryProjection = Readonly<{
       kind: EvidenceKind;
       status: EvidenceStatus;
       summary: string;
+      version: number;
       revision: number;
       originatingEntityId: string;
       approved: boolean;
@@ -94,6 +97,7 @@ export function projectBrowserLibrary(
         summary: containsSensitive(record.summary)
           ? "Sensitive evidence summary withheld from this browser session."
           : record.summary,
+        version: record.version,
         revision: record.revision,
         originatingEntityId: record.originatingEntityId,
         approved: record.status === "approved",
