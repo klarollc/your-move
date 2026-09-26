@@ -5,8 +5,11 @@ import test from "node:test";
 
 import {
   CONSUMED_FILES,
+  diffFeatures,
   diffSurface,
   extractSurface,
+  mergeDiffs,
+  parseFeaturesList,
   parseUpgradeArgs,
   renderSurfaceDiff,
   upgradeWritePaths,
@@ -158,4 +161,124 @@ test("the upgrade writes only inside the new bundle and never touches the pin", 
     assert.ok(!inside.startsWith("..") && !inside.startsWith(sep), `${path} is inside the bundle`);
     assert.ok(!path.endsWith("package.json"), `${path} is not a manifest`);
   }
+  assert.ok(
+    paths.includes(join(root, "0.157.1", "features.json")),
+    "the upgrade records the binary's feature list beside the bundle (F1.2)",
+  );
+});
+
+// `codex features list` as the pinned 0.157.1 prints it: fixed-width columns, a stage that can
+// contain a space, and the state under the config it ran with (the upgrade gives it an empty one).
+const FEATURES_TEXT = [
+  "apps                                     stable             true",
+  "code_mode                                under development  false",
+  "fast_mode                                stable             true",
+  "guardianv2.thread_context                stable             true",
+  "memories                                 stable             false",
+  "network_proxy                            experimental       false",
+  "",
+].join("\n");
+
+test("the feature list parses into name, stage and default, sorted by name", () => {
+  assert.deepEqual(parseFeaturesList(FEATURES_TEXT), [
+    { name: "apps", stage: "stable", default: true },
+    { name: "code_mode", stage: "under development", default: false },
+    { name: "fast_mode", stage: "stable", default: true },
+    { name: "guardianv2.thread_context", stage: "stable", default: true },
+    { name: "memories", stage: "stable", default: false },
+    { name: "network_proxy", stage: "experimental", default: false },
+  ]);
+  assert.deepEqual(
+    parseFeaturesList(FEATURES_TEXT.replaceAll("\n", "\r\n")),
+    parseFeaturesList(FEATURES_TEXT),
+    "Windows line endings parse the same",
+  );
+});
+
+test("a line the parser does not understand is refused, not skipped", () => {
+  assert.throws(
+    () => parseFeaturesList(`${FEATURES_TEXT}apps stable maybe\n`),
+    /FEATURES_LIST_UNPARSED/u,
+  );
+  assert.throws(() => parseFeaturesList(""), /FEATURES_LIST_EMPTY/u);
+});
+
+const features = (text) => parseFeaturesList(text);
+const withLine = (line) => `${FEATURES_TEXT}${line}\n`;
+const replaced = (from, to) => FEATURES_TEXT.replace(from, to);
+
+test("a new default-on feature needs a ruling; a new default-off one is an addition", () => {
+  const onDiff = diffFeatures(
+    features(FEATURES_TEXT),
+    features(withLine("telepathy                                stable             true")),
+  );
+  assert.deepEqual(kinds(onDiff.needsRuling), ["featureDefaultOn:telepathy"]);
+  assert.deepEqual(onDiff.breaking, []);
+  const offDiff = diffFeatures(
+    features(FEATURES_TEXT),
+    features(withLine("telepathy                                under development  false")),
+  );
+  assert.deepEqual(offDiff.needsRuling, []);
+  assert.deepEqual(kinds(offDiff.additions), ["featureAdded:telepathy"]);
+});
+
+test("a feature that becomes default-on, or a default-on feature whose stage moves, needs a ruling", () => {
+  const flipped = diffFeatures(
+    features(FEATURES_TEXT),
+    features(
+      replaced(
+        "memories                                 stable             false",
+        "memories                                 stable             true",
+      ),
+    ),
+  );
+  assert.deepEqual(kinds(flipped.needsRuling), ["featureNowDefaultOn:memories"]);
+  const staged = diffFeatures(
+    features(FEATURES_TEXT),
+    features(
+      replaced(
+        "apps                                     stable             true",
+        "apps                                     removed            true",
+      ),
+    ),
+  );
+  assert.deepEqual(kinds(staged.needsRuling), ["featureStageChanged:apps"]);
+  assert.match(staged.needsRuling[0].detail, /stable → removed/u);
+});
+
+test("a default-on feature turned off or dropped is a change, not a ruling", () => {
+  const off = diffFeatures(
+    features(FEATURES_TEXT),
+    features(
+      replaced(
+        "apps                                     stable             true",
+        "apps                                     stable             false",
+      ),
+    ),
+  );
+  assert.deepEqual(off.needsRuling, []);
+  assert.deepEqual(kinds(off.changes), ["featureNoLongerDefaultOn:apps"]);
+  const dropped = diffFeatures(
+    features(FEATURES_TEXT),
+    features(FEATURES_TEXT.replace(/^apps .*\n/mu, "")),
+  );
+  assert.deepEqual(kinds(dropped.changes), ["featureRemoved:apps"]);
+});
+
+test("with no baseline feature list, every default-on feature needs a ruling", () => {
+  const diff = diffFeatures(null, features(FEATURES_TEXT));
+  assert.deepEqual(kinds(diff.needsRuling), [
+    "featureDefaultOn:apps",
+    "featureDefaultOn:fast_mode",
+    "featureDefaultOn:guardianv2.thread_context",
+  ]);
+  assert.match(diff.needsRuling[0].detail, /no baseline/u);
+});
+
+test("feature entries join the surface diff and the report sorts them with the rest", () => {
+  const surface = diffSurface(extractSurface(reader()), extractSurface(reader()));
+  const merged = mergeDiffs(surface, diffFeatures(null, features(FEATURES_TEXT)));
+  assert.equal(merged.needsRuling.length, 3);
+  const report = renderSurfaceDiff(merged, { from: "0.146.0", to: "0.157.1" });
+  assert.match(report, /featureDefaultOn: `apps`/u);
 });
