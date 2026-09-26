@@ -62,6 +62,7 @@ function report(agentId: string, bindingId: string): RuntimeBindingReport {
     reasoningEffort: "medium",
     capabilityIds: [],
     toolIds: [],
+    observedMcpServers: [],
     permissionCeiling: [],
     sandboxPosture: {
       type: "readOnly",

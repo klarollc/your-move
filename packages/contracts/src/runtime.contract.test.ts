@@ -110,6 +110,9 @@ describe("runtime binding report", () => {
     // Deliberately the enumerable-and-empty case: valid before and after this change, so the
     // tests below fail on the field each one is about rather than on this one.
     toolIds: [],
+    // FU-3: what an enumeration observed, beside toolIds rather than inside it. Codex can list MCP
+    // servers but not its native tools, so filling toolIds would claim a completeness nobody saw.
+    observedMcpServers: [],
     permissionCeiling: [],
     sandboxPosture: {
       type: "readOnly",
@@ -147,6 +150,18 @@ describe("runtime binding report", () => {
     expect(runtimeBindingReportSchema.safeParse({ ...report, toolIds: "none" }).success).toBe(
       false,
     );
+  });
+
+  it("says which MCP servers the session started, with null for not enumerated", () => {
+    const apps = { name: "codex_apps", status: "connected", toolNames: ["github_search"] };
+    const parse = (value: unknown) => runtimeBindingReportSchema.safeParse(value).success;
+    expect(parse({ ...report, observedMcpServers: null })).toBe(true);
+    expect(parse({ ...report, observedMcpServers: [] })).toBe(true);
+    expect(parse({ ...report, observedMcpServers: [apps] })).toBe(true);
+    expect(parse(without(report, "observedMcpServers"))).toBe(false);
+    expect(parse({ ...report, observedMcpServers: [{ ...apps, name: "" }] })).toBe(false);
+    expect(parse({ ...report, observedMcpServers: [{ ...apps, tools: {} }] })).toBe(false);
+    expect(parse({ ...report, observedMcpServers: [without(apps, "toolNames")] })).toBe(false);
   });
 
   it("refuses a posture that is missing the bound it is there to state", () => {

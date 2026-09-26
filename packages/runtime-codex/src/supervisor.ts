@@ -15,6 +15,8 @@ export const ALLOWED_REQUEST_METHODS: ReadonlySet<string> = new Set([
   "turn/start",
   "turn/interrupt",
   "thread/read",
+  // Read-only: lists the MCP servers a session started, for the binding refusal (F1.3).
+  "mcpServerStatus/list",
 ]);
 
 type SpawnOptions = SpawnOptionsWithoutStdio & {

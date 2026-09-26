@@ -110,6 +110,20 @@ export const sandboxPostureSchema = z
 
 export type SandboxPosture = z.infer<typeof sandboxPostureSchema>;
 
+/**
+ * One MCP server a session was observed to start, as enumerated after thread/start (FU-3).
+ * `status` is the runtime's connection state, or its auth state when no connection state exists.
+ */
+export const observedMcpServerSchema = z
+  .object({
+    name: id,
+    status: id,
+    toolNames: z.array(id),
+  })
+  .strict();
+
+export type ObservedMcpServer = z.infer<typeof observedMcpServerSchema>;
+
 export const runtimeBindingReportSchema = z
   .object({
     bindingId: id,
@@ -126,6 +140,10 @@ export const runtimeBindingReportSchema = z
     // null means this adapter does not enumerate a tool surface. [] means it enumerated one and
     // found it empty. Collapsing them would let "nobody looked" read as "nothing is exposed".
     toolIds: z.array(id).nullable(),
+    // What an MCP enumeration observed, beside toolIds rather than inside it (FU-3): Codex lists
+    // MCP servers but not its native tools, so this is exactly what was seen and no more. null
+    // means not enumerated; [] means enumerated and none started.
+    observedMcpServers: z.array(observedMcpServerSchema).nullable(),
     permissionCeiling: z.array(id),
     sandboxPosture: sandboxPostureSchema,
     materialFingerprint: z.string().regex(/^[a-f0-9]{64}$/u),

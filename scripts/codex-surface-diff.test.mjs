@@ -101,6 +101,21 @@ test("losing a client method the harness calls is breaking", () => {
   assert.deepEqual(kinds(diff.breaking), ["clientMethodRemoved:turn/interrupt"]);
 });
 
+test("losing the MCP enumeration the binding refusal depends on is breaking (F1.3)", () => {
+  const removed = reader({
+    "ClientRequest.json": (schema) => {
+      schema.oneOf = schema.oneOf.filter(
+        (entry) => !JSON.stringify(entry).includes('"mcpServerStatus/list"'),
+      );
+      return schema;
+    },
+  });
+  const diff = diffSurface(extractSurface(reader()), extractSurface(removed));
+  assert.deepEqual(kinds(diff.breaking), ["clientMethodRemoved:mcpServerStatus/list"]);
+  assert.ok(CONSUMED_FILES.includes("v2/ListMcpServerStatusParams.json"));
+  assert.ok(CONSUMED_FILES.includes("v2/ListMcpServerStatusResponse.json"));
+});
+
 test("a new required parameter the harness does not send is breaking; a new optional one is an addition", () => {
   const required = reader({
     "v2/ThreadStartParams.json": (schema) => {

@@ -28,6 +28,7 @@ const binding = {
   reasoningEffort: "medium",
   capabilityIds: ["edit"],
   toolIds: ["apply_patch"],
+  observedMcpServers: [],
   permissionCeiling: ["project.read", "project.write"],
   sandboxPosture: {
     type: "readOnly",

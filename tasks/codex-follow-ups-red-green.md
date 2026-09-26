@@ -34,3 +34,23 @@ once, at Task 6's provenance write, when these entries move into its "Follow-ups
   upgrade once to write it.
 - RED (platform field): 17 pass, 1 fail, `AssertionError` against a stub `buildFeaturesRecord`
   that returned only `version` and `features`. GREEN: 18 pass, 0 fail.
+
+## Task 5 — Feature policy and enumeration (F1.1, F1.3, F1.4, FU-1 to FU-3)
+
+- Established offline first (container mirror, linux-x64 0.157.1, not signed in, no turn):
+  `thread/start` `config.features` takes whole feature names as keys, dots included — a bogus
+  `features: {"guardianv2.no_such_xyz": false}` is refused as `unknown configuration field
+  features.guardianv2.no_such_xyz`, while the flat `"features.guardianv2.no_such_xyz"` form is
+  read as a nested table. All 145 non-kept features set `false` in one `thread/start` are
+  accepted; `mcpServerStatus/list` with `{threadId, detail: "toolsAndAuthOnly"}` answers
+  `{"data":[],"nextCursor":null}`.
+- Design: the config disables every feature not kept, not only this platform's default-on ones,
+  so a platform-dependent default (`secret_auth_storage`) is off on both platforms.
+  `observedMcpServers` is reported but not fingerprinted: a binding that succeeds observed none,
+  and leaving it out keeps earlier fingerprints valid.
+- RED (vitest in the mirror): 20 of 51 fail, every one an `AssertionError`. Eleven against
+  deliberate stubs (an empty `FEATURE_POLICY`, an `enumerateMcpServers` returning `[]`); nine
+  against real code without the contract field, the config or the enumeration. The surface-diff
+  test (losing `mcpServerStatus/list` is breaking) failed 1 of 19 against real code.
+- GREEN: the six files 51/51; surface diff 19/19. Whole mirror: `tsc -b`, `typecheck:scripts`,
+  `eslint --max-warnings 0` clean; unit 478, integration 77 (3 skipped), contract 78, all pass.

@@ -54,11 +54,53 @@ it("carries a controlled role home through supervisor, observed handshake, and o
   }
 });
 
-function exerciseSpawner(): SpawnRuntimeProcess {
+function exerciseSpawner(mode = "exercise"): SpawnRuntimeProcess {
   return (_executable, _args, options) =>
     spawn(process.execPath, [fixture], {
       stdio: ["pipe", "pipe", "pipe"],
       windowsHide: true,
-      env: { ...options.env, CUCKCODE_FAKE_MODE: "exercise" },
+      env: { ...options.env, CUCKCODE_FAKE_MODE: mode },
     });
 }
+
+it("refuses to bind, before any turn, a session that started an MCP server (F1.4)", async () => {
+  const parent = await mkdtemp(join(tmpdir(), "cuckcode-exercise-"));
+  const credentialSourcePath = join(parent, "source-auth.json");
+  await writeFile(credentialSourcePath, '{"synthetic":"not-a-real-credential"}', "utf8");
+  const home = await createControlledCodexHome({
+    parentDirectory: parent,
+    credentialSourcePath,
+    instruction: "# Role\n\nThis is the reviewed Delivery Lead instruction.",
+  });
+  try {
+    const supervisor = new CodexStdioSupervisor({
+      executable: "codex.exe",
+      spawnProcess: exerciseSpawner("tool-surface"),
+      codexHome: home.path,
+    });
+    const result = await runRoleExercise({
+      supervisor,
+      cwd: parent,
+      expectedInstructionSource: home.instructionPath,
+      agentId: "agent_delivery",
+      bindingId: "binding_delivery",
+      roleId: "delivery-lead",
+      expected: {
+        requestedModel: "gpt-5.6-luna",
+        expectedReasoningEffort: "medium",
+        expectedAuthMode: "chatgpt",
+        protocolVersion: CODEX_PIN,
+        promotedContentSha256: "authored-delivery-lead-v1",
+      },
+    });
+
+    expect(result).toMatchObject({ performed: false, code: "BINDING_REFUSED" });
+    expect(result.performed ? "" : result.detail).toMatch(
+      /^TOOL_SURFACE_PRESENT: .*codex_apps \(connected, 2 tools\)/u,
+    );
+    expect(supervisor.stderr.join("\n")).not.toContain("turn/start reached");
+  } finally {
+    await home.dispose();
+    await rm(parent, { recursive: true, force: true });
+  }
+});

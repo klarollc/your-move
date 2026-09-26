@@ -26,6 +26,8 @@ export const CONSUMED_FILES = [
   "v2/TurnInterruptResponse.json",
   "v2/TurnCompletedNotification.json",
   "v2/ErrorNotification.json",
+  "v2/ListMcpServerStatusParams.json",
+  "v2/ListMcpServerStatusResponse.json",
 ];
 
 /** Client methods the supervisor sends. Losing one is breaking. */
@@ -36,6 +38,7 @@ const CALLED_METHODS = [
   "thread/read",
   "turn/start",
   "turn/interrupt",
+  "mcpServerStatus/list",
 ];
 /** Server notifications the harness depends on by name. */
 const READ_NOTIFICATIONS = ["turn/completed", "error"];
@@ -47,6 +50,7 @@ const SENT_TYPES = new Set([
   "v2/ThreadReadParams.json",
   "v2/TurnStartParams.json",
   "v2/TurnInterruptParams.json",
+  "v2/ListMcpServerStatusParams.json",
 ]);
 
 function canonical(value) {

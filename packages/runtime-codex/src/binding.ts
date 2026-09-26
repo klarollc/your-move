@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import type { RuntimeBindingReport, SandboxPosture } from "@cuckcode/contracts";
+import type { ObservedMcpServer, RuntimeBindingReport, SandboxPosture } from "@cuckcode/contracts";
 import { stableStringify } from "@cuckcode/domain";
 
 import { ALLOWED_REQUEST_METHODS } from "./supervisor.js";
@@ -18,6 +18,8 @@ export type HandshakeFacts = Readonly<{
   reportedReasoningEffort: string | null;
   /** null means this adapter does not enumerate a tool surface. [] means it enumerated none. */
   toolIds: readonly string[] | null;
+  /** What `mcpServerStatus/list` observed (F1.3). null means not enumerated. */
+  observedMcpServers: readonly ObservedMcpServer[] | null;
   permissionCeiling: readonly string[];
   sandboxPosture: SandboxPosture;
 }>;
@@ -68,6 +70,8 @@ export function collectHandshakeFacts(input: {
   userAgent: string;
   auth: { ok: true; mode: "chatgpt" | "api_key_managed" } | { ok: false; code: "AUTH_REQUIRED" };
   threadStart: unknown;
+  /** The servers an enumeration after thread/start observed; omitted when none was made. */
+  mcpServers?: readonly ObservedMcpServer[];
 }): HandshakeFacts {
   const start = record(input.threadStart);
   const sandbox = record(start?.sandbox);
@@ -98,6 +102,7 @@ export function collectHandshakeFacts(input: {
     // The observed Codex protocol names no tool enumeration. null preserves that fact; [] would
     // falsely claim the adapter looked and found nothing.
     toolIds: null,
+    observedMcpServers: input.mcpServers === undefined ? null : copyServers(input.mcpServers),
     permissionCeiling: [],
     sandboxPosture: {
       type: sandboxType,
@@ -201,6 +206,23 @@ export function buildBindingReport(
     };
   }
 
+  // F1.4: the policy turned the tool features off, so any server still started is a surface the
+  // policy did not remove. Checked on every session, which makes the proof run every time.
+  const servers = facts.observedMcpServers ?? [];
+  if (servers.length > 0) {
+    return {
+      ok: false,
+      failure: {
+        code: "TOOL_SURFACE_PRESENT",
+        detail: `${facts.roleId} started MCP servers ${servers
+          .map((server) => `${server.name} (${server.status}, ${server.toolNames.length} tools)`)
+          .join(", ")}; a text-only binding must start none`,
+      },
+    };
+  }
+
+  // observedMcpServers is reported but not part of the material: a binding that reaches here
+  // observed none, so it adds nothing, and leaving it out keeps earlier fingerprints valid.
   const material = {
     adapterId: ADAPTER_ID,
     agentId: facts.agentId,
@@ -234,12 +256,18 @@ export function buildBindingReport(
       capabilityIds: [...ALLOWED_REQUEST_METHODS].sort(),
       reasoningEffort: facts.reportedReasoningEffort,
       toolIds: facts.toolIds === null ? null : [...facts.toolIds],
+      observedMcpServers:
+        facts.observedMcpServers === null ? null : copyServers(facts.observedMcpServers),
       permissionCeiling: [...facts.permissionCeiling],
       sandboxPosture: facts.sandboxPosture,
       materialFingerprint: createHash("sha256").update(stableStringify(material)).digest("hex"),
       status: "candidate",
     },
   };
+}
+
+function copyServers(servers: readonly ObservedMcpServer[]): ObservedMcpServer[] {
+  return servers.map((server) => ({ ...server, toolNames: [...server.toolNames] }));
 }
 
 function versionOf(userAgent: string): string | undefined {

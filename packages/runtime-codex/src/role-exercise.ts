@@ -4,6 +4,8 @@ import { runTurn, type Clock, type TurnSupervisor } from "./turn-runner.js";
 import { attemptRecords, type AttemptRecord } from "./attempt-record.js";
 import { classifyTurnItems } from "./item-classification.js";
 import { buildBindingReport, collectHandshakeFacts, type BindingExpectation } from "./binding.js";
+import { featureDisableConfig } from "./feature-policy.js";
+import { enumerateMcpServers } from "./tool-surface.js";
 
 /**
  * The task is deliberately identical for every role. Role-specific instruction belongs only in
@@ -111,6 +113,11 @@ export async function runRoleExercise(input: {
         detail: "the session did not load exactly the controlled role instruction file",
       };
     }
+    // F1.3: what the session started, listed before any turn so the binding can refuse it.
+    const mcpServers = await enumerateMcpServers(
+      input.supervisor,
+      nestedId(threadStart, "thread") ?? null,
+    );
 
     let facts;
     try {
@@ -121,6 +128,7 @@ export async function runRoleExercise(input: {
         userAgent: initialized.userAgent,
         auth,
         threadStart,
+        mcpServers,
       });
     } catch {
       return {
@@ -132,7 +140,11 @@ export async function runRoleExercise(input: {
 
     const binding = buildBindingReport(facts, input.expected);
     if (!binding.ok) {
-      return { performed: false, code: "BINDING_REFUSED", detail: binding.failure.code };
+      return {
+        performed: false,
+        code: "BINDING_REFUSED",
+        detail: `${binding.failure.code}: ${binding.failure.detail}`,
+      };
     }
 
     const threadId = nestedId(threadStart, "thread");
@@ -201,7 +213,11 @@ export function exerciseThreadStartParams(
     // caller can pose a different task without a second copy of the posture above — the sandbox,
     // approval policy and effort are the parts that must never vary by caller.
     baseInstructions: taskPrompt,
-    config: { model_reasoning_effort: expected.expectedReasoningEffort },
+    // The feature policy (F1.1) rides on the one place every caller builds thread/start from.
+    config: {
+      model_reasoning_effort: expected.expectedReasoningEffort,
+      features: featureDisableConfig(),
+    },
   };
 }
 

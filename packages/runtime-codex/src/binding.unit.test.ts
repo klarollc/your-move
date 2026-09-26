@@ -33,6 +33,7 @@ function facts(overrides: Partial<HandshakeFacts> = {}): HandshakeFacts {
     reportedModel: "gpt-5.6-luna",
     reportedReasoningEffort: "medium",
     toolIds: [],
+    observedMcpServers: [],
     permissionCeiling: [],
     sandboxPosture: posture,
     ...overrides,
@@ -57,7 +58,27 @@ describe("codex binding report", () => {
           instructionSources: ["C:/controlled/AGENTS.md"],
         },
       }),
-    ).toEqual(facts({ toolIds: null }));
+    ).toEqual(facts({ toolIds: null, observedMcpServers: null }));
+  });
+
+  it("carries the MCP servers an enumeration observed into the facts (F1.3)", () => {
+    const apps = { name: "codex_apps", status: "connected", toolNames: ["github_search"] };
+    const collected = collectHandshakeFacts({
+      agentId: "agent_0",
+      bindingId: "binding_0",
+      roleId: "delivery-lead",
+      userAgent: "codex-cli 0.146.0 (windows)",
+      auth: { ok: true, mode: "chatgpt" },
+      threadStart: {
+        model: "gpt-5.6-luna",
+        reasoningEffort: "medium",
+        sandbox: { type: "readOnly", networkAccess: false },
+        approvalPolicy: "never",
+        multiAgentMode: "explicitRequestOnly",
+      },
+      mcpServers: [apps],
+    });
+    expect(collected.observedMcpServers).toEqual([apps]);
   });
   it("builds a candidate report when every fact matches what was approved", () => {
     const result = buildBindingReport(facts(), expected);
@@ -125,6 +146,36 @@ describe("codex binding report", () => {
     if (result.ok) return;
     expect(result.failure.code).toBe("TOOL_SURFACE_PRESENT");
     expect(result.failure.detail).toContain("shell");
+  });
+
+  it("refuses a binding whose session started any MCP server, naming each (F1.4)", () => {
+    const result = buildBindingReport(
+      facts({
+        observedMcpServers: [
+          { name: "codex_apps", status: "connected", toolNames: ["github_search", "gmail_send"] },
+          { name: "docs", status: "starting", toolNames: [] },
+        ],
+      }),
+      expected,
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.failure.code).toBe("TOOL_SURFACE_PRESENT");
+    expect(result.failure.detail).toContain("codex_apps (connected, 2 tools)");
+    expect(result.failure.detail).toContain("docs (starting, 0 tools)");
+  });
+
+  it("reports what the enumeration saw, keeping null apart from an empty list", () => {
+    const listed = buildBindingReport(facts({ observedMcpServers: [] }), expected);
+    const unlisted = buildBindingReport(facts({ observedMcpServers: null }), expected);
+    expect(listed.ok && unlisted.ok).toBe(true);
+    if (!listed.ok || !unlisted.ok) return;
+    expect(listed.report.observedMcpServers).toEqual([]);
+    expect(unlisted.report.observedMcpServers).toBeNull();
+    // Reported, not fingerprinted: a binding that succeeds has observed none, so the field adds no
+    // material, and leaving it out keeps every earlier binding's fingerprint valid.
+    expect(listed.report.materialFingerprint).toBe(unlisted.report.materialFingerprint);
+    expect(listed.report.toolIds).toEqual([]);
   });
 
   it("never reports an empty tool list it did not observe", () => {

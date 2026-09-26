@@ -12,6 +12,7 @@ import {
   buildBindingReport,
   collectHandshakeFacts,
   createControlledCodexHome,
+  enumerateMcpServers,
   exerciseThreadStartParams,
   type BindingExpectation,
   type ControlledCodexHome,
@@ -141,6 +142,11 @@ export async function openKickoffSession(input: {
       };
     }
 
+    // F1.3: what the session started, listed before any turn so the binding can refuse it.
+    const mcpServers = await enumerateMcpServers(
+      supervisor,
+      (threadStart as { thread?: { id?: string } }).thread?.id ?? null,
+    );
     const facts = collectHandshakeFacts({
       agentId: input.agentId,
       bindingId: input.bindingId,
@@ -148,10 +154,15 @@ export async function openKickoffSession(input: {
       userAgent: initialized.userAgent,
       auth,
       threadStart,
+      mcpServers,
     });
     const binding = buildBindingReport(facts, input.expected);
     if (!binding.ok) {
-      return { ok: false, code: "BINDING_REFUSED", detail: binding.failure.code };
+      return {
+        ok: false,
+        code: "BINDING_REFUSED",
+        detail: `${binding.failure.code}: ${binding.failure.detail}`,
+      };
     }
 
     const threadId = (threadStart as { thread?: { id?: string } }).thread?.id;

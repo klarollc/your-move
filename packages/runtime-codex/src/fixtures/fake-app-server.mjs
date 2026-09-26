@@ -3,6 +3,9 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const mode = process.env.CUCKCODE_FAKE_MODE ?? "normal";
+// `tool-surface` is `exercise` with one MCP server started, as a signed-in Codex starts codex_apps
+// when its tool features are on (F1.4).
+const exerciseLike = mode === "exercise" || mode === "tool-surface";
 // Reports the pinned version, as the real binary would. Read from the declaration, never copied.
 const pinned = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"))
   .devDependencies["@openai/codex"];
@@ -55,23 +58,52 @@ for await (const line of lines) {
   } else if (message.method === "initialized") {
     process.stdout.write('{"method":"fixture/ready","params":{}}\n');
   } else if (message.method === "account/read") {
-    const account = mode === "exercise" ? { type: "chatgpt" } : null;
+    const account = exerciseLike ? { type: "chatgpt" } : null;
     process.stdout.write(`${JSON.stringify({ id: message.id, result: { account } })}\n`);
   } else if (message.method === "thread/start") {
-    const exercise =
-      mode === "exercise"
-        ? {
-            model: message.params.model,
-            reasoningEffort: message.params.config?.model_reasoning_effort,
-            sandbox: { type: "readOnly", networkAccess: false },
-            approvalPolicy: "never",
-            multiAgentMode: "explicitRequestOnly",
-            instructionSources: [join(process.env.CODEX_HOME, "AGENTS.md")],
-          }
-        : {};
+    const exercise = exerciseLike
+      ? {
+          model: message.params.model,
+          reasoningEffort: message.params.config?.model_reasoning_effort,
+          sandbox: { type: "readOnly", networkAccess: false },
+          approvalPolicy: "never",
+          multiAgentMode: "explicitRequestOnly",
+          instructionSources: [join(process.env.CODEX_HOME, "AGENTS.md")],
+        }
+      : {};
     process.stdout.write(
       `${JSON.stringify({ id: message.id, result: { thread: { id: "thread_fixture" }, ...exercise } })}\n`,
     );
+  } else if (message.method === "mcpServerStatus/list") {
+    const data =
+      mode === "tool-surface"
+        ? [
+            {
+              name: "codex_apps",
+              authStatus: "oAuth",
+              runtimeStatus: "connected",
+              tools: { github_search: {}, gmail_send: {} },
+              resources: [],
+              resourceTemplates: [],
+            },
+          ]
+        : [];
+    write({ id: message.id, result: { data, nextCursor: null } });
+  } else if (message.method === "turn/start" && mode === "tool-surface") {
+    // A session that reaches a turn in this mode has skipped the refusal.
+    process.stderr.write("fixture: turn/start reached in tool-surface mode\n");
+    write({ id: message.id, result: { turn: { id: "turn_fixture" } } });
+    write({
+      method: "turn/completed",
+      params: {
+        threadId: "thread_fixture",
+        turn: {
+          id: "turn_fixture",
+          status: "completed",
+          items: [{ id: "item_1", type: "agentMessage", text: "EXERCISE_OK" }],
+        },
+      },
+    });
   } else if (message.method === "turn/start" && mode === "server-request") {
     // Deliberately reuses the client's own request id: a client that routes by id alone would take
     // this request for the answer to turn/start.

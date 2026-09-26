@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { BindingExpectation } from "./binding.js";
+import { featureDisableConfig } from "./feature-policy.js";
 import {
   STANDARD_ROLE_EXERCISE_PROMPT,
   exerciseThreadStartParams,
@@ -27,7 +28,9 @@ const observedThread = {
   instructionSources: ["C:/controlled/delivery-lead/AGENTS.md"],
 };
 
-function supervisor(overrides: Partial<{ threadStart: unknown; completed: unknown }> = {}) {
+function supervisor(
+  overrides: Partial<{ threadStart: unknown; completed: unknown; mcpServers: unknown[] }> = {},
+) {
   const calls: Array<{ method: string; params: Record<string, unknown> }> = [];
   const listeners = new Set<(event: SupervisorEvent) => void>();
   const completion = (overrides.completed ?? {
@@ -56,6 +59,8 @@ function supervisor(overrides: Partial<{ threadStart: unknown; completed: unknow
     async request(method, params) {
       calls.push({ method, params });
       if (method === "thread/start") return overrides.threadStart ?? observedThread;
+      if (method === "mcpServerStatus/list")
+        return { data: overrides.mcpServers ?? [], nextCursor: null };
       if (method === "turn/start") {
         // The completion arrives as a notification after turn/start answers, as it does live.
         queueMicrotask(() => {
@@ -99,7 +104,7 @@ describe("role exercise runner", () => {
       turnId: "turn_1",
       responseText: "EXERCISE_OK",
     });
-    expect(fake.calls).toHaveLength(2);
+    expect(fake.calls).toHaveLength(3);
     expect(fake.calls[0]).toMatchObject({
       method: "thread/start",
       params: {
@@ -109,16 +114,53 @@ describe("role exercise runner", () => {
         sandbox: "read-only",
         approvalPolicy: "never",
         baseInstructions: STANDARD_ROLE_EXERCISE_PROMPT,
-        config: { model_reasoning_effort: "medium" },
+        config: { model_reasoning_effort: "medium", features: featureDisableConfig() },
       },
     });
+    // F1.3: the servers the session started are listed before anything else can happen.
     expect(fake.calls[1]).toEqual({
+      method: "mcpServerStatus/list",
+      params: { threadId: "thread_1", detail: "toolsAndAuthOnly" },
+    });
+    expect(fake.calls[2]).toEqual({
       method: "turn/start",
       params: {
         threadId: "thread_1",
         input: [{ type: "text", text: "Begin the bounded role exercise." }],
       },
     });
+  });
+
+  it("refuses before a turn when the session started an MCP server, naming it", async () => {
+    const fake = supervisor({
+      mcpServers: [
+        {
+          name: "codex_apps",
+          authStatus: "oAuth",
+          runtimeStatus: "connected",
+          tools: { github_search: {} },
+          resources: [],
+          resourceTemplates: [],
+        },
+      ],
+    });
+
+    const result = await runRoleExercise({
+      supervisor: fake.instance,
+      cwd: "C:/synthetic/role-exercise",
+      expectedInstructionSource: "C:/controlled/delivery-lead/AGENTS.md",
+      agentId: "agent_delivery",
+      bindingId: "binding_delivery",
+      roleId: "delivery-lead",
+      expected,
+    });
+
+    expect(result).toMatchObject({ performed: false, code: "BINDING_REFUSED" });
+    expect(result.performed ? "" : result.detail).toMatch(/^TOOL_SURFACE_PRESENT: .*codex_apps/u);
+    expect(fake.calls.map(({ method }) => method)).toEqual([
+      "thread/start",
+      "mcpServerStatus/list",
+    ]);
   });
 
   it("uses a shared prompt that exposes each role's responsibility and refusal for owner review", () => {
@@ -256,6 +298,15 @@ describe("bounded turn task prompt", () => {
     );
 
     expect(params.baseInstructions).toBe("Score the three candidates against the rubric.");
+  });
+
+  it("carries the feature policy on every thread/start, beside the approved effort (F1.1)", () => {
+    const params = exerciseThreadStartParams("C:/synthetic/workspace", expected, "Any task.");
+    expect(params.config).toEqual({
+      model_reasoning_effort: "medium",
+      features: featureDisableConfig(),
+    });
+    expect(Object.keys(featureDisableConfig()).length).toBeGreaterThan(0);
   });
 
   it("falls back to the standard exercise prompt when no task is given", () => {
