@@ -1063,3 +1063,28 @@ in `fixtures/`, so it cannot be frozen without freezing production.
 None ruled. Option A, regenerate after each task, was taken on 2026-09-25. Option B, check the
 review against the accepted version rather than re-deriving it, belongs to the D-24 review due
 2026-10-09.
+
+### DF-024 — A test near its time limit failed a different test
+
+Observed 2026-09-26, during Phase 7-O Task 5.
+
+`npm run test:component` failed intermittently in `decision-notice.component.test.tsx`. The
+C-10 focus-contract test ran in about 4.2 s against Vitest's 5 s default. On a slow run it timed
+out, and its pending `userEvent` typing carried into the next test, which then failed on text it
+never typed. The failure report named the wrong test.
+
+## What it cost
+
+Two red component runs, and time spent reading the innocent test before the timing was found. A
+retry would have passed and hidden it.
+
+## The shape
+
+A timeout is not isolation. When a test times out, Vitest moves on, but the test's queued input
+does not stop. The symptom lands wherever the leftover work lands.
+
+## Product response
+
+The owner approved a 15 s timeout on that one test, with a note on why (`5e3efe9`). Not ruled: a
+general rule that tests near their limit are flagged, or that `userEvent` sessions are torn down on
+timeout.
