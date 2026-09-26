@@ -1,0 +1,33 @@
+{
+  "schema": "cuckcode.codex-smoke.v1",
+  "status": "A smoke turn, not a release review. It produces no verdict and approves nothing.",
+  "roleId": "release-reviewer",
+  "codexPin": "0.157.1",
+  "requestedModel": "gpt-5.6-sol",
+  "prompt": "Reply with exactly this JSON object and nothing else: {\"ok\": true}",
+  "startedAt": "2026-09-26T12:34:42.948Z",
+  "verdict": null,
+  "endedAt": "2026-09-26T12:34:49.318Z",
+  "observed": {
+    "model": "gpt-5.6-sol",
+    "reasoningEffort": "medium",
+    "protocolVersion": "0.157.1"
+  },
+  "code": "SMOKE_OK",
+  "answerMatched": true,
+  "responseSha256": "6bc0da1f42f96fc37b8bd7ed20ba57606d2a0da5cda2b135c7854fbdc985b8a3",
+  "runtime": [
+    {
+      "attempt": 1,
+      "transportRetry": false,
+      "turnId": "01a0ddb5-f805-72a1-b668-e84404dff289",
+      "outcome": "completed",
+      "status": "completed",
+      "elapsedMs": 3789.5552000000002,
+      "lastMethod": "turn/completed",
+      "refusedServerRequest": null,
+      "failure": null,
+      "codexRetries": []
+    }
+  ]
+}

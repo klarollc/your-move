@@ -1123,3 +1123,37 @@ appears to guard. The ledger proves the owner's disk, not the repository.
 
 None, and none ruled. Candidates: digest the LF-normalised content (and re-record the twelve under
 P-6), or digest git's blob for committed artifacts.
+
+### DF-026 — A text-only role has a live tool server beside it
+
+Observed 2026-09-26, in the session log of the Task 14 smoke turn (`codex-currency`,
+`docs/evidence/runtime/smoke/2026-09-26T12-34-42-948Z-release-reviewer.json`).
+
+The smoke turn passed: one attempt, `gpt-5.6-sol` as requested, `{"ok": true}` in 3.8 s. Its session
+log shows Codex 0.157.1 starting its built-in `codex_apps` MCP server in the session
+(`mcpServer/startupStatus/updated`: `starting`, then `ready`), although the controlled home carries
+no `config.toml` and the thread runs read-only with approvals `never`. The model did not use it. Had
+it, the call would have arrived as an `mcpToolCall` item, which the classification table counts as
+an effect and stops on — so the guarantee held — but the role ran with a live tool server beside it
+that nothing in CuckCode declared, requested or reported.
+
+## The shape
+
+The same finding the Claude adapter proposal made about Claude Code in 2026-09 (§4): a runtime is
+not text-only by default, and "no tools requested" is not "no tools present". The residual tool
+surface must be observed and reported, never assumed to be `toolIds: []`.
+
+## Also in the same log, not a defect
+
+- Codex's own notifications carry machine and account identifiers: the PC's name, a Codex
+  `installationId`, the plan type, rate-limit usage, and temp paths holding the Windows user name.
+  By owner ruling the smoke session's log is held out of git (in the gitignored `.cuckcode/`),
+  and redacting these in future logs is proposed as a follow-up, unruled.
+- Codex 0.157.1 warns that it will not create helper binaries under the temporary directory the
+  controlled home lives in. Harmless for text-only turns; relevant if a role is ever given tools.
+
+## Product response
+
+None yet, and none ruled. Candidates: report `mcpServer/startupStatus/updated` into the binding
+report as observed residual tool surface; find whether `codex_apps` can be disabled per thread, and
+if so, disable it and prove the absence with an adversarial test before any budgeted run.
