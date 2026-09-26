@@ -270,6 +270,14 @@ the evidence model is not fixed.
 
 ## Operational specifics
 
+**Agent command runner (2026-09-25).** When the owner has `npm run agent:runner` open, an agent
+requests a check by writing `{ "id": "<8-64 chars, a-z0-9->", "command": "<allowlisted>" }` to
+`node_modules/.cache/agent-runner/inbox/<id>.json` and reads `outbox/<id>.json` and
+`logs/<id>.log`. The result carries `head`, `dirty` and `evidenceChanged`; a dirty-tree run is
+never the gate for a commit. Live runs, promotions and evidence writes cannot be allow-listed
+(`scripts/agent-runner.test.mjs` enforces it) and the child never sees a `CUCKCODE_*` variable.
+`git-push` works only when the owner started the runner with `-- --allow-push`.
+
 Everything runs from `C:\Users\nater\CuckCode`. The owner uses **PowerShell**, so `&&` is a parse
 error and there is no inline env-var prefix — write `$env:X='1'; cmd` and clear it afterwards.
 

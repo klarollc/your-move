@@ -42,6 +42,15 @@ the Phase 7-O gate. The [decision record](docs/evidence/phase-7-o/decision-recor
 authorizes specification only; Phase 7-O implementation still awaits a separately approved spec,
 plan, and tasks.
 
+## Agent command runner
+
+`npm run agent:runner` (add `-- --allow-push` to permit pushing) lets an agent request allow-listed
+checks — `verify`, the individual test suites, `typecheck`, `lint`, a read-only provenance check —
+on this machine without a human relaying output. Start it in a visible terminal and stop it with
+Ctrl+C. It runs only the commands in `scripts/agent-runner.allowlist.json`, one at a time, with no
+shell and no `CUCKCODE_*` variables, and refuses to start if any such variable is set. Requests and
+results live under `node_modules/.cache/agent-runner/`. Plan: `tasks/agent-runner-plan.md`.
+
 ## Toolchain
 
 Use the exact engine family declared in `package.json` before running project verification:
