@@ -206,6 +206,39 @@ describe("role exercise runner", () => {
 
     expect(result).toMatchObject({ performed: false, code: "UNCLASSIFIED_ITEM_TYPE" });
   });
+
+  it("records the runner's attempt on every result that reached a turn", async () => {
+    const performed = await runRoleExercise({
+      supervisor: supervisor().instance,
+      cwd: "C:/synthetic/role-exercise",
+      expectedInstructionSource: "C:/controlled/delivery-lead/AGENTS.md",
+      agentId: "agent_delivery",
+      bindingId: "binding_delivery",
+      roleId: "delivery-lead",
+      expected,
+    });
+    expect(performed.runtime).toEqual([
+      expect.objectContaining({
+        attempt: 1,
+        outcome: "completed",
+        turnId: "turn_1",
+        failure: null,
+      }),
+    ]);
+
+    const refused = await runRoleExercise({
+      supervisor: supervisor({ threadStart: { ...observedThread, instructionSources: [] } })
+        .instance,
+      cwd: "C:/synthetic/role-exercise",
+      expectedInstructionSource: "C:/controlled/delivery-lead/AGENTS.md",
+      agentId: "agent_delivery",
+      bindingId: "binding_delivery",
+      roleId: "delivery-lead",
+      expected,
+    });
+    expect(refused.performed).toBe(false);
+    expect(refused.runtime).toBeUndefined();
+  });
 });
 
 describe("bounded turn task prompt", () => {

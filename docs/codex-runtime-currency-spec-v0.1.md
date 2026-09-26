@@ -4,7 +4,7 @@
 `docs/evidence/runtime/decision-record-2026-09-25-codex-currency.md`. Approval authorizes an
 implementation plan only; the plan and its task list each need approval before any code changes.
 Erratum 2026-09-25, after approval: §1 said "six scripts"; a recount while planning found seven.
-No requirement changes.
+No requirement changes. R6.7 was withdrawn by owner ruling on 2026-09-26; see §3.
 
 ## 1. Problem
 
@@ -139,6 +139,12 @@ evidence (passes 1–9, Task 17 artifacts, the 0.146.0 bundle) — preserved unc
   backoff. Budget and limits are decision CX-4. Any other class is never retried by the harness.
 - R6.7 **`retryable` is truthful.** Where the normalizer emits `retryable`, it is derived from the
   R6.6 transport classes instead of the hardcoded `false` (closes C-1 F4 for Codex).
+  **Withdrawn 2026-09-26, owner ruling during Task 11.** The premise was wrong: the normalizer's
+  hardcoded `retryable: false` sits only on its two parse-failure codes (unsupported and malformed
+  event), where `false` is true; Codex's `error` notification becomes a `runtime.error` event, and
+  the contract gives that event no `retryable` field. `normalizeCodexEvent` also has no caller
+  outside its own tests. C-1 F4 stays open until a consumer needs a retryable `runtime.error`. The
+  failure class and transport flag live in the run records (R6.1).
 - R6.8 **Diagnostics preserved.** Before the controlled home is disposed, the session's supervisor
   stderr (already redacted) and its notification stream, excluding `*/delta` payloads but counting
   them, are written to the location in decision CX-5. The credential is never copied out.

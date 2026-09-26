@@ -4,7 +4,7 @@ import { join, resolve } from "node:path";
 
 import type { RuntimeBindingReport } from "@cuckcode/contracts";
 import { runPreflightedKickoff, type PreparedKickoffBinding } from "@cuckcode/application";
-import { CODEX_PIN, parseApprovedRoleExercisePlan } from "@cuckcode/runtime-codex";
+import { CODEX_PIN, attemptRecords, parseApprovedRoleExercisePlan } from "@cuckcode/runtime-codex";
 import { readFile } from "node:fs/promises";
 
 import {
@@ -159,7 +159,13 @@ if (openFailures.length > 0) {
       const events = turn.effects.length > 0 ? turn.effects : undefined;
 
       if (!turn.ok) {
-        transcript.push({ ...request, accepted: false, code: turn.code, detail: turn.detail });
+        transcript.push({
+          ...request,
+          accepted: false,
+          code: turn.code,
+          detail: turn.detail,
+          runtime: attemptRecords(turn.attempts),
+        });
         return { ok: false, code: turn.code, detail: turn.detail, ...(events ? { events } : {}) };
       }
 
@@ -167,6 +173,7 @@ if (openFailures.length > 0) {
       if (!parsed.ok) {
         transcript.push({
           ...request,
+          runtime: attemptRecords(turn.attempts),
           accepted: false,
           code: "PAYLOAD_UNPARSEABLE",
           raw: turn.text,
@@ -219,7 +226,13 @@ if (openFailures.length > 0) {
                 statement: parsed.value.statement,
               };
 
-      transcript.push({ ...request, accepted: true, payload, raw: turn.text });
+      transcript.push({
+        ...request,
+        accepted: true,
+        payload,
+        raw: turn.text,
+        runtime: attemptRecords(turn.attempts),
+      });
       return { ok: true, payload, ...(events ? { events } : {}) };
     },
   });

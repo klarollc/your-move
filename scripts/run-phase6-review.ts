@@ -108,7 +108,13 @@ for (const roleId of REVIEWER_ROLE_IDS) {
     });
 
     if (!result.performed) {
-      results.push({ roleId, performed: false, code: result.code, detail: result.detail });
+      results.push({
+        roleId,
+        performed: false,
+        code: result.code,
+        detail: result.detail,
+        ...(result.runtime ? { runtime: result.runtime } : {}),
+      });
       process.stdout.write(`${JSON.stringify({ roleId, performed: false, code: result.code })}\n`);
       continue;
     }
@@ -147,6 +153,7 @@ for (const roleId of REVIEWER_ROLE_IDS) {
       model: result.binding.model,
       reasoningEffort: result.binding.reasoningEffort,
       bindingFingerprint: result.binding.materialFingerprint,
+      runtime: result.runtime,
     });
     process.stdout.write(`${JSON.stringify({ roleId, performed: true, file: filename })}\n`);
   } finally {

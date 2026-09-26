@@ -78,3 +78,19 @@ describe("kickoff turn completion diagnostics", () => {
     );
   });
 });
+
+describe("turn completion failure detail", () => {
+  it("names Codex's failure class and HTTP status, not only its message", () => {
+    expect(
+      describeTurnCompletionFailure("turn_8", {
+        status: "failed",
+        error: {
+          message: "stream disconnected before completion",
+          codexErrorInfo: { responseStreamDisconnected: { httpStatusCode: 502 } },
+        },
+      }),
+    ).toBe(
+      "turn turn_8 reported status failed: stream disconnected before completion [responseStreamDisconnected, http 502]",
+    );
+  });
+});

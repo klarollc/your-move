@@ -4,7 +4,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
-import { CODEX_PIN, parseApprovedRoleExercisePlan } from "@cuckcode/runtime-codex";
+import { CODEX_PIN, attemptRecords, parseApprovedRoleExercisePlan } from "@cuckcode/runtime-codex";
 
 import { buildKickoffPreflightInput } from "./phase4-kickoff-preflight.js";
 import { openKickoffSession, parseTurnJson } from "./phase4-kickoff-session.js";
@@ -140,12 +140,19 @@ if (!opened.ok) {
     turnsSpent += 1;
 
     if (!turn.ok) {
-      attempts.push({ turn: turnsSpent, accepted: false, code: turn.code, detail: turn.detail });
+      attempts.push({
+        turn: turnsSpent,
+        runtime: attemptRecords(turn.attempts),
+        accepted: false,
+        code: turn.code,
+        detail: turn.detail,
+      });
       break;
     }
     if (turn.effects.length > 0) {
       attempts.push({
         turn: turnsSpent,
+        runtime: attemptRecords(turn.attempts),
         accepted: false,
         code: "EXTERNAL_EFFECT_OBSERVED",
         effects: turn.effects,
@@ -157,6 +164,7 @@ if (!opened.ok) {
     if (!parsed.ok) {
       attempts.push({
         turn: turnsSpent,
+        runtime: attemptRecords(turn.attempts),
         accepted: false,
         code: "PAYLOAD_UNPARSEABLE",
         detail: parsed.detail,
@@ -168,6 +176,7 @@ if (!opened.ok) {
     const missing = shortfalls(parsed.value);
     attempts.push({
       turn: turnsSpent,
+      runtime: attemptRecords(turn.attempts),
       accepted: missing.length === 0,
       shortfalls: missing,
       responseSha256: sha256(turn.text),

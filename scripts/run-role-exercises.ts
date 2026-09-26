@@ -101,6 +101,7 @@ for (const configuration of approved.plan) {
             performed: false,
             code: result.code,
             detail: result.detail,
+            ...(result.runtime ? { runtime: result.runtime } : {}),
           },
         };
     record.performed = outcome.performed;
@@ -198,6 +199,7 @@ async function writeSuccessfulAttempt(input: {
       model: input.result.binding.model,
       reasoningEffort: input.result.binding.reasoningEffort,
       protocolVersion: input.result.binding.protocolVersion,
+      runtime: input.result.runtime,
       bindingFingerprint: input.result.binding.materialFingerprint,
     },
   };

@@ -387,3 +387,44 @@ GREEN 13/13; the integration file 5/5 in ten consecutive container runs.
 **Behaviour now on record:** a `turn/interrupt` that itself times out makes the supervisor kill that
 session's Codex process. The turn has already failed by then, but no later turn can run in that
 session.
+
+## Task 11 — Classification in records (R6.1, R7.1); R6.7 withdrawn
+
+**R6.7 withdrawn by owner ruling, 2026-09-26.** The cheapest check first: the normalizer's
+hardcoded `retryable: false` is only on its parse-failure codes, where it is true; the contract's
+`runtime.error` event has no `retryable` field; and `normalizeCodexEvent` has no caller outside its
+tests. No normalizer change. Erratum in the specification; C-1 F4 stays open.
+
+`attemptRecords()` projects the runner's attempts into the committed record shape: outcome,
+status, elapsed time, last method, refused server request, and for a failure Codex's own
+`codexErrorInfo`, HTTP status, message, `additionalDetails` and transport flag, plus every
+`error` notification in order as `codexRetries`. `describeTurnCompletionFailure` now delegates to
+the classifier, so its one-line detail names the class and status too.
+
+**RED**, container mirror, against a projection stub that kept only the message and the previous
+`describeTurnCompletionFailure`:
+
+```text
+× names Codex's failure class and HTTP status, not only its message
+× keep everything Codex said about a failure, which passes 6 to 9 lost
+× mark a harness retry, and record a clean attempt with no failure
+AssertionError: expected 'turn turn_8 reported status failed: s…' to be 'turn turn_8 reported status failed: s…' // Object.is equality
+AssertionError: expected { Object (message) } to deeply equal { attempt: 1, …(9) }
+AssertionError: expected { message: null } to match object { transportRetry: true, …(2) }
+Tests  3 failed | 10 passed (13)
+```
+
+**Not RED:** "are plain JSON, so a record survives a round trip unchanged" cannot fail against a
+stub that returns plain objects.
+
+**GREEN** 13/13. Every writer that records a turn now embeds `runtime: attemptRecords(…)`: the
+release review and the three other Phase 5 live scripts on every attempt entry, the kickoff on
+every transcript entry, and the role exercise on every result that reached a turn (absent on a
+refusal before any turn), carried into `roles/exercises.json` attempts and the Phase 6 review
+results. That is six writers, not the three the checklist named, because all six record a turn.
+The role-exercise record was proven by mutation: emptying the success record failed 1 of 8.
+Nothing is rewritten: the new fields appear only in records written by future runs, and
+`phase5:provenance` reads every committed pass unchanged (mirror: ok, 0 stale, 0 missing).
+
+Mirror totals: unit 446 (+ the Task 10 guard, 447 at the gate); runtime-codex integration 20 + 3
+skipped; `tsc -b`, scripts typecheck, ESLint and Prettier clean.

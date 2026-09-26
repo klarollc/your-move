@@ -5,7 +5,9 @@ import { join, resolve } from "node:path";
 import { composeRole, type RoleBrief } from "@cuckcode/domain";
 import {
   CodexStdioSupervisor,
+  classifyTurnError,
   classifyTurnItems,
+  describeFailure,
   runTurn,
   buildBindingReport,
   collectHandshakeFacts,
@@ -221,13 +223,10 @@ export async function openKickoffSession(input: {
 
 export function describeTurnCompletionFailure(
   turnId: string,
-  turn: { status?: string; error?: { message?: string } | null } | undefined,
+  turn: { status?: string; error?: unknown } | undefined,
 ): string {
-  const status = String(turn?.status);
-  const message = turn?.error?.message?.trim();
-  return message
-    ? `turn ${turnId} reported status ${status}: ${message}`
-    : `turn ${turnId} reported status ${status}`;
+  // One description for every failure record: message, then Codex's class and HTTP status.
+  return describeFailure(turnId, String(turn?.status), classifyTurnError(turn?.error));
 }
 
 function itemKindFor(type: string): string {

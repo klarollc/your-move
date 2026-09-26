@@ -4,7 +4,7 @@ import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promis
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
-import { CODEX_PIN, parseApprovedRoleExercisePlan } from "@cuckcode/runtime-codex";
+import { CODEX_PIN, attemptRecords, parseApprovedRoleExercisePlan } from "@cuckcode/runtime-codex";
 
 import { buildKickoffPreflightInput } from "./phase4-kickoff-preflight.js";
 import { openKickoffSession, parseTurnJson } from "./phase4-kickoff-session.js";
@@ -137,6 +137,7 @@ if (!opened.ok) {
     if (!turn.ok || turn.effects.length > 0) {
       attempts.push({
         turn: turnsSpent,
+        runtime: attemptRecords(turn.attempts),
         accepted: false,
         code: turn.ok ? "EXTERNAL_EFFECT_OBSERVED" : turn.code,
       });
@@ -147,6 +148,7 @@ if (!opened.ok) {
     if (!parsed.ok) {
       attempts.push({
         turn: turnsSpent,
+        runtime: attemptRecords(turn.attempts),
         accepted: false,
         code: "PAYLOAD_UNPARSEABLE",
         detail: parsed.detail,
@@ -159,6 +161,7 @@ if (!opened.ok) {
     overclaims = claimCrossCheck(parsed.value);
     attempts.push({
       turn: turnsSpent,
+      runtime: attemptRecords(turn.attempts),
       accepted: missing.length === 0,
       shortfalls: missing,
       overclaims,

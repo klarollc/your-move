@@ -187,7 +187,7 @@ fallback`, chromium-1280) never saw its canvas within 5 s; the commit touches no
     commit exit 0 — integration 70 + 3 skipped, e2e 50/50, others unchanged. Third browser flake in
     ten gate runs.
 
-- [ ] **Task 10 — Shared turn runner** (R6.1, R6.3, R6.4, R6.6, CP-3, CX-3, CX-4).
+- [x] **Task 10 — Shared turn runner** (R6.1, R6.3, R6.4, R6.6, CP-3, CX-3, CX-4).
   - Files: `turn-runner.ts` and its tests; `failure-classification.ts`; `fake-app-server.mjs`
     (modes `slow-stream`, `silent-turn`, `transport-fail-once`, `transport-fail-twice`,
     `non-transport-fail`); then `phase4-kickoff-session.ts` and `role-exercise.ts` moved onto it.
@@ -201,6 +201,9 @@ fallback`, chromium-1280) never saw its canvas within 5 s; the commit touches no
   - **Gate history:** `verify` at `52bc47d` exit 1 in integration on Windows — a race between the
     manual clock and a real child process in my own end-to-end test, and a 1e12 ms test limit that
     Node clamps to 1 ms. Fixed in the next commit with a `TURN_LIMIT_OUT_OF_RANGE` guard (RED 1/13).
+  - **Result:** `52bc47d` and `7fbdbb4`. RED 16/16; GREEN; one defect in my GREEN found by the RED
+    suite (`lastMethod` overwritten by the interrupt's reply). **Gate:** runner `verify` exit 0,
+    clean tree at `7fbdbb4` — unit 442, integration 75 + 3 skipped, others unchanged.
 
 - [ ] **Task 11 — Classification in records and the normalizer** (R6.1, R6.7, R7.1).
   - Files: `describeTurnCompletionFailure` and its callers, the three run-artifact writers,

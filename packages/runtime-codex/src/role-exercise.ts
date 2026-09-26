@@ -1,6 +1,7 @@
 import type { RuntimeBindingReport } from "@cuckcode/contracts";
 
 import { runTurn, type Clock, type TurnSupervisor } from "./turn-runner.js";
+import { attemptRecords, type AttemptRecord } from "./attempt-record.js";
 import { classifyTurnItems } from "./item-classification.js";
 import { buildBindingReport, collectHandshakeFacts, type BindingExpectation } from "./binding.js";
 
@@ -38,6 +39,8 @@ export type RoleExerciseResult =
       threadId: string;
       turnId: string;
       responseText: string;
+      /** The runner's attempts, for the exercise record (R6.1). */
+      runtime: AttemptRecord[];
     }>
   | Readonly<{
       performed: false;
@@ -53,6 +56,8 @@ export type RoleExerciseResult =
         | "UNCLASSIFIED_ITEM_TYPE"
         | "RUNTIME_FAILURE";
       detail: string;
+      /** Present once a turn was attempted; absent for refusals before any turn. */
+      runtime?: AttemptRecord[];
     }>;
 
 /**
@@ -145,24 +150,27 @@ export async function runRoleExercise(input: {
       input: [{ type: "text", text: input.turnInput ?? "Begin the bounded role exercise." }],
       ...(input.clock ? { clock: input.clock } : {}),
     });
+    const runtime = attemptRecords(run.attempts);
     if (!run.ok) {
       const incomplete = run.code === "TURN_FAILED" || run.code === "TURN_INTERRUPTED";
       return {
         performed: false,
         code: incomplete ? "TURN_COMPLETION_INVALID" : "RUNTIME_FAILURE",
         detail: incomplete ? run.detail : `${run.code}: ${run.detail}`,
+        runtime,
       };
     }
     const turnId = run.turn.id;
     const completed = { method: "turn/completed", params: { threadId, turn: run.turn } };
     const checked = checkCompletedTurn(completed, threadId, turnId);
-    if (!checked.ok) return checked.result;
+    if (!checked.ok) return { ...checked.result, runtime };
     return {
       performed: true,
       binding: binding.report,
       threadId,
       turnId,
       responseText: checked.responseText,
+      runtime,
     };
   } catch {
     return {
