@@ -1,9 +1,9 @@
 # Codex currency follow-ups — specification v0.1
 
-**Status: DRAFT, awaiting owner approval.** Authority:
+**Status: OWNER-APPROVED 2026-09-26, with FU-1 to FU-4 as recommended.** Authority:
 `docs/evidence/runtime/decision-record-2026-09-26-codex-follow-up-rulings.md` (four rulings, each as
-recommended) and the owner's approval of "one small specification covering all four". No plan,
-tasks or code are authorized by this document.
+recommended) and the owner's approval of "one small specification covering all four". Approval
+authorizes a plan only; the plan and its task list each need approval before any code changes.
 
 Branch: `codex-currency`, before its merge into `main`. One step (F2.4) runs on `main` immediately
 after the merge.
