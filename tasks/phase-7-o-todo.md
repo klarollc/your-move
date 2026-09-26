@@ -107,13 +107,38 @@ Specification: `docs/phase-7-o-operability-spec-v0.2.md`, **owner-approved 2026-
     - Five mutations, each confirmed applied, all killed.
     - The owner rewrote the successor record with `npm run phase7o:successors:write` (it refuses
       without the reduction proof) and wrote provenance.
-- [ ] Task 4: Application — `projectOfficeReadModel` (spec §4, §7).
+- [x] Task 4: Application — `projectOfficeReadModel` (spec §4, §7).
   - Acceptance: one pure projection in `packages/application/src/office-read-model.ts`; auxiliary
     records are refused for state, condition, blocker, approval, evidence and requested-action
     facts; rail/entity conflicts are reported; any replay issue blocks "current".
   - Verify: two-snapshot sensitivity (spec §8.1), model-level cross-surface agreement (§8.2), and
     all eight adversarial classes (§8.3).
 
+  - Result, 2026-09-26: `packages/application/src/office-read-model.ts`, `projectOfficeReadModel`.
+    - Entities come from a registry that carries layout only (id, label, relationship, and a
+      person's agent id); an entry carrying anything else is reported as `REGISTRY_FACT_REFUSED`
+      and the extra ignored. Zones are `layout_only`.
+    - Work joins to a person through work → role assignment → agent → registry, with no name or
+      position match. A person with none is `workRelation: "none_assigned"` with empty lists; an
+      agent with no record is `unresolved`; runtime with no allowed record is
+      `{ status: "unavailable", reason: "not_recorded" }`.
+    - Auxiliary records may supply runtime binding and permissions only, marked with their source,
+      version and fixture flag. Any other field refuses the whole record (`AUXILIARY_FACT_REFUSED`).
+    - A cause event not in the log makes a view `supported: false`, clears its cause, stops its
+      motion and, for a person, its zone (`CAUSE_EVENT_MISSING`). An approval citing an evidence
+      version that is not recorded is `unresolved` (`APPROVAL_EVIDENCE_UNRESOLVED`). Any replay
+      issue makes `current: false`. Work, staffing and replay issues pass through to the model's
+      issue list.
+    - Attention items are the domain's, each with `relatedEntityId`; a person's `attention` is
+      exactly the model-level items joined to them, and an item nobody holds stays in the rail as
+      `ATTENTION_UNJOINED`.
+    - Tests: 20, covering §8.1 two-snapshot sensitivity, §8.2 agreement and all eight §7 classes.
+      RED 20/20 on assertions, after the first stub was widened so that no RED was a `TypeError`
+      and the test helper asserts a work view exists before reading it. Two test-side corrections
+      before GREEN, neither a behaviour change: the clock was set too far after the log for
+      "current" to be reachable, and moving a presence event before registration only reorders the
+      log, so freshness is now varied through the clock and the record time within the log.
+    - Seven mutations, each confirmed applied, all killed.
 - [ ] Task 5: Fixture logs and decision sufficiency (P-3, P-5, spec §5, §8.4).
   - Acceptance: the default office and the canonical named states are event logs in
     `apps/web/src/office-fixtures/`, each declaring its comprehension purpose; shell-only states
