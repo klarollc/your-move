@@ -1,4 +1,5 @@
 import type { CanonicalProjectSnapshot } from "./replay.js";
+import type { WorkAssignmentTruth, WorkConditionTruth } from "./work-truth.js";
 import { questionsRequiringDisposition, type QuestionRegister } from "./open-question.js";
 
 export type ManagerAttentionItem = {
@@ -13,6 +14,10 @@ export type ManagerAttentionItem = {
   priority: number;
   causeEventId: string;
   updatedAt: string;
+  /** Why the work needs the manager, as recorded; null when no condition was recorded. */
+  condition: WorkConditionTruth | null;
+  /** The role assignment holding the work; null when none is recorded, and for questions. */
+  assignment: WorkAssignmentTruth | null;
 };
 const priorities: Record<ManagerAttentionItem["reason"], number> = {
   blocked: 10,
@@ -58,6 +63,8 @@ export function projectManagerAttention(
         priority: priorities[reason],
         causeEventId: work.updatedByEventId,
         updatedAt: work.updatedAt,
+        condition: work.condition,
+        assignment: work.assignment,
       });
     }
   }
@@ -74,6 +81,8 @@ export function projectManagerAttention(
         priority: question.blocksWork || overdue ? priorities.blocked : priorities.question_open,
         causeEventId: question.raisedByEventId,
         updatedAt: question.raisedAt,
+        condition: null,
+        assignment: null,
       });
     }
   }

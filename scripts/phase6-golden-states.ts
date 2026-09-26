@@ -14,6 +14,7 @@ import {
   PHASE6_FIXTURE_SEED,
   createPhase6ComparisonEvents,
   stripPhase7OAdditions,
+  type Phase7OAdditionParts,
 } from "@cuckcode/testing";
 
 import type { SceneState } from "./phase6-candidate-render.js";
@@ -208,24 +209,27 @@ export function projectGoldenState(state: GoldenState): ProjectedGoldenState {
     snapshot,
     scene,
     outline,
-    digest: goldenDigest(snapshot, snapshot.work, scene, outline),
+    digest: goldenDigest(
+      snapshot,
+      { work: snapshot.work, staffing: snapshot.staffing, scene },
+      outline,
+    ),
   };
 }
 
 function goldenDigest(
   snapshot: CanonicalProjectSnapshot,
-  work: CanonicalProjectSnapshot["work"],
-  scene: OfficeSceneDescriptor[],
+  parts: Phase7OAdditionParts,
   outline: AccessibleOfficeOutline,
 ): string {
   return createHash("sha256")
     .update(
       stableStringify({
         eventIds: snapshot.eventIds,
-        work,
-        staffing: snapshot.staffing,
+        work: parts.work,
+        staffing: parts.staffing,
         collaborations: snapshot.collaborations,
-        scene,
+        scene: parts.scene,
         outline,
       }),
     )
@@ -269,8 +273,11 @@ export function sceneStateFrom(projected: ProjectedGoldenState): SceneState {
 export function goldenStateDigestV1(projected: ProjectedGoldenState): string {
   return goldenDigest(
     projected.snapshot,
-    stripPhase7OAdditions(projected.snapshot.work),
-    projected.scene,
+    stripPhase7OAdditions({
+      work: projected.snapshot.work,
+      staffing: projected.snapshot.staffing,
+      scene: projected.scene,
+    }),
     projected.outline,
   );
 }

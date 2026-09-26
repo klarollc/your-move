@@ -16,6 +16,9 @@ export type StaffingTruth = {
       capabilities: string[];
       health: "connected" | "disconnected" | "stale";
       presence: AgentPresence;
+      /** The event that last set presence or health, and when it occurred (Phase 7-O spec §3.3). */
+      updatedByEventId: string;
+      updatedAt: string;
     }
   >;
   assignments: Record<
@@ -72,6 +75,8 @@ function registerAgent(state: StaffingTruth, event: ProjectEvent): void {
     capabilities: [...capabilities].sort(),
     health,
     presence: "idle",
+    updatedByEventId: event.eventId,
+    updatedAt: event.occurredAt,
   };
 }
 
@@ -103,6 +108,7 @@ function assignRole(state: StaffingTruth, event: ProjectEvent): void {
   }
   state.assignments[roleAssignmentId] = { roleAssignmentId, roleId, agentId, active: true };
   agent.presence = "reserved";
+  touch(agent, event);
 }
 
 function releaseRole(state: StaffingTruth, event: ProjectEvent): void {
@@ -112,7 +118,10 @@ function releaseRole(state: StaffingTruth, event: ProjectEvent): void {
   if (!assignment) return;
   delete state.assignments[roleAssignmentId];
   const agent = state.agents[assignment.agentId];
-  if (agent && agent.health === "connected") agent.presence = "idle";
+  if (agent && agent.health === "connected") {
+    agent.presence = "idle";
+    touch(agent, event);
+  }
 }
 
 function recordQualification(state: StaffingTruth, event: ProjectEvent): void {
@@ -147,6 +156,7 @@ function changePresence(state: StaffingTruth, event: ProjectEvent): void {
   )
     return;
   agent.health = health;
+  touch(agent, event);
   if (health !== "connected" && requested === "active") {
     agent.presence = "unavailable";
     for (const qualification of Object.values(state.qualifications)) {
@@ -200,4 +210,9 @@ function addIssue(
   agentId?: string,
 ): void {
   state.issues.push({ code, eventId: event.eventId, ...(agentId ? { agentId } : {}), message });
+}
+
+function touch(agent: { updatedByEventId: string; updatedAt: string }, event: ProjectEvent): void {
+  agent.updatedByEventId = event.eventId;
+  agent.updatedAt = event.occurredAt;
 }

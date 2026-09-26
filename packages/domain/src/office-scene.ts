@@ -73,9 +73,16 @@ export function projectOfficeScene(
       behavior: agent.health === "connected" ? agentBehavior[agent.presence] : "offline",
       zone: agent.presence === "reviewing" ? "review" : "desk",
       semanticMotion: agent.health === "connected" && agent.presence === "active",
-      causeEventId: null,
-      updatedAt: null,
-      freshness: "unavailable",
+      causeEventId: agent.updatedByEventId,
+      updatedAt: agent.updatedAt,
+      // A disconnected agent is never current however recent its record, and a stale one is at
+      // best delayed; only a connected agent's freshness comes from the record's own time.
+      freshness:
+        agent.health === "connected"
+          ? freshness(agent.updatedAt, now, staleAfterMs)
+          : agent.health === "stale"
+            ? "delayed"
+            : "unavailable",
       approved: false,
     });
   }
@@ -102,6 +109,9 @@ export function projectOfficeScene(
 }
 
 function freshness(updatedAt: string, now: string, staleAfterMs: number): SceneFreshness {
-  const age = Date.parse(now) - Date.parse(updatedAt);
+  const updated = Date.parse(updatedAt);
+  // A missing or unparseable time is not a late time: nothing says when this was true.
+  if (!Number.isFinite(updated)) return "unavailable";
+  const age = Date.parse(now) - updated;
   return Number.isFinite(age) && age >= 0 && age <= staleAfterMs ? "current" : "delayed";
 }

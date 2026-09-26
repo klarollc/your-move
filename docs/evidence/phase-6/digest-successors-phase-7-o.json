@@ -4,43 +4,48 @@
   "why": "Phase 7-O adds canonical fields that the Phase 6 fingerprints cover. The frozen records are not edited. Each v1 value below is the current projection with exactly the listed additions removed, and equals its frozen value; each v2 value is the current projection in full.",
   "removedForV1": [
     "work.workItems[*].assignment",
-    "work.workItems[*].condition"
+    "work.workItems[*].condition",
+    "staffing.agents[*].updatedByEventId",
+    "staffing.agents[*].updatedAt",
+    "scene[subjectType=agent].causeEventId (Phase 6: null)",
+    "scene[subjectType=agent].updatedAt (Phase 6: null)",
+    "scene[subjectType=agent].freshness (Phase 6: unavailable)"
   ],
   "comparison": {
     "frozen": "13c33cefebf7b13f9d47479d4dc47da1e00022d763c34c5901f6ee1bb20815f4",
     "v1": "13c33cefebf7b13f9d47479d4dc47da1e00022d763c34c5901f6ee1bb20815f4",
-    "v2": "cd9bc297e6a165dd6ca7f715b7b55283ba579f910f3cbe13c35bb843fcb72791"
+    "v2": "270d3e83461e92e60b0ff3bb58b47fdca82254c698b9238faeb646d4d2dfc7ed"
   },
   "goldenStates": [
     {
       "id": "01-default-office",
       "frozen": "657fe2ebfc41869e22f7261c79cb39beb5551a232cd3ca218d21415b30721437",
       "v1": "657fe2ebfc41869e22f7261c79cb39beb5551a232cd3ca218d21415b30721437",
-      "v2": "bfbe249c4ec5601102e10f9fb5a69eccd4ab2cfa71fae3b00f85aeb553add0a5"
+      "v2": "70ae3d904502b8d88fb20e59a4621af063d38b98186f97bc77c5767471e6071c"
     },
     {
       "id": "02-active-collaboration",
       "frozen": "f659d9bd911115870efff1d032f3b6776eae6a89a6d6dbf15970fb2406061245",
       "v1": "f659d9bd911115870efff1d032f3b6776eae6a89a6d6dbf15970fb2406061245",
-      "v2": "6edcf796769130275be7f82667d6eadc7f618544c31ca6265dfe9614c09df453"
+      "v2": "b49abe8551faf58a9a54a0d6c5fb21bfa3606d10349f2d50a6f2eb7df448241a"
     },
     {
       "id": "03-manager-escalation",
       "frozen": "58c05440ad712448d52ebe7a39470a87962577590f222d0e727d6f8edf0d76b9",
       "v1": "58c05440ad712448d52ebe7a39470a87962577590f222d0e727d6f8edf0d76b9",
-      "v2": "01b5913ae8e02236c5de6b50459b1a2f9fa6d358083bc2181c36efe0afdaeb9e"
+      "v2": "77abdc4667987b37dbcf284402b85a89a158a28d24e824c3307dcfdad5ea96c4"
     },
     {
       "id": "04-blocked-work",
       "frozen": "49bc168a59c774664392a1551f1cdb89b870171280390341b243569556b32911",
       "v1": "49bc168a59c774664392a1551f1cdb89b870171280390341b243569556b32911",
-      "v2": "51e7e6e12135c2164fe0c82398401f47423ea4a5bae3619324a21eeed00f2c73"
+      "v2": "1229b96a43e578ac704e292a1d09e6ee7ab1b02044d9d78cf1ab1902387a6f51"
     },
     {
       "id": "05-visual-review",
       "frozen": "9c60f86afa5d4259e12107870e4e62a05df81b7ef7a9cdae89f6eac0e4388764",
       "v1": "9c60f86afa5d4259e12107870e4e62a05df81b7ef7a9cdae89f6eac0e4388764",
-      "v2": "f96cf59f89192d070a4ba68b10e76662da0376f6383ffe2c97dbb46a71e01928"
+      "v2": "6e9aad872d34df9f4288deeb8acd1ce84a90f335a2b15eba99f26b4dc9f3e791"
     }
   ]
 }

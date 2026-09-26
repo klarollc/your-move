@@ -9,6 +9,7 @@ import {
   type AccessibleOfficeOutline,
   type CanonicalProjectSnapshot,
   type OfficeSceneDescriptor,
+  type StaffingTruth,
   type WorkItemTruth,
   type WorkTruthState,
 } from "@cuckcode/domain";
@@ -183,17 +184,21 @@ export function projectPhase6ComparisonFrame(): Phase6ComparisonFrame {
  */
 export function phase6ComparisonFixtureDigest(): string {
   const frame = projectPhase6ComparisonFrame();
-  return comparisonDigest(frame, frame.snapshot.work);
+  return comparisonDigest(frame, {
+    work: frame.snapshot.work,
+    staffing: frame.snapshot.staffing,
+    scene: frame.scene,
+  });
 }
 
-function comparisonDigest(frame: Phase6ComparisonFrame, work: WorkTruthState): string {
+function comparisonDigest(frame: Phase6ComparisonFrame, parts: Phase7OAdditionParts): string {
   return createHash("sha256")
     .update(
       stableStringify({
         eventIds: frame.snapshot.eventIds,
-        work,
-        staffing: frame.snapshot.staffing,
-        scene: frame.scene,
+        work: parts.work,
+        staffing: parts.staffing,
+        scene: parts.scene,
         outline: frame.outline,
         viewState: frame.viewState,
         roleWorkAreas: frame.roleWorkAreas,
@@ -210,19 +215,53 @@ function comparisonDigest(frame: Phase6ComparisonFrame, work: WorkTruthState): s
 export const PHASE_7O_ADDITIONS = [
   "work.workItems[*].assignment",
   "work.workItems[*].condition",
+  "staffing.agents[*].updatedByEventId",
+  "staffing.agents[*].updatedAt",
+  "scene[subjectType=agent].causeEventId (Phase 6: null)",
+  "scene[subjectType=agent].updatedAt (Phase 6: null)",
+  "scene[subjectType=agent].freshness (Phase 6: unavailable)",
 ] as const;
 
-/** A copy of the work truth with the Phase 7-O additions removed. The input is not changed. */
-export function stripPhase7OAdditions(work: WorkTruthState): WorkTruthState {
+/** The parts of a projection the Phase 6 fingerprints cover that Phase 7-O changes. */
+export type Phase7OAdditionParts = {
+  work: WorkTruthState;
+  staffing: StaffingTruth;
+  scene: OfficeSceneDescriptor[];
+};
+
+/**
+ * A copy of the parts with the Phase 7-O additions taken back out (plan P-1). New fields are
+ * deleted; agent scene fields that Phase 6 always emitted as `null` / `unavailable` are reset to
+ * those values. The input is not changed.
+ */
+export function stripPhase7OAdditions(parts: Phase7OAdditionParts): Phase7OAdditionParts {
   return {
-    ...work,
-    workItems: Object.fromEntries(
-      Object.entries(work.workItems).map(([id, item]) => {
-        const phase6: Partial<WorkItemTruth> = { ...item };
-        delete phase6.assignment;
-        delete phase6.condition;
-        return [id, phase6 as WorkItemTruth];
-      }),
+    work: {
+      ...parts.work,
+      workItems: Object.fromEntries(
+        Object.entries(parts.work.workItems).map(([id, item]) => {
+          const phase6: Partial<WorkItemTruth> = { ...item };
+          delete phase6.assignment;
+          delete phase6.condition;
+          return [id, phase6 as WorkItemTruth];
+        }),
+      ),
+    },
+    staffing: {
+      ...parts.staffing,
+      agents: Object.fromEntries(
+        Object.entries(parts.staffing.agents).map(([id, agent]) => {
+          const phase6: Partial<StaffingTruth["agents"][string]> = { ...agent };
+          delete phase6.updatedByEventId;
+          delete phase6.updatedAt;
+          return [id, phase6 as StaffingTruth["agents"][string]];
+        }),
+      ),
+    },
+    scene: parts.scene.map((descriptor) =>
+      descriptor.subjectType === "agent"
+        ? { ...descriptor, causeEventId: null, updatedAt: null, freshness: "unavailable" as const }
+        : descriptor,
     ),
   };
 }
@@ -230,5 +269,12 @@ export function stripPhase7OAdditions(work: WorkTruthState): WorkTruthState {
 /** The comparison digest as Phase 6 computed it: the same input with the additions removed. */
 export function phase6ComparisonFixtureDigestV1(): string {
   const frame = projectPhase6ComparisonFrame();
-  return comparisonDigest(frame, stripPhase7OAdditions(frame.snapshot.work));
+  return comparisonDigest(
+    frame,
+    stripPhase7OAdditions({
+      work: frame.snapshot.work,
+      staffing: frame.snapshot.staffing,
+      scene: frame.scene,
+    }),
+  );
 }

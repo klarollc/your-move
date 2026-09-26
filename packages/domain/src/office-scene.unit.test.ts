@@ -70,6 +70,8 @@ describe("projectOfficeScene", () => {
       capabilities: [],
       health: "disconnected",
       presence: "unavailable",
+      updatedByEventId: "event_agent",
+      updatedAt: "2026-08-13T23:00:00.000Z",
     };
 
     expect(projectOfficeScene(snapshot, "2026-08-13T23:00:30.000Z")).toContainEqual(

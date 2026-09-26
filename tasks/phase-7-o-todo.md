@@ -80,12 +80,33 @@ Specification: `docs/phase-7-o-operability-spec-v0.2.md`, **owner-approved 2026-
       with `npm run phase7o:successors:write`, which refuses to write unless the reduction proof
       holds. The side-effect review did not change: Task 2 added no module to the fixture's import
       graph. The dogfood register gained DF-023. Provenance written by the owner.
-- [ ] Task 3: Domain — presence provenance and freshness (spec §3.3).
+- [x] Task 3: Domain — presence provenance and freshness (spec §3.3).
   - Acceptance: staffing retains `eventId` and `occurredAt` per agent; `projectOfficeScene` emits
     them; a missing or unparseable timestamp yields `unavailable`, not `delayed`;
     `projectManagerAttention` carries the condition and the assignment relation.
   - Verify: unit tests. The freshness RED is recorded against today's `delayed`.
 
+  - Result, 2026-09-26:
+    - Staffing keeps `updatedByEventId` / `updatedAt` per agent, moved by every event that sets
+      presence or health (registration, role assignment and release, presence changes including
+      the refused-active path) and by no other. `projectOfficeScene` emits them for agents in place
+      of `null`. Freshness: a connected agent's comes from its record's time; a disconnected agent
+      is always `unavailable` and a stale one `delayed`, however recent the record; a missing or
+      unparseable time is `unavailable` for any subject, no longer `delayed`.
+      `ManagerAttentionItem` carries `condition` and `assignment` (explicit `null` for questions and
+      for work with none recorded).
+    - RED 8/8 on assertions. GREEN: unit 420 + the successor test below, contract 77, integration
+      67 + 3 skipped, `typecheck`, `typecheck:scripts` and `lint` clean.
+    - **P-1 extended.** `stripPhase7OAdditions` now takes work, staffing and scene: it deletes the
+      new work and staffing fields and resets agent scene fields to the `null` / `unavailable`
+      Phase 6 always emitted. The reduction proof still holds for the comparison fixture and all
+      five golden states, and all ten captures still re-render byte for byte.
+    - **Moved assertion, type-only:** the disconnected-agent literal in `office-scene.unit.test.ts`
+      gains the two provenance fields; its expectation (`freshness: "unavailable"`) is unchanged
+      and still holds under the new rule.
+    - Five mutations, each confirmed applied, all killed.
+    - The owner rewrote the successor record with `npm run phase7o:successors:write` (it refuses
+      without the reduction proof) and wrote provenance.
 - [ ] Task 4: Application — `projectOfficeReadModel` (spec §4, §7).
   - Acceptance: one pure projection in `packages/application/src/office-read-model.ts`; auxiliary
     records are refused for state, condition, blocker, approval, evidence and requested-action
