@@ -1,14 +1,14 @@
 # Agent command runner checklist
 
-Status: **DRAFT FOR OWNER APPROVAL.** Nothing here is authorized to start until this checklist and
-`tasks/agent-runner-plan.md` are approved.
+Status: **OWNER-APPROVED 2026-09-25**, with the plan and AR-1. Tasks 1–6 are authorized; Task 7 is
+owner-run.
 Plan: `tasks/agent-runner-plan.md`
 Authority: W-1 to W-3, `docs/evidence/phase-7-o/decision-record-2026-09-25-spec-approval.md`
 
 ## Blocking decision
 
-- [ ] **AR-1**: implement in Node (`scripts/agent-runner.mjs`) rather than PowerShell. Agent
-      recommendation: yes.
+- [x] **AR-1**: implement in Node (`scripts/agent-runner.mjs`) rather than PowerShell. **Approved
+      by the owner 2026-09-25.**
 
 ## Tasks
 

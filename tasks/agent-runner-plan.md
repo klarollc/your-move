@@ -1,8 +1,8 @@
 # Implementation plan: agent command runner
 
-Status: **DRAFT FOR OWNER APPROVAL.** Authorized for planning by W-1 to W-3,
-`docs/evidence/phase-7-o/decision-record-2026-09-25-spec-approval.md`. No implementation is
-authorized until this plan and `tasks/agent-runner-todo.md` are approved.
+Status: **OWNER-APPROVED 2026-09-25, including AR-1 (Node).** Planned under W-1 to W-3,
+`docs/evidence/phase-7-o/decision-record-2026-09-25-spec-approval.md`. The owner approved this
+plan and `tasks/agent-runner-todo.md` in session on 2026-09-25; Tasks 1–6 are authorized.
 Specification: `docs/proposals/2026-09-25-windows-command-runner.md`, approved as W-1.
 Sequencing: before Phase 7-O implementation (W-3).
 
