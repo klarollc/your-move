@@ -73,6 +73,12 @@ decision-sufficiency criterion, and office states as replayed event logs. v0.2 i
 no plan, tasks or implementation are authorized. A Windows command-runner proposal was authorized
 for drafting only.
 
+**Amended again 2026-09-25:** the owner **approved spec v0.2** and W-1 to W-3
+(`docs/evidence/phase-7-o/decision-record-2026-09-25-spec-approval.md`). Drafts awaiting approval:
+`tasks/phase-7-o-plan.md` (decisions P-1 to P-5) and `tasks/agent-runner-plan.md` with
+`tasks/agent-runner-todo.md` (decision AR-1). The runner is built before Phase 7-O implementation.
+No code change is authorized by either approval.
+
 **Phase 6 was authorized as of 2026-09-13, Tasks 1-7 only.** The owner approved `docs/visual-reference-production-brief-v0.1.md` as written (6-A) and authorized Phase 6 running in parallel with Phase 5 (6-B), amending MDD section 24 accordingly; the candidate production medium is the hybrid of generated exploration plus in-repo vector composition (6-C). All three rulings are recorded in `docs/evidence/phase-6/decision-request-2026-09-13-phase-6-parallel-start.md`. Candidate art produced under this authority stays Candidate: Task 8 selection and Task 10 promotion to Active are owner-run, and Phase 7 high-fidelity implementation, final tokens and assets, visual-baseline promotion, Phase 5 behavior, deployment, and any external effect remain unauthorized.
 
 ## Required delivery method

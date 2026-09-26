@@ -1,6 +1,6 @@
 # Handoff — state, next action, and what would otherwise be relearned expensively
 
-Written 2026-09-18, last updated 2026-09-25 for the Phase 7-O spec-review rulings. Read `AGENTS.md` first for authority; this document is the
+Written 2026-09-18, last updated 2026-09-25 for the Phase 7-O spec approval. Read `AGENTS.md` first for authority; this document is the
 live state, the next action, and the things a fresh session pays for twice if nobody wrote them down.
 
 ---
@@ -32,13 +32,13 @@ finding and the need for an independent release-review refresh remain current.
 Phase 7. The owner authorized a specification for truthful inspector detail and adversarial
 fixtures, classified the default-office rail/inspector contradiction V1, and requires actually
 performed T3/T5/T6 under MDD §20 in the Phase 7-O gate. The ruling is
-`docs/evidence/phase-7-o/decision-record-2026-09-23-operability-scope.md`. Review the draft
-`docs/phase-7-o-operability-spec-v0.2.md` next. It revises v0.1 under owner rulings R-1 to R-3
-(2026-09-25, `docs/evidence/phase-7-o/decision-record-2026-09-25-spec-review.md`): additive
-canonical events for work assignment, blocker condition and agent presence provenance; a
-decision-sufficiency criterion; and office states as replayed event logs. A Windows command-runner
-proposal, `docs/proposals/2026-09-25-windows-command-runner.md`, awaits decisions W-1 to W-3. Do not write the implementation plan or tasks until
-the specification is approved; do not change UI behavior until all three gates are approved. Phase
+`docs/evidence/phase-7-o/decision-record-2026-09-23-operability-scope.md`. The specification
+`docs/phase-7-o-operability-spec-v0.2.md` is **owner-approved (2026-09-25)**, along with W-1 to
+W-3 for the command runner (`docs/evidence/phase-7-o/decision-record-2026-09-25-spec-approval.md`).
+Next gates, in order: approve `tasks/agent-runner-plan.md` and `tasks/agent-runner-todo.md`
+(decision AR-1), build the runner, then approve `tasks/phase-7-o-plan.md` (decisions P-1 to P-5,
+of which P-1, the Phase 6 frozen-digest successor, is blocking), then its task checklist. Do not
+change behavior until the relevant plan and checklist are both approved. Phase
 5 Task 10 remains a parallel owner-run acceptance gate and a Phase 8 precondition.
 
 **Current Phase 5 refresh attempt:** pass 9 (2026-09-22) spent one turn and stopped at

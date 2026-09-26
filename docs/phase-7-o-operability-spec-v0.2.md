@@ -1,6 +1,6 @@
 # Phase 7-O operability specification v0.2
 
-**Status: DRAFT FOR OWNER REVIEW. Not approved for planning, tasks, or implementation.**
+**Status: OWNER-APPROVED 2026-09-25** (`docs/evidence/phase-7-o/decision-record-2026-09-25-spec-approval.md`). Approval authorizes an implementation plan only; tasks and implementation each need their own approval.
 Authority to draft: owner rulings O-1 through O-4
 (`docs/evidence/phase-7-o/decision-record-2026-09-23-operability-scope.md`) and R-1 through R-3
 (`docs/evidence/phase-7-o/decision-record-2026-09-25-spec-review.md`).
