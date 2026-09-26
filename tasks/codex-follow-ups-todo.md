@@ -21,7 +21,7 @@ signed-in session but never starts a turn.
 
 ## Tasks
 
-- [ ] **Task 1 — Runner allowlist (F4).**
+- [x] **Task 1 — Runner allowlist (F4).**
   - Files: `scripts/agent-runner.allowlist.json`, `scripts/agent-runner.test.mjs`, `README.md`,
     `docs/HANDOFF.md`.
   - Acceptance: `check:toolchain`, `test:toolchain`, `test:protocol`, `protocol:codex:check`,
@@ -30,6 +30,11 @@ signed-in session but never starts a turn.
   - RED: a test requiring the six entries, against today's allowlist.
   - Verify: runner `verify`; then the runner itself answers `test:protocol` and
     `protocol:codex:drift` as a check that the entries work.
+  - **Result:** `1e5fe74`. RED 1 against today's allowlist; GREEN 27/27; the existing guard accepts
+    all six unchanged. **Gate:** runner `verify` exit 0, clean tree at `1e5fe74` — runner 27, unit
+    461, others unchanged. **Pending:** the runner reads its allowlist once at startup, so the
+    new entries work after the owner restarts it; the live check of `test:protocol` and
+    `protocol:codex:drift` through the runner follows that restart.
 
 - [ ] **Task 2 — Session-log redaction (F3.1–F3.3, F3.5).**
   - Files: `packages/runtime-codex/src/session-log.ts` and its unit test.

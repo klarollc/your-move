@@ -1,4 +1,5 @@
 import { mkdir, writeFile } from "node:fs/promises";
+import { homedir } from "node:os";
 import { join } from "node:path";
 
 import type { SupervisorEvent } from "./supervisor.js";
@@ -31,16 +32,41 @@ const LONG_STRING = 160;
 
 const isDelta = (method: string): boolean => method.endsWith("/delta") || method.endsWith("Delta");
 
-function redact(value: unknown, key?: string): unknown {
+/**
+ * Notifications that describe the account or the machine rather than the session: plan type, rate
+ * limits, the PC's name, Codex's installation id. Their method and timing stay; their parameters do
+ * not (owner ruling 2026-09-26).
+ */
+const IDENTITY_METHOD = /^(?:account|remoteControl)\//u;
+const REDACTION_VERSION = "v1";
+
+/**
+ * A pattern for the user's home directory however a path spells it: `/` or `\`, single or doubled
+ * (Codex's stderr prints Windows paths escaped), and case-insensitively, as Windows paths are.
+ */
+function homePattern(home: string): RegExp | null {
+  const segments = home.split(/[\\/]+/u).filter((segment) => segment.length > 0);
+  if (segments.length === 0) return null;
+  const escaped = segments.map((segment) => segment.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&"));
+  const leading = /^[\\/]/u.test(home) ? "[\\\\/]+" : "";
+  // Only where the home directory ends: a sibling such as `nate-old` is someone else's path.
+  return new RegExp(`${leading}${escaped.join("[\\\\/]+")}(?![A-Za-z0-9._-])`, "giu");
+}
+
+function foldHome(text: string, home: RegExp | null): string {
+  return home === null ? text : text.replace(home, "~");
+}
+
+function redact(value: unknown, home: RegExp | null, key?: string): unknown {
   if (typeof value === "string") {
-    return (key !== undefined && TEXT_KEYS.has(key)) || value.length > LONG_STRING
-      ? { redactedLength: value.length }
-      : value;
+    if ((key !== undefined && TEXT_KEYS.has(key)) || value.length > LONG_STRING)
+      return { redactedLength: value.length };
+    return foldHome(value, home);
   }
-  if (Array.isArray(value)) return value.map((entry) => redact(entry));
+  if (Array.isArray(value)) return value.map((entry) => redact(entry, home));
   if (typeof value === "object" && value !== null) {
     return Object.fromEntries(
-      Object.entries(value).map(([name, entry]) => [name, redact(entry, name)]),
+      Object.entries(value).map(([name, entry]) => [name, redact(entry, home, name)]),
     );
   }
   return value;
@@ -57,9 +83,18 @@ export function sessionLogPath(
 
 export function openSessionLog(
   source: SessionLogSource,
-  meta: { root: string; script: string; roleId: string; pin: string; clock?: LogClock },
+  meta: {
+    root: string;
+    script: string;
+    roleId: string;
+    pin: string;
+    clock?: LogClock;
+    /** The user's home directory; injected in tests, `os.homedir()` otherwise. */
+    home?: string;
+  },
 ): { close: () => Promise<string> } {
   const clock = meta.clock ?? systemLogClock;
+  const home = homePattern(meta.home ?? homedir());
   const startedAt = clock.iso();
   const origin = clock.now();
   const events: Record<string, unknown>[] = [];
@@ -83,7 +118,9 @@ export function openSessionLog(
       seq: ++sequence,
       atMs,
       method: event.method,
-      params: redact(event.params),
+      params: IDENTITY_METHOD.test(event.method)
+        ? { redacted: "identity" }
+        : redact(event.params, home),
     });
   });
 
@@ -100,8 +137,9 @@ export function openSessionLog(
         endedAt: clock.iso(),
         deltaCounts,
         refusedServerRequests: refused,
+        redaction: REDACTION_VERSION,
       };
-      const stderr = source.stderr.map((line) => ({ kind: "stderr", line }));
+      const stderr = source.stderr.map((line) => ({ kind: "stderr", line: foldHome(line, home) }));
       await mkdir(join(meta.root, meta.script), { recursive: true });
       await writeFile(
         path,

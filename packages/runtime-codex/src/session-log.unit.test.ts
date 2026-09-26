@@ -178,4 +178,92 @@ describe("the session log", () => {
     await session.close();
     expect(listening()).toBe(0);
   });
+
+  it("keeps no identity or home path from a log shaped like the real smoke session", async () => {
+    const root = await mkdtemp(join(tmpdir(), "cuckcode-session-log-"));
+    const { log, emit, stderr } = source();
+    const home = "C:\\Users\\nater";
+    const session = openSessionLog(log, {
+      root,
+      script: "run-codex-smoke",
+      roleId: "release-reviewer",
+      pin: "0.157.1",
+      clock: clockAt().clock,
+      home,
+    });
+    emit({
+      kind: "notification",
+      method: "remoteControl/status/changed",
+      params: {
+        status: "disabled",
+        serverName: "Nate_PC",
+        installationId: "470fd39b-d4c5-47c6-b8dc-173f81c3e44a",
+      },
+    });
+    emit({
+      kind: "notification",
+      method: "account/updated",
+      params: { authMode: "chatgpt", planType: "plus" },
+    });
+    emit({
+      kind: "notification",
+      method: "account/rateLimits/updated",
+      params: { rateLimits: { primary: { usedPercent: 5, windowDurationMins: 300 } } },
+    });
+    emit({
+      kind: "notification",
+      method: "thread/started",
+      params: {
+        thread: {
+          id: "t",
+          environments: [
+            {
+              cwd: "C:\\Users\\nater\\AppData\\Local\\Temp\\cuckcode-codex-smoke-HpOA1g",
+              runtimeWorkspaceRoots: [
+                "c:/users/NATER/AppData/Local/Temp/cuckcode-codex-smoke-HpOA1g",
+              ],
+            },
+          ],
+        },
+      },
+    });
+    stderr.push(
+      'Refusing to create helper binaries under temporary dir "C:\\\\Users\\\\nater\\\\AppData\\\\Local\\\\Temp\\\\"',
+    );
+    const path = await session.close();
+    const text = await readFile(path, "utf8");
+    const all = await lines(path);
+
+    for (const secret of ["Nate_PC", "470fd39b", "plus", "usedPercent", "nater", "NATER"]) {
+      expect(text, secret).not.toContain(secret);
+    }
+    expect(all[0]).toMatchObject({ redaction: "v1" });
+    expect(all.slice(1, 4).map((line) => [line.method, line.params])).toEqual([
+      ["remoteControl/status/changed", { redacted: "identity" }],
+      ["account/updated", { redacted: "identity" }],
+      ["account/rateLimits/updated", { redacted: "identity" }],
+    ]);
+    expect(text).toContain("~");
+    expect(text).toContain("cuckcode-codex-smoke-HpOA1g");
+  });
+
+  it("folds the home directory only where it ends, not a sibling that shares its prefix", async () => {
+    const root = await mkdtemp(join(tmpdir(), "cuckcode-session-log-"));
+    const { log, emit } = source();
+    const session = openSessionLog(log, {
+      root,
+      script: "s",
+      roleId: "r",
+      pin: "p",
+      clock: clockAt().clock,
+      home: "/home/nate",
+    });
+    emit({
+      kind: "notification",
+      method: "thread/started",
+      params: { a: "/home/nate/work", b: "/home/nate", c: "/home/nate-old/work" },
+    });
+    const [, started] = await lines(await session.close());
+    expect(started?.params).toEqual({ a: "~/work", b: "~", c: "/home/nate-old/work" });
+  });
 });
