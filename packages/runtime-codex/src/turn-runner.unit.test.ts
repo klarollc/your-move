@@ -306,4 +306,12 @@ describe("the shared turn runner", () => {
     if (result.ok) return;
     expect(result.detail).toContain("PROCESS_EXITED");
   });
+
+  it("refuses a limit a real timer cannot hold, instead of firing it at once", async () => {
+    const { supervisor, turnStarts } = fake([(id, emit) => emit("turn/completed", completed(id))]);
+    await expect(
+      runTurn(supervisor, { threadId: THREAD, input, limits: { hardMs: 2 ** 31 } }),
+    ).rejects.toThrow("TURN_LIMIT_OUT_OF_RANGE: hardMs");
+    expect(turnStarts()).toBe(0);
+  });
 });

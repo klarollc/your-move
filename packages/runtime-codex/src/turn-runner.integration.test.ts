@@ -52,6 +52,14 @@ async function withSession(
 
 const input = [{ type: "text", text: "go" }];
 
+// A manual clock races real I/O: advanced faster than a child process answers, it can expire a
+// limit the process was about to satisfy. That happened on Windows at the first gate. Limits a test
+// is not about are therefore set out of reach, so advancing only moves what is under test.
+// Below 2^31 - 1 ms: Node clamps a longer setTimeout delay to 1 ms, and this value also bounds the
+// supervisor's own turn/interrupt request.
+const UNREACHABLE = 1e9;
+const onlyBackoff = { idleMs: UNREACHABLE, hardMs: UNREACHABLE, interruptGraceMs: UNREACHABLE };
+
 describe("the turn runner against a real child process", () => {
   it("recovers from one transport failure after the backoff", async () => {
     await withSession("transport-fail-once", async (supervisor) => {
@@ -62,6 +70,7 @@ describe("the turn runner against a real child process", () => {
           input,
           clock,
           retryBudget: createRetryBudget(2),
+          limits: onlyBackoff,
         }),
         clock,
         10_000,
@@ -80,6 +89,7 @@ describe("the turn runner against a real child process", () => {
           input,
           clock,
           retryBudget: createRetryBudget(2),
+          limits: onlyBackoff,
         }),
         clock,
         10_000,
@@ -98,6 +108,7 @@ describe("the turn runner against a real child process", () => {
           input,
           clock,
           retryBudget: createRetryBudget(2),
+          limits: onlyBackoff,
         }),
         clock,
         10_000,
@@ -111,15 +122,22 @@ describe("the turn runner against a real child process", () => {
   it("interrupts a silent turn through the real protocol and records it", async () => {
     await withSession("silent-turn", async (supervisor) => {
       const clock = createManualClock();
-      const result = await settle(
-        runTurn(supervisor, { threadId: "thread_fixture", input, clock }),
+      const run = runTurn(supervisor, {
+        threadId: "thread_fixture",
+        input,
         clock,
-        30_000,
-      );
+        limits: { interruptGraceMs: UNREACHABLE },
+      });
+      // Advance only once the turn is really running, then let the real interrupt round-trip finish.
+      await supervisor.waitForNotification("turn/started", 5_000);
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      clock.advance(180_000);
+      const result = await run;
       expect(result).toMatchObject({ ok: false, code: "TURN_IDLE_TIMEOUT" });
       expect(result.attempts[0]).toMatchObject({
         status: "interrupted",
         lastMethod: "turn/started",
+        elapsedMs: 180_000,
       });
     });
   });
@@ -128,7 +146,12 @@ describe("the turn runner against a real child process", () => {
     await withSession("server-request", async (supervisor) => {
       const clock = createManualClock();
       const result = await settle(
-        runTurn(supervisor, { threadId: "thread_fixture", input, clock }),
+        runTurn(supervisor, {
+          threadId: "thread_fixture",
+          input,
+          clock,
+          limits: { interruptGraceMs: UNREACHABLE },
+        }),
         clock,
         1_000,
       );

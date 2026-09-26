@@ -198,6 +198,9 @@ fallback`, chromium-1280) never saw its canvas within 5 s; the commit touches no
     failure is never retried; at most two retries per run. Time is injected; no test waits.
   - RED: a stub runner that returns completed without waiting.
   - Verify: runner `test:unit`, `test:integration`.
+  - **Gate history:** `verify` at `52bc47d` exit 1 in integration on Windows — a race between the
+    manual clock and a real child process in my own end-to-end test, and a 1e12 ms test limit that
+    Node clamps to 1 ms. Fixed in the next commit with a `TURN_LIMIT_OUT_OF_RANGE` guard (RED 1/13).
 
 - [ ] **Task 11 — Classification in records and the normalizer** (R6.1, R6.7, R7.1).
   - Files: `describeTurnCompletionFailure` and its callers, the three run-artifact writers,

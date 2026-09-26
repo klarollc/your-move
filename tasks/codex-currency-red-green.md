@@ -354,3 +354,36 @@ same thread, so the failed turn's user message stays in the thread history; Code
 rollback. And a reasoning model that thinks silently for more than 180 s will now be interrupted —
 CX-3's choice, and no shorter than the 180 s wall clock that ended pass 9. The smoke turn will show
 whether `gpt-5.6-sol` streams anything while it reasons.
+
+### Task 10 gate failure, and its fix
+
+The first runner `verify` at `52bc47d` failed in **integration on Windows**, not in a browser suite:
+`turn-runner.integration.test.ts > interrupts a silent turn through the real protocol` received
+`status: null` where it expected `"interrupted"`. Two defects in my own integration tests,
+neither in the runner:
+
+1. **A manual clock raced real I/O.** The test advanced 30 s of manual time every 5 ms of real
+   time. After the idle limit fired and the interrupt went out, the next step overran the 15 s grace
+   window before the slower Windows child process answered, so the runner — correctly — recorded
+   "no completion after interrupt". The container is faster and passed. Tests now keep every limit
+   they are not about out of reach, and the silent-turn test advances only after it has really seen
+   `turn/started`.
+2. **My first "out of reach" value, 1e12 ms, was worse.** It also became the timeout of the
+   supervisor's `turn/interrupt` request, and Node clamps any `setTimeout` delay above 2^31 − 1 ms
+   to 1 ms, so the request timed out at once and the supervisor killed the child. It hung the
+   server-request test 2 times in 5 in the container. The value is now 1e9.
+
+That clamp would hit the runner's own timers too, so `runTurn` now refuses a limit it cannot hold
+(`TURN_LIMIT_OUT_OF_RANGE`). **RED** against the runner as committed:
+
+```text
+× refuses a limit a real timer cannot hold, instead of firing it at once
+AssertionError: promise resolved "{ ok: true, …(2) }" instead of rejecting
+Tests  1 failed | 12 passed (13)
+```
+
+GREEN 13/13; the integration file 5/5 in ten consecutive container runs.
+
+**Behaviour now on record:** a `turn/interrupt` that itself times out makes the supervisor kill that
+session's Codex process. The turn has already failed by then, but no later turn can run in that
+session.

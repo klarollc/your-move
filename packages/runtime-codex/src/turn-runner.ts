@@ -47,6 +47,8 @@ export function createRetryBudget(total: number): RetryBudget {
 /** CX-4: two transport retries per run. A run is one process, so the default budget is too. */
 export const RUN_RETRY_BUDGET: RetryBudget = createRetryBudget(2);
 
+const MAX_TIMER_MS = 2 ** 31 - 1;
+
 /** CX-3 and CX-4. One value set for every live script. */
 export const TURN_LIMITS = {
   idleMs: 180_000,
@@ -309,6 +311,15 @@ export async function runTurn(
 ): Promise<TurnRunResult> {
   const clock = options.clock ?? systemClock;
   const limits = { ...TURN_LIMITS, ...options.limits };
+  // setTimeout clamps any delay above 2^31 - 1 ms to 1 ms, so an over-large limit would expire at
+  // once rather than never. Refuse it before anything is started.
+  for (const [name, value] of Object.entries(limits)) {
+    if (
+      name !== "maxRetriesPerTurn" &&
+      !(Number.isFinite(value) && value >= 0 && value <= MAX_TIMER_MS)
+    )
+      throw new Error(`TURN_LIMIT_OUT_OF_RANGE: ${name}=${value}`);
+  }
   const budget = options.retryBudget ?? RUN_RETRY_BUDGET;
   const attempts: TurnAttempt[] = [];
   let retriesThisTurn = 0;
