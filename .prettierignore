@@ -1,4 +1,5 @@
 .restore/
+.worktrees/
 .cuckcode/
 coverage/
 **/dist/
