@@ -517,3 +517,127 @@ Records: DF-021's product response gains a dated update; DF-025 records B1–B6 
 this stream; DF-026 records the working-copy-bytes provenance defect for its own ruling. AGENTS,
 HANDOFF and README each gain one amendment. The decision record gains the rulings made during
 implementation.
+
+## Follow-ups
+
+Under `docs/codex-follow-ups-spec-v0.1.md` and `tasks/codex-follow-ups-todo.md`, both approved
+2026-09-26.
+
+### Follow-up Task 1 — Runner allowlist (F4)
+
+**RED**, container mirror, `node --test scripts/agent-runner.test.mjs` against today's allowlist:
+
+```text
+not ok 2 - the six read-only checks ruled on 2026-09-26 are allow-listed as themselves
+    check:toolchain
+    + actual - expected
+    + undefined
+    - {
+    -   kind: 'npm',
+    -   script: 'check:toolchain'
+```
+
+**GREEN** 27/27. The existing guard test ("the committed allowlist passes against the real
+package.json and script sources") accepts all six unchanged: none reads a `CUCKCODE_*` variable,
+writes evidence, installs or forces. The runner reads its allowlist once at startup, so the owner
+restarts it to use the new entries.
+
+### Follow-up Task 2 — Session-log redaction (F3.1–F3.3, F3.5)
+
+**RED 1**, container mirror, the smoke-shaped fixture against today's redaction:
+
+```text
+× keeps no identity or home path from a log shaped like the real smoke session
+AssertionError: Nate_PC: expected '{"kind":"session","script":"run-codex…' not to contain 'Nate_PC'
+Tests  1 failed | 6 passed (7)
+```
+
+The fixture carries what the real smoke log carried: the PC name, a Codex installation id, the plan
+type, rate limits, and the home path both in parsed notification strings and, doubled, in Codex's
+escaped stderr — plus a lower-case `c:/users/NATER/…` spelling.
+
+**GREEN** 7/7. `account/*` and `remoteControl/*` params become `{ "redacted": "identity" }`; the
+home directory becomes `~` in every notification string and stderr line, whatever mix of `/`, `\`
+and doubled `\\` spells it, case-insensitively; the header carries `redaction: "v1"`.
+
+**RED 2, a refinement found while reading GREEN:** the home pattern had no boundary, so `/home/nate`
+would also fold `/home/nate-old` into `~-old` — over-redaction, not a leak, but wrong.
+
+```text
+× folds the home directory only where it ends, not a sibling that shares its prefix
+AssertionError: expected { Object (a, b, ...) } to deeply equal { a: '~/work', b: '~', …(1) }
+Tests  1 failed | 7 passed (8)
+```
+
+**GREEN** 8/8 with a trailing boundary. The credential canary (integration) still passes.
+
+**Mutations, each confirmed applied:** identity redaction switched off failed 1/8; stderr home
+folding switched off failed 1/8.
+
+Case-insensitive folding applies on every platform, so on Linux it could fold a differently cased
+sibling of the home directory. That is over-redaction only, accepted.
+
+### Follow-up Task 3 — CR guard, worktree bytes, redacted smoke log (F2.1–F2.3, F3.4)
+
+Two small additions beyond the task's file list, stated: the guard's logic lives in
+`scripts/evidence-line-endings.mjs` so it can be tested with synthetic cases as well as on the real
+tree, and `rewriteSessionLog()` joins `session-log.ts` so the held log is redacted by the same code
+as every new log, not a copy of it.
+
+**RED 1, the guard**, container mirror, `node --test scripts/evidence-line-endings.test.mjs`
+against a stub that finds nothing and lists nothing:
+
+```text
+not ok 1 - a text file with a CR byte is named
+not ok 2 - a lone CR counts, not only CRLF
+ok 3 - binary files are skipped, by declared type and by a NUL byte
+not ok 4 - the file list covers the evidence tree
+ok 5 - no evidence file carries a CR byte, so a clean checkout verifies the same bytes (DF-026)
+# pass 2
+# fail 3
+```
+
+Tests 3 and 5 cannot fail against a stub that finds nothing; test 5's RED is the next one.
+
+**RED 2, the real tree** — real code, as the checklist said — once the guard worked: exactly the
+twelve DF-026 files, and nothing else in `docs/evidence/`:
+
+```text
+docs/evidence/phase-0/environment.json
+docs/evidence/phase-0/phase-0-report.md
+docs/evidence/phase-1/determinism-hashes.json
+docs/evidence/phase-1/environment.json
+docs/evidence/phase-2/dependency-audit.json
+docs/evidence/phase-2/environment.json
+docs/evidence/phase-2/invariant-matrix.md
+docs/evidence/phase-2/phase-2-report.md
+docs/evidence/phase-2/shared-knowledge-proof.json
+docs/evidence/phase-2/source-boundary-scan.json
+docs/evidence/phase-3/phase-3-gate.md
+docs/evidence/phase-3/red-green-log.md
+```
+
+**RED 3, the rewrite**, against a stub returning the log unchanged:
+
+```text
+× rewrites a log captured before redaction v1 to the same standard, and says so
+AssertionError: expected { kind: 'session', …(3) } to match object { redaction: 'v1', …(1) }
+Tests  1 failed | 8 passed (9)
+```
+
+**GREEN:** guard 4/5 then 5/5 once the twelve worktree files returned to their committed LF bytes —
+each converted file was checked equal to `git show HEAD:<path>` before it was written, and git shows
+no change for any of them. Rewrite 9/9.
+
+**The held smoke log**, rewritten in the mirror with `--home 'C:\Users\nater'` (the machine it was
+captured on): 18 lines in, 18 out, with identical kinds, methods, sequence numbers and timings; the
+PC name, installation id, plan type, rate limits and user name all absent; paths read
+`~\AppData\Local\Temp\…`. Written to
+`docs/evidence/runtime/sessions/run-codex-smoke/2026-09-26T12-34-44-005Z-release-reviewer.jsonl`
+with `redactedAfterCapture: true`; the original stays in `.cuckcode/held-session-logs/`.
+
+**Task 2's gate took four runs, recorded:** three failed on collisions with the main copy's runner
+— two C-10 component timeouts while the main runner ran component-test mutations and its own
+`verify`, and one e2e start refused because port 4173 was in use by the main runner's e2e run
+(13:20:53–13:21:35 UTC against ours at about 13:21:00). The fourth, queued only after the main
+runner had been idle for a minute, passed. Gates are now queued that way.

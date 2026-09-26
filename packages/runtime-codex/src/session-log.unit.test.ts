@@ -4,7 +4,12 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { openSessionLog, sessionLogPath, type SessionLogSource } from "./session-log.js";
+import {
+  openSessionLog,
+  rewriteSessionLog,
+  sessionLogPath,
+  type SessionLogSource,
+} from "./session-log.js";
 import type { SupervisorEvent } from "./supervisor.js";
 
 function source() {
@@ -265,5 +270,41 @@ describe("the session log", () => {
     });
     const [, started] = await lines(await session.close());
     expect(started?.params).toEqual({ a: "~/work", b: "~", c: "/home/nate-old/work" });
+  });
+
+  it("rewrites a log captured before redaction v1 to the same standard, and says so", () => {
+    const captured = [
+      { kind: "session", script: "run-codex-smoke", roleId: "release-reviewer", deltaCounts: {} },
+      {
+        kind: "notification",
+        seq: 1,
+        atMs: 462,
+        method: "remoteControl/status/changed",
+        params: { serverName: "Nate_PC", installationId: "470fd39b" },
+      },
+      {
+        kind: "notification",
+        seq: 2,
+        atMs: 1369,
+        method: "thread/started",
+        params: { cwd: "C:\\Users\\nater\\AppData\\Local\\Temp\\x", text: { redactedLength: 12 } },
+      },
+      { kind: "stderr", line: 'dir "C:\\\\Users\\\\nater\\\\AppData"' },
+    ]
+      .map((line) => JSON.stringify(line))
+      .join("\n");
+    const rewritten = rewriteSessionLog(`${captured}\n`, "C:\\Users\\nater");
+    const out = rewritten
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line) as Record<string, unknown>);
+    expect(out[0]).toMatchObject({ redaction: "v1", redactedAfterCapture: true });
+    expect(out[1]).toMatchObject({ seq: 1, atMs: 462, params: { redacted: "identity" } });
+    expect(out[2]?.params).toEqual({
+      cwd: "~\\AppData\\Local\\Temp\\x",
+      text: { redactedLength: 12 },
+    });
+    for (const secret of ["Nate_PC", "470fd39b", "nater"]) expect(rewritten).not.toContain(secret);
+    expect(out).toHaveLength(4);
   });
 });

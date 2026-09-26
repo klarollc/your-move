@@ -33,10 +33,11 @@ signed-in session but never starts a turn.
   - **Result:** `1e5fe74`. RED 1 against today's allowlist; GREEN 27/27; the existing guard accepts
     all six unchanged. **Gate:** runner `verify` exit 0, clean tree at `1e5fe74` — runner 27, unit
     461, others unchanged. **Pending:** the runner reads its allowlist once at startup, so the
-    new entries work after the owner restarts it; the live check of `test:protocol` and
-    `protocol:codex:drift` through the runner follows that restart.
+    new entries work after the owner restarts it. **Done after the owner's restart:** the runner
+    answered `test:protocol` (21/21, both bundles and the pin) and `protocol:codex:drift` (ok
+    against the Windows `codex.exe`), each exit 0 on a clean tree at `6a3b67b`, in seconds.
 
-- [ ] **Task 2 — Session-log redaction (F3.1–F3.3, F3.5).**
+- [x] **Task 2 — Session-log redaction (F3.1–F3.3, F3.5).**
   - Files: `packages/runtime-codex/src/session-log.ts` and its unit test.
   - Acceptance: `account/*` and `remoteControl/*` params become `{ "redacted": "identity" }` with
     method, sequence and timing kept; the home prefix becomes `~` in every string for `/`, `\` and
@@ -45,6 +46,12 @@ signed-in session but never starts a turn.
     path forms) leaves none of them; existing redaction unchanged.
   - RED: the fixture test against today's redaction.
   - Verify: runner `verify`.
+  - **Result:** `6a3b67b`. RED 1/7, then a refinement RED 1/8 (home folding needed a boundary);
+    GREEN 8/8; two mutations caught. **Gate:** four runs; three failed on collisions with the main
+    copy's runner (two C-10 overruns, one port-4173 refusal), recorded in the red-green log and
+    DF-025. The fourth, queued after the main runner was idle, passed: `verify` exit 0, clean tree at
+    `6a3b67b` — unit 463, component 73, integration 76 + 3 skipped, contract 77, e2e 50, a11y 46,
+    visual 62.
 
 - [ ] **Task 3 — CR guard, worktree bytes, redacted smoke log (F2.1–F2.3, F3.4).**
   - Files: `scripts/evidence-line-endings.test.mjs`, `package.json` (`test:ui-contract`),

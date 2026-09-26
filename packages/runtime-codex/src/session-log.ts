@@ -150,3 +150,32 @@ export function openSessionLog(
     },
   };
 }
+
+/**
+ * Brings a log written before redaction v1 to the same standard with the same functions, for the
+ * smoke session held back on 2026-09-26 (F3.4). Sequence, timing and structure are kept; the header
+ * records that the redaction came after capture.
+ */
+export function rewriteSessionLog(text: string, homeDirectory: string): string {
+  const home = homePattern(homeDirectory);
+  const rewritten = text
+    .split("\n")
+    .filter((line) => line.trim().length > 0)
+    .map((line) => {
+      const entry = JSON.parse(line) as Record<string, unknown>;
+      if (entry.kind === "session")
+        return { ...entry, redaction: REDACTION_VERSION, redactedAfterCapture: true };
+      if (entry.kind === "stderr" && typeof entry.line === "string")
+        return { ...entry, line: foldHome(entry.line, home) };
+      if (entry.kind === "notification" && typeof entry.method === "string") {
+        return {
+          ...entry,
+          params: IDENTITY_METHOD.test(entry.method)
+            ? { redacted: "identity" }
+            : redact(entry.params, home),
+        };
+      }
+      return entry;
+    });
+  return `${rewritten.map((entry) => JSON.stringify(entry)).join("\n")}\n`;
+}

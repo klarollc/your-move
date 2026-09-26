@@ -58,7 +58,7 @@
     "test:kickoff": "vitest run --project contract --project unit --project integration kickoff",
     "capture:layout-trials": "playwright test --grep @visual tests/visual/phase-4-layout-trial.spec.ts --project chromium-1440 --project chromium-1280",
     "capture:graybox": "npm run test:visual && node --test scripts/graybox-evidence.test.mjs",
-    "test:ui-contract": "node --test scripts/graybox-evidence.test.mjs && node --test scripts/css-scope.test.mjs && node --test scripts/evidence-immutability.test.mjs && vitest run --project contract packages/contracts/src/workspace.contract.test.ts",
+    "test:ui-contract": "node --test scripts/graybox-evidence.test.mjs && node --test scripts/css-scope.test.mjs && node --test scripts/evidence-immutability.test.mjs && node --test scripts/evidence-line-endings.test.mjs && vitest run --project contract packages/contracts/src/workspace.contract.test.ts",
     "test:component": "vitest run --project component",
     "test:contract": "vitest run --project contract --passWithNoTests",
     "test:e2e": "playwright test --grep @e2e --project chromium-1440 --project chromium-1280",

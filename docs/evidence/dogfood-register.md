@@ -1097,6 +1097,13 @@ failed stays **unknown**: the evidence was never kept. The next failure will nam
   immediate re-run of the same commit. The same day the Phase 7-O stream raised a component test's
   timeout after it overran Vitest's 5 s default during `verify` (`5e3efe9`). Both streams ran `verify`
   on one machine. Recorded by owner ruling, not investigated.
+- **Mechanism found, 2026-09-26.** It is, at least in part, the two streams running at once. During
+  follow-up Task 2, three consecutive `verify` gates here failed while the main copy's runner was
+  running its own checks, and the runners' outboxes put times on it: the C-10 component test overran
+  its 5 s limit twice while the main runner ran component-test mutations and a `verify`, and one e2e
+  run could not start because port 4173 was taken by the main runner's e2e run (13:20:53–13:21:35 UTC,
+  against ours at about 13:21:00). Queued once the main runner had been idle for a minute, the gate
+  passed. Two runners on one machine share one CPU budget and one preview port.
 
 ### DF-026 — Evidence digests recorded over working-copy bytes cannot be verified from a clean checkout
 
