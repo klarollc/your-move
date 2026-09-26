@@ -297,8 +297,9 @@ export function diffFeatures(from, to) {
 }
 
 /**
- * The `features.json` record. Defaults differ by platform (0.157.1 turns `secret_auth_storage` on
- * for win32-x64 and off for linux-x64), so the record names the binary it describes.
+ * The `features.json` record. Defaults differ by platform (the pinned binary turns
+ * `secret_auth_storage` on for win32-x64 and off for linux-x64), so the record names the binary it
+ * describes.
  */
 export function buildFeaturesRecord({ version, platform, arch, features }) {
   return {
