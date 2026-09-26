@@ -466,7 +466,15 @@ revision K`. With no handoff there is no cue. The Phase 4 `delivery` transition 
       - **F-9-3, outline buttons overlap names** [V2 proposed]. At both viewports, the `Inspect …`
         buttons in the outline person cards overlap the person's name, and card text wraps one
         word per line. The button's own label carries the name, so no fact is lost.
-    - **Owner-run step:** regenerate the committed captures, then record provenance.
+    - **Owner-run step, done 2026-09-26:** the owner regenerated the captures with
+      `CUCKCODE_REGENERATE_EVIDENCE=1` into `docs/evidence/phase-7-o/browser/chromium-1440/` and
+      `chromium-1280/` (13 captures and a manifest each), then ran `phase5:provenance:write`.
+    - **Owner dispositions, 2026-09-26:** F-9-1 **V1**; F-9-2 **V1**; F-9-3 **V2**.
+    - **Owner comparison with the Active Phase 6 direction (criterion 6), 2026-09-26:** the
+      captures read as progressing toward a dense, technical dashboard that does not align with
+      the art direction. Recorded as **F-9-4, drift from the art direction**, severity not yet
+      ruled. The Phase 7-O gate needs V0/V1 cleared, so F-9-1, F-9-2 and the ruling on F-9-4
+      block Tasks 10 to 12.
   - Verify: the capture manifest; the owner's dispositions recorded.
 
 - [ ] Task 10: Comprehension preparation (spec §8.7).

@@ -1088,3 +1088,36 @@ does not stop. The symptom lands wherever the leftover work lands.
 The owner approved a 15 s timeout on that one test, with a note on why (`5e3efe9`). Not ruled: a
 general rule that tests near their limit are flagged, or that `userEvent` sessions are torn down on
 timeout.
+
+### DF-025 — A zoom probe that checked the pixel ratio, not the layout
+
+Observed 2026-09-26, while writing the Phase 7-O Task 9 capture spec.
+
+The first version of the 200% zoom probe set the CDP device-metrics override before navigating,
+and asserted only that `devicePixelRatio` was 2. It passed on both viewports. Its capture was
+indistinguishable from the unzoomed page: the layout had never narrowed. The probe would have
+recorded "200% zoom: performed" over a page that was never zoomed. It was caught by looking at the
+capture, not by any test.
+
+## What it cost
+
+One rewritten probe before commit. Had it shipped, criterion 6's zoom check would have been
+false evidence, and F-9-2 (the project bar clipping its own controls at 200%) would not have been
+found.
+
+## The shape
+
+This is Phase 5 decision 9-C again: an emulation asserted by a property it sets, not by the
+effect it exists to cause. The Phase 5 matrix already asserts `innerWidth`; the new probe was
+written without reading it first.
+
+## Product response
+
+The probe now zooms after navigation, asserts `innerWidth` is half the viewport, and captures
+through the same CDP session. A mutation that clears the override fails it on both projects. Not
+ruled: a shared zoom helper in `tests/support/` so the next probe cannot omit the width check.
+
+Also observed in the same session, and not yet a pattern: one `verify` run failed a Phase 4
+kickoff e2e at 1280 with a blank page (the app never rendered in 30 s). The same URL rendered at
+1440 in that run, and two further `test:e2e` runs and a third `verify` were clean. Recorded here
+so a recurrence can be recognised.
