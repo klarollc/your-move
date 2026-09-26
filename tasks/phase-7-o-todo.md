@@ -472,10 +472,67 @@ revision K`. With no handoff there is no cue. The Phase 4 `delivery` transition 
     - **Owner dispositions, 2026-09-26:** F-9-1 **V1**; F-9-2 **V1**; F-9-3 **V2**.
     - **Owner comparison with the Active Phase 6 direction (criterion 6), 2026-09-26:** the
       captures read as progressing toward a dense, technical dashboard that does not align with
-      the art direction. Recorded as **F-9-4, drift from the art direction**, severity not yet
-      ruled. The Phase 7-O gate needs V0/V1 cleared, so F-9-1, F-9-2 and the ruling on F-9-4
+      the art direction. Recorded as **F-9-4, drift from the art direction**; the owner ruled it
+      **V1** the same day and chose the revision scope below (Task 9d). The Phase 7-O gate needs V0/V1 cleared, so F-9-1, F-9-2 and the ruling on F-9-4
       block Tasks 10 to 12.
   - Verify: the capture manifest; the owner's dispositions recorded.
+
+- [ ] Task 9d (**PROPOSED, awaiting owner approval**): revise the text surfaces toward the art
+      direction, and clear the V1 findings.
+  - Why: F-9-4 (V1). The inspector leads with machine detail: event IDs, reason codes, trust
+    words and the technical trail sit in the main view. Spec §6 says its first screenful answers
+    what is happening, why, what needs the manager and what evidence supports it, with technical
+    identifiers on demand. The outline cards have grown dense (F-9-3), the project bar fails at 200%
+    zoom (F-9-2, V1), and unassigned work has no surface (F-9-1, V1).
+  - Scope, owner ruling 2026-09-26: text surfaces and the V1 findings. The scene stays graybox;
+    the gap to the Phase 6 golden states' drawn office is recorded as expected until Phase 7.
+  - Proposal:
+    1. **Inspector, plain first.** The first screen has four answers in sentences, each read
+       from the model:
+       - _What's happening_, for example "Blocked on Provide current browser evidence".
+       - _Why_: the condition summary, attributed in words, for example "Reported by the system
+         (verified)".
+       - _What needs you_: the requested action, or "Nothing needs you".
+       - _Evidence_: for example "Browser evidence, version 1: failed", with its Open link,
+         followed by the approval in words.
+
+       A persistent freshness warning appears only when the record is not current. The spec's
+       absence phrases are kept. Everything else moves into a native `<details>` "Technical
+       detail": cause event, updated time, reason code, waiting-on ID, presence and health,
+       runtime binding, permissions, revision, last event, entity ID.
+
+    2. **Outline cards, lean.** Each card shows the name, one state word (Blocked, Waiting, Idle,
+       Unavailable), "Needs you" when a held item needs the manager, the relationship on its own
+       line, and the Inspect button below the name, so nothing overlaps (F-9-3). Health appears
+       only when it is not "connected".
+    3. **Project bar survives 200% zoom (F-9-2).** Its items wrap onto a second row instead of
+       clipping. `Manager attention (N)` and `Reset view` stay whole and inside the viewport.
+    4. **Unassigned work (F-9-1).** The read model gains `unassignedWork` (work held by no one,
+       as work views). The outline shows an "Unassigned work" group, only when there is any.
+    5. **Re-capture.** After 9d, the owner reruns the Task 9 captures, and F-9-1 to F-9-4 are
+       re-checked against them.
+  - Decisions needed:
+    - **9d-1, cause event on demand.** Spec §6 lists the cause event among what the inspector
+      shows for a rail item, and also says technical identifiers are on demand. Recommendation:
+      the first screen says when the fact was recorded ("Recorded 09:00:30"), and the event ID
+      sits in Technical detail.
+    - **9d-2, field names.** The first-screen terms become _What's happening_, _Why_, _What needs
+      you_, _Evidence_ and _Approval_; the old terms move under Technical detail. Recommendation:
+      yes. This moves assertions in `office-inspector`, `office-shell` (field list),
+      `office-library` and `evidence-link` component tests, the Phase 4 selection-inspector e2e
+      (`Technical trail`), and the Task 9 capture spec. Each is to be listed under P-4.
+    - **9d-3, where unassigned work shows.** Recommendation: the outline only. A rail item for
+      unassigned work that needs attention keeps today's behaviour (it names the work item). The
+      scene is not changed.
+  - Tests, RED first:
+    - Component tests for the four answers, the disclosure and its contents, and the lean card.
+    - e2e geometry at both viewports: the Inspect button's box does not intersect the name's.
+    - At real 200% zoom, the attention button's full name, count included, is inside the
+      viewport.
+    - Unit and component tests for unassigned work.
+    - Each is followed by mutations.
+  - Out of scope: scene art and high-fidelity visuals (Phase 7), rail redesign, Evidence Library
+    layout.
 
 - [ ] Task 10: Comprehension preparation (spec §8.7).
   - Acceptance: the six task URLs, fixture logs and answer key are aligned to the accepted UI and
