@@ -1,6 +1,6 @@
 # Handoff — state, next action, and what would otherwise be relearned expensively
 
-Written 2026-09-18, last updated 2026-09-23 for the Phase 7-O owner ruling. Read `AGENTS.md` first for authority; this document is the
+Written 2026-09-18, last updated 2026-09-25 for the Phase 7-O spec-review rulings. Read `AGENTS.md` first for authority; this document is the
 live state, the next action, and the things a fresh session pays for twice if nobody wrote them down.
 
 ---
@@ -33,10 +33,11 @@ Phase 7. The owner authorized a specification for truthful inspector detail and 
 fixtures, classified the default-office rail/inspector contradiction V1, and requires actually
 performed T3/T5/T6 under MDD §20 in the Phase 7-O gate. The ruling is
 `docs/evidence/phase-7-o/decision-record-2026-09-23-operability-scope.md`. Review the draft
-`docs/phase-7-o-operability-spec-v0.1.md` next, together with the agent review
-`docs/evidence/phase-7-o/spec-review-2026-09-25.md`, which recommends revision before approval
-(decisions R-1 to R-3: the canonical events cannot yet answer the decision questions, and no
-machine criterion checks that drill-down detail resolves). Do not write the implementation plan or tasks until
+`docs/phase-7-o-operability-spec-v0.2.md` next. It revises v0.1 under owner rulings R-1 to R-3
+(2026-09-25, `docs/evidence/phase-7-o/decision-record-2026-09-25-spec-review.md`): additive
+canonical events for work assignment, blocker condition and agent presence provenance; a
+decision-sufficiency criterion; and office states as replayed event logs. A Windows command-runner
+proposal, `docs/proposals/2026-09-25-windows-command-runner.md`, awaits decisions W-1 to W-3. Do not write the implementation plan or tasks until
 the specification is approved; do not change UI behavior until all three gates are approved. Phase
 5 Task 10 remains a parallel owner-run acceptance gate and a Phase 8 precondition.
 

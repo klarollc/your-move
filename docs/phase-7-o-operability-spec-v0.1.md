@@ -1,6 +1,6 @@
 # Phase 7-O operability specification v0.1
 
-**Status: DRAFT FOR OWNER REVIEW. Not approved for planning, tasks, or implementation.**
+**Status: SUPERSEDED 2026-09-25 by `docs/phase-7-o-operability-spec-v0.2.md`** after owner rulings R-1 to R-3 (`docs/evidence/phase-7-o/decision-record-2026-09-25-spec-review.md`). Kept unchanged below as the draft that `docs/evidence/phase-7-o/spec-review-2026-09-25.md` assessed. Never approved.
 Authority to draft: owner rulings O-1 through O-4, `docs/evidence/phase-7-o/decision-record-2026-09-23-operability-scope.md`.
 Governing: MDD §§2, 8, 9, 10, 14, 17, 18, 20 and 24; Active Phase 6 visual system `reconciliation-b-clarity`.
 
