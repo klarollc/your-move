@@ -249,11 +249,40 @@ Specification: `docs/phase-7-o-operability-spec-v0.2.md`, **owner-approved 2026-
       `typecheck`, `typecheck:scripts`, `lint` clean, on the dirty tree before commit; `verify`
       at the commit below.
 
-- [ ] Task 7: Structural guard (R-3, spec §5).
+- [x] Task 7: Structural guard (R-3, spec §5).
   - Acceptance: a `scripts/*.test.mjs` test in `verify` fails on non-test `apps/web` source that
     constructs `ManagerAttentionItem`, read-model entity or inspector records as literals, using type
     names read from the packages' exports.
   - Verify: the guard passes on the tree and a deliberate violation is recorded as killed.
+
+  - Result, 2026-09-26: `scripts/office-literal-guard.mjs` and `.test.mjs`, run as
+    `npm run test:guard` inside `verify` after `test:runner`.
+    - **Guarded types, read from the exports, not listed.** Every named object type reachable from
+      the return types of `projectOfficeReadModel` (`@cuckcode/application`),
+      `projectManagerAttention` (`@cuckcode/domain`) and `attentionItemsFrom`
+      (`apps/web/src/office-model.ts`), using the TypeScript checker. Today that is 14 types:
+      `ManagerAttentionItem`, `OfficeReadModel` and its views and issue, `OfficeAttentionItem`
+      (the rail's record), `WorkConditionTruth`, `WorkAssignmentTruth`. A producer that is renamed
+      or stops being exported fails the guard loudly.
+    - **Contract types are excluded**, because they are the event vocabulary the fixture logs are
+      allowed to write (spec §5). Without this, the logs' `WorkCondition` payloads were flagged.
+    - **The rule.** An object literal in non-test `apps/web` source is an office record when its
+      contextual type is guarded (annotation, array element, return type, `satisfies`), or, with no
+      contextual type, when its keys cover a guarded type's required properties. It is an offender
+      when it is written at module scope or every value in it is a literal. A record built inside
+      a function from its inputs is a projection and is allowed. One finding per record.
+    - **The inspector has no record type of its own**: it renders `OfficePersonView` directly, so
+      guarding the read-model views covers it.
+    - **RED, against a stub finding nothing:** tests 1 (guarded names) and 2 (deliberate
+      violations) failed on their assertions. Tests 3 (allowed controls) and 4 (the tree is clean)
+      cannot fail against a stub that finds nothing, and are named as such.
+    - **GREEN 4/4.** Six mutations, each confirmed applied, all killed: the Phase 4
+      `officeAttention` literal restored into `office-canvas.tsx` (test 4); no shape fallback, which
+      missed the untyped rail record (test 2); no contract exclusion (test 4); nested views counted
+      separately (test 2); every guarded literal flagged, including derived ones (tests 3, 4).
+    - Not in scope and not guarded: the Evidence Library's `libraryProjection` and the kickoff
+      fixtures in `office-canvas.tsx`. They are not office read-model records; the library is
+      Task 8.
 
 - [ ] Task 8: Evidence Library opens at item and version (spec §6).
   - Acceptance: `initialEvidence: { evidenceId, version }`; an unresolvable reference shows
