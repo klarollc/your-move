@@ -63,6 +63,11 @@ Authority: W-1 to W-3, `docs/evidence/phase-7-o/decision-record-2026-09-25-spec-
     `agent:runner` starts the runner; README and HANDOFF notes added. Prettier and ESLint clean on
     the new files from the agent shell; 28/28 for `test:scaffold` and `test:runner` under Node 22.
     **Not yet verified:** the owner's full `npm run verify` on Windows.
-- [ ] Task 7: **Owner-run.** Start the runner. Agent requests `git-status`, `test:unit` and
+- [x] Task 7: **Owner-run.** Start the runner. Agent requests `git-status`, `test:unit` and
       `verify`. Counts are cross-checked against the owner's last direct run and recorded in the
       dogfood register.
+  - Result, 2026-09-25: the owner started the runner with `--allow-push`. `git-status` completed
+    (clean tree at `0587aaf`); `test:unit` gave 395/395; `verify` exited 0 in 2 min 29 s with every
+    stage count equal to the owner's direct run of the same commit (unit 395, component 73,
+    integration 67 + 3 skipped, contract 65, e2e 50, a11y 46, visual 62, runner 26),
+    `dirty: false`, `evidenceChanged: false`. Recorded as DF-022.
