@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
+import { CODEX_PIN } from "./codex-pin.js";
 import { CodexStdioSupervisor, type SpawnRuntimeProcess } from "./supervisor.js";
 
 const fixture = fileURLToPath(new URL("./fixtures/fake-app-server.mjs", import.meta.url));
@@ -29,7 +30,7 @@ describe("Codex stdio supervisor", () => {
   it("uses fixed direct-spawn arguments and performs initialize then initialized", async () => {
     const capture: { executable?: string; args?: readonly string[]; shell?: boolean } = {};
     const supervisor = new CodexStdioSupervisor({
-      executable: "C:/Programs/OpenAI/Codex/bin/codex.exe",
+      executable: "C:/fixture/codex.exe",
       spawnProcess: fixtureSpawner("normal", capture),
     });
 
@@ -37,11 +38,11 @@ describe("Codex stdio supervisor", () => {
     const ready = await supervisor.waitForNotification("fixture/ready");
 
     expect(capture).toEqual({
-      executable: "C:/Programs/OpenAI/Codex/bin/codex.exe",
+      executable: "C:/fixture/codex.exe",
       args: ["app-server", "--stdio", "--strict-config"],
       shell: false,
     });
-    expect(initialized.userAgent).toBe("codex_cli_rs/0.146.0");
+    expect(initialized.userAgent).toBe(`codex_cli_rs/${CODEX_PIN}`);
     expect(ready.method).toBe("fixture/ready");
     expect(supervisor.stderr).toEqual(["Authorization: Bearer [REDACTED]"]);
     await supervisor.stop();

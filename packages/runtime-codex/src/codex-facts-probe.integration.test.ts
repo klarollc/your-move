@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { expect, it } from "vitest";
 
+import { resolveInstalledCodexExecutable } from "./codex-pin.js";
 import { CodexStdioSupervisor } from "./supervisor.js";
 
 /**
@@ -22,16 +23,12 @@ import { CodexStdioSupervisor } from "./supervisor.js";
  */
 const live = process.env.CUCKCODE_LIVE_CODEX === "1" ? it : it.skip;
 
-const EXECUTABLE =
-  process.env.CUCKCODE_CODEX_EXE ??
-  "C:/Users/nater/AppData/Local/Programs/OpenAI/Codex/bin/codex.exe";
-
 live(
   "reports the shape of every fact a binding would need",
   async () => {
     const syntheticRoot = mkdtempSync(join(tmpdir(), "cuckcode-probe-"));
     const supervisor = new CodexStdioSupervisor({
-      executable: EXECUTABLE,
+      executable: resolveInstalledCodexExecutable(),
       handshakeTimeoutMs: 10_000,
     });
     try {

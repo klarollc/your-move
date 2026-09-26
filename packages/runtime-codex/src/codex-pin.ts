@@ -8,7 +8,7 @@ import { dirname, join } from "node:path";
  * The pin is the exact version of `@openai/codex` declared in this package's manifest, and the
  * lockfile's integrity hash is the provenance of the binary. Everything that needs a Codex version
  * — the handshake check, every binding expectation, the protocol bundle, the drift preflight —
- * derives from `CODEX_PIN`. A second copy anywhere is how the 0.146.0 pin outlived the binary it
+ * derives from `CODEX_PIN`. A second copy anywhere is how the previous pin outlived the binary it
  * described (DF-021); `scripts/codex-pin.test.mjs` refuses one.
  */
 export const CODEX_PACKAGE = "@openai/codex";

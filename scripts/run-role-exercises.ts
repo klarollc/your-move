@@ -9,15 +9,16 @@ import {
   createControlledCodexHome,
   parseApprovedRoleExercisePlan,
   runRoleExercise,
+  CODEX_PIN,
+  resolveInstalledCodexExecutable,
 } from "@cuckcode/runtime-codex";
 
 const ROOT = resolve(process.cwd());
 const ROLES_ROOT = resolve(ROOT, "roles");
 const EVIDENCE_ROOT = resolve(ROOT, "docs/evidence/phase-4/live-kickoff/role-exercises");
 const PACKET_PATH = resolve(ROOT, "docs/evidence/phase-4/live-kickoff/task-16-preflight-packet.md");
-const EXECUTABLE =
-  process.env.CUCKCODE_CODEX_EXE ??
-  "C:/Users/nater/AppData/Local/Programs/OpenAI/Codex/bin/codex.exe";
+// The pinned, installed Codex (R1.2). CUCKCODE_CODEX_EXE overrides the path, never the pin.
+const EXECUTABLE = resolveInstalledCodexExecutable();
 
 /**
  * Replacing `CODEX_HOME` also replaces the credential Codex reads, so the controlled home must be
@@ -77,7 +78,7 @@ for (const configuration of approved.plan) {
         requestedModel: configuration.model,
         expectedReasoningEffort: configuration.reasoningEffort,
         expectedAuthMode: "chatgpt",
-        protocolVersion: "0.146.0",
+        protocolVersion: CODEX_PIN,
         promotedContentSha256: record.contentSha256,
       },
     });

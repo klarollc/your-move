@@ -105,7 +105,10 @@ Authority: `docs/evidence/runtime/decision-record-2026-09-25-codex-currency.md`.
     the three entries needing a ruling are the three the spec named. Each is already decided by an
     approved ruling: `functionCallOutput` is an effect (CX-2); `rateLimitExceeded` and
     `misalignmentPolicyViolation` are not transport classes (CX-4 names four), so neither is
-    retried. **Gate:** runner `verify`, recorded below.
+    retried. **Gate:** runner `verify` at `41cf4eb`: first run exit 1 — one visual capture
+    (`Phase 5 decision notice — saving`, chromium-1280) never rendered its state within 5 s, 61/62; this
+    commit changes nothing the web app loads. Re-run on the same clean commit: exit 0, visual 62/62, every
+    other count unchanged. Recorded as a flake, not hidden.
 
 - [ ] **Task 5 — Single-source guard** (R2.3, R2.4, R1.4).
   - Files: `scripts/codex-pin.test.mjs`, `test:protocol` wiring.

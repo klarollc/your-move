@@ -4,6 +4,8 @@ import {
   type SpawnOptionsWithoutStdio,
 } from "node:child_process";
 
+import { CODEX_PIN } from "./codex-pin.js";
+
 // Exported so the kickoff policy asserts against the values the supervisor actually uses rather
 // than a copy of them. A second declaration is how an allow-list and its guard drift apart.
 export const CODEX_ARGS = ["app-server", "--stdio", "--strict-config"] as const;
@@ -35,6 +37,7 @@ export class CodexStdioSupervisor {
   readonly #handshakeTimeoutMs: number;
   readonly #codexHome: string | undefined;
   readonly #maxLineBytes: number;
+  readonly #expectedVersion: string;
   readonly #pending = new Map<
     number,
     { resolve: (value: unknown) => void; reject: (reason: Error) => void }
@@ -60,12 +63,15 @@ export class CodexStdioSupervisor {
      * under exactly its own contract rather than under whatever the machine's Codex home holds.
      */
     codexHome?: string;
+    /** The Codex version the handshake must report. Defaults to the pin; tests may name another. */
+    expectedVersion?: string;
   }) {
     this.#executable = options.executable;
     this.#codexHome = options.codexHome;
     this.#spawnProcess = options.spawnProcess ?? defaultSpawn;
     this.#handshakeTimeoutMs = options.handshakeTimeoutMs ?? 5_000;
     this.#maxLineBytes = options.maxLineBytes ?? 1_048_576;
+    this.#expectedVersion = options.expectedVersion ?? CODEX_PIN;
   }
 
   async start(): Promise<{
@@ -102,7 +108,7 @@ export class CodexStdioSupervisor {
       this.#handshakeTimeoutMs,
       "HANDSHAKE_TIMEOUT",
     );
-    if (!isInitializeResult(result)) {
+    if (!isInitializeResult(result, this.#expectedVersion)) {
       await this.stop();
       throw new Error("PROTOCOL_SCHEMA_MISMATCH");
     }
@@ -306,7 +312,10 @@ function isRecord(value: unknown): value is JsonRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function isInitializeResult(value: unknown): value is {
+function isInitializeResult(
+  value: unknown,
+  expectedVersion: string,
+): value is {
   codexHome: string;
   platformFamily: string;
   platformOs: string;
@@ -318,8 +327,14 @@ function isInitializeResult(value: unknown): value is {
     typeof value.platformFamily === "string" &&
     typeof value.platformOs === "string" &&
     typeof value.userAgent === "string" &&
-    /0\.146\.0/u.test(value.userAgent)
+    carriesVersion(value.userAgent, expectedVersion)
   );
+}
+
+/** True when `text` names `version` as a whole version, so 1.2.3 does not match 11.2.34. */
+export function carriesVersion(text: string, version: string): boolean {
+  const escaped = version.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  return new RegExp(`(?<![\\d.])${escaped}(?![\\d.])`, "u").test(text);
 }
 
 function redact(value: string): string {

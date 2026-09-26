@@ -87,11 +87,33 @@ export async function checkProtocolBundle({ bundleRoot, expectedVersion }) {
   return { ok: true, fileCount: actual.fileCount, version: manifest.version };
 }
 
+/**
+ * Checks every committed bundle against its own manifest, and refuses when the pinned version has
+ * none. Historical bundles stay checked: Phase 4 and 5 evidence cites the earliest one. Run under
+ * tsx so the pin comes from `codex-pin.ts`, the one reader of the declaration (R2.2).
+ */
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
-  const bundleRoot = resolve(process.argv[2] ?? "packages/runtime-codex/protocol/0.146.0");
-  const result = await checkProtocolBundle({ bundleRoot, expectedVersion: "0.146.0" });
-  if (!result.ok) {
-    console.error(JSON.stringify(result));
+  const { CODEX_PIN } = await import("../packages/runtime-codex/src/codex-pin.ts");
+  const protocolRoot = resolve("packages/runtime-codex/protocol");
+  const versions = (await readdir(protocolRoot, { withFileTypes: true }))
+    .filter((entry) => entry.isDirectory() && /^\d+\.\d+\.\d+$/u.test(entry.name))
+    .map((entry) => entry.name)
+    .sort();
+  const results = [];
+  for (const version of versions) {
+    results.push(
+      await checkProtocolBundle({
+        bundleRoot: resolve(protocolRoot, version),
+        expectedVersion: version,
+      }),
+    );
+  }
+  const pinned = versions.includes(CODEX_PIN)
+    ? { ok: true, pin: CODEX_PIN }
+    : { ok: false, code: "PINNED_BUNDLE_MISSING", pin: CODEX_PIN };
+  const report = { pinned, bundles: results };
+  if (!pinned.ok || results.some((result) => !result.ok)) {
+    console.error(JSON.stringify(report));
     process.exitCode = 1;
-  } else console.log(JSON.stringify(result));
+  } else console.log(JSON.stringify(report));
 }

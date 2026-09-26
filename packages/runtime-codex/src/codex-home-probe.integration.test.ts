@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { expect, it } from "vitest";
 
+import { resolveInstalledCodexExecutable } from "./codex-pin.js";
 import { CodexStdioSupervisor } from "./supervisor.js";
 
 /**
@@ -25,10 +26,6 @@ import { CodexStdioSupervisor } from "./supervisor.js";
  */
 const live = process.env.CUCKCODE_LIVE_CODEX === "1" ? it : it.skip;
 
-const EXECUTABLE =
-  process.env.CUCKCODE_CODEX_EXE ??
-  "C:/Users/nater/AppData/Local/Programs/OpenAI/Codex/bin/codex.exe";
-
 const MARKER = "CUCKCODE_CONTROLLED_HOME_MARKER";
 
 live(
@@ -46,7 +43,7 @@ live(
     process.env.CODEX_HOME = controlledHome;
 
     const supervisor = new CodexStdioSupervisor({
-      executable: EXECUTABLE,
+      executable: resolveInstalledCodexExecutable(),
       handshakeTimeoutMs: 10_000,
     });
 

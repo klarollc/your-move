@@ -11,6 +11,7 @@ import {
   exerciseThreadStartParams,
   type BindingExpectation,
   type ControlledCodexHome,
+  resolveInstalledCodexExecutable,
 } from "@cuckcode/runtime-codex";
 import type { RuntimeBindingReport } from "@cuckcode/contracts";
 
@@ -29,10 +30,6 @@ import { KICKOFF_TASK_CONTRACT } from "./phase4-kickoff-briefing.js";
  */
 const ROOT = resolve(process.cwd());
 const ROLES_ROOT = resolve(ROOT, "roles");
-
-export const CODEX_EXECUTABLE =
-  process.env.CUCKCODE_CODEX_EXE ??
-  "C:/Users/nater/AppData/Local/Programs/OpenAI/Codex/bin/codex.exe";
 
 const CREDENTIAL_SOURCE = resolve(
   process.env.CUCKCODE_CODEX_AUTH ??
@@ -90,7 +87,9 @@ export async function openKickoffSession(input: {
     const controlledHome = home;
 
     supervisor = new CodexStdioSupervisor({
-      executable: CODEX_EXECUTABLE,
+      // Resolved per session, not at import, so a module that only parses turns never needs Codex
+      // installed. CUCKCODE_CODEX_EXE overrides the path, never the pin (R1.3).
+      executable: resolveInstalledCodexExecutable(),
       codexHome: controlledHome.path,
     });
     const initialized = await supervisor.start();

@@ -85,3 +85,84 @@ against a linux-x64 install produced a bundle with `bundleHash`
 independent generation made during diagnosis. The report listed exactly three entries needing a
 ruling (`functionCallOutput`, `rateLimitExceeded`, `misalignmentPolicyViolation`) and no breaking
 entries, matching spec §1. The committed bundle comes from the owner's Windows run.
+
+## Tasks 5 and 6 — Single-source guard, and every consumer wired to the pin
+
+Committed together: the Task 5 guard is RED against the real tree by design and only Task 6 makes
+it GREEN, so a separate Task 5 commit would fail its own `verify` gate.
+
+**RED 1, the guard's logic**, container mirror, `node --test scripts/codex-pin.test.mjs` against a
+stub that finds nothing and lists no files:
+
+```text
+not ok 1 - a Codex version literal in source is a second copy of the pin
+not ok 2 - an escaped version inside a regular expression is a copy too
+ok 3 - tests may name versions, because a comparison needs two
+not ok 4 - the desktop app's binary is refused everywhere, tests included
+not ok 5 - the pinned version must have its schema bundle, stating the same version
+not ok 6 - the guarded file list covers source and skips generated and vendored trees
+ok 7 - this repository holds exactly one Codex pin
+# pass 2
+# fail 5
+```
+
+Five of seven are assertion failures. **Not RED against the stub:** test 3 is a negative case, and
+test 7 cannot fail when the guard finds nothing. Test 7's RED is the next one.
+
+**RED 2, the real tree** — the checklist's named RED, real code rather than a stub — once the guard
+logic was GREEN, test 7 reported 22 violations:
+
+```text
+desktop-binary  packages/runtime-codex/src/codex-facts-probe.integration.test.ts:27
+desktop-binary  packages/runtime-codex/src/codex-home-probe.integration.test.ts:30
+desktop-binary  packages/runtime-codex/src/codex-live.integration.test.ts:16
+version-literal packages/runtime-codex/src/codex-pin.ts:11            (a comment)
+version-literal packages/runtime-codex/src/fixtures/fake-app-server.mjs:20
+desktop-binary  packages/runtime-codex/src/supervisor.integration.test.ts:32
+desktop-binary  packages/runtime-codex/src/supervisor.integration.test.ts:40
+version-literal packages/runtime-codex/src/supervisor.ts:321          (the handshake regex)
+version-literal scripts/check-codex-protocol.mjs:91
+version-literal scripts/check-codex-protocol.mjs:92
+desktop-binary  scripts/codex-pin.test.mjs:54                          (the guard's own fixture)
+desktop-binary  scripts/codex-pin.test.mjs:56                          (the guard's own fixture)
+desktop-binary  scripts/phase4-kickoff-session.ts:35
+version-literal scripts/run-phase4-kickoff.ts:75
+version-literal scripts/run-phase5-release-review.ts:80
+version-literal scripts/run-phase5-surface-contract.ts:73
+version-literal scripts/run-phase5-verification.ts:117
+version-literal scripts/run-phase5-visual-qa.ts:87
+desktop-binary  scripts/run-phase6-review.ts:33
+version-literal scripts/run-phase6-review.ts:98
+desktop-binary  scripts/run-role-exercises.ts:20
+version-literal scripts/run-role-exercises.ts:80
+```
+
+The checklist predicted the supervisor regex, seven `protocolVersion` literals, the generator
+constant and four desktop-app paths. Task 4 had already removed the generator's constant and path.
+The guard also found what the prediction missed: two skipped live probes and the supervisor's
+integration test spawning by the desktop path, the fake app server's hard-coded user agent, the
+checker's default bundle, and two comments.
+
+**RED 3, `carriesVersion`**, which replaces the supervisor's `/0\.146\.0/` regex and is new
+behaviour, against a stub that accepts everything:
+
+```text
+AssertionError: expected true to be false // Object.is equality
+AssertionError: expected true to be false // Object.is equality
+Tests  2 failed | 1 passed (3)
+```
+
+The passing test ("accepts the version where Codex reports it") cannot fail against an accepting
+stub.
+
+**GREEN**, container mirror: `test:protocol` 21/21, and `protocol:codex:check` now checks both
+committed bundles and requires the pinned one
+(`{"pinned":{"ok":true,"pin":"0.157.1"},"bundles":[…0.146.0 ok…,…0.157.1 ok…]}`); unit 409
+(406 + 3); runtime-codex integration 12 passed, 3 skipped (the live probes); contract 77; runner
+26; toolchain 11; `tsc -b`, `tsc -p tsconfig.scripts.json`, ESLint and Prettier clean across the
+repository.
+
+**Files beyond the Task 6 list, stated:** `codex-facts-probe` and `codex-home-probe` integration
+tests (desktop path), `codex-pin.ts` (a comment), and the new `supervisor.unit.test.ts`.
+`resolveInstalledCodexExecutable()` is called inside each live test and per session, never at
+import, so a module that only parses turns does not need Codex installed.

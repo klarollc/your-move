@@ -4,7 +4,7 @@ import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promis
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
-import { parseApprovedRoleExercisePlan } from "@cuckcode/runtime-codex";
+import { CODEX_PIN, parseApprovedRoleExercisePlan } from "@cuckcode/runtime-codex";
 
 import { buildKickoffPreflightInput } from "./phase4-kickoff-preflight.js";
 import { openKickoffSession, parseTurnJson } from "./phase4-kickoff-session.js";
@@ -77,7 +77,7 @@ const opened = await openKickoffSession({
     requestedModel: configuration.model,
     expectedReasoningEffort: configuration.reasoningEffort,
     expectedAuthMode: "chatgpt",
-    protocolVersion: "0.146.0",
+    protocolVersion: CODEX_PIN,
     promotedContentSha256: candidate.roleContractVersion.replace(/^content:/u, ""),
   },
 });

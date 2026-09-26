@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 
 import { expect, it } from "vitest";
 
+import { CODEX_PIN } from "./codex-pin.js";
 import { createControlledCodexHome } from "./controlled-home.js";
 import { runRoleExercise } from "./role-exercise.js";
 import { CodexStdioSupervisor, type SpawnRuntimeProcess } from "./supervisor.js";
@@ -38,7 +39,7 @@ it("carries a controlled role home through supervisor, observed handshake, and o
         requestedModel: "gpt-5.6-luna",
         expectedReasoningEffort: "medium",
         expectedAuthMode: "chatgpt",
-        protocolVersion: "0.146.0",
+        protocolVersion: CODEX_PIN,
         promotedContentSha256: "authored-delivery-lead-v1",
       },
     });

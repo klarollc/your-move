@@ -1,7 +1,11 @@
 import { createInterface } from "node:readline";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const mode = process.env.CUCKCODE_FAKE_MODE ?? "normal";
+// Reports the pinned version, as the real binary would. Read from the declaration, never copied.
+const pinned = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"))
+  .devDependencies["@openai/codex"];
 // `multiturn` gives each turn a distinct id, so a caller can be tested for consuming the right one.
 let turnSequence = 0;
 const lines = createInterface({ input: process.stdin });
@@ -17,7 +21,7 @@ for await (const line of lines) {
         codexHome: "C:/synthetic/codex",
         platformFamily: "windows",
         platformOs: "windows",
-        userAgent: "codex_cli_rs/0.146.0",
+        userAgent: `codex_cli_rs/${pinned}`,
       },
     })}\n`;
     process.stdout.write(response.slice(0, 11));

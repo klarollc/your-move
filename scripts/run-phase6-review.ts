@@ -9,6 +9,8 @@ import {
   createControlledCodexHome,
   parseApprovedRoleExercisePlan,
   runRoleExercise,
+  CODEX_PIN,
+  resolveInstalledCodexExecutable,
 } from "@cuckcode/runtime-codex";
 
 import { TASK7_CONTRACT, buildReviewPacket } from "./phase6-review-packet.js";
@@ -28,9 +30,8 @@ const ROOT = resolve(process.cwd());
 const ROLES_ROOT = resolve(ROOT, "roles");
 const EVIDENCE_ROOT = resolve(ROOT, "docs/evidence/phase-6/scored-review");
 const PACKET_PATH = resolve(ROOT, "docs/evidence/phase-4/live-kickoff/task-16-preflight-packet.md");
-const EXECUTABLE =
-  process.env.CUCKCODE_CODEX_EXE ??
-  "C:/Users/nater/AppData/Local/Programs/OpenAI/Codex/bin/codex.exe";
+// The pinned, installed Codex (R1.2). CUCKCODE_CODEX_EXE overrides the path, never the pin.
+const EXECUTABLE = resolveInstalledCodexExecutable();
 const CREDENTIAL_SOURCE = resolve(
   process.env.CUCKCODE_CODEX_AUTH ??
     join(process.env.CODEX_HOME ?? join(homedir(), ".codex"), "auth.json"),
@@ -95,7 +96,7 @@ for (const roleId of REVIEWER_ROLE_IDS) {
         requestedModel: configuration.model,
         expectedReasoningEffort: configuration.reasoningEffort,
         expectedAuthMode: "chatgpt",
-        protocolVersion: "0.146.0",
+        protocolVersion: CODEX_PIN,
         promotedContentSha256: promotion.contentSha256,
       },
       taskPrompt: TASK7_CONTRACT,

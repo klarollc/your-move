@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { expect, it } from "vitest";
 
+import { CODEX_PIN, resolveInstalledCodexExecutable } from "./codex-pin.js";
 import { CodexStdioSupervisor } from "./supervisor.js";
 
 const live = process.env.CUCKCODE_LIVE_CODEX === "1" ? it : it.skip;
@@ -13,12 +14,12 @@ live(
   async () => {
     const syntheticRoot = mkdtempSync(join(tmpdir(), "cuckcode-live-"));
     const supervisor = new CodexStdioSupervisor({
-      executable: "C:/Users/nater/AppData/Local/Programs/OpenAI/Codex/bin/codex.exe",
+      executable: resolveInstalledCodexExecutable(),
       handshakeTimeoutMs: 10_000,
     });
     try {
       const initialized = await supervisor.start();
-      expect(initialized.userAgent).toContain("0.146.0");
+      expect(initialized.userAgent).toContain(CODEX_PIN);
       const auth = await supervisor.readAccountStatus();
       expect(auth.ok).toBe(true);
 

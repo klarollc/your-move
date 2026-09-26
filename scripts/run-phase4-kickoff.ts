@@ -4,7 +4,7 @@ import { join, resolve } from "node:path";
 
 import type { RuntimeBindingReport } from "@cuckcode/contracts";
 import { runPreflightedKickoff, type PreparedKickoffBinding } from "@cuckcode/application";
-import { parseApprovedRoleExercisePlan } from "@cuckcode/runtime-codex";
+import { CODEX_PIN, parseApprovedRoleExercisePlan } from "@cuckcode/runtime-codex";
 import { readFile } from "node:fs/promises";
 
 import {
@@ -72,7 +72,7 @@ for (const roleId of KICKOFF_ROLE_IDS) {
       requestedModel: configuration.model,
       expectedReasoningEffort: configuration.reasoningEffort,
       expectedAuthMode: "chatgpt",
-      protocolVersion: "0.146.0",
+      protocolVersion: CODEX_PIN,
       promotedContentSha256: candidate.roleContractVersion.replace(/^content:/u, ""),
     },
   });
