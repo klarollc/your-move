@@ -138,7 +138,7 @@ Authority: `docs/evidence/runtime/decision-record-2026-09-25-codex-currency.md`.
     the pin. **Files beyond the list:** the two live probe tests, a comment in `codex-pin.ts`, and
     `supervisor.unit.test.ts`.
 
-- [ ] **Task 7 — Drift preflight** (R3, CP-4).
+- [x] **Task 7 — Drift preflight** (R3, CP-4).
   - Files: `scripts/codex-drift-core.mjs`, `scripts/codex-drift.mjs`,
     `scripts/codex-drift.test.mjs`, `phase4-kickoff-preflight.ts`, the live scripts, `package.json`
     (`protocol:codex:drift`, and in `verify` after `test:protocol`).
@@ -147,6 +147,13 @@ Authority: `docs/evidence/runtime/decision-record-2026-09-25-codex-currency.md`.
     before opening a session.
   - RED: a stub core that always reports no drift.
   - Verify: runner `verify` (first run with the new stage).
+  - **Result:** `5ee941a`. RED 7/7 against a no-drift stub; GREEN 7/7; wiring proven by
+    mutation. **Deviation:** TypeScript core under vitest instead of `.mjs` under `node --test`,
+    with a declaration file so the manifest hashing is reused, not copied. Against real binaries in
+    the mirror, a 0.146.0 override is refused on version and schema. **Gate:** runner `verify`
+    exit 0, clean tree at `5ee941a`: `protocol:codex:drift` ran against the Windows `codex.exe` and
+    passed, the first harness check of the pinned binary on the owner's machine; unit 419, others
+    unchanged.
 
 - [ ] **Task 8 — Item classification** (R5, CX-2).
   - Files: `item-classification.ts` and its unit test; `phase4-kickoff-session.ts` and

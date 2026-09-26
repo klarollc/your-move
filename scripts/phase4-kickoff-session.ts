@@ -5,6 +5,7 @@ import { join, resolve } from "node:path";
 import { composeRole, type RoleBrief } from "@cuckcode/domain";
 import {
   CodexStdioSupervisor,
+  classifyTurnItems,
   buildBindingReport,
   collectHandshakeFacts,
   createControlledCodexHome,
@@ -36,17 +37,6 @@ const CREDENTIAL_SOURCE = resolve(
   process.env.CUCKCODE_CODEX_AUTH ??
     join(process.env.CODEX_HOME ?? join(homedir(), ".codex"), "auth.json"),
 );
-
-/** Item types that mean the turn produced an effect outside the text channel. */
-const EFFECT_ITEM_TYPES = new Set([
-  "commandExecution",
-  "fileChange",
-  "mcpToolCall",
-  "dynamicToolCall",
-  "collabAgentToolCall",
-  "webSearch",
-  "imageGeneration",
-]);
 
 export type ObservedTurnEffect = { kind: string; phase: string };
 
@@ -184,11 +174,19 @@ export async function openKickoffSession(input: {
           ).turn;
           const items = Array.isArray(turn?.items) ? turn.items : [];
 
-          for (const item of items) {
-            const type = (item as { type?: unknown }).type;
-            if (typeof type === "string" && EFFECT_ITEM_TYPES.has(type)) {
-              effects.push({ kind: itemKindFor(type), phase: "completed" });
-            }
+          // One classification for every caller (R5). An item nobody has classified stops the turn
+          // rather than passing as text.
+          const classified = classifyTurnItems(items);
+          for (const type of classified.effects) {
+            effects.push({ kind: itemKindFor(type), phase: "completed" });
+          }
+          if (classified.unclassified.length > 0) {
+            return {
+              ok: false,
+              code: "UNCLASSIFIED_ITEM_TYPE",
+              detail: `turn ${turnId} reported item types with no classification: ${classified.unclassified.join(", ")}`,
+              effects,
+            };
           }
 
           if (turn?.status !== "completed") {

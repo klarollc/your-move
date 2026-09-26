@@ -160,6 +160,37 @@ describe("role exercise runner", () => {
 
     expect(result).toMatchObject({ performed: false, code: "EXTERNAL_EFFECT_OBSERVED" });
   });
+
+  it("stops on an item type nobody has classified rather than treating it as text", async () => {
+    const fake = supervisor({
+      completed: {
+        method: "turn/completed",
+        params: {
+          threadId: "thread_1",
+          turn: {
+            id: "turn_1",
+            status: "completed",
+            items: [
+              { id: "item_1", type: "agentMessage", text: "EXERCISE_OK" },
+              { id: "item_2", type: "teleport" },
+            ],
+          },
+        },
+      },
+    });
+
+    const result = await runRoleExercise({
+      supervisor: fake.instance,
+      cwd: "C:/synthetic/role-exercise",
+      expectedInstructionSource: "C:/controlled/delivery-lead/AGENTS.md",
+      agentId: "agent_delivery",
+      bindingId: "binding_delivery",
+      roleId: "delivery-lead",
+      expected,
+    });
+
+    expect(result).toMatchObject({ performed: false, code: "UNCLASSIFIED_ITEM_TYPE" });
+  });
 });
 
 describe("bounded turn task prompt", () => {

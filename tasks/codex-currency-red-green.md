@@ -211,3 +211,44 @@ failed 1 of 10; removing it from `run-role-exercises.ts` failed 1 of 10; restore
 Mirror totals: unit 419 (409 + 10), `test:protocol` 21/21, `protocol:codex:drift` ok, runner
 26/26, `kickoff:preflight` reports `codex.ok: true` beside the role checks; `tsc -b`, scripts
 typecheck, ESLint and Prettier clean.
+
+## Task 8 — Item classification
+
+**RED**, container mirror, `vitest run --project unit packages/runtime-codex/src/item-classification.unit.test.ts`
+against a stub with an empty table that classifies everything as text:
+
+```text
+AssertionError: expected [] to deeply equal [ 'agentMessage', …(18) ]
+AssertionError: expected [] to deeply equal [ 'agentMessage', …(4) ]
+AssertionError: functionCallOutput: expected 'text' to be 'effect' // Object.is equality
+AssertionError: expected 'text' to be 'unclassified' // Object.is equality
+AssertionError: expected { effects: [], unclassified: [] } to deeply equal { …(2) }
+Tests  5 failed (5)
+```
+
+The checklist named a stub table missing only `functionCallOutput`; an empty table fails every
+assertion, including that one.
+
+**RED, the role exercise**, the new unit test run against the pre-change `role-exercise.ts`:
+
+```text
+× stops on an item type nobody has classified rather than treating it as text
+-   "code": "UNCLASSIFIED_ITEM_TYPE",
++   "code": "TEXT_ONLY_VIOLATION",
+Tests  1 failed | 6 passed (7)
+```
+
+**Stated plainly:** the role exercise already stopped such a turn, under its stricter
+one-`agentMessage` rule, so the change there only names the cause. The real gap was in the kickoff
+session, whose allow-list let any unlisted type pass as text. That path now calls
+`classifyTurnItems`, tested directly; the session itself has no test harness (plan, CP-3 is where it
+gets one).
+
+**GREEN**, container mirror: classification 5/5; role exercise 7/7; unit 425 (419 + 6);
+runtime-codex integration 12 + 3 skipped; `test:protocol` 21/21 after the Task 5 guard caught a
+Codex version I had written in a comment of the new module, now reworded. Both local effect
+allow-lists are deleted.
+
+**Transfer note:** one handoff tarball arrived stale — the device held the previous upload under
+the same name — and the hash check caught it before anything was committed. Transfers now use a
+unique file name each time.

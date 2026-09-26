@@ -1,5 +1,6 @@
 import type { RuntimeBindingReport } from "@cuckcode/contracts";
 
+import { classifyTurnItems } from "./item-classification.js";
 import { buildBindingReport, collectHandshakeFacts, type BindingExpectation } from "./binding.js";
 
 /**
@@ -48,6 +49,7 @@ export type RoleExerciseResult =
         | "TURN_COMPLETION_INVALID"
         | "EXTERNAL_EFFECT_OBSERVED"
         | "TEXT_ONLY_VIOLATION"
+        | "UNCLASSIFIED_ITEM_TYPE"
         | "RUNTIME_FAILURE";
       detail: string;
     }>;
@@ -229,7 +231,17 @@ function checkCompletedTurn(
   }
 
   const itemTypes = turn.items.map((item) => text(record(item)?.type) ?? "unknown");
-  const external = itemTypes.filter((type) => EXTERNAL_EFFECT_ITEM_TYPES.has(type));
+  const { effects: external, unclassified } = classifyTurnItems(turn.items);
+  if (unclassified.length > 0) {
+    return {
+      ok: false,
+      result: {
+        performed: false,
+        code: "UNCLASSIFIED_ITEM_TYPE",
+        detail: `the turn reported item types with no classification: ${unclassified.join(", ")}`,
+      },
+    };
+  }
   if (external.length > 0) {
     return {
       ok: false,
@@ -268,16 +280,6 @@ function checkCompletedTurn(
   if (responseText === undefined) throw new Error("RESPONSE_TEXT_MISSING");
   return { ok: true, responseText };
 }
-
-const EXTERNAL_EFFECT_ITEM_TYPES = new Set([
-  "commandExecution",
-  "fileChange",
-  "mcpToolCall",
-  "dynamicToolCall",
-  "collabAgentToolCall",
-  "webSearch",
-  "imageGeneration",
-]);
 
 function record(value: unknown): Record<string, unknown> | undefined {
   return typeof value === "object" && value !== null && !Array.isArray(value)
