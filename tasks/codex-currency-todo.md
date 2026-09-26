@@ -274,3 +274,11 @@ fallback`, chromium-1280) never saw its canvas within 5 s; the commit touches no
     Codex `installationId`, plan type and user paths; redacting these is proposed, unruled. The log
     showed Codex starting its built-in `codex_apps` MCP server beside the text-only role: DF-027,
     unruled. **Merge: pending** — Phase 7-O Task 7 has uncommitted work in the main copy.
+
+## Follow-up rulings, 2026-09-26
+
+Four decisions left open after Task 14 were ruled as recommended —
+`docs/evidence/runtime/decision-record-2026-09-26-codex-follow-up-rulings.md`: disable, report and
+prove the default-on tool surface (DF-027); LF bytes, re-record and a CR guard (DF-026); redact,
+then commit, session logs; add six read-only checks to the runner allowlist. None is authorized for
+implementation until a specification, plan and task list are approved.

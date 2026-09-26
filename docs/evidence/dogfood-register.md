@@ -1124,6 +1124,10 @@ appears to guard. The ledger proves the owner's disk, not the repository.
 None, and none ruled. Candidates: digest the LF-normalised content (and re-record the twelve under
 P-6), or digest git's blob for committed artifacts.
 
+**Ruled 2026-09-26:** convert the twelve in the main copy to LF, re-record them with one provenance
+write, and add a test that refuses a CR byte in any evidence file
+(`docs/evidence/runtime/decision-record-2026-09-26-codex-follow-up-rulings.md`). Not yet built.
+
 ### DF-027 — A text-only role has a live tool server beside it
 
 Observed 2026-09-26, in the session log of the Task 14 smoke turn (`codex-currency`,
@@ -1157,3 +1161,8 @@ surface must be observed and reported, never assumed to be `toolIds: []`.
 None yet, and none ruled. Candidates: report `mcpServer/startupStatus/updated` into the binding
 report as observed residual tool surface; find whether `codex_apps` can be disabled per thread, and
 if so, disable it and prove the absence with an adversarial test before any budgeted run.
+
+**Ruled 2026-09-26:** disable the pinned Codex's default-on tool features per session, report the
+tool surface Codex actually starts in the binding report, and prove `codex_apps` no longer starts
+with one authenticated, turn-free probe. The same ruling covers the log identifiers: redact, then
+commit (`docs/evidence/runtime/decision-record-2026-09-26-codex-follow-up-rulings.md`). Not yet built.
