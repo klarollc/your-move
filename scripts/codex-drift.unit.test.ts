@@ -146,6 +146,7 @@ describe("where the drift preflight runs", () => {
       (name) => /^run-.*\.ts$/u.test(name) && source(name).includes("openKickoffSession("),
     );
     expect(viaOpener.sort()).toEqual([
+      "run-codex-smoke.ts",
       "run-phase4-kickoff.ts",
       "run-phase5-release-review.ts",
       "run-phase5-surface-contract.ts",

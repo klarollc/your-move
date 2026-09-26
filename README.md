@@ -51,6 +51,15 @@ Ctrl+C. It runs only the commands in `scripts/agent-runner.allowlist.json`, one 
 shell and no `CUCKCODE_*` variables, and refuses to start if any such variable is set. Requests and
 results live under `node_modules/.cache/agent-runner/`. Plan: `tasks/agent-runner-plan.md`.
 
+## Codex runtime
+
+Codex is a pinned npm dependency, not the desktop app's binary: `@openai/codex` at one exact version
+in `packages/runtime-codex/package.json`. `npm run protocol:codex:drift` checks the installed binary's
+version and app-server schema against the pin and the committed bundle in
+`packages/runtime-codex/protocol/<version>/`, with no provider call; `verify` and every live script
+run it. `npm run protocol:codex:upgrade -- <version>` generates a new bundle and a surface diff for
+review and never moves the pin. Specification: `docs/codex-runtime-currency-spec-v0.1.md`.
+
 ## Toolchain
 
 Use the exact engine family declared in `package.json` before running project verification:

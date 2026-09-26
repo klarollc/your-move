@@ -82,7 +82,9 @@ was attempted in passes 6–8, but each stopped on the first turn before produci
 records the concrete runtime failure as `stream disconnected before completion` while calling the
 ChatGPT Codex backend. The attempts are preserved and provenance is clean; no eligibility claim is
 made here. Pass 9 then timed out, and on 2026-09-25 the pinned Codex binary was found updated to
-0.156.1, so any further run now refuses at binding (DF-021). The owner chose not to re-pin.
+0.156.1, so any further run now refuses at binding (DF-021). The owner chose not to re-pin, then
+later the same day reversed that and ruled to keep CuckCode current with Codex: see **Codex runtime**
+under Operational specifics.
 
 **The ledger disagreed about this until 2026-09-19, and the ledger was wrong.** Because passes 6, 7
 and 8 are named `pass-<N>.json`, the supersession derivation retired everything below them, so
@@ -283,6 +285,17 @@ requests a check by writing `{ "id": "<8-64 chars, a-z0-9->", "command": "<allow
 never the gate for a commit. Live runs, promotions and evidence writes cannot be allow-listed
 (`scripts/agent-runner.test.mjs` enforces it) and the child never sees a `CUCKCODE_*` variable.
 `git-push` works only when the owner started the runner with `-- --allow-push`.
+
+**Codex runtime (2026-09-26, branch `codex-currency`).** Codex is the npm dependency `@openai/codex`
+at one exact version in `packages/runtime-codex/package.json`, resolved from `node_modules` by
+`resolveInstalledCodexExecutable()`; the desktop app's copy is never spawned. `npm run
+protocol:codex:drift` asks the installed binary for its version and schema, with no provider call,
+and every live script refuses without it. To move the pin: `npm.cmd install --no-save
+@openai/codex@<v>`, `npm run protocol:codex:upgrade -- <v>`, rule on the generated
+`protocol/<v>/surface-diff.md`, then change the declaration and reinstall. Every turn goes through
+`runTurn` (180 s idle, 900 s cap, interrupt on either, one transport retry from a run budget of two),
+every run record carries `runtime` attempts with Codex's own failure class, and every live session
+leaves a log under `docs/evidence/runtime/sessions/`. Why passes 6–9 failed stays unknown (DF-024).
 
 Everything runs from `C:\Users\nater\CuckCode`. The owner uses **PowerShell**, so `&&` is a parse
 error and there is no inline env-var prefix — write `$env:X='1'; cmd` and clear it afterwards.

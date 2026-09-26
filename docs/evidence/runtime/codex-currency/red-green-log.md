@@ -1,10 +1,9 @@
 # Codex runtime currency — red-green log
 
-Kept in `tasks/` while the stream runs, by owner ruling 2026-09-25, so that each task's `verify`
-gate does not wait on a provenance write. At Task 13 it moves to
-`docs/evidence/runtime/codex-currency/red-green-log.md` with one owner-run
-`phase5:provenance:write`. Each RED is captured before its GREEN is written and is never re-run
-afterwards. Inner-loop runs are in the cloud container mirror (Node 22); the gate for each task is
+Kept in `tasks/codex-currency-red-green.md` while the stream ran, by owner ruling 2026-09-25, so
+that each task's `verify` gate did not wait on a provenance write. Moved here at Task 13 and
+recorded with one owner-run `phase5:provenance:write`. Each RED is captured before its GREEN is
+written and is never re-run afterwards. Inner-loop runs are in the cloud container mirror (Node 22); the gate for each task is
 the runner result named under it.
 
 ## Task 2 — Pin module and executable resolver
@@ -478,3 +477,43 @@ not apply because of shell quoting; it was redone and counted only once applied.
 
 Mirror totals: unit 455 (447 + 8); runtime-codex integration 21 + 3 skipped; `test:protocol` and
 `test:runner` green; `tsc -b`, scripts typecheck, ESLint and Prettier clean.
+
+## Task 13 — Smoke script and records
+
+`scripts/codex-smoke.ts` is the smoke turn's pure core, with every dependency injected (opt-in,
+ledger, session, record writer, clock); `scripts/run-codex-smoke.ts` wires the real ones, opening
+the Release Reviewer through the shared session opener, so the drift preflight and the session log
+come with it.
+
+**RED**, container mirror, against a stub that reports success without doing anything:
+
+```text
+AssertionError: promise resolved "{ ok: true, code: 'STUB', …(1) }" instead of rejecting
+AssertionError: promise resolved "{ ok: true, code: 'STUB', …(1) }" instead of rejecting
+AssertionError: expected { ok: true, code: 'STUB', …(1) } to deeply equal { ok: true, code: 'SMOKE_OK', …(1) }
+AssertionError: expected { ok: true, code: 'STUB', …(1) } to match object { ok: false, code: 'TURN_FAILED' }
+AssertionError: expected 'STUB' to be 'SMOKE_ANSWER_MISMATCH' // Object.is equality
+AssertionError: expected { ok: true, code: 'STUB', …(1) } to match object { ok: false, code: 'CODEX_DRIFT' }
+Tests  6 failed (6)
+```
+
+**GREEN** 6/6: refuses without `CUCKCODE_LIVE_SMOKE=1` before touching the ledger; refuses when
+fewer than three turns remain; records an answered turn with what ran and every attempt, spending
+one; spends every attempt a transport retry used; records a wrong answer as
+`SMOKE_ANSWER_MISMATCH` by digest, never by text; records a session that never opened and spends
+nothing. `verdict` is always `null`.
+
+**Rehearsal, stated precisely:** against injected fakes, not a fake app server. The live script
+resolves the real Codex and runs the drift preflight, which a fake binary cannot pass, so the
+end-to-end rehearsal of the session path is the Task 10 and 12 integration suites. The real script
+was also run in the mirror without the opt-in: it refused with `LIVE_SMOKE_EXPLICIT_OPT_IN_REQUIRED`
+and wrote nothing. The runner cannot run it: its allowlist guard excludes any script that reads a
+`CUCKCODE_*` variable (`test:runner` 26/26), and it is not on the allowlist.
+
+The drift wiring test now lists `run-codex-smoke.ts` among the scripts that open sessions through
+the shared opener. `docs/evidence/runtime/smoke-ledger.json` starts at budget 3, spent 0.
+
+Records: DF-021's product response gains a dated update; DF-024 records B1–B6 and the frictions of
+this stream; DF-025 records the working-copy-bytes provenance defect for its own ruling. AGENTS,
+HANDOFF and README each gain one amendment. The decision record gains the rulings made during
+implementation.

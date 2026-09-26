@@ -86,6 +86,18 @@ recorded by hand, **due 2026-10-09**, owner as Delivery Lead and reviewer
 (`docs/evidence/phase-5/d24-production-suitability-review.json`); nothing in the code enforces it.
 Phase 5 cannot close without its disposition. Production reuse of fixture code remains blocked.
 
+**Amended 2026-09-25/26 — Codex runtime currency.** The owner ruled to keep CuckCode current with
+Codex, reversing the same-day choice not to re-pin, and approved
+`docs/codex-runtime-currency-spec-v0.1.md` (CX-1 to CX-6; R6.7 later withdrawn),
+`tasks/codex-currency-plan.md` (CP-1 to CP-4) and `tasks/codex-currency-todo.md`
+(`docs/evidence/runtime/decision-record-2026-09-25-codex-currency.md`). The work runs on branch
+`codex-currency` in the worktree `.worktrees/codex-currency`, not in the main copy. Codex is the
+exact-version npm dependency `@openai/codex` **0.157.1** in `packages/runtime-codex/package.json` —
+the only place a Codex version is written; `scripts/codex-pin.test.mjs` refuses any other. Every
+live script refuses before opening a session if `npm run protocol:codex:drift` fails. The one live
+turn it authorizes is the owner-run smoke turn (`npm run codex:smoke`, own ledger, budget 3). It
+does not reopen Phase 5 acceptance, and no release review is authorized by it.
+
 **Phase 6 was authorized as of 2026-09-13, Tasks 1-7 only.** The owner approved `docs/visual-reference-production-brief-v0.1.md` as written (6-A) and authorized Phase 6 running in parallel with Phase 5 (6-B), amending MDD section 24 accordingly; the candidate production medium is the hybrid of generated exploration plus in-repo vector composition (6-C). All three rulings are recorded in `docs/evidence/phase-6/decision-request-2026-09-13-phase-6-parallel-start.md`. Candidate art produced under this authority stays Candidate: Task 8 selection and Task 10 promotion to Active are owner-run, and Phase 7 high-fidelity implementation, final tokens and assets, visual-baseline promotion, Phase 5 behavior, deployment, and any external effect remain unauthorized.
 
 ## Required delivery method

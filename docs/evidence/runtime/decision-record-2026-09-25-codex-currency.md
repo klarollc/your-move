@@ -56,3 +56,16 @@ Authority: a task checklist only. No code change until `tasks/codex-currency-tod
 Later the same day. Source: owner's in-session reply, "approved, new runner is live", to
 `tasks/codex-currency-todo.md`. Tasks are authorized in order as the checklist states. The owner
 reported Task 1's worktree created and its runner started.
+
+## Rulings made during implementation
+
+Recorded here at Task 13; each was given in session and first recorded in
+`tasks/codex-currency-todo.md` so that no task gate waited on a provenance write.
+
+| Date | Question | Ruling |
+| --- | --- | --- |
+| 2026-09-25 | The worktree's install rewrote `package-lock.json`: HEAD `b0af24d` was out of step with its own manifests. | **Commit the resync** on `codex-currency` as its own commit (`7e58e99`). `main` carries the same drift. |
+| 2026-09-25 | Twelve Phases 0–3 ledger digests are of CRLF working-copy bytes; a clean checkout is LF. | **Give the worktree the main copy's exact bytes** for those files, after checking each differs only by line endings; commit nothing. Recorded as DF-025 for its own ruling. |
+| 2026-09-25 | Where the red-green log lives while the stream runs. | **In `tasks/`**, moved to `docs/evidence/runtime/codex-currency/red-green-log.md` at Task 13 with one provenance write. |
+| 2026-09-26 | R6.7's premise: the normalizer's `retryable: false` is only on parse failures, and the normalizer has no caller. | **Withdraw R6.7**, with an erratum in the specification. C-1 F4 stays open. |
+| 2026-09-26 | Browser tests timing out intermittently in `verify`, outside this stream's code. | **Record each and re-run**; a gate counts only when a full `verify` on the same clean commit passes. The pattern is in DF-024. |

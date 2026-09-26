@@ -12,8 +12,8 @@ Authority: `docs/evidence/runtime/decision-record-2026-09-25-codex-currency.md`.
 - **Work happens in the worktree** `.worktrees/codex-currency` on branch `codex-currency`, never in
   the main working copy, which belongs to Phase 7-O.
 - **RED before GREEN.** The RED is an assertion failure against a deliberate stub, recorded in
-  `tasks/codex-currency-red-green.md` before GREEN and never re-run afterwards. It moves to
-  `docs/evidence/runtime/codex-currency/red-green-log.md` at Task 13 with one owner-run provenance
+  `docs/evidence/runtime/codex-currency/red-green-log.md` (kept in `tasks/` until Task 13) before
+  GREEN and never re-run afterwards. It moved there at Task 13 with one owner-run provenance
   write (owner ruling 2026-09-25, so task gates do not wait on provenance writes).
   A test that cannot fail against its stub is named as such, not claimed as RED.
 - **The gate is a runner result on a clean tree** in the worktree, with the command named beside
@@ -220,7 +220,7 @@ fallback`, chromium-1280) never saw its canvas within 5 s; the commit touches no
     recording writers embed `runtime`, not the three named. **Gate:** runner `verify` exit 0, clean
     tree at `3c66e27` — unit 447, others unchanged; `phase5:provenance` green on every committed pass.
 
-- [ ] **Task 12 — Session log** (R6.8, CX-5).
+- [x] **Task 12 — Session log** (R6.8, CX-5).
   - Files: `session-log.ts` and its tests; `phase4-kickoff-session.ts`, `role-exercise.ts` callers.
   - Acceptance: written to `docs/evidence/runtime/sessions/<script>/<ISO>-<roleId>.jsonl` before
     the home is disposed; deltas excluded and counted; stderr copied as already redacted; a
@@ -228,6 +228,15 @@ fallback`, chromium-1280) never saw its canvas within 5 s; the commit touches no
   - RED: a stub writer that writes nothing.
   - **Gate: full `verify` on a clean tree via the worktree runner**, reported with the command and
     every stage count.
+  - **Result:** `c82babc`. RED 6/6 (a first stub gave `ENOENT` errors, not assertions, and was
+    replaced before any RED was recorded); GREEN; credential canary over a real child process;
+    wiring and redaction proven by three mutations. **Beyond CX-5, for review:** model text and long
+    strings are replaced by their length, so the log is diagnostic evidence, not a transcript.
+    **Gate:** runner `verify` exit 0, clean tree at `c82babc` (counts read from the run's log):
+    toolchain 11, protocol 21, roles 20, qualification 16, scaffold 2, runner 26, unit 455,
+    component 73, integration 76 + 3 skipped, contract 77, e2e 50, a11y 46, visual 62;
+    `protocol:codex:check` both bundles ok; `protocol:codex:drift` ok against the Windows
+    `codex.exe`; `phase5:provenance` ok with no stale digests.
 
 - [ ] **Task 13 — Smoke script and records** (CP-2, R7.2).
   - Files: `scripts/run-codex-smoke.ts`, `docs/evidence/runtime/smoke-ledger.json` (budget 3,

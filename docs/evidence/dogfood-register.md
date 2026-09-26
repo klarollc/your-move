@@ -1017,6 +1017,15 @@ rather than re-pin the runtime. A cheap candidate, unproposed: a preflight that 
 binary's `--version` and compares it with the pin, reported by `kickoff:preflight` and at session
 start, with no provider call.
 
+**Update 2026-09-26.** Later on 2026-09-25 the owner reversed the no-re-pin choice and ruled to keep
+CuckCode current with Codex (`docs/evidence/runtime/decision-record-2026-09-25-codex-currency.md`).
+The candidate above is built, and stronger: `npm run protocol:codex:drift` runs the installed
+binary's `--version` **and** regenerates its app-server schema, and refuses unless both match the
+pin and the committed bundle. It runs in `verify`, in `kickoff:preflight`, and before every live
+session opens. Codex is now an exact-version npm dependency, so the desktop app's updates no longer
+reach the harness at all. Pointed at a real 0.146.0 binary, the check refuses on both counts —
+DF-021 reproduced and refused. Branch `codex-currency`, Tasks 1–7.
+
 ### DF-022 — The human relay for verification is gone, for the checks on the allowlist
 
 Observed 2026-09-25, as the owner-run smoke test of the agent command runner
@@ -1032,3 +1041,85 @@ took 2 minutes 29 seconds, and `evidenceChanged` was false.
 
 What it does not remove: the owner still starts the runner, still runs every evidence write, live
 run and promotion, and remains the authority. The runner moves the relay, not the authority.
+
+### DF-024 — The harness kept its own summary of a failure and threw away the provider's
+
+Observed 2026-09-25, diagnosing release-review passes 6 to 9; fixed on branch `codex-currency`
+(`docs/codex-runtime-currency-spec-v0.1.md`, Tasks 8–12).
+
+Four live attempts failed and the natural reading was "the connection is flaky". The records could
+not confirm or refute it, because the harness had discarded almost everything Codex said:
+
+- **The failure class.** Codex attaches `codexErrorInfo` to a failed turn —
+  `responseStreamDisconnected`, `httpConnectionFailed`, `usageLimitExceeded` and so on, with the
+  HTTP status. The harness kept the message string only; pass 7 did not keep even that.
+- **Codex's own retries.** Codex reconnects on its own and reports each attempt as an `error`
+  notification with `willRetry`. The supervisor never looked at them.
+- **The clock.** Turns waited on a fixed 180 s (kickoff) or 90 s (role exercise) wall clock that
+  ignored whether the turn was still streaming, and never interrupted a turn it gave up on. Pass 9
+  ended there.
+- **Server requests.** A message with an id and a method was taken for a reply. Unanswered, it would
+  have hung the turn; and a server request whose id matched a pending client request resolved that
+  request as `undefined` — a second defect, found by the test written for the first.
+- **The session's own logs.** They lived in the controlled `CODEX_HOME`, which was deleted, and the
+  supervisor's stderr lived in memory.
+- **The effect rule.** It listed known effect types; everything else counted as text. The pinned
+  vocabulary already held six unlisted item types.
+
+## The shape
+
+Each piece of evidence was summarised into the harness's own vocabulary at the moment it arrived,
+and the original discarded. The summary was true and too coarse to diagnose anything. It is the
+agent-side version of the problem CuckCode exists for: the operator could not see what the agent was
+doing, and here the agent's harness could not see what its runtime was doing.
+
+## Product response
+
+Built and gated: failure class, status, details and every Codex retry recorded in every run record
+(`attemptRecords`); an activity-aware turn runner with interrupt and one bounded transport retry;
+server requests refused by name; one classification table tested against the pinned vocabulary; a
+per-session diagnostic log that keeps timing and structure but not model text. Why passes 6 to 9
+failed stays **unknown**: the evidence was never kept. The next failure will name itself.
+
+## Also observed while fixing it, none ruled
+
+- A git worktree created on Windows writes a Windows path into its `.git` file, so the agent's
+  shell can run git there only with an explicit `--git-dir`, and must never run `git worktree
+  prune`, to which the worktree looks stale.
+- Four checklist gates name commands the runner does not allow (`check:toolchain`, `test:protocol`,
+  `test:runtime`, `phase5:provenance`); `verify` stood in for each.
+- One handoff tarball arrived stale under a reused name; the hash check caught it before anything
+  was committed.
+- Three browser tests timed out across the sixteen runner `verify` runs of Tasks 1–12 on this
+  branch (counted from the runner's outbox; six runs failed: these three, two expected provenance
+  failures at Task 1, and one real race in a Task 10 test) — two at 1280 px, one
+  at 1440 px, all in Phase 4 and 5 UI suites this branch never touches — and each passed on an
+  immediate re-run of the same commit. The same day the Phase 7-O stream raised a component test's
+  timeout after it overran Vitest's 5 s default during `verify` (`5e3efe9`). Both streams ran `verify`
+  on one machine. Recorded by owner ruling, not investigated.
+
+### DF-025 — Evidence digests recorded over working-copy bytes cannot be verified from a clean checkout
+
+Observed 2026-09-25, at the first `verify` in the `codex-currency` worktree.
+
+`phase5:provenance` failed with twelve stale digests, all Phases 0–3 artifacts. The ledger's digests
+were taken over the owner's working-copy bytes, which have CRLF line endings. The committed content
+is LF, because `.gitattributes` says `* text=auto eol=lf`, so every clean checkout gets LF bytes and
+different digests. The main working copy passes only because it still holds the bytes the digests
+were taken from. Checked for all twelve files: CRLF in the main copy, LF in HEAD's blobs, and
+identical content once line endings are normalised.
+
+## What it cost
+
+One red `verify`, and a question to the owner. By owner ruling the worktree was given the main copy's
+exact bytes for those twelve files; git sees no change and nothing was committed.
+
+## The shape
+
+The same family as DF-012 and DF-021: a check that is exact about something slightly beside what it
+appears to guard. The ledger proves the owner's disk, not the repository.
+
+## Product response
+
+None, and none ruled. Candidates: digest the LF-normalised content (and re-record the twelve under
+P-6), or digest git's blob for committed artifacts.
