@@ -266,3 +266,11 @@ fallback`, chromium-1280) never saw its canvas within 5 s; the commit touches no
     release review; no verdict.
   - Then: merge `codex-currency` into `main` after Phase 7-O's in-flight task is committed; the
     owner runs `verify` on `main`.
+  - **Result, smoke turn:** `SMOKE_OK`, 2026-09-26 12:34 UTC. The Release Reviewer on `gpt-5.6-sol`
+    answered `{"ok": true}` in 3.8 s: one attempt, no Codex retries, no refused server request; the
+    binding observed the requested model, effort and protocol. Smoke ledger 1/3. Record `19e3ace`;
+    provenance recorded by the owner (five records, each digest checked). **By owner ruling the
+    session log is held out of git** in `.cuckcode/held-session-logs/` — it carries the PC name, a
+    Codex `installationId`, plan type and user paths; redacting these is proposed, unruled. The log
+    showed Codex starting its built-in `codex_apps` MCP server beside the text-only role: DF-027,
+    unruled. **Merge: pending** — Phase 7-O Task 7 has uncommitted work in the main copy.
