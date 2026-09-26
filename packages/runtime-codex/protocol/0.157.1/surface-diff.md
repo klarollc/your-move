@@ -75,6 +75,8 @@ None.
 - definitionChanged: `v2/ErrorNotification.json#CodexErrorInfo`
 - definitionChanged: `v2/ErrorNotification.json#TurnError`
 - definitionChanged: `v2/GetAccountResponse.json#PlanType`
+- definitionChanged: `v2/ListMcpServerStatusResponse.json#McpAuthStatus`
+- definitionChanged: `v2/ListMcpServerStatusResponse.json#McpServerStatus`
 - definitionChanged: `v2/ThreadReadResponse.json#CodexErrorInfo`
 - definitionChanged: `v2/ThreadReadResponse.json#CollabAgentTool`
 - definitionChanged: `v2/ThreadReadResponse.json#CollabAgentToolCallStatus`
@@ -137,6 +139,7 @@ None.
 - definitionAdded: `v2/ErrorNotification.json#MisalignmentSteer`
 - definitionAdded: `v2/GetAccountResponse.json#AccountRoutingOverride`
 - definitionAdded: `v2/GetAccountResponse.json#WorkspaceRouting`
+- definitionAdded: `v2/ListMcpServerStatusResponse.json#McpServerConnectionStatus`
 - definitionAdded: `v2/ThreadReadResponse.json#AgentMessageDelivery`
 - definitionAdded: `v2/ThreadReadResponse.json#AsyncUserInputQuestion`
 - definitionAdded: `v2/ThreadReadResponse.json#FunctionCallOutputBody`
