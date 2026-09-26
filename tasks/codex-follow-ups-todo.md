@@ -93,7 +93,7 @@ signed-in session but never starts a turn.
     failed: the pin guard caught a version literal in a new comment; fixed in `aa669dd`.
     `fu4-verify-02` at `aa669dd`: exit 0, not dirty, evidence unchanged.
 
-- [ ] **Task 5 — Feature policy and enumeration (F1.1, F1.3, F1.4, FU-1 to FU-3).**
+- [x] **Task 5 — Feature policy and enumeration (F1.1, F1.3, F1.4, FU-1 to FU-3).**
   - Files: `packages/runtime-codex/src/feature-policy.ts` and its test, `role-exercise.ts`,
     `supervisor.ts`, `binding.ts`, `packages/contracts/src/runtime.ts` and its contract test,
     `scripts/phase4-kickoff-session.ts`, `fixtures/fake-app-server.mjs`, the persistence
@@ -107,6 +107,15 @@ signed-in session but never starts a turn.
   - RED: the policy guard against a stub table; the contract field; the config in thread/start
     params; the refusal against a fake mode that reports a server.
   - Verify: runner `verify`.
+  - Result (2026-09-26): code `d674820`, `6c552bf`. `FEATURE_POLICY` is generated from the pinned
+    `features.json` (150 features, 5 kept); the config sets every non-kept feature `false`, not
+    only this platform's default-on ones, so platform-dependent defaults are covered. The config
+    shape (`config.features` keyed by whole name) and acceptance of all 145 were established
+    offline on linux-x64 first. `observedMcpServers` is reported, not fingerprinted.
+    `BINDING_REFUSED` details now carry the failure's own detail, so the refusal names the
+    servers. The surface diff now tracks `mcpServerStatus/list` and its two schemas; the
+    committed `surface-diff.md` predates that (three new non-ruling lines on rerun).
+    `fu5-verify-01` at `6c552bf`: exit 0, not dirty, evidence unchanged.
 
 - [ ] **Task 6 — The probe (F1.5, F1.6).**
   - Files: `scripts/run-codex-probe-surface.ts`, its pure core and test, `package.json`
