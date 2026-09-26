@@ -36,9 +36,8 @@ performed T3/T5/T6 under MDD §20 in the Phase 7-O gate. The ruling is
 `docs/phase-7-o-operability-spec-v0.2.md` is **owner-approved (2026-09-25)**, along with W-1 to
 W-3 for the command runner (`docs/evidence/phase-7-o/decision-record-2026-09-25-spec-approval.md`).
 The agent command runner is built and proven (2026-09-25, DF-022); use it, per the operational
-section below. Next gate: owner approval of `tasks/phase-7-o-plan.md` (decisions P-1 to P-5, of
-which P-1, the Phase 6 frozen-digest successor, is blocking), then its task checklist. Do not change
-behavior until the relevant plan and checklist are both approved.
+section below. `tasks/phase-7-o-plan.md` is **owner-approved (2026-09-25) with P-1 to P-5 as recommended**. Next
+gate: owner approval of `tasks/phase-7-o-todo.md`. Do not change behavior until it is approved.
 
 **Phase 5 was accepted by the owner on 2026-09-25**
 (`docs/evidence/phase-5/decision-record-2026-09-25-task-10-owner-acceptance.md`). The D-24

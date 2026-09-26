@@ -1,13 +1,14 @@
 # Implementation plan: Phase 7-O Operability
 
-Status: **DRAFT FOR OWNER APPROVAL.** Written under the approval of
-`docs/phase-7-o-operability-spec-v0.2.md` (`docs/evidence/phase-7-o/decision-record-2026-09-25-spec-approval.md`).
-No tasks or implementation are authorized until this plan, and then `tasks/phase-7-o-todo.md`, are
-approved.
+Status: **OWNER-APPROVED 2026-09-25, with P-1 to P-5 as recommended.** Written under the approval
+of `docs/phase-7-o-operability-spec-v0.2.md`
+(`docs/evidence/phase-7-o/decision-record-2026-09-25-spec-approval.md`). The owner approved the plan
+in session. No task is authorized until `tasks/phase-7-o-todo.md` is also approved.
 Specification: `docs/phase-7-o-operability-spec-v0.2.md`, **owner-approved 2026-09-25**.
 Governing: MDD §§2, 18, 20, 24 (Phase 7-O); `AGENTS.md`; Active visual system
 `reconciliation-b-clarity`.
-Prerequisite: the agent command runner (`tasks/agent-runner-plan.md`) is complete (W-3).
+Prerequisite: the agent command runner (`tasks/agent-runner-plan.md`) is complete (W-3). **Met
+2026-09-25** (DF-022).
 
 ## Outcome
 
