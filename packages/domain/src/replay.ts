@@ -11,6 +11,8 @@ export type CollaborationTruth = {
   kind: "collaboration" | "handoff";
   participantIds: string[];
   active: boolean;
+  /** A handoff's direction and work item, when its event records all three (Phase 7-O Task 9). */
+  handoff?: { fromAgentId: string; toAgentId: string; workItemId: string };
   updatedByEventId: string;
   updatedAt: string;
 };
@@ -68,11 +70,17 @@ function reduceCollaborations(events: readonly ProjectEvent[]): Record<string, C
       const collaborationId = text(event.payload.collaborationId) ?? text(event.payload.handoffId);
       const participantIds = textArray(event.payload.participantIds);
       if (!collaborationId || !participantIds) continue;
+      const fromAgentId = text(event.payload.fromAgentId);
+      const toAgentId = text(event.payload.toAgentId);
+      const workItemId = text(event.payload.workItemId);
       collaborations[collaborationId] = {
         collaborationId,
         kind: event.kind === "handoff.recorded" ? "handoff" : "collaboration",
         participantIds: [...participantIds].sort(),
         active: true,
+        ...(event.kind === "handoff.recorded" && fromAgentId && toAgentId && workItemId
+          ? { handoff: { fromAgentId, toAgentId, workItemId } }
+          : {}),
         updatedByEventId: event.eventId,
         updatedAt: event.occurredAt,
       };

@@ -144,6 +144,19 @@ export type OfficeZoneView = Readonly<{
   status: "layout_only";
 }>;
 
+/**
+ * A handoff the log records, joined to office people (Phase 7-O Task 9). `revision` is the position
+ * of the recording event in the log: the workspace revision at which the handoff became true.
+ */
+export type OfficeHandoffView = Readonly<{
+  handoffId: string;
+  fromEntityId: string;
+  toEntityId: string;
+  workItemId: string;
+  causeEventId: string;
+  revision: number;
+}>;
+
 export type OfficeReadModel = Readonly<{
   schemaVersion: 1;
   projectId: string | null;
@@ -153,6 +166,7 @@ export type OfficeReadModel = Readonly<{
   issues: readonly OfficeReadModelIssue[];
   entities: ReadonlyArray<OfficePersonView | OfficeZoneView>;
   attention: readonly OfficeAttentionView[];
+  handoffs: readonly OfficeHandoffView[];
 }>;
 
 const REGISTRY_KEYS = {
@@ -371,6 +385,8 @@ export function projectOfficeReadModel(input: OfficeReadModelInput): OfficeReadM
     };
   });
 
+  // Before `current` is decided: an unjoined handoff is an unresolved record.
+  const handoffs = handoffsFrom(snapshot, entities, issues);
   return {
     schemaVersion: 1,
     projectId: snapshot.project.projectId,
@@ -379,6 +395,7 @@ export function projectOfficeReadModel(input: OfficeReadModelInput): OfficeReadM
       lastEventId: snapshot.eventIds.at(-1) ?? null,
     },
     observedAt: now,
+    handoffs,
     // Any unresolved record, not only a replay issue, means the office cannot claim to be current
     // (owner ruling on Task 6, 2026-09-26). REPLAY_ISSUE is among these issues.
     current: snapshot.replayIssues.length === 0 && issues.length === 0,
@@ -440,3 +457,43 @@ function approvalFor(
 
 /** The condition as the contract defines it, re-exported for surfaces that render it. */
 export type { WorkCondition };
+
+/**
+ * Recorded handoffs whose two agents are office people. A handoff naming anyone else is reported
+ * as `HANDOFF_UNJOINED` and gets no view, so the office shows no cue it cannot attribute.
+ */
+function handoffsFrom(
+  snapshot: CanonicalProjectSnapshot,
+  entities: ReadonlyArray<OfficePersonView | OfficeZoneView>,
+  issues: OfficeReadModelIssue[],
+): OfficeHandoffView[] {
+  const entityOfAgent = new Map<string, string>();
+  for (const entity of entities) {
+    if (entity.kind === "person") entityOfAgent.set(entity.agent.agentId, entity.entityId);
+  }
+  const views: OfficeHandoffView[] = [];
+  for (const collaboration of Object.values(snapshot.collaborations)) {
+    const handoff = collaboration.kind === "handoff" ? collaboration.handoff : undefined;
+    if (!handoff) continue;
+    const fromEntityId = entityOfAgent.get(handoff.fromAgentId);
+    const toEntityId = entityOfAgent.get(handoff.toAgentId);
+    if (!fromEntityId || !toEntityId) {
+      issues.push({
+        code: "HANDOFF_UNJOINED",
+        eventId: collaboration.updatedByEventId,
+        workItemId: handoff.workItemId,
+        message: `handoff ${collaboration.collaborationId} names an agent the office does not show`,
+      });
+      continue;
+    }
+    views.push({
+      handoffId: collaboration.collaborationId,
+      fromEntityId,
+      toEntityId,
+      workItemId: handoff.workItemId,
+      causeEventId: collaboration.updatedByEventId,
+      revision: snapshot.eventIds.indexOf(collaboration.updatedByEventId) + 1,
+    });
+  }
+  return views.sort((left, right) => left.revision - right.revision);
+}

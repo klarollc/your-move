@@ -397,6 +397,35 @@ Specification: `docs/phase-7-o-operability-spec-v0.2.md`, **owner-approved 2026-
   - Also (owner ruling 2026-09-26, option (a)): the `?motion=handoff` cue is driven by handoff
     events recorded in an office log, not by the Phase 4 `planSemanticMotion` literals (revision
     44, two unrecorded transitions). With no recorded handoff, no cue is shown. Component RED first.
+  - Result, motion cue (9a), 2026-09-26:
+    - **Domain.** Replay kept a handoff's participants but not its direction, so no cue could be
+      attributed. `CollaborationTruth` gains an optional `handoff: { fromAgentId, toAgentId,
+workItemId }`, set only for `handoff.recorded` events carrying all three. Collaborations are
+      unchanged. No Phase 6 golden state records a handoff, so no frozen digest moves; `verify`'s
+      reduction proofs confirm it.
+    - **Read model.** `OfficeReadModel.handoffs`: each recorded handoff joined to office people,
+      with its work item, recording event and revision (the event's position in the log). A
+      handoff naming someone the office does not show is `HANDOFF_UNJOINED`, gets no view, and so
+      blocks `current`.
+    - **Default log.** After the graybox slice's review request, `handoff_graybox_review` hands it
+      from the Implementation Engineer to the Visual QA Reviewer. The default log is now 35 events.
+    - **Web.** `motionFrom(model, …)` in `office-model.ts` replaces the Phase 4 literals in
+      `office-canvas.tsx`: one transition per recorded handoff. The travel label is `Handoff moving
+to Visual QA Reviewer`; the reduced-motion label is `Handoff to Visual QA Reviewer recorded ·
+revision K`. With no handoff there is no cue. The Phase 4 `delivery` transition is gone,
+      because no log records it.
+    - **RED, each on its assertion:** domain, 1 test ("1 failed | 453 passed"); read model, 2 of 3
+      (the "none recorded" case cannot fail against an empty stub); web, 3 tests in
+      `office-motion.unit.test.ts` against the Phase 4 cue ("3 failed | 457 passed (460)"). GREEN:
+      unit 460, component 89.
+    - **Four mutations, each confirmed applied, all killed:** a fixed revision of 44 (1 unit test);
+      the domain dropping the direction (5); no `HANDOFF_UNJOINED` issue (1); a fallback cue with
+      no handoff (the new e2e test, both viewports).
+    - **Moved assertions (P-4)**, `tests/e2e/phase-4-failure-motion.spec.ts`: canonical revision
+      `44` → the default log's length (twice); `Handoff recorded at Review station · revision 43` →
+      `Handoff to Visual QA Reviewer recorded · revision K`, K the handoff event's position;
+      announcement `Handoff moved to Review station` → `Handoff to Visual QA Reviewer recorded`.
+      Added: no cue on `?state=empty&motion=handoff`. `test:e2e` 54, `test:a11y` 46, `test:visual` 62.
   - Verify: the capture manifest; the owner's dispositions recorded.
 
 - [ ] Task 10: Comprehension preparation (spec §8.7).

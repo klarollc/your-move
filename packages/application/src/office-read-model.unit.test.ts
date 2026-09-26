@@ -622,3 +622,50 @@ describe("office library evidence", () => {
     });
   });
 });
+
+/** Phase 7-O Task 9, owner ruling (a): the office's handoff cue comes only from recorded handoffs. */
+describe("office read model: handoffs", () => {
+  const handoff = (fromAgentId: string, toAgentId: string) => ({
+    ...office()[1]!,
+    eventId: "event_handoff_release",
+    kind: "handoff.recorded",
+    occurredAt: "2026-09-25T20:00:57.000Z",
+    receivedAt: "2026-09-25T20:00:57.000Z",
+    payload: {
+      handoffId: "handoff_release",
+      participantIds: [fromAgentId, toAgentId],
+      fromAgentId,
+      toAgentId,
+      workItemId: "work_release",
+    },
+  });
+
+  it("joins a recorded handoff to its office people, at the revision it was recorded", () => {
+    const events = [...office(), handoff("agent_implementation", "agent_test")];
+    const m = model(events);
+    const revision = replayProject(events).eventIds.indexOf("event_handoff_release") + 1;
+    expect(revision).toBeGreaterThan(0);
+    expect(m.handoffs).toEqual([
+      {
+        handoffId: "handoff_release",
+        fromEntityId: "agent_implementation_engineer",
+        toEntityId: "agent_test_engineer",
+        workItemId: "work_release",
+        causeEventId: "event_handoff_release",
+        revision,
+      },
+    ]);
+    expect(m.current).toBe(true);
+  });
+
+  it("shows no handoff when none is recorded", () => {
+    expect(model(office()).handoffs).toEqual([]);
+  });
+
+  it("reports a handoff naming someone not in the office, and shows no cue for it", () => {
+    const m = model([...office(), handoff("agent_implementation", "agent_stranger")]);
+    expect(m.handoffs).toEqual([]);
+    expect(codes(m)).toContain("HANDOFF_UNJOINED");
+    expect(m.current).toBe(false);
+  });
+});

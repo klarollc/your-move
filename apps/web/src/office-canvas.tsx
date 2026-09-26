@@ -6,12 +6,7 @@ import {
   recordKickoffSynthesis,
   type KickoffState,
 } from "@cuckcode/domain";
-import {
-  createOfficeCamera,
-  createOfficeLayout,
-  officeLayoutPolicy,
-  planSemanticMotion,
-} from "@cuckcode/ui-system";
+import { createOfficeCamera, createOfficeLayout, officeLayoutPolicy } from "@cuckcode/ui-system";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type {
@@ -22,6 +17,7 @@ import type {
 import {
   attentionItemsFrom,
   officeLibraryFor,
+  motionFrom,
   officeModelFor,
   revisionOf,
   type OfficeModel,
@@ -140,31 +136,8 @@ export function OfficeWorkspace({
   // The canonical log for this state is replayed and projected once; every surface reads it.
   const office = useMemo(() => officeModelFor(state), [state]);
   const library = useMemo(() => officeLibraryFor(state), [state]);
-  const motionPlan = motionEnabled
-    ? planSemanticMotion({
-        canonicalRevision: 44,
-        transitions: [
-          {
-            transitionId: "transition_handoff_review",
-            semantic: "handoff",
-            entityId: "agent_implementation_engineer",
-            fromEntityId: "zone_team",
-            toEntityId: "zone_review",
-            canonicalRevision: 43,
-          },
-          {
-            transitionId: "transition_delivery_queue",
-            semantic: "delivery",
-            entityId: "artifact_graybox",
-            fromEntityId: "zone_review",
-            toEntityId: "zone_delivery",
-            canonicalRevision: 44,
-          },
-        ],
-        reducedMotion,
-        motionPaused: false,
-        clock: () => 1_723_680_000_000,
-      })
+  const motion = motionEnabled
+    ? motionFrom(office.model, { reducedMotion, checkpoint: motionCheckpoint })
     : undefined;
   const showPersistedScene = !["loading", "empty", "error", "canvas-loss"].includes(state);
 
@@ -195,23 +168,7 @@ export function OfficeWorkspace({
       {...(kickoffFixture ? { kickoff: kickoffFixtures[kickoffFixture] } : {})}
       model={office}
       library={library}
-      {...(motionPlan?.lead
-        ? {
-            motion: {
-              canonicalRevision: motionPlan.canonicalState.revision,
-              presentation: motionPlan.lead.presentation,
-              checkpoint: motionCheckpoint,
-              label:
-                motionPlan.lead.presentation === "travel"
-                  ? "Handoff moving to Review station"
-                  : motionPlan.lead.persistentLabel,
-              announcement: motionPlan.lead.announcement,
-              queuedCount: motionPlan.queued.length,
-              loop: motionPlan.lead.loop,
-              runtimePaused: motionPlan.runtimePaused,
-            },
-          }
-        : {})}
+      {...(motion ? { motion } : {})}
       onDisposition={(item, intent, scope) =>
         executeFixtureDisposition(state, office, item, intent, scope)
       }

@@ -234,6 +234,21 @@ function officeLog(prefix: string, variant: Variant = {}): Log {
   switch (variant.graybox ?? "review") {
     case "review":
       raise(log, "work_graybox_slice", 3, "review_requested", CONDITIONS.review);
+      // The slice is handed to the Visual QA Reviewer for review: the office's one recorded
+      // handoff, and the only source of its motion cue (Phase 7-O Task 9, owner ruling (a)).
+      log.emit("handoff.recorded", {
+        handoffId: "handoff_graybox_review",
+        participantIds: ["agent_implementation_engineer", "agent_visual_qa_reviewer"],
+        fromAgentId: "agent_implementation_engineer",
+        toAgentId: "agent_visual_qa_reviewer",
+        workItemId: "work_graybox_slice",
+        decisions: [],
+        openQuestions: [],
+        uncertainties: [],
+        artifacts: [],
+        evidence: ["evidence_graybox_unit", "evidence_graybox_visual"],
+        nextResponsibility: "Review the graybox slice against its visual evidence.",
+      });
       presence(log, "implementation-engineer", "waiting");
       break;
     case "missing-artifact":

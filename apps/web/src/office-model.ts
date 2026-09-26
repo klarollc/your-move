@@ -9,8 +9,10 @@ import {
   type OfficeZoneView,
 } from "@cuckcode/application";
 import { replayProject } from "@cuckcode/domain";
+import { planSemanticMotion } from "@cuckcode/ui-system";
 
 import type { OfficeAttentionItem } from "./attention-rail.js";
+import type { OfficeMotionCue } from "./office-shell.js";
 import { officeFixtureFor, type OfficeFixtureState } from "./office-fixtures/index.js";
 import { PHASE_4_KNOWLEDGE } from "./office-fixtures/knowledge.js";
 import { OFFICE_REGISTRY } from "./office-fixtures/registry.js";
@@ -174,5 +176,47 @@ export function officeLibraryFor(state: OfficeFixtureState): BrowserLibraryProje
   return {
     knowledge: PHASE_4_KNOWLEDGE,
     evidence: projectOfficeLibraryEvidence({ snapshot, model }),
+  };
+}
+
+/**
+ * The office's motion cue (Phase 7-O Task 9, owner ruling (a)): one transition per handoff the log
+ * records, at the revision it was recorded. With none recorded, there is no cue. Presentation,
+ * checkpoints and reduced-motion placement come from `planSemanticMotion`; the wording uses the
+ * office's own labels for the people involved.
+ */
+export function motionFrom(
+  model: OfficeReadModel,
+  options: Readonly<{ reducedMotion: boolean; checkpoint: string }>,
+): OfficeMotionCue | undefined {
+  const plan = planSemanticMotion({
+    canonicalRevision: revisionOf(model),
+    transitions: model.handoffs.map((handoff) => ({
+      transitionId: handoff.handoffId,
+      semantic: "handoff",
+      entityId: handoff.fromEntityId,
+      fromEntityId: handoff.fromEntityId,
+      toEntityId: handoff.toEntityId,
+      canonicalRevision: handoff.revision,
+    })),
+    reducedMotion: options.reducedMotion,
+    motionPaused: false,
+    clock: () => 0,
+  });
+  const lead = plan.lead;
+  if (!lead) return undefined;
+  const to = entityOf(model, lead.toEntityId)?.label ?? lead.toEntityId;
+  return {
+    canonicalRevision: plan.canonicalState.revision,
+    presentation: lead.presentation,
+    checkpoint: options.checkpoint,
+    label:
+      lead.presentation === "travel"
+        ? `Handoff moving to ${to}`
+        : `Handoff to ${to} recorded · revision ${lead.canonicalRevision}`,
+    announcement: `Handoff to ${to} recorded`,
+    queuedCount: plan.queued.length,
+    loop: lead.loop,
+    runtimePaused: plan.runtimePaused,
   };
 }
