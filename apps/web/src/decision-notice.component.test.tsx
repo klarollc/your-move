@@ -359,6 +359,9 @@ describe("DecisionNoticeCard", () => {
    * Decision 9-D. C-10 requires focus to land on an element "stated in advance", and until now the
    * advance statement was the test itself — which proves the code agrees with the test, not that it
    * agrees with the specification. The destinations are read from the focus contract.
+   *
+   * Timeout 15 s, owner ruling 2026-09-26: this test types 281 characters key by key and ran at
+   * about 4.2 s of the 5 s default. When it overran, its typing leaked into the next test's input.
    */
   it("C-10: focus lands where the focus contract says, for every transition it names", async () => {
     const contract = JSON.parse(
@@ -409,7 +412,7 @@ describe("DecisionNoticeCard", () => {
     renderNotice(storage);
     expect(focused()).toBe(target("reload"));
     expect(document.activeElement).not.toBe(document.body);
-  });
+  }, 15_000);
 
   it("C-10: a failed save sends focus to retry, as the contract declares", async () => {
     const contract = JSON.parse(
