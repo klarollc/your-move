@@ -37,18 +37,29 @@ export type StaffingTruth = {
 };
 
 export function reduceStaffingTruth(input: readonly unknown[]): StaffingTruth {
-  const state: StaffingTruth = { agents: {}, assignments: {}, qualifications: {}, issues: [] };
+  const state = createStaffingTruth();
   for (const candidate of input) {
     const parsed = parseProjectEvent(candidate);
-    if (!parsed.ok) continue;
-    const event = parsed.value;
-    if (event.kind === "agent.registered") registerAgent(state, event);
-    if (event.kind === "role.assigned") assignRole(state, event);
-    if (event.kind === "role.released") releaseRole(state, event);
-    if (event.kind === "qualification.recorded") recordQualification(state, event);
-    if (event.kind === "agent.presence_changed") changePresence(state, event);
+    if (parsed.ok) applyStaffingEvent(state, parsed.value);
   }
   return state;
+}
+
+export function createStaffingTruth(): StaffingTruth {
+  return { agents: {}, assignments: {}, qualifications: {}, issues: [] };
+}
+
+/**
+ * Applies one parsed event to staffing truth in place. Exported so a reducer that depends on
+ * staffing at a point in the log (work assignment, Phase 7-O) reads this definition rather than a
+ * copy of it.
+ */
+export function applyStaffingEvent(state: StaffingTruth, event: ProjectEvent): void {
+  if (event.kind === "agent.registered") registerAgent(state, event);
+  if (event.kind === "role.assigned") assignRole(state, event);
+  if (event.kind === "role.released") releaseRole(state, event);
+  if (event.kind === "qualification.recorded") recordQualification(state, event);
+  if (event.kind === "agent.presence_changed") changePresence(state, event);
 }
 
 function registerAgent(state: StaffingTruth, event: ProjectEvent): void {

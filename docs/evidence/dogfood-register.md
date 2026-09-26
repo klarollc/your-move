@@ -1032,3 +1032,34 @@ took 2 minutes 29 seconds, and `evidenceChanged` was false.
 
 What it does not remove: the owner still starts the runner, still runs every evidence write, live
 run and promotion, and remains the authority. The runner moves the relay, not the authority.
+
+### DF-023 — Accepted Phase 5 evidence goes stale whenever production packages grow
+
+Observed 2026-09-25, at the end of Phase 7-O Task 1, one day after the owner accepted Phase 5.
+
+`npm run verify` failed at `phase5:sideeffects` with the committed side-effect review `STALE`. Task 1
+had added one module, `packages/contracts/src/work-payloads.ts`, and nothing else. The Decision
+Notice fixture imports the `@cuckcode/contracts` barrel, so the review's import walk now reached 37
+modules rather than 36. The findings were unchanged, zero in all five categories. The evidence was
+stale only because ordinary production work had widened a graph the fixture happens to share.
+
+## What it cost
+
+One red `verify`, one unpushed commit, and two owner commands (`phase5:sideeffects:write`, then
+`phase5:provenance:write`) before the task could close. Every Phase 7-O task that touches
+`contracts` or `domain` will cost the same, and the regenerated artifact is a new version of
+evidence the owner accepted the day before.
+
+## The shape
+
+A gate that measures the right property over the wrong boundary. The review exists to show the
+fixture has no side effects. It re-derives that from the live import graph on every `verify`, so it
+keeps asserting something about production code the fixture merely links against. This is the D-24
+isolation question showing up as friction: the fixture lives in `packages/domain` and `apps/web`, not
+in `fixtures/`, so it cannot be frozen without freezing production.
+
+## Product response
+
+None ruled. Option A, regenerate after each task, was taken on 2026-09-25. Option B, check the
+review against the accepted version rather than re-deriving it, belongs to the D-24 review due
+2026-10-09.

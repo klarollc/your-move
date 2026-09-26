@@ -41,7 +41,7 @@ Specification: `docs/phase-7-o-operability-spec-v0.2.md`, **owner-approved 2026-
     validator refused `undefined` anyway, so the test now asserts the refusal names the missing
     condition, and the mutant is killed. Version-1 payloads keep extra fields they always carried
     (the simulator's `blocker`, `dependency`) and refuse `condition` until the version is declared.
-- [ ] Task 2: Domain — assignment relation, retained condition, and the Phase 6 digest successor
+- [x] Task 2: Domain — assignment relation, retained condition, and the Phase 6 digest successor
       (spec §3.1, P-1).
   - Acceptance: work truth carries the active assignment and current condition; replay issues for
     an unknown work item, an inactive role assignment, a second active assignment, and work
@@ -54,6 +54,32 @@ Specification: `docs/phase-7-o-operability-spec-v0.2.md`, **owner-approved 2026-
     ruling.
   - Verify: unit tests; the reduction-proof test; `verify` green at the end of the task.
 
+  - Result, 2026-09-25:
+    - **Domain.** `WorkItemTruth` gains `assignment` and `condition`, both `null` by default.
+      `work.assigned` / `work.released` are validated against staffing as it stood at that point in
+      the log: `reduceWorkTruth` replays staffing through the newly exported `applyStaffingEvent`
+      rather than a copy. Issues `WORK_ASSIGNMENT_INVALID`, `WORK_ALREADY_ASSIGNED`,
+      `WORK_ORPHANED`. A version-2 transition retains its condition with the event's `source` and
+      `trust`; the next transition clears it; a malformed version-2 payload is `MALFORMED_WORK_EVENT`
+      and changes nothing. RED 11/11 on assertions. One RED was a harness bug, not behaviour: the
+      test clock formatted seconds past 59, the envelope parser dropped the event, and the test
+      clock now uses real time arithmetic.
+    - **Moved assertions (P-4), type-only:** `accessible-outline`, `agent-projection`, `attention`
+      and `office-scene` unit tests build `WorkItemTruth` literals, which now carry
+      `assignment: null, condition: null`. No expectation changed.
+    - **P-1.** `stripPhase7OAdditions` (one definition, `@cuckcode/testing`) and
+      `phase6ComparisonFixtureDigestV1` / `goldenStateDigestV1`. The Phase 6 test "matches the frozen
+      digest" now asserts the v1 digest equals the frozen one, and a new test asserts the full digest
+      differs, so a strip that removed nothing cannot pass. **The reduction proof holds:** the
+      comparison fixture and all five golden states reproduce their frozen digests, and all ten
+      approved captures re-render byte for byte in memory. `sceneStateFrom` and the viewport list
+      moved from `build-phase6-golden-states.ts` into `phase6-golden-states.ts` so the test and the
+      builder share one definition.
+    - Five mutations, each confirmed applied, all killed.
+    - The owner wrote the successor record, `docs/evidence/phase-6/digest-successors-phase-7-o.json`,
+      with `npm run phase7o:successors:write`, which refuses to write unless the reduction proof
+      holds. The side-effect review did not change: Task 2 added no module to the fixture's import
+      graph. The dogfood register gained DF-023. Provenance written by the owner.
 - [ ] Task 3: Domain — presence provenance and freshness (spec §3.3).
   - Acceptance: staffing retains `eventId` and `occurredAt` per agent; `projectOfficeScene` emits
     them; a missing or unparseable timestamp yields `unavailable`, not `delayed`;

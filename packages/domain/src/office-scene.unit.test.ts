@@ -31,6 +31,8 @@ describe("projectOfficeScene", () => {
       requiredEvidenceKinds: [],
       updatedByEventId: "event_work",
       updatedAt: "2026-08-13T23:00:00.000Z",
+      assignment: null,
+      condition: null,
     };
 
     const descriptor = projectOfficeScene(snapshot, "2026-08-13T23:00:30.000Z")[0];
@@ -54,6 +56,8 @@ describe("projectOfficeScene", () => {
       requiredEvidenceKinds: [],
       updatedByEventId: "event_work",
       updatedAt: "2026-08-13T23:00:00.000Z",
+      assignment: null,
+      condition: null,
     };
 
     expect(projectOfficeScene(snapshot, "2026-08-13T23:00:30.000Z")[0]?.semanticMotion).toBe(false);

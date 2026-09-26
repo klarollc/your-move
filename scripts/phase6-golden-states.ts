@@ -10,7 +10,13 @@ import {
   type CanonicalProjectSnapshot,
   type OfficeSceneDescriptor,
 } from "@cuckcode/domain";
-import { PHASE6_FIXTURE_SEED, createPhase6ComparisonEvents } from "@cuckcode/testing";
+import {
+  PHASE6_FIXTURE_SEED,
+  createPhase6ComparisonEvents,
+  stripPhase7OAdditions,
+} from "@cuckcode/testing";
+
+import type { SceneState } from "./phase6-candidate-render.js";
 
 /**
  * The six golden states the brief names, built the way the comparison frame was: from canonical
@@ -202,20 +208,69 @@ export function projectGoldenState(state: GoldenState): ProjectedGoldenState {
     snapshot,
     scene,
     outline,
-    digest: createHash("sha256")
-      .update(
-        stableStringify({
-          eventIds: snapshot.eventIds,
-          work: snapshot.work,
-          staffing: snapshot.staffing,
-          collaborations: snapshot.collaborations,
-          scene,
-          outline,
-        }),
-      )
-      .digest("hex"),
+    digest: goldenDigest(snapshot, snapshot.work, scene, outline),
   };
+}
+
+function goldenDigest(
+  snapshot: CanonicalProjectSnapshot,
+  work: CanonicalProjectSnapshot["work"],
+  scene: OfficeSceneDescriptor[],
+  outline: AccessibleOfficeOutline,
+): string {
+  return createHash("sha256")
+    .update(
+      stableStringify({
+        eventIds: snapshot.eventIds,
+        work,
+        staffing: snapshot.staffing,
+        collaborations: snapshot.collaborations,
+        scene,
+        outline,
+      }),
+    )
+    .digest("hex");
 }
 
 export const projectAllGoldenStates = (): ProjectedGoldenState[] =>
   GOLDEN_STATES.map(projectGoldenState);
+
+/** The two approved viewports every golden state is captured at. */
+export const GOLDEN_VIEWPORTS: Array<[string, number, number]> = [
+  ["1440x900", 1440, 900],
+  ["1280x800", 1280, 800],
+];
+
+/** Turns canonical descriptors into the declared render state. Nothing is invented here. */
+export function sceneStateFrom(projected: ProjectedGoldenState): SceneState {
+  const agentStates: Record<string, string> = {};
+  let work: { state: string } | undefined;
+  const collaborationParticipants: string[] = [];
+
+  for (const descriptor of projected.scene) {
+    if (descriptor.subjectType === "agent") agentStates[descriptor.subjectId] = descriptor.state;
+    if (descriptor.subjectType === "work") work = { state: descriptor.state };
+  }
+  for (const collaboration of Object.values(projected.snapshot.collaborations)) {
+    if (collaboration.active) collaborationParticipants.push(...collaboration.participantIds);
+  }
+  // `work` is omitted rather than set to `undefined`. `SceneState.work` is optional and the
+  // renderer tests it with `if (scene.work)`, so the two are identical at runtime — but under
+  // `exactOptionalPropertyTypes` an explicit `undefined` is not assignable to an optional property.
+  // Type-only; proven no-op against the five golden states at both viewports, digests unchanged.
+  // Owner ruling 2026-09-14, `docs/evidence/decision-record-2026-09-14-scripts-typecheck.md`.
+  return { agentStates, collaborationParticipants, ...(work ? { work } : {}) };
+}
+
+/**
+ * A golden state's fingerprint as Phase 6 computed it: the same input with the Phase 7-O additions
+ * removed by the one definition of them in `@cuckcode/testing` (plan P-1).
+ */
+export function goldenStateDigestV1(projected: ProjectedGoldenState): string {
+  return goldenDigest(
+    projected.snapshot,
+    stripPhase7OAdditions(projected.snapshot.work),
+    projected.scene,
+    projected.outline,
+  );
+}

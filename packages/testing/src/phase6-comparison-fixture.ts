@@ -9,6 +9,8 @@ import {
   type AccessibleOfficeOutline,
   type CanonicalProjectSnapshot,
   type OfficeSceneDescriptor,
+  type WorkItemTruth,
+  type WorkTruthState,
 } from "@cuckcode/domain";
 
 /**
@@ -181,11 +183,15 @@ export function projectPhase6ComparisonFrame(): Phase6ComparisonFrame {
  */
 export function phase6ComparisonFixtureDigest(): string {
   const frame = projectPhase6ComparisonFrame();
+  return comparisonDigest(frame, frame.snapshot.work);
+}
+
+function comparisonDigest(frame: Phase6ComparisonFrame, work: WorkTruthState): string {
   return createHash("sha256")
     .update(
       stableStringify({
         eventIds: frame.snapshot.eventIds,
-        work: frame.snapshot.work,
+        work,
         staffing: frame.snapshot.staffing,
         scene: frame.scene,
         outline: frame.outline,
@@ -194,4 +200,35 @@ export function phase6ComparisonFixtureDigest(): string {
       }),
     )
     .digest("hex");
+}
+
+/**
+ * The canonical fields Phase 7-O adds (spec §3, plan P-1), as paths into the digest input. Removing
+ * exactly these from a projection must reproduce the frozen Phase 6 fingerprints; anything else that
+ * differs is drift the owner has not approved.
+ */
+export const PHASE_7O_ADDITIONS = [
+  "work.workItems[*].assignment",
+  "work.workItems[*].condition",
+] as const;
+
+/** A copy of the work truth with the Phase 7-O additions removed. The input is not changed. */
+export function stripPhase7OAdditions(work: WorkTruthState): WorkTruthState {
+  return {
+    ...work,
+    workItems: Object.fromEntries(
+      Object.entries(work.workItems).map(([id, item]) => {
+        const phase6: Partial<WorkItemTruth> = { ...item };
+        delete phase6.assignment;
+        delete phase6.condition;
+        return [id, phase6 as WorkItemTruth];
+      }),
+    ),
+  };
+}
+
+/** The comparison digest as Phase 6 computed it: the same input with the additions removed. */
+export function phase6ComparisonFixtureDigestV1(): string {
+  const frame = projectPhase6ComparisonFrame();
+  return comparisonDigest(frame, stripPhase7OAdditions(frame.snapshot.work));
 }
