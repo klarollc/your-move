@@ -1,6 +1,7 @@
 # Phase 7-O checklist: Operability
 
-Status: **DRAFT FOR OWNER APPROVAL.** No task is authorized until this checklist is approved.
+Status: **OWNER-APPROVED 2026-09-25.** Tasks 1–10 are authorized in order; 9's captures, 11 and 12
+are owner-run.
 Plan: `tasks/phase-7-o-plan.md`, **owner-approved 2026-09-25**, P-1 to P-5 as recommended.
 Specification: `docs/phase-7-o-operability-spec-v0.2.md`, **owner-approved 2026-09-25**.
 
@@ -20,7 +21,7 @@ Specification: `docs/phase-7-o-operability-spec-v0.2.md`, **owner-approved 2026-
 
 ## Tasks
 
-- [ ] Task 1: Contracts — `work.assigned`, `work.released`, and the version-2 transition
+- [x] Task 1: Contracts — `work.assigned`, `work.released`, and the version-2 transition
       condition (spec §3.1–3.2, P-2).
   - Acceptance: both new kinds validate `workItemId` and `roleAssignmentId`; `work.transitioned`
     with `payloadVersion: 2` requires `condition` for `blocked`, `waiting_input` and
@@ -29,6 +30,17 @@ Specification: `docs/phase-7-o-operability-spec-v0.2.md`, **owner-approved 2026-
   - Verify: contract tests for every refusal, plus a test that replays every event fixture in the
     repo and asserts none newly fails.
 
+  - Result, 2026-09-25: `packages/contracts/src/work-payloads.ts` and `work.assigned` /
+    `work.released` in `eventKinds`. RED through the runner: contract 9 of 12 new tests failed on
+    assertions; the three acceptance tests (complete v2 condition, valid assignment, manager or
+    external without an id) pass against the permissive stub and are not claimed as RED. The fixture
+    sweep, `scripts/work-payload-fixtures.unit.test.ts`, failed on all 50 existing transitions
+    (no `payloadVersion: 1` reported); its collector test is not RED. GREEN: contract 77/77, unit
+    397/397, `typecheck` clean. Five mutations, each confirmed applied: four killed at once; the
+    fifth (removing the explicit "requires a condition" check) survived because the condition
+    validator refused `undefined` anyway, so the test now asserts the refusal names the missing
+    condition, and the mutant is killed. Version-1 payloads keep extra fields they always carried
+    (the simulator's `blocker`, `dependency`) and refuse `condition` until the version is declared.
 - [ ] Task 2: Domain — assignment relation, retained condition, and the Phase 6 digest successor
       (spec §3.1, P-1).
   - Acceptance: work truth carries the active assignment and current condition; replay issues for
