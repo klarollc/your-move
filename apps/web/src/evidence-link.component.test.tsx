@@ -48,7 +48,7 @@ describe("the Evidence Library opens at an item and version", () => {
         onLocateOrigin={noop}
       />,
     );
-    const focused = screen.getByRole("dialog", { name: "Evidence: Automated verification" });
+    const focused = screen.getByRole("dialog", { name: "Evidence: evidence_test v2" });
     expect(focused).toHaveTextContent("Second capture: passed on the current build.");
     expect(focused).not.toHaveTextContent("First capture");
     expect(focused).toHaveTextContent("version 2");
@@ -99,7 +99,7 @@ describe("the inspector's Evidence links", () => {
       library(record("evidence_browser", 1, "Browser capture failed on an earlier build.")),
     );
     await user.click(within(inspector).getByRole("button", { name: "Open evidence_browser v1" }));
-    const focused = screen.getByRole("dialog", { name: "Evidence: Automated verification" });
+    const focused = screen.getByRole("dialog", { name: "Evidence: evidence_browser v1" });
     expect(focused).toHaveTextContent("evidence_browser");
     expect(focused).toHaveTextContent("version 1");
   });

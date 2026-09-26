@@ -341,13 +341,17 @@ describe("OfficeShell spatial evidence surfaces", () => {
     expect(trigger).toHaveFocus();
   });
 
-  it("opens review and delivery evidence with a reachable stable office origin", async () => {
+  // Phase 7-O Task 8b-3 (P-4): the review station opens the Library unfocused; a focused record
+  // is chosen by its ID and version, never looked up by kind.
+  it("opens review evidence with a reachable stable office origin", async () => {
     const user = userEvent.setup();
     render(<OfficeShell state="ready" library={libraryProjection} />);
     await user.click(screen.getByRole("button", { name: "Locate Review station" }));
-    await user.click(screen.getByRole("button", { name: "Open Visual QA evidence" }));
+    await user.click(screen.getByRole("button", { name: "Open Project Library" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+    await user.click(screen.getByRole("button", { name: "View evidence_visual v1" }));
 
-    const focused = screen.getByRole("dialog", { name: "Evidence: Visual QA review" });
+    const focused = screen.getByRole("dialog", { name: "Evidence: evidence_visual v1" });
     expect(focused).toHaveTextContent("zone_review");
     await user.click(screen.getByRole("button", { name: "Locate origin in office" }));
     expect(screen.getByRole("region", { name: "Office scene" })).toHaveAttribute(

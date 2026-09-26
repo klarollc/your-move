@@ -11,6 +11,7 @@ import ts from "typescript";
  *
  * - `projectOfficeReadModel` (`@cuckcode/application`): the read model, its entities and views;
  * - `projectManagerAttention` (`@cuckcode/domain`): the manager's attention items;
+ * - `projectOfficeLibraryEvidence` (`@cuckcode/application`): the library's evidence records;
  * - `attentionItemsFrom` (`apps/web/src/office-model.ts`): the rail's records.
  *
  * An object literal is an office record when its contextual type is guarded, or, with no contextual
@@ -23,6 +24,7 @@ const WEB_SRC = join(ROOT, "apps", "web", "src");
 const PRODUCERS = [
   { file: "packages/application/src/office-read-model.ts", fn: "projectOfficeReadModel" },
   { file: "packages/domain/src/attention.ts", fn: "projectManagerAttention" },
+  { file: "packages/application/src/evidence-library.ts", fn: "projectOfficeLibraryEvidence" },
   { file: "apps/web/src/office-model.ts", fn: "attentionItemsFrom" },
 ];
 const isTestFile = (path) => /\.(test|spec)\.tsx?$/u.test(path);

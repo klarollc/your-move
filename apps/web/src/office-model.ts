@@ -1,5 +1,7 @@
 import {
+  projectOfficeLibraryEvidence,
   projectOfficeReadModel,
+  type BrowserLibraryProjection,
   type OfficeAttentionView,
   type OfficePersonView,
   type OfficeReadModel,
@@ -10,6 +12,7 @@ import { replayProject } from "@cuckcode/domain";
 
 import type { OfficeAttentionItem } from "./attention-rail.js";
 import { officeFixtureFor, type OfficeFixtureState } from "./office-fixtures/index.js";
+import { PHASE_4_KNOWLEDGE } from "./office-fixtures/knowledge.js";
 import { OFFICE_REGISTRY } from "./office-fixtures/registry.js";
 
 /**
@@ -158,4 +161,18 @@ export function needsYouText(person: OfficePersonView): string {
 export function notCurrentReasons(model: OfficeReadModel): string {
   const codes = [...new Set(model.issues.map((issue) => issue.code))];
   return codes.length > 0 ? codes.join(", ") : "no issue recorded";
+}
+
+/**
+ * The Project Library for a shell state (Phase 7-O Task 8b): the evidence is the state's canonical
+ * log, projected; the knowledge records are still the Phase 4 data (`office-fixtures/knowledge.ts`).
+ */
+export function officeLibraryFor(state: OfficeFixtureState): BrowserLibraryProjection {
+  const { fixture } = officeFixtureFor(state);
+  const snapshot = replayProject(fixture.events);
+  const model = projectOfficeReadModel({ snapshot, now: fixture.now, registry: OFFICE_REGISTRY });
+  return {
+    knowledge: PHASE_4_KNOWLEDGE,
+    evidence: projectOfficeLibraryEvidence({ snapshot, model }),
+  };
 }

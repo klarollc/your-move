@@ -7,7 +7,7 @@ test("@a11y Phase 4 Library and focused evidence have no detectable violations",
   await page.goto("/");
   await page.getByRole("button", { name: "Locate Project Library" }).click();
   await page.getByRole("button", { name: "Open Project Library" }).click();
-  await page.getByRole("button", { name: "View Automated verification" }).click();
+  await page.getByRole("button", { name: "View evidence_browser v1" }).click();
 
   const results = await new AxeBuilder({ page }).analyze();
   expect(results.violations).toEqual([]);

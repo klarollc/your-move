@@ -1,8 +1,4 @@
-import {
-  executeAttentionCommand,
-  projectKickoffReadModel,
-  type BrowserLibraryProjection,
-} from "@cuckcode/application";
+import { executeAttentionCommand, projectKickoffReadModel } from "@cuckcode/application";
 import type { KickoffBriefing, KickoffContribution } from "@cuckcode/contracts";
 import {
   createKickoff,
@@ -25,6 +21,7 @@ import type {
 } from "./attention-rail.js";
 import {
   attentionItemsFrom,
+  officeLibraryFor,
   officeModelFor,
   revisionOf,
   type OfficeModel,
@@ -52,59 +49,6 @@ const sceneDescriptors: readonly SceneDescriptor[] = Object.freeze([
   zone("zone_manager", -230, 370, 240, 100, 10),
   zone("zone_delivery", 260, 370, 180, 100, 11),
 ]);
-
-const knowledgeStatuses = [
-  "authoritative",
-  "approved",
-  "provisional",
-  "contested",
-  "stale",
-  "superseded",
-  "rejected",
-] as const;
-
-const libraryProjection: BrowserLibraryProjection = {
-  knowledge: knowledgeStatuses.map((status, index) => ({
-    knowledgeId: `knowledge_${status}`,
-    status,
-    title: `${status.slice(0, 1).toUpperCase()}${status.slice(1)} project record`,
-    snippet: `Browser-safe ${status} context remains explicitly labeled.`,
-    revision: index + 1,
-    originatingEntityId: "zone_library",
-  })),
-  evidence: [
-    {
-      evidenceId: "evidence_task_11_test",
-      kind: "test",
-      status: "complete",
-      summary: "Automated verification completed; manager approval remains separate.",
-      version: 1,
-      revision: 42,
-      originatingEntityId: "agent_test_engineer",
-      approved: false,
-    },
-    {
-      evidenceId: "evidence_task_11_visual",
-      kind: "visual",
-      status: "approved",
-      summary: "Graybox composition approved for the bounded interaction gate.",
-      version: 1,
-      revision: 42,
-      originatingEntityId: "zone_review",
-      approved: true,
-    },
-    {
-      evidenceId: "evidence_task_11_release",
-      kind: "release",
-      status: "pending",
-      summary: "Release review has not started; completion is not implied.",
-      version: 1,
-      revision: 42,
-      originatingEntityId: "zone_delivery",
-      approved: false,
-    },
-  ],
-};
 
 // Deterministic kickoff fixtures. These are graybox records, not a live kickoff: no role is
 // promoted, no provider is called, and no charter is approved.
@@ -195,6 +139,7 @@ export function OfficeWorkspace({
   const reducedMotion = useReducedMotion();
   // The canonical log for this state is replayed and projected once; every surface reads it.
   const office = useMemo(() => officeModelFor(state), [state]);
+  const library = useMemo(() => officeLibraryFor(state), [state]);
   const motionPlan = motionEnabled
     ? planSemanticMotion({
         canonicalRevision: 44,
@@ -249,7 +194,7 @@ export function OfficeWorkspace({
       onSelectEntity={setSelectedEntityId}
       {...(kickoffFixture ? { kickoff: kickoffFixtures[kickoffFixture] } : {})}
       model={office}
-      library={libraryProjection}
+      library={library}
       {...(motionPlan?.lead
         ? {
             motion: {

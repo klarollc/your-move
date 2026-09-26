@@ -3,24 +3,16 @@ import { useEffect, useRef, useState } from "react";
 
 import "./evidence-library.css";
 
-const evidenceNames = {
-  test: "Automated verification",
-  visual: "Visual QA review",
-  release: "Release readiness",
-} as const;
-
 type EvidenceRecord = BrowserLibraryProjection["evidence"][number];
 export type EvidenceLink = Readonly<{ evidenceId: string; version: number }>;
 
 export function EvidenceLibrary({
   projection,
-  initialEvidenceKind,
   initialEvidence,
   onClose,
   onLocateOrigin,
 }: Readonly<{
   projection: BrowserLibraryProjection;
-  initialEvidenceKind?: EvidenceRecord["kind"];
   /** Open at this record and version (spec §6). Never falls back to another record. */
   initialEvidence?: EvidenceLink;
   onClose: () => void;
@@ -33,13 +25,8 @@ export function EvidenceLibrary({
           evidenceId === initialEvidence.evidenceId && version === initialEvidence.version,
       )
     : undefined;
-  const [focusedEvidence, setFocusedEvidence] = useState<EvidenceRecord | undefined>(() =>
-    initialEvidence
-      ? linked
-      : initialEvidenceKind
-        ? projection.evidence.find(({ kind }) => kind === initialEvidenceKind)
-        : undefined,
-  );
+  // Owner ruling 8b-3: a focused record opens only from an item-and-version link, never by kind.
+  const [focusedEvidence, setFocusedEvidence] = useState<EvidenceRecord | undefined>(linked);
   const [unresolvedLink, setUnresolvedLink] = useState<EvidenceLink | undefined>(() =>
     initialEvidence && !linked ? initialEvidence : undefined,
   );
@@ -95,23 +82,35 @@ export function EvidenceLibrary({
 
       <section aria-labelledby="library-evidence-heading">
         <h3 id="library-evidence-heading">Evidence lanes</h3>
-        <p>Test, visual, and release decisions are evaluated independently.</p>
+        <p>One lane per recorded evidence kind; each is evaluated independently.</p>
+        {projection.evidence.length === 0 ? <p>No evidence recorded.</p> : null}
         <div className="evidence-library-lanes">
-          {projection.evidence.map((record) => (
-            <section key={record.evidenceId} aria-label={`${capitalize(record.kind)} evidence`}>
-              <p>{record.kind}</p>
-              <h4>{evidenceNames[record.kind]}</h4>
-              <strong>{statusLabel(record)}</strong>
-              <p>{record.summary}</p>
-              <button
-                type="button"
-                onClick={(event) => {
-                  focusTriggerRef.current = event.currentTarget;
-                  setFocusedEvidence(record);
-                }}
-              >
-                View {evidenceNames[record.kind]}
-              </button>
+          {lanesOf(projection.evidence).map(([kind, records]) => (
+            <section key={kind} aria-label={`${capitalize(kind)} evidence`}>
+              <h4>{capitalize(kind)} evidence</h4>
+              <ol>
+                {records.map((record) => (
+                  <li
+                    key={`${record.evidenceId}@${record.version}`}
+                    data-evidence-id={record.evidenceId}
+                  >
+                    <p>
+                      {record.evidenceId} · version {record.version}
+                    </p>
+                    <strong>{statusLabel(record)}</strong>
+                    <p>{record.summary ?? NO_SUMMARY}</p>
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        focusTriggerRef.current = event.currentTarget;
+                        setFocusedEvidence(record);
+                      }}
+                    >
+                      View {record.evidenceId} v{record.version}
+                    </button>
+                  </li>
+                ))}
+              </ol>
             </section>
           ))}
         </div>
@@ -122,32 +121,57 @@ export function EvidenceLibrary({
           className="focused-evidence"
           role="dialog"
           aria-modal="true"
-          aria-label={`Evidence: ${evidenceNames[focusedEvidence.kind]}`}
+          aria-label={`Evidence: ${focusedEvidence.evidenceId} v${focusedEvidence.version}`}
         >
           <header>
             <div>
-              <p>{focusedEvidence.kind} evidence</p>
-              <h3>{evidenceNames[focusedEvidence.kind]}</h3>
+              <p>{capitalize(focusedEvidence.kind)} evidence</p>
+              <h3>
+                {focusedEvidence.evidenceId} v{focusedEvidence.version}
+              </h3>
             </div>
             <button type="button" onClick={closeEvidence}>
               Close evidence
             </button>
           </header>
           <p>{statusLabel(focusedEvidence)}</p>
-          <p>{focusedEvidence.summary}</p>
+          <p>{focusedEvidence.summary ?? NO_SUMMARY}</p>
           <dl>
             <dt>Evidence ID</dt>
             <dd>{focusedEvidence.evidenceId}</dd>
             <dt>Version</dt>
             <dd>version {focusedEvidence.version}</dd>
+            <dt>Kind</dt>
+            <dd>{focusedEvidence.kind}</dd>
+            {focusedEvidence.workItemId ? (
+              <>
+                <dt>Work item</dt>
+                <dd>{focusedEvidence.workItemId}</dd>
+              </>
+            ) : null}
+            {focusedEvidence.causeEventId ? (
+              <>
+                <dt>Recorded by event</dt>
+                <dd>{focusedEvidence.causeEventId}</dd>
+              </>
+            ) : null}
             <dt>Revision</dt>
             <dd>revision {focusedEvidence.revision}</dd>
             <dt>Originating office entity</dt>
-            <dd>{focusedEvidence.originatingEntityId}</dd>
+            <dd>{focusedEvidence.originatingEntityId ?? "No office entity holds this work"}</dd>
           </dl>
-          <button type="button" onClick={() => onLocateOrigin(focusedEvidence.originatingEntityId)}>
-            Locate origin in office
-          </button>
+          {focusedEvidence.originatingEntityId ? (
+            <button
+              type="button"
+              onClick={() => {
+                if (focusedEvidence.originatingEntityId) {
+                  onLocateOrigin(focusedEvidence.originatingEntityId);
+                }
+              }}
+            >
+              Locate origin in office
+            </button>
+          ) : null}
         </section>
       ) : null}
       {unresolvedLink ? (
@@ -182,6 +206,17 @@ export function EvidenceLibrary({
       ) : null}
     </aside>
   );
+}
+
+const NO_SUMMARY = "No summary recorded";
+
+/** Lanes are the recorded kinds, in the projection's order (owner ruling 8b-1). */
+function lanesOf(
+  records: BrowserLibraryProjection["evidence"],
+): ReadonlyArray<readonly [string, EvidenceRecord[]]> {
+  const lanes = new Map<string, EvidenceRecord[]>();
+  for (const record of records) lanes.set(record.kind, [...(lanes.get(record.kind) ?? []), record]);
+  return [...lanes];
 }
 
 function statusLabel(record: EvidenceRecord): string {

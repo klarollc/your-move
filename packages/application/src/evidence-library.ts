@@ -1,4 +1,7 @@
 import type { KnowledgeLifecycleStatus } from "@cuckcode/contracts";
+import type { CanonicalProjectSnapshot } from "@cuckcode/domain";
+
+import type { OfficeReadModel } from "./office-read-model.js";
 
 const knowledgeOrder: readonly KnowledgeLifecycleStatus[] = [
   "authoritative",
@@ -48,19 +51,75 @@ export type BrowserLibraryProjection = Readonly<{
       originatingEntityId: string;
     }>
   >;
-  evidence: ReadonlyArray<
-    Readonly<{
-      evidenceId: string;
-      kind: EvidenceKind;
-      status: EvidenceStatus;
-      summary: string;
-      version: number;
-      revision: number;
-      originatingEntityId: string;
-      approved: boolean;
-    }>
-  >;
+  evidence: readonly LibraryEvidenceRecord[];
 }>;
+
+/**
+ * One evidence record as the Project Library shows it. `kind` is the kind as recorded; a record
+ * projected from the log has no summary text (`null`), because `evidence.recorded` carries none
+ * (Task 8b-2), and no origin when no office entity holds its work.
+ */
+export type LibraryEvidenceRecord = Readonly<{
+  evidenceId: string;
+  kind: string;
+  status: EvidenceStatus;
+  summary: string | null;
+  version: number;
+  revision: number;
+  originatingEntityId: string | null;
+  approved: boolean;
+  workItemId?: string;
+  causeEventId?: string;
+}>;
+
+/**
+ * The Project Library's evidence, projected from the canonical log (Phase 7-O Task 8b).
+ *
+ * One record per recorded evidence item, at the version the log holds. The origin is the office
+ * person whose held work the evidence belongs to, from the office read model, or null. `approved`
+ * requires a manager approval that cites this evidence ID at this version; completed and approved
+ * stay distinct. `revision` is the workspace revision the projection read.
+ */
+export function projectOfficeLibraryEvidence(
+  input: Readonly<{ snapshot: CanonicalProjectSnapshot; model: OfficeReadModel }>,
+): readonly LibraryEvidenceRecord[] {
+  const { snapshot, model } = input;
+  const holderOf = new Map<string, string>();
+  for (const entity of model.entities) {
+    if (entity.kind !== "person") continue;
+    for (const work of entity.work) holderOf.set(work.workItemId, entity.entityId);
+  }
+  const approvals = Object.values(snapshot.work.approvals);
+  return Object.values(snapshot.work.evidence)
+    .map((record): LibraryEvidenceRecord => {
+      const approved =
+        record.result === "passed" &&
+        approvals.some(
+          (approval) =>
+            approval.workItemId === record.workItemId &&
+            approval.evidenceVersions.some(
+              ({ evidenceId, version }) =>
+                evidenceId === record.evidenceId && version === record.version,
+            ),
+        );
+      return {
+        evidenceId: record.evidenceId,
+        kind: record.kind,
+        status: record.result === "failed" ? "failed" : approved ? "approved" : "complete",
+        summary: null,
+        version: record.version,
+        revision: model.source.eventCount,
+        originatingEntityId: holderOf.get(record.workItemId) ?? null,
+        approved,
+        workItemId: record.workItemId,
+        causeEventId: record.eventId,
+      };
+    })
+    .sort(
+      (left, right) =>
+        left.kind.localeCompare(right.kind) || left.evidenceId.localeCompare(right.evidenceId),
+    );
+}
 
 export function projectBrowserLibrary(
   input: Readonly<{
@@ -104,7 +163,8 @@ export function projectBrowserLibrary(
       }))
       .sort(
         (left, right) =>
-          evidenceOrder.indexOf(left.kind) - evidenceOrder.indexOf(right.kind) ||
+          (evidenceOrder as readonly string[]).indexOf(left.kind) -
+            (evidenceOrder as readonly string[]).indexOf(right.kind) ||
           left.evidenceId.localeCompare(right.evidenceId),
       ),
   };

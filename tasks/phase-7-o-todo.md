@@ -322,7 +322,7 @@ Specification: `docs/phase-7-o-operability-spec-v0.2.md`, **owner-approved 2026-
     - `test:component` 86, `test:unit` 450, `test:e2e` 52, `test:a11y` 46, `typecheck`,
       `typecheck:scripts`, `lint` clean on the dirty tree; `verify` at the commit.
 
-- [ ] Task 8b (**PROPOSED, awaiting owner approval**): the library's evidence from the office log.
+- [x] Task 8b: the library's evidence from the office log. **Approved 2026-09-26 as recommended.**
   - Why: spec §1 says the Evidence Library reads the same canonical data as the rail and
     inspector. Today its evidence is the Phase 4 list, so no inspector link resolves.
   - Proposal: a projection in `packages/application` from `snapshot.work` evidence records
@@ -344,6 +344,50 @@ Specification: `docs/phase-7-o-operability-spec-v0.2.md`, **owner-approved 2026-
     Knowledge records stay Phase 4 data and are out of scope.
   - Sequencing: before Task 9's captures and Task 10's answer key, which would otherwise record
     the Phase 4 list.
+  - Result, 2026-09-26:
+    - **Projection.** `projectOfficeLibraryEvidence({ snapshot, model })` in
+      `packages/application/src/evidence-library.ts`: one `LibraryEvidenceRecord` per recorded
+      evidence item at the version the log holds, with its recorded kind, `failed` or `complete`,
+      `approved` only when a manager approval cites that ID at that version, `summary: null`, the
+      work item, the recording event, and the holder as origin (null when no one holds the work).
+      `BrowserLibraryProjection` evidence is now `LibraryEvidenceRecord` (kind widened to the
+      recorded string; summary and origin nullable; work item and cause event optional).
+    - **Web.** `officeLibraryFor(state)` (`office-model.ts`) builds the library from the state's
+      log; the Phase 4 knowledge records moved unchanged to `office-fixtures/knowledge.ts`. The
+      Phase 4 evidence list is deleted. Lanes are grouped by recorded kind (8b-1); records show
+      `No summary recorded` (8b-2); each record's button and dialog name it by ID and version; the
+      dialog adds kind, work item and recording event, and omits `Locate origin` when there is
+      none. Zone buttons are all `Open Project Library` and open it unfocused (8b-3);
+      `initialEvidenceKind` is removed.
+    - **The inspector's link now resolves in the default office:** `Open evidence_browser v1` opens
+      `Evidence: evidence_browser v1`, failed, held by the Test Engineer.
+    - **Guard.** `projectOfficeLibraryEvidence` is a guard producer, so `LibraryEvidenceRecord`
+      literals in `apps/web` fail `test:guard`.
+    - **RED:** unit, 3 tests in `office-read-model.unit.test.ts` against a stub returning `[]`,
+      "Tests 3 failed | 450 passed (453)". Component, 3 tests in
+      `office-library.component.test.tsx` against `officeLibraryFor` returning the Phase 4 list,
+      "Tests 3 failed | 86 passed (89)", each on its assertion. GREEN: unit 453, component 89.
+    - **Five mutations, each confirmed applied, all killed:** approval by ID without version;
+      origin always null; kind forced to `test`; an invented summary; the Phase 4 evidence list
+      restored into `office-model.ts` (guard test 4, three findings).
+    - **Moved assertions (P-4):**
+
+      | File                                                        | Old                                                                                                                           | New                                                                                                                                                                      | Reason                                                                              |
+      | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+      | `apps/web/src/evidence-library.component.test.tsx`          | `View Automated verification`, dialog `Evidence: Automated verification`                                                      | `View evidence_test v1`, `Evidence: evidence_test v1`                                                                                                                    | records are named by ID and version                                                 |
+      | `apps/web/src/evidence-link.component.test.tsx`             | dialog `Evidence: Automated verification` (twice)                                                                             | `Evidence: evidence_test v2`, `Evidence: evidence_browser v1`                                                                                                            | same                                                                                |
+      | `apps/web/src/office-shell.component.test.tsx`              | review station `Open Visual QA evidence` opens `Evidence: Visual QA review`                                                   | `Open Project Library` opens unfocused (no dialog asserted), then `View evidence_visual v1`; origin located as before                                                    | 8b-3                                                                                |
+      | `tests/e2e/phase-4-evidence-library.spec.ts`                | lanes `Test`, `Visual`, `Release`; one `Complete — not approved`; `View Automated verification`, origin `agent_test_engineer` | lanes = the log's recorded kinds, `Release` absent; `Complete — not approved` count = the log's passed records; `View evidence_browser v1`, origin `agent_test_engineer` | 8b-1; the log's evidence                                                            |
+      | same, review-station test                                   | focused `Evidence: Visual QA review`, `zone_review`, `Approved`                                                               | unfocused on open; `evidence_graybox_visual v1`, `agent_implementation_engineer`, `Complete — not approved`                                                              | 8b-3; the log records no approval                                                   |
+      | `tests/accessibility/phase-4-evidence-library-a11y.spec.ts` | focuses `View Automated verification`                                                                                         | focuses `View evidence_browser v1`                                                                                                                                       | same dialog, new name                                                               |
+      | `tests/e2e/phase-7o-evidence-link.spec.ts`                  | the link shows `Evidence link unavailable`                                                                                    | the link opens `Evidence: evidence_browser v1`                                                                                                                           | the library now holds it; the unavailable path stays covered by the component tests |
+
+      One Phase 4 claim is gone on purpose: the review station no longer shows an `Approved`
+      visual record, because the office log records no approval.
+
+    - `test:e2e` 52, `test:a11y` 46, `test:visual` 62, `test:unit` 453, `test:component` 89,
+      `typecheck`, `typecheck:scripts`, `test:guard` clean on the dirty tree; `verify` at the
+      commit.
 
 - [ ] Task 9: Browser evidence at 1440×900 and 1280×800 (spec §8.6). **Captures owner-run.**
   - Acceptance: every state the spec lists is captured; console, network, keyboard, pointer, focus

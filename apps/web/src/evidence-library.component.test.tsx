@@ -96,10 +96,10 @@ describe("EvidenceLibrary", () => {
         onLocateOrigin={onLocateOrigin}
       />,
     );
-    const trigger = screen.getByRole("button", { name: "View Automated verification" });
+    const trigger = screen.getByRole("button", { name: "View evidence_test v1" });
 
     await user.click(trigger);
-    const focused = screen.getByRole("dialog", { name: "Evidence: Automated verification" });
+    const focused = screen.getByRole("dialog", { name: "Evidence: evidence_test v1" });
     expect(focused).toHaveTextContent("Originating office entity");
     expect(focused).toHaveTextContent("agent_test_engineer");
     expect(focused).toHaveTextContent("revision 42");

@@ -1,4 +1,5 @@
 import { replayProject } from "@cuckcode/domain";
+import { projectOfficeLibraryEvidence } from "./evidence-library.js";
 import { describe, expect, it } from "vitest";
 
 import { projectOfficeReadModel, type OfficeRegistryEntry } from "./office-read-model.js";
@@ -565,6 +566,59 @@ describe("registry and auxiliary boundaries", () => {
       fixture: true,
       binding: { session: "loopback" },
       permissions: ["inspect", "select"],
+    });
+  });
+});
+
+/** Phase 7-O Task 8b: the Project Library's evidence is the log's evidence, not a list. */
+describe("office library evidence", () => {
+  const library = (events: readonly unknown[]) => {
+    const snapshot = replayProject(events);
+    return projectOfficeLibraryEvidence({ snapshot, model: model(events) });
+  };
+  const recorded = (events: readonly unknown[], evidenceId: string) =>
+    (events as { kind: string; eventId: string; payload: Record<string, unknown> }[]).find(
+      (event) => event.kind === "evidence.recorded" && event.payload.evidenceId === evidenceId,
+    )!;
+
+  it("projects each recorded evidence item with its own kind, version, result and cause", () => {
+    const events = office({ evidenceVersion: 2 });
+    const source = recorded(events, "evidence_unit");
+    const [record, ...rest] = library(events);
+    expect(rest).toEqual([]);
+    expect(record).toEqual({
+      evidenceId: "evidence_unit",
+      kind: source.payload.kind,
+      status: source.payload.result === "passed" ? "complete" : "failed",
+      summary: null,
+      version: 2,
+      revision: replayProject(events).eventIds.length,
+      originatingEntityId: "agent_implementation_engineer",
+      approved: false,
+      workItemId: "work_release",
+      causeEventId: source.eventId,
+    });
+  });
+
+  it("marks evidence approved only when an approval cites that exact version", () => {
+    expect(library(office({ approveRelease: true }))[0]).toMatchObject({
+      status: "approved",
+      approved: true,
+    });
+    const stale = library(
+      office({ approveRelease: true, evidenceVersion: 2, approvalEvidenceVersion: 1 }),
+    )[0];
+    expect(stale).toMatchObject({ approved: false });
+    expect(stale!.status).not.toBe("approved");
+  });
+
+  it("gives no origin when no office entity holds the work", () => {
+    const unheld = office().filter(
+      (event) => (event as { eventId: string }).eventId !== "event_bind_release",
+    );
+    expect(library(unheld)[0]).toMatchObject({
+      evidenceId: "evidence_unit",
+      originatingEntityId: null,
     });
   });
 });

@@ -100,6 +100,7 @@ test("the guarded record types are read from the exported office projectors", ()
     "OfficeAttentionView",
     "OfficeWorkView",
     "OfficeAttentionItem",
+    "LibraryEvidenceRecord",
   ]) {
     assert.ok(result.guardedNames.includes(name), `${name} is not guarded`);
   }

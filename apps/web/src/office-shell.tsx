@@ -217,9 +217,6 @@ export function OfficeShell({
   const kickoffTriggerRef = useRef<HTMLButtonElement>(null);
   const [kickoffOpen, setKickoffOpen] = useState(false);
   const [initialEvidence, setInitialEvidence] = useState<EvidenceLink | undefined>(undefined);
-  const [initialEvidenceKind, setInitialEvidenceKind] = useState<
-    "test" | "visual" | "release" | undefined
-  >(undefined);
   const attentionTriggerRef = useRef<HTMLButtonElement>(null);
   const [attentionOpen, setAttentionOpen] = useState(false);
   const [dismissedAttentionIds, setDismissedAttentionIds] = useState<ReadonlySet<string>>(
@@ -504,7 +501,6 @@ export function OfficeShell({
               ? {
                   onOpenEvidence: (link: EvidenceLink, trigger: HTMLButtonElement) => {
                     libraryTriggerRef.current = trigger;
-                    setInitialEvidenceKind(undefined);
                     setInitialEvidence(link);
                     setLibraryOpen(true);
                     setAnnouncement(`Evidence ${link.evidenceId} version ${link.version} opened`);
@@ -525,22 +521,11 @@ export function OfficeShell({
               type="button"
               onClick={() => {
                 setInitialEvidence(undefined);
-                setInitialEvidenceKind(
-                  selectedEntity.entityId === "zone_review"
-                    ? "visual"
-                    : selectedEntity.entityId === "zone_delivery"
-                      ? "release"
-                      : undefined,
-                );
                 setLibraryOpen(true);
                 setAnnouncement(`${selectedEntity.label} evidence opened`);
               }}
             >
-              {selectedEntity.entityId === "zone_review"
-                ? "Open Visual QA evidence"
-                : selectedEntity.entityId === "zone_delivery"
-                  ? "Open Release evidence"
-                  : "Open Project Library"}
+              Open Project Library
             </button>
           ) : null}
           {kickoff && kickoffAnchors.includes(selectedEntity.entityId) ? (
@@ -572,13 +557,10 @@ export function OfficeShell({
       {libraryOpen && library ? (
         <EvidenceLibrary
           key={
-            initialEvidence
-              ? `${initialEvidence.evidenceId}@${initialEvidence.version}`
-              : (initialEvidenceKind ?? "library")
+            initialEvidence ? `${initialEvidence.evidenceId}@${initialEvidence.version}` : "library"
           }
           projection={library}
           {...(initialEvidence ? { initialEvidence } : {})}
-          {...(initialEvidenceKind ? { initialEvidenceKind } : {})}
           onClose={() => {
             setLibraryOpen(false);
             setAnnouncement("Project Library closed");
