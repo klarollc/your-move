@@ -83,7 +83,7 @@ Authority: `docs/evidence/runtime/decision-record-2026-09-25-codex-currency.md`.
     execute a Windows binary, so `codex.exe --version` is first observed by the owner-run Task 4
     upgrade, which refuses unless it prints `codex-cli 0.157.1`. The gate is Task 4's `verify`.
 
-- [ ] **Task 4 — Upgrade command and surface diff** (R4).
+- [x] **Task 4 — Upgrade command and surface diff** (R4).
   - Files: `scripts/codex-surface-diff.mjs`, `scripts/codex-surface-diff.test.mjs`,
     `scripts/generate-codex-protocol.mjs` (becomes the upgrade command), `package.json` scripts
     (`protocol:codex:upgrade`).
@@ -96,6 +96,16 @@ Authority: `docs/evidence/runtime/decision-record-2026-09-25-codex-currency.md`.
     `functionCallOutput`, `rateLimitExceeded`, `misalignmentPolicyViolation`, stops work for a
     ruling. The bundle hash is compared with the container-generated 0.157.1 bundle.
   - Verify: runner `test:protocol`.
+  - **Result:** tooling `26e8cba` (RED 9/10, one test named as unable to fail against its stub;
+    GREEN 10/10). The owner ran `npm run protocol:codex:upgrade -- 0.157.1` on Windows, which also
+    observed `codex-cli 0.157.1` from the installed `codex.exe` (Task 3's deferred check). Bundle:
+    314 files, `bundleHash` `98111ca770d4d181fa42551a666d8c9be42d1333540ef70fd93cffda53fba24f`,
+    identical to the diagnosis-time generation and the mirror rehearsal; `surface-diff.md`
+    byte-identical to the rehearsal's. **Stop condition not triggered:** no breaking entries, and
+    the three entries needing a ruling are the three the spec named. Each is already decided by an
+    approved ruling: `functionCallOutput` is an effect (CX-2); `rateLimitExceeded` and
+    `misalignmentPolicyViolation` are not transport classes (CX-4 names four), so neither is
+    retried. **Gate:** runner `verify`, recorded below.
 
 - [ ] **Task 5 — Single-source guard** (R2.3, R2.4, R1.4).
   - Files: `scripts/codex-pin.test.mjs`, `test:protocol` wiring.
