@@ -35,6 +35,13 @@ remain unauthorized.** Phase 5 overall Task 10 owner acceptance remains separate
 disposition and is still owner-run. See `AGENTS.md`,
 `tasks/phase-5-todo.md`, and `docs/evidence/phase-5/approved-charter-v1.md` before changing behavior.
 
+On 2026-09-23 the owner inserted **Phase 7-O, Operability**, before Phase 7, classified the
+default-office rail/inspector contradiction V1, and authorized a specification for truthful
+inspector detail and adversarial fixtures. Actually performed comprehension tasks T3/T5/T6 are in
+the Phase 7-O gate. The [decision record](docs/evidence/phase-7-o/decision-record-2026-09-23-operability-scope.md)
+authorizes specification only; Phase 7-O implementation still awaits a separately approved spec,
+plan, and tasks.
+
 ## Toolchain
 
 Use the exact engine family declared in `package.json` before running project verification:

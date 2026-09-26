@@ -127,3 +127,8 @@ Read each entry's own status line. Nothing here inherits authorization from the 
       to Active by owner execution. **Phase 7 high-fidelity implementation remains unauthorized** and
       requires its own specification, plan and approval. The three provenance gaps carry forward and
       are not closed by this promotion.
+
+**2026-09-23 sequencing amendment:** Owner ruling O-1 inserted Phase 7-O Operability between this
+closed Phase 6 gate and Phase 7. O-3 authorizes a Phase 7-O specification only. See
+`docs/evidence/phase-7-o/decision-record-2026-09-23-operability-scope.md`; this checklist does not
+authorize Phase 7-O or Phase 7 implementation.

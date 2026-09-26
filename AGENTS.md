@@ -56,6 +56,15 @@ accessibility tests, keyboard operability and accessible naming remain in scope 
 promoted by owner execution under the Phase 6 gate. Phase 7 high-fidelity implementation remains
 unauthorized.
 
+**Amended 2026-09-23:** the owner ruled O-1 A, O-2 A, O-3 A, O-4 A in
+`docs/evidence/phase-7-o/decision-record-2026-09-23-operability-scope.md`. MDD §24 now places
+**Phase 7-O, Operability**, before Phase 7 high-fidelity implementation. The default-office
+rail/inspector blocker contradiction is V1. The owner authorized a Phase 7-O specification for
+truthful inspector detail and adversarial fixtures, and requires actually performed T3/T5/T6 under
+MDD §20 in its gate. The specification is not yet approved; no Phase 7-O implementation, Phase 7
+work, or promotion is authorized. Phase 5 Task 10 remains owner-run and Phase 5 acceptance remains
+a Phase 8 precondition.
+
 **Phase 6 was authorized as of 2026-09-13, Tasks 1-7 only.** The owner approved `docs/visual-reference-production-brief-v0.1.md` as written (6-A) and authorized Phase 6 running in parallel with Phase 5 (6-B), amending MDD section 24 accordingly; the candidate production medium is the hybrid of generated exploration plus in-repo vector composition (6-C). All three rulings are recorded in `docs/evidence/phase-6/decision-request-2026-09-13-phase-6-parallel-start.md`. Candidate art produced under this authority stays Candidate: Task 8 selection and Task 10 promotion to Active are owner-run, and Phase 7 high-fidelity implementation, final tokens and assets, visual-baseline promotion, Phase 5 behavior, deployment, and any external effect remain unauthorized.
 
 ## Required delivery method

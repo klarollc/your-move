@@ -1,6 +1,6 @@
 # Handoff — state, next action, and what would otherwise be relearned expensively
 
-Written 2026-09-18, last updated 2026-09-22 to align C-17 with the later out-of-scope ruling. Read `AGENTS.md` first for authority; this document is the
+Written 2026-09-18, last updated 2026-09-23 for the Phase 7-O owner ruling. Read `AGENTS.md` first for authority; this document is the
 live state, the next action, and the things a fresh session pays for twice if nobody wrote them down.
 
 ---
@@ -13,9 +13,10 @@ live state, the next action, and the things a fresh session pays for twice if no
 | 4 | **Complete.** Bounded live D-25 round ran the full thirteen turns; evidence packet delivered. Owner gate open. |
 | 6 | **Complete.** `reconciliation-b-clarity` is the **Active** visual system, promoted by owner execution. |
 | 5 | **Tasks 1–9 done; C-17 ruled out of scope (not met) on 2026-09-18.** Current release verdict is the **NEEDS WORK** pass 5; overall Task 10 is still owner-run. |
-| 7, 8 | **Unauthorized.** Phase 7 needs its own specification, plan and owner approval. |
+| 7-O | **Specification authorized 2026-09-23; not approved.** Owner inserted Operability before Phase 7, classified the rail/inspector contradiction V1, and put actually performed T3/T5/T6 in its gate. No implementation authorized. |
+| 7, 8 | **Unauthorized.** Phase 7 follows accepted Phase 7-O and needs its own specification, plan and owner approval. |
 
-Phase 5 turn ledger: **18 of 60**. Acceptance criteria: **21 ready, 0 blocked** — all ten charter
+Phase 5 turn ledger: **19 of 60** including the verdictless pass 9 attempt. Acceptance criteria: **21 ready, 0 blocked** — all ten charter
 gaps are closed. Ready means assessable. It does not mean met.
 
 **Current owner ruling, 2026-09-18 (the later of two that day):** C-17 is **out of scope, not met**.
@@ -26,6 +27,23 @@ finding and the need for an independent release-review refresh remain current.
 ---
 
 ## The immediate next action
+
+**2026-09-23 owner ruling O-1 through O-4:** Phase 7-O Operability is now the next UI gate before
+Phase 7. The owner authorized a specification for truthful inspector detail and adversarial
+fixtures, classified the default-office rail/inspector contradiction V1, and requires actually
+performed T3/T5/T6 under MDD §20 in the Phase 7-O gate. The ruling is
+`docs/evidence/phase-7-o/decision-record-2026-09-23-operability-scope.md`. Review the draft
+`docs/phase-7-o-operability-spec-v0.1.md` next, together with the agent review
+`docs/evidence/phase-7-o/spec-review-2026-09-25.md`, which recommends revision before approval
+(decisions R-1 to R-3: the canonical events cannot yet answer the decision questions, and no
+machine criterion checks that drill-down detail resolves). Do not write the implementation plan or tasks until
+the specification is approved; do not change UI behavior until all three gates are approved. Phase
+5 Task 10 remains a parallel owner-run acceptance gate and a Phase 8 precondition.
+
+**Current Phase 5 refresh attempt:** pass 9 (2026-09-22) spent one turn and stopped at
+`NOTIFICATION_TIMEOUT` without a verdict. It is recorded in the provenance ledger (2026-09-25) and
+supersedes only passes 6 to 8. Pass 5 remains the latest complete release verdict;
+do not treat pass 9 as acceptance or rewrite earlier attempts.
 
 **Overall Task 10 remains owner-run.** The C-17 scope ruling is narrow; do not read it as overall
 Phase 5 fixture acceptance.

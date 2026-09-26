@@ -997,7 +997,7 @@ Documentation-only or static-asset changes may skip behavioral TDD, but still re
 - **React Testing Library:** DOM component behavior through accessible roles, names, labels, and manager-visible outcomes. Tests must not depend on component internals. User interactions use the companion `user-event` APIs.
 - **Playwright:** pinned Chromium E2E at 1440×900 and 1280×800. Critical journeys capture traces and screenshots on failure; named canonical scene states receive reviewed visual baselines.
 - **axe-core through Playwright:** automated scans of each acceptance state. The merge gate is zero unreviewed violations; any explicitly deferred finding needs an owner, rationale, and expiry.
-- **Manual accessibility:** keyboard-only completion of every critical journey, focus-order and focus-visibility review, reduced-motion review, zoom/reflow review within the desktop boundary, and screen-reader walkthrough of the DOM office outline and manager controls.
+- **Manual accessibility:** keyboard-only completion of every critical journey, focus-order and focus-visibility review, reduced-motion review, and zoom/reflow review within the desktop boundary. The screen-reader walkthrough of the DOM office outline and manager controls that this item also required was retired on 2026-09-18 (see §19); it is out of scope, not met.
 - **Owner visual acceptance:** explicit approval of current-build captures remains required for art-direction promotion. Automated screenshot comparison detects change; it cannot decide whether the change is aesthetically correct.
 
 ### Canvas verification boundary
@@ -1212,6 +1212,14 @@ owner with NVDA 2026.2.0.57664 and recorded in
 current status only; the historical waiver, walkthrough findings, environment omissions, and
 independent-review requirement remain preserved.
 
+**Amended again 2026-09-18, later the same day:** the owner ruled the human screen-reader
+walkthrough **out of scope** for this single-user tool
+(`docs/evidence/phase-5/decision-record-2026-09-18-screen-reader-scope.md`, overlay
+`docs/evidence/phase-5/acceptance-contract-scope.json`). That ruling outranks the met disposition
+above for current C-17 status. **C-17 is out of scope, not met.** The paragraph above is
+historical. Screen-reader behaviour has never been verified, and walkthrough finding SR-01 stays
+open in the record. The §19 retirement notice above states the current requirement.
+
 ## 20. Observability and product measures
 
 ### Operational measures
@@ -1366,10 +1374,18 @@ Gate: explicit owner promotion of one coherent visual system from Candidate to A
 
 **Amended 2026-09-13 — Phase 6 runs in parallel with Phase 5, not after it.** The owner authorized the reordering (6-B) in `docs/evidence/phase-6/decision-request-2026-09-13-phase-6-parallel-start.md`. Phase 6 reads no Phase 5 artifact; it is the most owner-latency-bound phase and Phase 7 cannot begin until it closes. This amendment changes sequencing only. Every Phase 6 gate, and the rule that Phase 7 stays unauthorized until Phase 6 promotes a visual system, is unchanged. Phase 5 acceptance remains a precondition of Phase 8.
 
+### Phase 7-O — Operability before fidelity
+
+**Amended 2026-09-23 by owner rulings O-1 through O-4** in `docs/evidence/phase-7-o/decision-record-2026-09-23-operability-scope.md`. This bounded phase follows Phase 6 and precedes Phase 7. It does not change Phase 5's separate path or its Phase 8 precondition.
+
+Deliverables: a canonical snapshot-backed office read model; truthful entity inspector and manager-attention detail that agree on blocker, cause, required action, evidence, approval and freshness; adversarial fixtures that expose unsupported progress, placement, approval and stale-state claims; current-build browser and accessibility evidence; and an actual cold single-operator run of all six §20 comprehension tasks, expressly including the previously unperformed T3, T5 and T6. The existing default-office rail/inspector contradiction is classified V1.
+
+Gate: RED–GREEN–REFACTOR evidence for behavioral changes; rendered and manually exercised evidence at the approved viewports; V0/V1 cleared; all six tasks marked performed with the operator's exact answers and scored under §20, with T3/T5/T6 expressly verified; explicit owner acceptance. An unperformed task is never scored as failure or success, and the run remains incomplete. Phase 7-O requires its own owner-approved specification, plan and tasks before implementation.
+
 ### Phase 7 — High-fidelity implementation
 
 Deliverables: approved materials, lighting, avatars, typography, props, motion, reduced-motion treatment, and visual regression baselines.
-Gate: rendered capture matrix, V0/V1 cleared, V2 disposition, and explicit owner visual approval.
+Gate: Phase 7-O accepted; rendered capture matrix, V0/V1 cleared, V2 disposition, and explicit owner visual approval. Phase 7 still requires its own specification, plan and owner approval.
 
 ### Phase 8 — Production-suitability disposition
 
@@ -1452,5 +1468,13 @@ Gate: disposition within the governed review period; production reuse remains a 
 **Amended 2026-09-18:** the owner accepted the bounded Phase 5 C-17 screen-reader walkthrough as
 met. This is an evidence disposition, not a release verdict or authorization for code, deployment,
 or production reuse.
+
+**Amended again 2026-09-18, later the same day:** the owner ruled the human screen-reader
+walkthrough out of scope and retired the §19 walkthrough requirement. C-17 is excluded by overlay
+and is **out of scope, not met**. This supersedes the met disposition above for current status; that
+disposition is preserved as history. See
+`docs/evidence/phase-5/decision-record-2026-09-18-screen-reader-scope.md`.
+
+**Amended 2026-09-23:** the owner inserted Phase 7-O before Phase 7, classified the rail/inspector contradiction V1, authorized only a Phase 7-O specification for truthful detail and adversarial fixtures, and included actually performed T3/T5/T6 in that phase's gate. See the O-1 through O-4 decision record. No Phase 7-O or Phase 7 implementation is authorized.
 
 This approval does not authorize production implementation. Dependency installation, project scaffolding, runtime connection, imported role material, or production code requires approval of the next implementation-plan gate.
