@@ -1,8 +1,8 @@
 # Implementation plan: Codex currency follow-ups
 
-Status: **DRAFT, awaiting owner approval.** Written under the approval of
+Status: **OWNER-APPROVED 2026-09-26.** Written under the approval of
 `docs/codex-follow-ups-spec-v0.1.md` (FU-1 to FU-4 as recommended, 2026-09-26). No task is
-authorized until this plan and `tasks/codex-follow-ups-todo.md` are each approved.
+authorized until `tasks/codex-follow-ups-todo.md` is also approved.
 
 Where: branch `codex-currency`, worktree `.worktrees/codex-currency`, before the merge. Task 7 runs
 on `main` after the merge.
