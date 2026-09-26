@@ -74,7 +74,7 @@ signed-in session but never starts a turn.
     at `d95a52a`: exit 0, not dirty, evidence unchanged; the guard's 5 tests pass, including the
     real-tree test. Queued after main's `task8b-verify-01` had finished and its runner was idle.
 
-- [ ] **Task 4 — Features in the upgrade (F1.2).**
+- [x] **Task 4 — Features in the upgrade (F1.2).**
   - Files: `scripts/generate-codex-protocol.mjs`, `scripts/codex-surface-diff.mjs` and its test,
     `packages/runtime-codex/protocol/0.157.1/features.json`.
   - Acceptance: the upgrade writes `features.json` (name, stage, default) whether or not the bundle
@@ -83,6 +83,15 @@ signed-in session but never starts a turn.
   - RED: surface-diff fixture tests for a new and a changed default-on feature.
   - **Owner:** `npm run protocol:codex:upgrade -- 0.157.1`.
   - Verify: runner `verify`.
+  - Result (2026-09-26): code `066a2cd`, `4f23981`, `aa669dd`; bundle files `5b374b7`. The owner's
+    rerun on win32-x64: 150 features, 53 default-on, `needsRuling` 56 (3 existing + 53
+    `featureDefaultOn`), bundleHash unchanged, `manifest.json` untouched, `platform: "win32-x64"`.
+    Two findings: `features list` reports the effective state, so it now runs under an empty
+    `CODEX_HOME` outside the repository; and `secret_auth_storage` is default-on only on
+    win32-x64, so the spec's "52 default-on" (counted on linux-x64) is one short (erratum and the
+    owner's ruling staged in `tasks/codex-follow-ups-red-green.md` for Task 6). `fu4-verify-01`
+    failed: the pin guard caught a version literal in a new comment; fixed in `aa669dd`.
+    `fu4-verify-02` at `aa669dd`: exit 0, not dirty, evidence unchanged.
 
 - [ ] **Task 5 — Feature policy and enumeration (F1.1, F1.3, F1.4, FU-1 to FU-3).**
   - Files: `packages/runtime-codex/src/feature-policy.ts` and its test, `role-exercise.ts`,
