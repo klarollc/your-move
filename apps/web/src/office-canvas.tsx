@@ -123,19 +123,22 @@ export function OfficeWorkspace({
   motionEnabled = false,
   motionCheckpoint = "settled",
   kickoffFixture,
+  fixtureId,
 }: Readonly<{
   initialState: OfficeShellState;
   motionEnabled?: boolean;
   motionCheckpoint?: string;
   kickoffFixture?: KickoffFixtureId | undefined;
+  /** A named office log (`?fixture=`) rendered instead of the state's own log. */
+  fixtureId?: string | undefined;
 }>) {
   const [state, setState] = useState(initialState);
   const [canvasKey, setCanvasKey] = useState(0);
   const [selectedEntityId, setSelectedEntityId] = useState<string | undefined>(undefined);
   const reducedMotion = useReducedMotion();
   // The canonical log for this state is replayed and projected once; every surface reads it.
-  const office = useMemo(() => officeModelFor(state), [state]);
-  const library = useMemo(() => officeLibraryFor(state), [state]);
+  const office = useMemo(() => officeModelFor(state, fixtureId), [state, fixtureId]);
+  const library = useMemo(() => officeLibraryFor(state, fixtureId), [state, fixtureId]);
   const motion = motionEnabled
     ? motionFrom(office.model, { reducedMotion, checkpoint: motionCheckpoint })
     : undefined;

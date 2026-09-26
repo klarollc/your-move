@@ -203,7 +203,8 @@ const presence = (log: Log, roleId: string, value: string, health = "connected")
   );
 
 type Variant = {
-  graybox?: "review" | "missing-artifact" | "test-failure" | "disagreement" | "cancelled";
+  graybox?:
+    "review" | "missing-artifact" | "test-failure" | "disagreement" | "cancelled" | "completed";
   evidence?: "evidence" | "permission";
 };
 
@@ -269,6 +270,20 @@ function officeLog(prefix: string, variant: Variant = {}): Log {
       evidence(log, "evidence_graybox_release", "work_graybox_slice", "release", "failed");
       raise(log, "work_graybox_slice", 3, "review_requested", CONDITIONS.disagreement);
       presence(log, "implementation-engineer", "waiting");
+      break;
+    case "completed":
+      raise(log, "work_graybox_slice", 3, "review_requested", CONDITIONS.review);
+      log.emit("work.transitioned", {
+        workItemId: "work_graybox_slice",
+        fromRevision: 4,
+        toState: "verified",
+      });
+      log.emit("work.transitioned", {
+        workItemId: "work_graybox_slice",
+        fromRevision: 5,
+        toState: "completed",
+      });
+      presence(log, "implementation-engineer", "idle");
       break;
     case "cancelled":
       raise(log, "work_graybox_slice", 3, "review_requested", CONDITIONS.review);
@@ -391,6 +406,32 @@ export const OFFICE_FIXTURES: Readonly<Record<string, OfficeFixture>> = Object.f
     [],
     () => officeLog("cancelled", { graybox: "cancelled" }),
   ),
+  // Capture-only logs (Task 9, spec §8.6): no shell state names them; `?fixture=<id>` selects them.
+  "completed-unapproved": fixture(
+    "completed-unapproved",
+    "The graybox slice is completed with its evidence passed, and no manager approval covers it.",
+    [],
+    () => officeLog("completed", { graybox: "completed" }),
+  ),
+  unassigned: fixture(
+    "unassigned",
+    "Release notes are recorded as ready work that nobody has been assigned.",
+    [],
+    () => {
+      const log = officeLog("unassigned");
+      log.emit("work.created", {
+        workItemId: "work_release_notes",
+        outcome: "Write the release notes",
+        requiredEvidenceKinds: [],
+      });
+      log.emit("work.transitioned", {
+        workItemId: "work_release_notes",
+        fromRevision: 0,
+        toState: "ready",
+      });
+      return log;
+    },
+  ),
 });
 
 const CANONICAL: Partial<Record<OfficeFixtureState, OfficeFixture>> = {
@@ -407,10 +448,16 @@ const CANONICAL: Partial<Record<OfficeFixtureState, OfficeFixture>> = {
 };
 
 /** Which canonical log a shell state renders, and the shell overlay when the state is not canonical. */
-export function officeFixtureFor(state: OfficeFixtureState): Readonly<{
+export function officeFixtureFor(
+  state: OfficeFixtureState,
+  /** A named log from `OFFICE_FIXTURES` (`?fixture=`); an unknown name is ignored. */
+  fixtureId?: string,
+): Readonly<{
   fixture: OfficeFixture;
   overlay: OfficeFixtureState | null;
 }> {
+  const named = fixtureId ? OFFICE_FIXTURES[fixtureId] : undefined;
+  if (named) return { fixture: named, overlay: CANONICAL[state] ? null : state };
   const canonical = CANONICAL[state];
   return canonical
     ? { fixture: canonical, overlay: null }

@@ -38,6 +38,7 @@ createRoot(container).render(
       <OfficeWorkspace
         initialState={initialState}
         {...(isKickoffFixture(requestedKickoff) ? { kickoffFixture: requestedKickoff } : {})}
+        fixtureId={parameters.get("fixture") ?? undefined}
         motionEnabled={parameters.get("motion") === "handoff"}
         motionCheckpoint={parameters.get("checkpoint") ?? "settled"}
       />

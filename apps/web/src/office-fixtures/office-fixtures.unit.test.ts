@@ -110,3 +110,42 @@ describe("office fixture logs", () => {
     expect(test?.agent.status === "recorded" && test.agent.freshness).toBe("delayed");
   });
 });
+
+/**
+ * Phase 7-O Task 9 (spec §8.6), owner ruling 2026-09-26: two logs for the capture states no log
+ * reached, selected with `?fixture=<id>` over the ready shell.
+ */
+describe("capture-only office logs", () => {
+  it("records completed work that no approval covers", () => {
+    const model = modelFor("completed-unapproved");
+    const work = person(model, "agent_implementation_engineer")?.work.find(
+      (view) => view.workItemId === "work_graybox_slice",
+    );
+    expect(work?.state).toBe("completed");
+    expect(work?.approval.status).toBe("not_approved");
+    expect(work?.approval.missingEvidenceKinds).toEqual([]);
+    expect(model.issues).toEqual([]);
+  });
+
+  it("records work nobody holds, which no person's inspector lists", () => {
+    const fixture = OFFICE_FIXTURES.unassigned;
+    expect(fixture).toBeDefined();
+    const snapshot = replayProject(fixture!.events);
+    const unheld = Object.values(snapshot.work.workItems).filter((item) => !item.assignment);
+    expect(unheld.map((item) => item.workItemId)).toEqual(["work_release_notes"]);
+    const model = modelFor("unassigned");
+    const held = model.entities.flatMap((entity) =>
+      entity.kind === "person" ? entity.work.map((view) => view.workItemId) : [],
+    );
+    expect(held).not.toContain("work_release_notes");
+    expect(model.issues).toEqual([]);
+  });
+
+  it("selects a named log over the ready shell, and ignores an unknown one", () => {
+    expect(officeFixtureFor("ready", "unassigned")).toEqual({
+      fixture: OFFICE_FIXTURES.unassigned,
+      overlay: null,
+    });
+    expect(officeFixtureFor("ready", "no_such_log").fixture).toBe(OFFICE_FIXTURES.default);
+  });
+});

@@ -426,6 +426,47 @@ revision K`. With no handoff there is no cue. The Phase 4 `delivery` transition 
       `Handoff to Visual QA Reviewer recorded · revision K`, K the handoff event's position;
       announcement `Handoff moved to Review station` → `Handoff to Visual QA Reviewer recorded`.
       Added: no cue on `?state=empty&motion=handoff`. `test:e2e` 54, `test:a11y` 46, `test:visual` 62.
+  - Result, captures (9b), 2026-09-26. Owner rulings the same day: add two logs selected with
+    `?fixture=`; capture unassigned work as it is and file a finding; capture the production
+    bundle on 4174 (decision 9-E).
+    - **Logs.** `completed-unapproved` (the graybox slice verified then completed, evidence passed,
+      no approval) and `unassigned` (`work_release_notes`, ready, held by nobody).
+      `officeFixtureFor(state, fixtureId)` selects a named log over the ready shell; an unknown
+      name is ignored. `?fixture=` is read in `main.tsx`. RED: 3 unit tests, "3 failed | 460
+      passed (463)"; GREEN 463.
+    - **Spec.** `tests/visual/phase-7o-office-captures.spec.ts`, `@visual`, one test per project.
+      It runs 11 journeys: default, selected agent, blocked item, waiting, stale, offline, missing
+      evidence, completed-unapproved, unassigned work, conflict, evidence link. Each asserts its
+      state in words before capturing (the non-colour check). Probes: keyboard (skip link,
+      outline, Tab to `Inspect Test Engineer`, Enter, Escape, focus back), pointer (a canvas click
+      selects the Implementation Engineer; the inspector reads `waiting`), focus return (evidence
+      dialog, then library), reduced motion (the handoff cue as a label, no animation), 200% zoom.
+      It records console errors, every request and every failed request, and writes
+      `manifest.json` per project. The comparison with the Active Phase 6 direction is marked not
+      performed: it is the owner's.
+    - **Dry run, ephemeral output, both projects:** 13 captures each; no console errors; 19
+      requests, all same-origin, none failed; 6 Tab presses to the target; page horizontal scroll
+      at 200%: 0 px.
+    - **Two defects in my own work, caught before push.** (1) The first zoom probe set the
+      emulation before navigating and asserted only the device-pixel ratio; its capture was
+      indistinguishable from the unzoomed one. It now zooms after navigation, asserts `innerWidth`
+      is half the viewport (as the Phase 5 matrix does), and captures through the same CDP
+      session. A mutation (clearing instead of setting the override) fails it on both projects.
+      (2) The spec's header comment named the committed-evidence path, which
+      `scripts/evidence-immutability.test.mjs` forbids in any spec; `verify` failed on it and the
+      comment was reworded.
+    - **Findings for the owner's V-severity disposition** (agent's proposed severity in brackets):
+      - **F-9-1, unassigned work is not visible** [V1 proposed]. `work_release_notes` appears
+        nowhere in the office: the outline and inspector list work per person, and the rail shows
+        work only when it needs attention.
+      - **F-9-2, zoom clips the project bar** [V1 proposed]. At 200% the project bar clips its own
+        controls: `Manager attention (2)` loses its count, `Reset view` is cut, and the outcome and
+        revision text are truncated. The outline person cards are unreadable. The inspector stays
+        readable. The page does not scroll horizontally; the clipping is inside fixed regions.
+      - **F-9-3, outline buttons overlap names** [V2 proposed]. At both viewports, the `Inspect …`
+        buttons in the outline person cards overlap the person's name, and card text wraps one
+        word per line. The button's own label carries the name, so no fact is lost.
+    - **Owner-run step:** regenerate the committed captures, then record provenance.
   - Verify: the capture manifest; the owner's dispositions recorded.
 
 - [ ] Task 10: Comprehension preparation (spec §8.7).

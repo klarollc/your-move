@@ -27,8 +27,8 @@ export type OfficeModel = Readonly<{
   overlay: OfficeFixtureState | null;
 }>;
 
-export function officeModelFor(state: OfficeFixtureState): OfficeModel {
-  const { fixture, overlay } = officeFixtureFor(state);
+export function officeModelFor(state: OfficeFixtureState, fixtureId?: string): OfficeModel {
+  const { fixture, overlay } = officeFixtureFor(state, fixtureId);
   return {
     model: projectOfficeReadModel({
       snapshot: replayProject(fixture.events),
@@ -169,8 +169,11 @@ export function notCurrentReasons(model: OfficeReadModel): string {
  * The Project Library for a shell state (Phase 7-O Task 8b): the evidence is the state's canonical
  * log, projected; the knowledge records are still the Phase 4 data (`office-fixtures/knowledge.ts`).
  */
-export function officeLibraryFor(state: OfficeFixtureState): BrowserLibraryProjection {
-  const { fixture } = officeFixtureFor(state);
+export function officeLibraryFor(
+  state: OfficeFixtureState,
+  fixtureId?: string,
+): BrowserLibraryProjection {
+  const { fixture } = officeFixtureFor(state, fixtureId);
   const snapshot = replayProject(fixture.events);
   const model = projectOfficeReadModel({ snapshot, now: fixture.now, registry: OFFICE_REGISTRY });
   return {
