@@ -31,6 +31,20 @@ test("the committed allowlist passes against the real package.json and script so
   assert.deepEqual(await allowlistViolations({ allowlist, scripts, readSource }), []);
 });
 
+test("the six read-only checks ruled on 2026-09-26 are allow-listed as themselves", async () => {
+  const { commands } = await readJson("scripts/agent-runner.allowlist.json");
+  for (const name of [
+    "check:toolchain",
+    "test:toolchain",
+    "test:protocol",
+    "protocol:codex:check",
+    "protocol:codex:drift",
+    "test:runtime",
+  ]) {
+    assert.deepEqual(commands[name], { kind: "npm", script: name }, name);
+  }
+});
+
 test("an entry naming a live provider run is refused, and the reason names the opt-in it reads", async () => {
   const { scripts } = await readJson("package.json");
   const allowlist = { commands: { release: { kind: "npm", script: "phase5:release:run" } } };

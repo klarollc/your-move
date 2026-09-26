@@ -284,7 +284,11 @@ requests a check by writing `{ "id": "<8-64 chars, a-z0-9->", "command": "<allow
 `logs/<id>.log`. The result carries `head`, `dirty` and `evidenceChanged`; a dirty-tree run is
 never the gate for a commit. Live runs, promotions and evidence writes cannot be allow-listed
 (`scripts/agent-runner.test.mjs` enforces it) and the child never sees a `CUCKCODE_*` variable.
-`git-push` works only when the owner started the runner with `-- --allow-push`.
+`git-push` works only when the owner started the runner with `-- --allow-push`. Six read-only
+checks joined the allowlist on 2026-09-26 (`check:toolchain`, `test:toolchain`, `test:protocol`,
+`protocol:codex:check`, `protocol:codex:drift`, `test:runtime`); they are for targeted checks only, a
+commit's gate is still a full `verify` on a clean tree, and the runner must be restarted to see an
+allowlist change.
 
 **Codex runtime (2026-09-26, branch `codex-currency`).** Codex is the npm dependency `@openai/codex`
 at one exact version in `packages/runtime-codex/package.json`, resolved from `node_modules` by

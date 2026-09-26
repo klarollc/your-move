@@ -2,20 +2,86 @@
   "schema": "cuckcode.agent-runner-allowlist.v1",
   "note": "Every command an agent may request through scripts/agent-runner.mjs. Requests carry no arguments. Changing this file is a governed change: scripts/agent-runner.test.mjs checks every entry against package.json.",
   "commands": {
-    "verify": { "kind": "npm", "script": "verify" },
-    "typecheck": { "kind": "npm", "script": "typecheck" },
-    "typecheck:scripts": { "kind": "npm", "script": "typecheck:scripts" },
-    "format:check": { "kind": "npm", "script": "format:check" },
-    "lint": { "kind": "npm", "script": "lint" },
-    "test:unit": { "kind": "npm", "script": "test:unit" },
-    "test:component": { "kind": "npm", "script": "test:component" },
-    "test:contract": { "kind": "npm", "script": "test:contract" },
-    "test:integration": { "kind": "npm", "script": "test:integration" },
-    "test:e2e": { "kind": "npm", "script": "test:e2e" },
-    "test:a11y": { "kind": "npm", "script": "test:a11y" },
-    "test:visual": { "kind": "npm", "script": "test:visual" },
-    "phase5:provenance": { "kind": "npm", "script": "phase5:provenance" },
-    "git-status": { "kind": "git", "args": ["status", "--porcelain=v1", "--branch"] },
+    "verify": {
+      "kind": "npm",
+      "script": "verify"
+    },
+    "typecheck": {
+      "kind": "npm",
+      "script": "typecheck"
+    },
+    "typecheck:scripts": {
+      "kind": "npm",
+      "script": "typecheck:scripts"
+    },
+    "format:check": {
+      "kind": "npm",
+      "script": "format:check"
+    },
+    "lint": {
+      "kind": "npm",
+      "script": "lint"
+    },
+    "test:unit": {
+      "kind": "npm",
+      "script": "test:unit"
+    },
+    "test:component": {
+      "kind": "npm",
+      "script": "test:component"
+    },
+    "test:contract": {
+      "kind": "npm",
+      "script": "test:contract"
+    },
+    "test:integration": {
+      "kind": "npm",
+      "script": "test:integration"
+    },
+    "test:e2e": {
+      "kind": "npm",
+      "script": "test:e2e"
+    },
+    "test:a11y": {
+      "kind": "npm",
+      "script": "test:a11y"
+    },
+    "test:visual": {
+      "kind": "npm",
+      "script": "test:visual"
+    },
+    "phase5:provenance": {
+      "kind": "npm",
+      "script": "phase5:provenance"
+    },
+    "check:toolchain": {
+      "kind": "npm",
+      "script": "check:toolchain"
+    },
+    "test:toolchain": {
+      "kind": "npm",
+      "script": "test:toolchain"
+    },
+    "test:protocol": {
+      "kind": "npm",
+      "script": "test:protocol"
+    },
+    "protocol:codex:check": {
+      "kind": "npm",
+      "script": "protocol:codex:check"
+    },
+    "protocol:codex:drift": {
+      "kind": "npm",
+      "script": "protocol:codex:drift"
+    },
+    "test:runtime": {
+      "kind": "npm",
+      "script": "test:runtime"
+    },
+    "git-status": {
+      "kind": "git",
+      "args": ["status", "--porcelain=v1", "--branch"]
+    },
     "git-push": {
       "kind": "git",
       "args": ["push", "origin", "{branch}", "main"],

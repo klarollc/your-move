@@ -51,6 +51,12 @@ Ctrl+C. It runs only the commands in `scripts/agent-runner.allowlist.json`, one 
 shell and no `CUCKCODE_*` variables, and refuses to start if any such variable is set. Requests and
 results live under `node_modules/.cache/agent-runner/`. Plan: `tasks/agent-runner-plan.md`.
 
+Since 2026-09-26 the allowlist also carries six read-only checks — `check:toolchain`,
+`test:toolchain`, `test:protocol`, `protocol:codex:check`, `protocol:codex:drift` and
+`test:runtime` — for fast targeted checks. They do not change the gate: a commit's gate is still a
+full `verify` on a clean tree. The runner reads its allowlist once at startup, so restart it after
+the allowlist changes.
+
 ## Codex runtime
 
 Codex is a pinned npm dependency, not the desktop app's binary: `@openai/codex` at one exact version

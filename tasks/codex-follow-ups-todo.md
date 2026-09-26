@@ -1,6 +1,7 @@
 # Codex currency follow-ups checklist
 
-Status: **DRAFT, awaiting owner approval.**
+Status: **OWNER-APPROVED 2026-09-26.** Tasks 1–7 are authorized in order; the owner steps are
+marked.
 Plan: `tasks/codex-follow-ups-plan.md`, **owner-approved 2026-09-26**.
 Specification: `docs/codex-follow-ups-spec-v0.1.md`, **owner-approved 2026-09-26**, FU-1 to FU-4
 as recommended.
@@ -10,7 +11,9 @@ Authority: `docs/evidence/runtime/decision-record-2026-09-26-codex-follow-up-rul
 
 The rules of `tasks/codex-currency-todo.md` apply unchanged: worktree only; RED as an assertion
 failure against a deliberate stub, recorded before GREEN in
-`docs/evidence/runtime/codex-currency/red-green-log.md` under **Follow-ups**, never re-run; the
+`tasks/codex-follow-ups-red-green.md` (appended to
+`docs/evidence/runtime/codex-currency/red-green-log.md` at Task 3, before the provenance write),
+never re-run; the
 gate is a runner `verify` on a clean tree, counts read from the run's log; no installs from an agent
 shell; stop and ask on any doc/code disagreement or a file outside a task's list; historical
 evidence is never rewritten. **No live provider turn** anywhere in this checklist; Task 6 opens a
