@@ -295,7 +295,7 @@ and every live script refuses without it. To move the pin: `npm.cmd install --no
 `protocol/<v>/surface-diff.md`, then change the declaration and reinstall. Every turn goes through
 `runTurn` (180 s idle, 900 s cap, interrupt on either, one transport retry from a run budget of two),
 every run record carries `runtime` attempts with Codex's own failure class, and every live session
-leaves a log under `docs/evidence/runtime/sessions/`. Why passes 6–9 failed stays unknown (DF-024).
+leaves a log under `docs/evidence/runtime/sessions/`. Why passes 6–9 failed stays unknown (DF-025).
 
 Everything runs from `C:\Users\nater\CuckCode`. The owner uses **PowerShell**, so `&&` is a parse
 error and there is no inline env-var prefix — write `$env:X='1'; cmd` and clear it afterwards.

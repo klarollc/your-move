@@ -1042,7 +1042,7 @@ took 2 minutes 29 seconds, and `evidenceChanged` was false.
 What it does not remove: the owner still starts the runner, still runs every evidence write, live
 run and promotion, and remains the authority. The runner moves the relay, not the authority.
 
-### DF-024 — The harness kept its own summary of a failure and threw away the provider's
+### DF-025 — The harness kept its own summary of a failure and threw away the provider's
 
 Observed 2026-09-25, diagnosing release-review passes 6 to 9; fixed on branch `codex-currency`
 (`docs/codex-runtime-currency-spec-v0.1.md`, Tasks 8–12).
@@ -1098,7 +1098,7 @@ failed stays **unknown**: the evidence was never kept. The next failure will nam
   timeout after it overran Vitest's 5 s default during `verify` (`5e3efe9`). Both streams ran `verify`
   on one machine. Recorded by owner ruling, not investigated.
 
-### DF-025 — Evidence digests recorded over working-copy bytes cannot be verified from a clean checkout
+### DF-026 — Evidence digests recorded over working-copy bytes cannot be verified from a clean checkout
 
 Observed 2026-09-25, at the first `verify` in the `codex-currency` worktree.
 
@@ -1124,7 +1124,7 @@ appears to guard. The ledger proves the owner's disk, not the repository.
 None, and none ruled. Candidates: digest the LF-normalised content (and re-record the twelve under
 P-6), or digest git's blob for committed artifacts.
 
-### DF-026 — A text-only role has a live tool server beside it
+### DF-027 — A text-only role has a live tool server beside it
 
 Observed 2026-09-26, in the session log of the Task 14 smoke turn (`codex-currency`,
 `docs/evidence/runtime/smoke/2026-09-26T12-34-42-948Z-release-reviewer.json`).

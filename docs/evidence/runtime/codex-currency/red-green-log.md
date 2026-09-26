@@ -513,7 +513,7 @@ and wrote nothing. The runner cannot run it: its allowlist guard excludes any sc
 The drift wiring test now lists `run-codex-smoke.ts` among the scripts that open sessions through
 the shared opener. `docs/evidence/runtime/smoke-ledger.json` starts at budget 3, spent 0.
 
-Records: DF-021's product response gains a dated update; DF-024 records B1–B6 and the frictions of
-this stream; DF-025 records the working-copy-bytes provenance defect for its own ruling. AGENTS,
+Records: DF-021's product response gains a dated update; DF-025 records B1–B6 and the frictions of
+this stream; DF-026 records the working-copy-bytes provenance defect for its own ruling. AGENTS,
 HANDOFF and README each gain one amendment. The decision record gains the rulings made during
 implementation.
