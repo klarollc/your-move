@@ -38,10 +38,10 @@ once, at Task 6's provenance write, when these entries move into its "Follow-ups
 ## Task 5 — Feature policy and enumeration (F1.1, F1.3, F1.4, FU-1 to FU-3)
 
 - Established offline first (container mirror, linux-x64 0.157.1, not signed in, no turn):
-  `thread/start` `config.features` takes whole feature names as keys, dots included — a bogus
-  `features: {"guardianv2.no_such_xyz": false}` is refused as `unknown configuration field
-  features.guardianv2.no_such_xyz`, while the flat `"features.guardianv2.no_such_xyz"` form is
-  read as a nested table. All 145 non-kept features set `false` in one `thread/start` are
+  `thread/start` `config.features` takes whole feature names as keys, dots included. A bogus
+  `features: {"guardianv2.no_such_xyz": false}` is refused as an unknown configuration field
+  named with the whole dotted name, while the flat `"features.guardianv2.no_such_xyz"` key is read
+  as a nested table. All 145 non-kept features set `false` in one `thread/start` are
   accepted; `mcpServerStatus/list` with `{threadId, detail: "toolsAndAuthOnly"}` answers
   `{"data":[],"nextCursor":null}`.
 - Design: the config disables every feature not kept, not only this platform's default-on ones,
