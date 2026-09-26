@@ -79,6 +79,13 @@ for drafting only.
 `tasks/agent-runner-todo.md` (decision AR-1). The runner is built before Phase 7-O implementation.
 No code change is authorized by either approval.
 
+**Amended 2026-09-25 — Phase 5 accepted.** The owner accepted the Phase 5 fixture outcome on the
+pass-5 verdict (`docs/evidence/phase-5/decision-record-2026-09-25-task-10-owner-acceptance.md`). No
+independent verdict exists under the current scope. The D-24 production-suitability review is
+recorded by hand, **due 2026-10-09**, owner as Delivery Lead and reviewer
+(`docs/evidence/phase-5/d24-production-suitability-review.json`); nothing in the code enforces it.
+Phase 5 cannot close without its disposition. Production reuse of fixture code remains blocked.
+
 **Phase 6 was authorized as of 2026-09-13, Tasks 1-7 only.** The owner approved `docs/visual-reference-production-brief-v0.1.md` as written (6-A) and authorized Phase 6 running in parallel with Phase 5 (6-B), amending MDD section 24 accordingly; the candidate production medium is the hybrid of generated exploration plus in-repo vector composition (6-C). All three rulings are recorded in `docs/evidence/phase-6/decision-request-2026-09-13-phase-6-parallel-start.md`. Candidate art produced under this authority stays Candidate: Task 8 selection and Task 10 promotion to Active are owner-run, and Phase 7 high-fidelity implementation, final tokens and assets, visual-baseline promotion, Phase 5 behavior, deployment, and any external effect remain unauthorized.
 
 ## Required delivery method

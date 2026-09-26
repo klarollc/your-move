@@ -300,9 +300,18 @@ approval.
   - The waiver, the met disposition, the walkthrough record and the three refusing review passes are
     preserved as history. SR-01 stays open in the record rather than closed by the scope change.
 
-- [ ] Task 10: **Owner acceptance. Owner-run.** Accept the fixture outcome or record bounded
+- [x] Task 10: **Owner acceptance. Owner-run.** Accept the fixture outcome or record bounded
       revisions. Atomically creates the D-24 review that Phase 8 closes.
+  - **Accepted by the owner 2026-09-25**, on the pass-5 verdict and without bounded revisions:
+    `docs/evidence/phase-5/decision-record-2026-09-25-task-10-owner-acceptance.md`. No independent
+    verdict exists under the current scope; the record says so.
+  - The D-24 review was **not** created atomically: nothing in the code implements D-24. It is
+    recorded by hand in `docs/evidence/phase-5/d24-production-suitability-review.json`, due
+    2026-10-09, escalation 2026-10-02, owner as Delivery Lead and reviewer.
 
-- [ ] Phase 5 gate: all required evidence classes exist and remain distinct; the shared-knowledge
+- [x] Phase 5 gate: all required evidence classes exist and remain distinct; the shared-knowledge
       scenario passes; manager approval references exact artifact and evidence versions; the owner
       explicitly accepts. **Phase 7 and any production reuse remain separately gated.**
+  - **Passed by owner acceptance 2026-09-25.** The acceptance references the exact fixture blobs and
+    195 evidence digests. **Not closed:** the initiative stays open until the D-24 review records a
+    disposition, due 2026-10-09.

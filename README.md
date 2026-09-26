@@ -13,9 +13,9 @@ projections of the same canonical state. See MDD §2.
 
 ## Current status
 
-**Phase 4 is complete, Phase 6 is complete, and Phase 5 is authorized. C-17 was ruled out of scope
-on 2026-09-18, which is not met; the independent release-review verdict has not been refreshed and
-Task 10 owner acceptance is outstanding.**
+**Phase 4 and Phase 6 are complete. Phase 5 was accepted by the owner on 2026-09-25 on the pass-5
+verdict; its D-24 production-suitability review is due 2026-10-09 and Phase 5 cannot close without
+it. C-17 is out of scope, not met.**
 
 The bounded live D-25 kickoff ran its full thirteen turns on 2026-09-14: six promoted roles, six
 distinct bindings, no external effect. The owner approved the charter it produced, with its ten

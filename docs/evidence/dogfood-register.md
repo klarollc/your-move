@@ -982,3 +982,53 @@ record entry. The builder refuses, rather than skips, a derived edge that is cur
 a future build cannot quietly undo a ruling. Neither guard covers the case of a retraction that is
 authorised by a decision record that does not exist; `authorizedBy` is required to be a non-empty
 string and is not resolved against the tree.
+
+### DF-021 — The pinned runtime was replaced underneath the project, and only a run would have said so
+
+Observed 2026-09-25, while diagnosing why release-review passes 6 to 9 produced no verdict.
+
+The release review, the kickoff and the role exercises all spawn the Codex binary bundled with the
+desktop app, at a fixed path, and refuse a handshake that does not report the pinned `0.146.0`.
+Probes run by the owner outside the turn ledger showed that binary now reports `0.156.1`: the
+desktop app updated it. Pass 9 on 2026-09-22 got past the version check, so the update landed after
+it. Both `gpt-5.6-sol` and `gpt-5.6-luna` answered in about six seconds on the new client, so
+neither the network nor the models explain passes 6 to 9. The old client can no longer be probed,
+so the cause of those four failures is recorded as **unknown**, with a backend change retiring the
+old client as the most likely explanation.
+
+## What it cost
+
+Four review attempts, four ledger turns, and a week in which the natural reading of the failures —
+the connection is flaky — was wrong. The binding guard is correct: the next run would have refused
+with `PROTOCOL_DRIFT` before spending a turn. But nothing reports the drift until a run is attempted,
+and `protocol:codex:check` passes throughout, because it checks the committed schema bundle's
+integrity, not the binary the harness will actually spawn.
+
+## The shape
+
+A pin that the project owns on paper and a vendor owns in practice. The protocol check is exact
+inside its boundary — the bundle — and the thing that drifted sits just outside it. It is the same
+family as DF-012: a gate reporting green about something other than what it appears to guard.
+
+## Product response
+
+None yet, and none ruled. The owner chose on 2026-09-25 to accept Phase 5 on the pass-5 verdict
+rather than re-pin the runtime. A cheap candidate, unproposed: a preflight that runs the pinned
+binary's `--version` and compares it with the pin, reported by `kickoff:preflight` and at session
+start, with no provider call.
+
+### DF-022 — The human relay for verification is gone, for the checks on the allowlist
+
+Observed 2026-09-25, as the owner-run smoke test of the agent command runner
+(`tasks/agent-runner-plan.md`, Task 7).
+
+Agent-side problem 5 in the project's own framing was that the agent cannot verify its own work.
+Every claim about `verify`, `tsc` or the browser suites waited on the owner pasting output back,
+roughly fifteen round-trips in one session. With the owner running `npm run agent:runner`, the
+agent requested `git-status`, `test:unit` and `verify` itself. The `verify` result, at `0587aaf` on a
+clean tree, reproduced the owner's own direct run of the same commit count for count: unit 395,
+component 73, integration 67 with 3 skipped, contract 65, e2e 50, a11y 46, visual 62, runner 26. It
+took 2 minutes 29 seconds, and `evidenceChanged` was false.
+
+What it does not remove: the owner still starts the runner, still runs every evidence write, live
+run and promotion, and remains the authority. The runner moves the relay, not the authority.

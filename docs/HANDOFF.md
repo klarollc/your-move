@@ -1,6 +1,6 @@
 # Handoff — state, next action, and what would otherwise be relearned expensively
 
-Written 2026-09-18, last updated 2026-09-25 for the Phase 7-O spec approval. Read `AGENTS.md` first for authority; this document is the
+Written 2026-09-18, last updated 2026-09-25 for the Phase 5 acceptance. Read `AGENTS.md` first for authority; this document is the
 live state, the next action, and the things a fresh session pays for twice if nobody wrote them down.
 
 ---
@@ -12,7 +12,7 @@ live state, the next action, and the things a fresh session pays for twice if no
 | 0–3 | Accepted 2026-08-13 |
 | 4 | **Complete.** Bounded live D-25 round ran the full thirteen turns; evidence packet delivered. Owner gate open. |
 | 6 | **Complete.** `reconciliation-b-clarity` is the **Active** visual system, promoted by owner execution. |
-| 5 | **Tasks 1–9 done; C-17 ruled out of scope (not met) on 2026-09-18.** Current release verdict is the **NEEDS WORK** pass 5; overall Task 10 is still owner-run. |
+| 5 | **Accepted by the owner 2026-09-25** on the NEEDS WORK pass 5 (C-17 out of scope, not met). **Not closed:** the hand-recorded D-24 review is due **2026-10-09**, owner as reviewer. |
 | 7-O | **Specification authorized 2026-09-23; not approved.** Owner inserted Operability before Phase 7, classified the rail/inspector contradiction V1, and put actually performed T3/T5/T6 in its gate. No implementation authorized. |
 | 7, 8 | **Unauthorized.** Phase 7 follows accepted Phase 7-O and needs its own specification, plan and owner approval. |
 
@@ -35,19 +35,25 @@ performed T3/T5/T6 under MDD §20 in the Phase 7-O gate. The ruling is
 `docs/evidence/phase-7-o/decision-record-2026-09-23-operability-scope.md`. The specification
 `docs/phase-7-o-operability-spec-v0.2.md` is **owner-approved (2026-09-25)**, along with W-1 to
 W-3 for the command runner (`docs/evidence/phase-7-o/decision-record-2026-09-25-spec-approval.md`).
-Next gates, in order: approve `tasks/agent-runner-plan.md` and `tasks/agent-runner-todo.md`
-(decision AR-1), build the runner, then approve `tasks/phase-7-o-plan.md` (decisions P-1 to P-5,
-of which P-1, the Phase 6 frozen-digest successor, is blocking), then its task checklist. Do not
-change behavior until the relevant plan and checklist are both approved. Phase
-5 Task 10 remains a parallel owner-run acceptance gate and a Phase 8 precondition.
+The agent command runner is built and proven (2026-09-25, DF-022); use it, per the operational
+section below. Next gate: owner approval of `tasks/phase-7-o-plan.md` (decisions P-1 to P-5, of
+which P-1, the Phase 6 frozen-digest successor, is blocking), then its task checklist. Do not change
+behavior until the relevant plan and checklist are both approved.
+
+**Phase 5 was accepted by the owner on 2026-09-25**
+(`docs/evidence/phase-5/decision-record-2026-09-25-task-10-owner-acceptance.md`). The D-24
+production-suitability review is recorded by hand in
+`docs/evidence/phase-5/d24-production-suitability-review.json`: **due 2026-10-09, escalation
+2026-10-02**, owner as Delivery Lead and reviewer. Nothing in the code enforces it; surface the date
+when it is near. Phase 5 cannot close without a disposition.
 
 **Current Phase 5 refresh attempt:** pass 9 (2026-09-22) spent one turn and stopped at
 `NOTIFICATION_TIMEOUT` without a verdict. It is recorded in the provenance ledger (2026-09-25) and
 supersedes only passes 6 to 8. Pass 5 remains the latest complete release verdict;
 do not treat pass 9 as acceptance or rewrite earlier attempts.
 
-**Overall Task 10 remains owner-run.** The C-17 scope ruling is narrow; do not read it as overall
-Phase 5 fixture acceptance.
+**Task 10 is done: the owner accepted on 2026-09-25**, on the pass-5 verdict below, knowing no
+independent verdict exists under the current scope.
 
 The current verdict is release review **pass 5, 2026-09-14: `NEEDS WORK`, 20 of 21 satisfied**, zero
 overclaims, citing sixteen artifact versions by content address.
@@ -76,7 +82,8 @@ C-09 and C-11 were closed by owner ruling on 2026-09-14 and pass 5 confirms both
 was attempted in passes 6–8, but each stopped on the first turn before producing a verdict. Pass 8
 records the concrete runtime failure as `stream disconnected before completion` while calling the
 ChatGPT Codex backend. The attempts are preserved and provenance is clean; no eligibility claim is
-made here. A later refresh requires a working runtime connection, then Task 10 remains owner-run.
+made here. Pass 9 then timed out, and on 2026-09-25 the pinned Codex binary was found updated to
+0.156.1, so any further run now refuses at binding (DF-021). The owner chose not to re-pin.
 
 **The ledger disagreed about this until 2026-09-19, and the ledger was wrong.** Because passes 6, 7
 and 8 are named `pass-<N>.json`, the supersession derivation retired everything below them, so
