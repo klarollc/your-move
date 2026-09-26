@@ -45,7 +45,7 @@
       "payment request API"
     ]
   },
-  "modulesScanned": 36,
+  "modulesScanned": 37,
   "modules": [
     "apps/web/src/decision-notice-capture.tsx",
     "apps/web/src/decision-notice.tsx",
@@ -59,6 +59,7 @@
     "packages/contracts/src/primitives.ts",
     "packages/contracts/src/runtime.ts",
     "packages/contracts/src/staffing.ts",
+    "packages/contracts/src/work-payloads.ts",
     "packages/contracts/src/workspace.ts",
     "packages/domain/src/accessible-outline.ts",
     "packages/domain/src/agent-projection.ts",
