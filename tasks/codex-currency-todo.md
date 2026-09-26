@@ -238,7 +238,7 @@ fallback`, chromium-1280) never saw its canvas within 5 s; the commit touches no
     `protocol:codex:check` both bundles ok; `protocol:codex:drift` ok against the Windows
     `codex.exe`; `phase5:provenance` ok with no stale digests.
 
-- [ ] **Task 13 — Smoke script and records** (CP-2, R7.2).
+- [x] **Task 13 — Smoke script and records** (CP-2, R7.2).
   - Files: `scripts/run-codex-smoke.ts`, `docs/evidence/runtime/smoke-ledger.json` (budget 3,
     spent 0), `package.json` (`codex:smoke`), `docs/evidence/dogfood-register.md`, `AGENTS.md`,
     `docs/HANDOFF.md`, `README.md`.
@@ -247,6 +247,15 @@ fallback`, chromium-1280) never saw its canvas within 5 s; the commit touches no
     product response points at R3; a new DF entry records B1–B6; the boundary documents name this
     stream and its rulings.
   - Verify: runner `test:runner` (the allowlist guard must exclude `codex:smoke`), `verify`.
+  - **Result:** `7cf2352`, then `2715b6a` (the four provenance records, owner-run
+    `phase5:provenance:write`, each digest checked against the committed bytes). RED 6/6 against a
+    stub. **Rehearsal is against injected fakes, not a fake app server:** the live script's drift
+    preflight refuses any fake binary, so the session path's end-to-end rehearsal is the Task 10 and
+    12 integration suites. Run without the opt-in, the real script refused and wrote nothing. DF-024
+    and DF-025 added (DF-023 is taken on `main`; renumber at merge if `main` adds more). **Gate:**
+    runner `verify` exit 0, clean tree at `2715b6a` — toolchain 11, protocol 21, roles 20,
+    qualification 16, scaffold 2, runner 26, unit 461, component 73, integration 76 + 3 skipped,
+    contract 77, e2e 50, a11y 46, visual 62; no stale digests.
 
 - [ ] **Task 14 — Owner-run smoke turn, then merge** (spec §4.4).
   - Owner, in the worktree: `$env:CUCKCODE_LIVE_SMOKE='1'; npm run codex:smoke`, then
