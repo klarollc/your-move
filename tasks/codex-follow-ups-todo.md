@@ -53,7 +53,7 @@ signed-in session but never starts a turn.
     `6a3b67b` — unit 463, component 73, integration 76 + 3 skipped, contract 77, e2e 50, a11y 46,
     visual 62.
 
-- [ ] **Task 3 — CR guard, worktree bytes, redacted smoke log (F2.1–F2.3, F3.4).**
+- [x] **Task 3 — CR guard, worktree bytes, redacted smoke log (F2.1–F2.3, F3.4).**
   - Files: `scripts/evidence-line-endings.test.mjs`, `package.json` (`test:ui-contract`),
     `scripts/redact-held-session-log.ts`,
     `docs/evidence/runtime/sessions/run-codex-smoke/2026-09-26T12-34-44-005Z-release-reviewer.jsonl`.
@@ -66,6 +66,13 @@ signed-in session but never starts a turn.
   - **Owner:** `npm run phase5:provenance:write` — twelve re-records and one new record. The agent
     checks each digest against the bytes before committing.
   - Verify: runner `verify`, `phase5:provenance` with no stale digests.
+  - Result (2026-09-26): code `1804ce7`, ledger `d95a52a`. The owner's write added 15 records, not
+    the 13 planned: the twelve re-records, the new redacted log, and records for the two edited
+    evidence files (`runtime/codex-currency/red-green-log.md`, `dogfood-register.md`), which the
+    checklist did not count. All 15 digests and byte counts match the bytes; none has a CR byte.
+    `fu3-prov-01`: exit 0, `staleDigests` and `missingFromLedger` both empty. `fu3-verify-01`
+    at `d95a52a`: exit 0, not dirty, evidence unchanged; the guard's 5 tests pass, including the
+    real-tree test. Queued after main's `task8b-verify-01` had finished and its runner was idle.
 
 - [ ] **Task 4 — Features in the upgrade (F1.2).**
   - Files: `scripts/generate-codex-protocol.mjs`, `scripts/codex-surface-diff.mjs` and its test,
