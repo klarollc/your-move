@@ -9,6 +9,7 @@ import * as prettier from "prettier";
 import { resolveCodexExecutable } from "../packages/runtime-codex/src/codex-pin.ts";
 import { buildProtocolManifest, checkProtocolBundle } from "./check-codex-protocol.mjs";
 import {
+  buildFeaturesRecord,
   diffFeatures,
   diffSurface,
   extractSurface,
@@ -127,13 +128,12 @@ try {
   await writeFile(
     featuresPath,
     `${JSON.stringify(
-      {
-        schema: "cuckcode.codex-features.v1",
+      buildFeaturesRecord({
         version,
-        command: "features list",
-        config: "empty CODEX_HOME",
+        platform: process.platform,
+        arch: process.arch,
         features,
-      },
+      }),
       null,
       2,
     )}\n`,

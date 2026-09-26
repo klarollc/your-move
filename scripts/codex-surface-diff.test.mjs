@@ -5,6 +5,7 @@ import test from "node:test";
 
 import {
   CONSUMED_FILES,
+  buildFeaturesRecord,
   diffFeatures,
   diffSurface,
   extractSurface,
@@ -281,4 +282,25 @@ test("feature entries join the surface diff and the report sorts them with the r
   assert.equal(merged.needsRuling.length, 3);
   const report = renderSurfaceDiff(merged, { from: "0.146.0", to: "0.157.1" });
   assert.match(report, /featureDefaultOn: `apps`/u);
+});
+
+test("the recorded feature list names the binary it came from, because defaults differ by platform", () => {
+  const record = buildFeaturesRecord({
+    version: "0.157.1",
+    platform: "win32",
+    arch: "x64",
+    features: features(FEATURES_TEXT),
+  });
+  assert.equal(record.schema, "cuckcode.codex-features.v1");
+  assert.equal(record.version, "0.157.1");
+  assert.equal(record.platform, "win32-x64");
+  assert.equal(record.config, "empty CODEX_HOME");
+  assert.deepEqual(Object.keys(record), [
+    "schema",
+    "version",
+    "platform",
+    "command",
+    "config",
+    "features",
+  ]);
 });

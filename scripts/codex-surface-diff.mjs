@@ -296,6 +296,21 @@ export function diffFeatures(from, to) {
   };
 }
 
+/**
+ * The `features.json` record. Defaults differ by platform (0.157.1 turns `secret_auth_storage` on
+ * for win32-x64 and off for linux-x64), so the record names the binary it describes.
+ */
+export function buildFeaturesRecord({ version, platform, arch, features }) {
+  return {
+    schema: "cuckcode.codex-features.v1",
+    version,
+    platform: `${platform}-${arch}`,
+    command: "features list",
+    config: "empty CODEX_HOME",
+    features,
+  };
+}
+
 /** One report from several diffs, each section sorted as `diffSurface` sorts its own. */
 export function mergeDiffs(...diffs) {
   const merged = {};
