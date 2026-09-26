@@ -166,3 +166,48 @@ repository.
 tests (desktop path), `codex-pin.ts` (a comment), and the new `supervisor.unit.test.ts`.
 `resolveInstalledCodexExecutable()` is called inside each live test and per session, never at
 import, so a module that only parses turns does not need Codex installed.
+
+## Task 7 — Drift preflight
+
+**Deviation from the plan, stated:** the core is TypeScript (`scripts/codex-drift.ts`, tested by
+`scripts/codex-drift.unit.test.ts` under vitest) rather than `codex-drift-core.mjs` under
+`node --test`. Every consumer is a TypeScript live script, no TypeScript script imports `.mjs`, and
+`allowJs` is off. `scripts/check-codex-protocol.d.mts` types the existing checker, so the drift
+check reuses `buildProtocolManifest` rather than carrying a second copy of the canonical hashing,
+which would repeat C-1 F6.
+
+**RED**, container mirror, `vitest run --project unit scripts/codex-drift.unit.test.ts` against a
+stub that always reports no drift:
+
+```text
+AssertionError: expected { ok: true, pin: '0.157.1', …(2) } to deeply equal { ok: true, pin: '0.157.1', …(2) }
+AssertionError: expected true to be false // Object.is equality
+AssertionError: expected true to be false // Object.is equality
+AssertionError: expected true to be false // Object.is equality
+AssertionError: expected true to be false // Object.is equality
+AssertionError: expected [] to deeply equal [ [ '--version' ], …(1) ]
+AssertionError: expected true to be false // Object.is equality
+Tests  7 failed (7)
+```
+
+Seven of seven are assertion failures.
+
+**GREEN**, container mirror: 7/7. Against real binaries, with no stub:
+
+- the installed 0.157.1 passes, with bundle hash
+  `98111ca770d4d181fa42551a666d8c9be42d1333540ef70fd93cffda53fba24f`;
+- `CUCKCODE_CODEX_EXE` pointed at a real 0.146.0 binary is refused on both counts:
+  `CODEX_BINARY_VERSION_DRIFT` (observed `codex-cli 0.146.0`, expected `codex-cli 0.157.1`) and
+  `CODEX_SCHEMA_DRIFT` (observed `ad2276a8362863c4bcc4083ca33b4a300920419b4ef244689d84c7706f710197`,
+  which is the committed 0.146.0 bundle's hash, expected `98111ca7…`). This is DF-021 reproduced
+  and refused, and it shows the override cannot bypass the pin (R1.3).
+
+**Wiring guard, proven by mutation rather than RED** (the wiring was written first): three
+structural tests — the shared session opener checks before constructing a supervisor; the two
+scripts that construct their own supervisor check before they do; the five others open sessions
+through the shared opener. Removing `await assertNoCodexDrift()` from `phase4-kickoff-session.ts`
+failed 1 of 10; removing it from `run-role-exercises.ts` failed 1 of 10; restored, 10/10.
+
+Mirror totals: unit 419 (409 + 10), `test:protocol` 21/21, `protocol:codex:drift` ok, runner
+26/26, `kickoff:preflight` reports `codex.ok: true` beside the role checks; `tsc -b`, scripts
+typecheck, ESLint and Prettier clean.

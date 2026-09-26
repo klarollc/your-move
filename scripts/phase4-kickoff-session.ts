@@ -15,6 +15,7 @@ import {
 } from "@cuckcode/runtime-codex";
 import type { RuntimeBindingReport } from "@cuckcode/contracts";
 
+import { assertNoCodexDrift } from "./codex-drift.js";
 import { KICKOFF_TASK_CONTRACT } from "./phase4-kickoff-briefing.js";
 
 /**
@@ -69,6 +70,16 @@ export async function openKickoffSession(input: {
   expected: BindingExpectation;
   cwd: string;
 }): Promise<{ ok: true; session: KickoffSession } | { ok: false; code: string; detail: string }> {
+  // R3: refuse before anything is spawned for a turn if the installed Codex is not the pinned one.
+  try {
+    await assertNoCodexDrift();
+  } catch (cause) {
+    return {
+      ok: false,
+      code: "CODEX_DRIFT",
+      detail: cause instanceof Error ? cause.message : "drift preflight failed",
+    };
+  }
   const artifact = await readFile(resolve(ROLES_ROOT, "authored", `${input.roleId}.json`));
   const composed = composeRole(JSON.parse(artifact.toString("utf8")) as RoleBrief);
   if (!composed.ok) {

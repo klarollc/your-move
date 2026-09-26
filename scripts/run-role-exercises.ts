@@ -13,6 +13,8 @@ import {
   resolveInstalledCodexExecutable,
 } from "@cuckcode/runtime-codex";
 
+import { assertNoCodexDrift } from "./codex-drift.js";
+
 const ROOT = resolve(process.cwd());
 const ROLES_ROOT = resolve(ROOT, "roles");
 const EVIDENCE_ROOT = resolve(ROOT, "docs/evidence/phase-4/live-kickoff/role-exercises");
@@ -33,6 +35,8 @@ const CREDENTIAL_SOURCE = resolve(
 if (process.env.CUCKCODE_LIVE_ROLE_EXERCISE !== "1") {
   throw new Error("LIVE_ROLE_EXERCISE_EXPLICIT_OPT_IN_REQUIRED");
 }
+// R3: refuse before any session opens if the installed Codex is not the pinned one.
+await assertNoCodexDrift();
 
 const exerciseRecordPath = resolve(ROLES_ROOT, "exercises.json");
 const exerciseRecord = JSON.parse(await readFile(exerciseRecordPath, "utf8")) as ExerciseRecord;

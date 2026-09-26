@@ -110,7 +110,7 @@ Authority: `docs/evidence/runtime/decision-record-2026-09-25-codex-currency.md`.
     commit changes nothing the web app loads. Re-run on the same clean commit: exit 0, visual 62/62, every
     other count unchanged. Recorded as a flake, not hidden.
 
-- [ ] **Task 5 — Single-source guard** (R2.3, R2.4, R1.4).
+- [x] **Task 5 — Single-source guard** (R2.3, R2.4, R1.4).
   - Files: `scripts/codex-pin.test.mjs`, `test:protocol` wiring.
   - Acceptance: fails on any Codex version literal in non-test source outside the declaration, on a
     desktop-app path outside historical evidence, and on a missing `protocol/<pin>/` bundle.
@@ -118,7 +118,7 @@ Authority: `docs/evidence/runtime/decision-record-2026-09-25-codex-currency.md`.
     constant, four desktop-app paths. Real code rather than a stub; recorded as such.
   - Verify: runner `test:protocol`.
 
-- [ ] **Task 6 — Wire every consumer to the pin** (R2.2, R1.2–R1.4, R4.3).
+- [x] **Task 6 — Wire every consumer to the pin** (R2.2, R1.2–R1.4, R4.3).
   - Files: `supervisor.ts`, `phase4-kickoff-session.ts`, `run-phase4-kickoff.ts`,
     `run-phase5-release-review.ts`, `run-phase5-surface-contract.ts`,
     `run-phase5-verification.ts`, `run-phase5-visual-qa.ts`, `run-phase6-review.ts`,
@@ -129,6 +129,14 @@ Authority: `docs/evidence/runtime/decision-record-2026-09-25-codex-currency.md`.
   - This commit moves the runtime to 0.157.1.
   - Verify: runner `test:protocol`, `test:unit`, `test:integration`, `typecheck`,
     `typecheck:scripts`.
+  - **Result, Tasks 5 and 6 together:** `e06b03c`. Committed as one because the Task 5 guard is RED
+    on the tree until Task 6 lands. Guard RED 5/7 against a stub; the real-tree RED found 22
+    violations, including live probes and the supervisor integration test spawning by the desktop
+    path, and the fake server's hard-coded user agent, which the plan had not listed.
+    `carriesVersion` RED 2/3. **Gate:** runner `verify` exit 0, clean tree at `e06b03c` — unit 409,
+    integration 67 + 3 skipped, others unchanged; `protocol:codex:check` verifies both bundles and
+    the pin. **Files beyond the list:** the two live probe tests, a comment in `codex-pin.ts`, and
+    `supervisor.unit.test.ts`.
 
 - [ ] **Task 7 — Drift preflight** (R3, CP-4).
   - Files: `scripts/codex-drift-core.mjs`, `scripts/codex-drift.mjs`,

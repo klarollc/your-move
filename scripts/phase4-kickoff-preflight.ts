@@ -4,6 +4,8 @@ import { resolve } from "node:path";
 
 import { checkBindingPreconditions, contractVersionOf } from "@cuckcode/domain";
 
+import { checkCodexDrift, installedDriftDependencies } from "./codex-drift.js";
+
 /**
  * The Task 17 preflight, computed from the records on disk without spending a provider turn.
  *
@@ -97,6 +99,7 @@ if (
   import.meta.url.endsWith(process.argv[1].replace(/\\/gu, "/").split("/").pop() ?? "")
 ) {
   const now = Date.now();
+  const drift = await checkCodexDrift(installedDriftDependencies());
   const input = await buildKickoffPreflightInput();
   const result = checkBindingPreconditions({
     bindings: input.bindings,
@@ -108,7 +111,8 @@ if (
   process.stdout.write(
     `${JSON.stringify(
       {
-        ok: result.ok,
+        ok: result.ok && drift.ok,
+        codex: drift,
         roles: input.bindings.length,
         distinctAgents: new Set(input.bindings.map((entry) => entry.agentId)).size,
         promotedContracts: input.promoted.length,
@@ -122,5 +126,5 @@ if (
       2,
     )}\n`,
   );
-  if (!result.ok) process.exitCode = 1;
+  if (!result.ok || !drift.ok) process.exitCode = 1;
 }

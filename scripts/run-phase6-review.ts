@@ -13,6 +13,8 @@ import {
   resolveInstalledCodexExecutable,
 } from "@cuckcode/runtime-codex";
 
+import { assertNoCodexDrift } from "./codex-drift.js";
+
 import { TASK7_CONTRACT, buildReviewPacket } from "./phase6-review-packet.js";
 
 /**
@@ -43,6 +45,8 @@ const REVIEWER_ROLE_IDS = ["product-designer", "visual-qa-reviewer"] as const;
 if (process.env.CUCKCODE_LIVE_PHASE6_REVIEW !== "1") {
   throw new Error("LIVE_PHASE6_REVIEW_EXPLICIT_OPT_IN_REQUIRED");
 }
+// R3: refuse before any session opens if the installed Codex is not the pinned one.
+await assertNoCodexDrift();
 
 const sha256 = (value: Uint8Array | string): string =>
   createHash("sha256").update(value).digest("hex");
