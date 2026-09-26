@@ -236,6 +236,15 @@ Specification: `docs/phase-7-o-operability-spec-v0.2.md`, **owner-approved 2026-
          shell's `conflict` state presents its own cause, so nothing false shows today, but a ready
          office with a refused transition would say current. Agent recommendation: make any
          read-model issue block `current`, as a one-test amendment to Task 4.
+    - **Owner rulings, 2026-09-26** ("2. approved 3. approved"):
+      1. Motion cue: option (a). The cue shows only when the log records the handoff; added to
+         Task 9.
+      2. `current`: approved and done as a Task 4 amendment. `projectOfficeReadModel` now sets
+         `current` false while any read-model issue stands, not only a replay issue. RED, test 5a
+         in `office-read-model.unit.test.ts` against the unchanged projector: the refused
+         transition's `INVALID_WORK_TRANSITION` was present, and `current` was still `true`
+         ("Tests 1 failed | 449 passed (450)"). The RED run is the mutation: it is the old rule
+         itself. GREEN: unit 450, component 81, `typecheck` clean.
     - `test:component` 81, `test:unit` 449, `test:e2e` 50, `test:a11y` 46, `test:visual` 62,
       `typecheck`, `typecheck:scripts`, `lint` clean, on the dirty tree before commit; `verify`
       at the commit below.
@@ -256,6 +265,9 @@ Specification: `docs/phase-7-o-operability-spec-v0.2.md`, **owner-approved 2026-
     return, zoom, reduced motion and non-colour meaning are each marked performed or not performed;
     changed baselines are captured under `CUCKCODE_REGENERATE_EVIDENCE=1` by the owner, with before,
     after and a V-severity disposition; V0/V1 findings go to the owner.
+  - Also (owner ruling 2026-09-26, option (a)): the `?motion=handoff` cue is driven by handoff
+    events recorded in an office log, not by the Phase 4 `planSemanticMotion` literals (revision
+    44, two unrecorded transitions). With no recorded handoff, no cue is shown. Component RED first.
   - Verify: the capture manifest; the owner's dispositions recorded.
 
 - [ ] Task 10: Comprehension preparation (spec §8.7).

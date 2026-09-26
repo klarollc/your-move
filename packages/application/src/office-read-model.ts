@@ -379,7 +379,9 @@ export function projectOfficeReadModel(input: OfficeReadModelInput): OfficeReadM
       lastEventId: snapshot.eventIds.at(-1) ?? null,
     },
     observedAt: now,
-    current: snapshot.replayIssues.length === 0,
+    // Any unresolved record, not only a replay issue, means the office cannot claim to be current
+    // (owner ruling on Task 6, 2026-09-26). REPLAY_ISSUE is among these issues.
+    current: snapshot.replayIssues.length === 0 && issues.length === 0,
     issues,
     entities,
     attention,

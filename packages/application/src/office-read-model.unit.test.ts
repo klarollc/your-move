@@ -446,6 +446,25 @@ describe("adversarial inputs (§7)", () => {
     }
   });
 
+  it("5a. never presents a revision as current while any read-model issue stands (owner ruling, Task 6)", () => {
+    // A transition from a stale revision is refused by the work reducer (INVALID_WORK_TRANSITION):
+    // the log replays without a replay issue, but the office still holds an unresolved record.
+    const events = [...office()];
+    const last = events.at(-1)!;
+    const refused = {
+      ...last,
+      eventId: "event_refused_transition",
+      kind: "work.transitioned",
+      occurredAt: "2026-09-25T20:00:58.000Z",
+      receivedAt: "2026-09-25T20:00:58.000Z",
+      payload: { workItemId: "work_evidence", fromRevision: 0, toState: "active" },
+    };
+    const m = model([...events, refused]);
+    expect(codes(m)).toContain("INVALID_WORK_TRANSITION");
+    expect(m.current).toBe(false);
+    expect(model(office()).current).toBe(true);
+  });
+
   it("5. never presents a revision with replay issues as current, or a disconnected agent as fresh", () => {
     const mixed = [...office(), ...office({ projectId: "project_other" })];
     expect(model(mixed).current).toBe(false);
