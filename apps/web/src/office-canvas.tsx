@@ -16,13 +16,19 @@ import {
   officeLayoutPolicy,
   planSemanticMotion,
 } from "@cuckcode/ui-system";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type {
   AttentionDisposition,
   OfficeAttentionItem,
   OfficeDispositionResult,
 } from "./attention-rail.js";
+import {
+  attentionItemsFrom,
+  officeModelFor,
+  revisionOf,
+  type OfficeModel,
+} from "./office-model.js";
 import { OfficeShell, type OfficeShellState } from "./office-shell.js";
 import {
   createOfficeSceneAdapter,
@@ -96,29 +102,6 @@ const libraryProjection: BrowserLibraryProjection = {
     },
   ],
 };
-
-const officeAttention: readonly OfficeAttentionItem[] = Object.freeze([
-  {
-    attentionId: "attention_blocked_test",
-    entityId: "agent_test_engineer",
-    label: "Test evidence is blocked",
-    reason: "blocked",
-    priority: 10,
-    causeEventId: "event_test_blocked",
-    plainLanguage: "The Test Engineer needs the current browser evidence.",
-    requiredAction: "Redirect the evidence request or decline the blocker.",
-  },
-  {
-    attentionId: "attention_graybox_review",
-    entityId: "agent_implementation_engineer",
-    label: "Graybox review requested",
-    reason: "review_requested",
-    priority: 40,
-    causeEventId: "event_review_requested",
-    plainLanguage: "The Implementation Engineer is waiting for a manager disposition.",
-    requiredAction: "Approve, decline, defer, cancel, or redirect the request.",
-  },
-]);
 
 // Deterministic kickoff fixtures. These are graybox records, not a live kickoff: no role is
 // promoted, no provider is called, and no charter is approved.
@@ -207,6 +190,8 @@ export function OfficeWorkspace({
   const [canvasKey, setCanvasKey] = useState(0);
   const [selectedEntityId, setSelectedEntityId] = useState<string | undefined>(undefined);
   const reducedMotion = useReducedMotion();
+  // The canonical log for this state is replayed and projected once; every surface reads it.
+  const office = useMemo(() => officeModelFor(state), [state]);
   const motionPlan = motionEnabled
     ? planSemanticMotion({
         canonicalRevision: 44,
@@ -260,7 +245,7 @@ export function OfficeWorkspace({
       selectedEntityId={selectedEntityId}
       onSelectEntity={setSelectedEntityId}
       {...(kickoffFixture ? { kickoff: kickoffFixtures[kickoffFixture] } : {})}
-      attention={officeAttention}
+      model={office}
       library={libraryProjection}
       {...(motionPlan?.lead
         ? {
@@ -279,7 +264,9 @@ export function OfficeWorkspace({
             },
           }
         : {})}
-      onDisposition={(item, intent, scope) => executeFixtureDisposition(state, item, intent, scope)}
+      onDisposition={(item, intent, scope) =>
+        executeFixtureDisposition(state, office, item, intent, scope)
+      }
     />
   );
 }
@@ -298,17 +285,19 @@ function useReducedMotion(): boolean {
 
 function executeFixtureDisposition(
   state: OfficeShellState,
+  office: OfficeModel,
   item: OfficeAttentionItem,
   intent: AttentionDisposition,
   scope: Record<string, string>,
 ): OfficeDispositionResult {
   const commandId = `command_${item.attentionId}_${intent}`;
+  const revision = revisionOf(office.model);
   const result = executeAttentionCommand({
     command: {
       schemaVersion: 1,
       commandId,
       projectId: "project_graybox",
-      expectedRevision: 42,
+      expectedRevision: revision,
       actor: { actorType: "manager", actorId: "manager_local" },
       intent,
       targetEntityId: item.entityId,
@@ -316,11 +305,11 @@ function executeFixtureDisposition(
     },
     current: {
       projectId: "project_graybox",
-      revision: 42,
-      freshness: state === "stale" ? "stale" : "current",
+      revision,
+      freshness: state === "stale" || !office.model.current ? "stale" : "current",
       connection:
         state === "offline" ? "disconnected" : state === "error" ? "timeout" : "connected",
-      attention: officeAttention,
+      attention: attentionItemsFrom(office.model),
     },
   });
   if (!result.ok) {

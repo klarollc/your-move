@@ -1,4 +1,8 @@
 import { expect, test } from "@playwright/test";
+import { OFFICE_FIXTURES } from "../../apps/web/src/office-fixtures/index.js";
+
+// Phase 7-O Task 6 (P-4): the revision is the length of the canonical default log, not a literal.
+const revision = OFFICE_FIXTURES.default!.events.length;
 
 test("@e2e Phase 4 kickoff opens from its spatial anchors and never authorises work early", async ({
   page,
@@ -86,7 +90,7 @@ test("@e2e Phase 4 kickoff stays truthful while the runtime is offline", async (
     "No work is authorised yet",
   );
   await expect(page.getByTestId("workspace-cause")).not.toContainText(
-    "Canonical workspace revision 42 is current",
+    `Canonical workspace revision ${revision} is current`,
   );
 });
 

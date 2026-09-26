@@ -172,12 +172,73 @@ Specification: `docs/phase-7-o-operability-spec-v0.2.md`, **owner-approved 2026-
       states one.
     - Five mutations, each confirmed applied, all killed. `lint`, `typecheck` and
       `typecheck:scripts` clean.
-- [ ] Task 6: Web — render rail, outline, scene cue and inspector from the model (spec §6).
+- [x] Task 6: Web — render rail, outline, scene cue and inspector from the model (spec §6).
   - Acceptance: no literal in any inspector field; condition text shown with its source and trust;
     precise absence wording; `officeShellEntities` holds IDs, labels and layout only; the Test
     Engineer contradiction is gone because both surfaces read one record.
   - Verify: component tests first, with the Test Engineer contradiction as the named RED; e2e; every
     moved assertion listed (P-4).
+
+  - Result, 2026-09-26: new `apps/web/src/office-model.ts`; `office-shell.tsx` and
+    `office-canvas.tsx` rewritten to read it.
+    - **One model.** `OfficeWorkspace` replays the state's log and projects once
+      (`officeModelFor`), and passes it to the shell. The rail items (`attentionItemsFrom`), the
+      outline, the inspector, the project-bar revision and the disposition command's revision all
+      read that value. `officeAttention` is removed; the shell's `attention` prop is replaced by
+      `model`.
+    - **`officeShellEntities`** is derived from `OFFICE_REGISTRY`: ids, labels, kind and
+      relationship only. Zones show `Layout only — no canonical state record`.
+    - **Inspector fields**, all from the person view: State (presence, health), Cause (presence
+      event), Updated, Freshness (with the overlay and a not-current warning), Current work, Needs
+      you (each attention item's reason and cause event), Blocker (condition summary, reason code,
+      waiting-on, `reported by {source}, {trust}`), Requested action, Approval, Evidence
+      (`id vN · kind · result`), Runtime binding and Permissions (`Unavailable in this fixture`
+      unless recorded), Technical trail (revision, last event, entity id).
+    - **Absence wording (spec §6):** `Work is not assigned`, `No reason recorded`,
+      `No requested action recorded`, `No linked evidence recorded`, `No cause event recorded`,
+      `No open attention item recorded`. `None recorded` appears only as
+      `None recorded: no held work is blocked or waiting`, where the held work was examined.
+    - **Not-current is never announced as current.** With a replay issue, the ready cause reads
+      `Canonical workspace revision N is not current: <issue codes>.`
+    - **RED, recorded before GREEN:** `office-inspector.component.test.tsx`, 6 tests, "Tests 6
+      failed | 73 passed (79)", including the named Test Engineer contradiction (inspector
+      `Blocker: None recorded`). Two more spec §6 tests were added after the first GREEN, and each
+      failed first on its assertion ("Tests 2 failed | 79 passed (81)"): the inspector shows the
+      rail item's own cause event, checked against the blocking event found in the log; and a
+      non-current model (a `DUPLICATE_EVENT_CONFLICT`) is never stated as current. GREEN 81/81.
+    - **Six mutations, each confirmed applied, all killed:** blocker literal `None recorded`; rail
+      plain language not from the condition; shared cause boilerplate; revision literal `42`;
+      Needs-you without the cause event; cause ignoring `model.current`.
+    - **Moved assertions (P-4)**, each replaced by one of equal or greater strength:
+
+      | File                                                                                                                                              | Old                                                                                     | New                                                                                                                                    | Reason                                       |
+      | ------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+      | `apps/web/src/office-shell.component.test.tsx`                                                                                                    | hand-written `attentionItems` passed as a prop                                          | the model of the state's log                                                                                                           | the prop no longer exists                    |
+      | same                                                                                                                                              | `attention_blocked_test`; labels `Test evidence is blocked`, `Graybox review requested` | `attention_work_browser_evidence`; `Provide current browser evidence: blocked`, `Deliver the approved graybox slice: review requested` | ids and labels derive from the recorded work |
+      | same                                                                                                                                              | receipt `receipt_command_attention_graybox_review_approve`, `revision 42 → 43`          | `receipt_command_attention_work_graybox_slice_approve`, `revision N → N+1`, N the default log's length                                 | revision is the log's                        |
+      | same                                                                                                                                              | empty rail via `attention={[]}`                                                         | `state="empty"` (the empty log)                                                                                                        | the rail is empty because the log is         |
+      | `tests/e2e/phase-4-attention.spec.ts`                                                                                                             | the same ids, labels and receipt                                                        | as above                                                                                                                               | as above                                     |
+      | `tests/e2e/phase-4-kickoff.spec.ts:89`, `tests/visual/phase-4-checkpoint-c-matrix.spec.ts:8,18`, `tests/visual/phase-4-kickoff-matrix.spec.ts:60` | `Canonical workspace revision 42 is current`                                            | `` `Canonical workspace revision ${N} is current` `` from `OFFICE_FIXTURES.default`                                                    | revision is the log's                        |
+
+      No visual baseline changed: the Phase 4 matrices write per-run captures and compare no
+      screenshots. `evidence-library` `revision 42` literals are unchanged; the library is Task 8.
+
+    - **Two things not done, for the owner:**
+      1. **The motion cue** (`?motion=handoff`) is still the Phase 4 `planSemanticMotion` fixture:
+         canonical revision 44 and two handoff transitions that are not in any office log. Spec §7
+         row 1 forbids a cue without a supporting canonical event. The default office draws no
+         state cue in the scene, so the default path complies. Options: (a) show the cue only when
+         the log records the handoff, adding handoff events to a log; (b) label it a Phase 4 motion
+         fixture and keep it off the Phase 7-O paths; (c) remove it. Agent recommendation: (a),
+         as part of Task 9's browser evidence.
+      2. **`current` ignores work and staffing issues.** Task 4 set `current` from replay issues
+         only, so the `conflict` log (`INVALID_WORK_TRANSITION`) is still stated current. The
+         shell's `conflict` state presents its own cause, so nothing false shows today, but a ready
+         office with a refused transition would say current. Agent recommendation: make any
+         read-model issue block `current`, as a one-test amendment to Task 4.
+    - `test:component` 81, `test:unit` 449, `test:e2e` 50, `test:a11y` 46, `test:visual` 62,
+      `typecheck`, `typecheck:scripts`, `lint` clean, on the dirty tree before commit; `verify`
+      at the commit below.
 
 - [ ] Task 7: Structural guard (R-3, spec §5).
   - Acceptance: a `scripts/*.test.mjs` test in `verify` fails on non-test `apps/web` source that
