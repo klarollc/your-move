@@ -54,7 +54,7 @@ Authority: `docs/evidence/runtime/decision-record-2026-09-25-codex-currency.md`.
     pointer is a Windows path. Commits over the bridge leave lock files, removed under the
     session's delete permission. All three go to the Task 13 dogfood entry.
 
-- [ ] **Task 2 — Pin module and executable resolver** (R1.2, R1.3, R1.5, R2.1).
+- [x] **Task 2 — Pin module and executable resolver** (R1.2, R1.3, R1.5, R2.1).
   - Files: `packages/runtime-codex/package.json` (declaration `"@openai/codex": "0.157.1"`, no
     install yet), `packages/runtime-codex/src/codex-pin.ts`, `codex-pin.unit.test.ts`,
     `scripts/check-toolchain.test.mjs`.
@@ -65,12 +65,23 @@ Authority: `docs/evidence/runtime/decision-record-2026-09-25-codex-currency.md`.
   - Characterization, not RED: `parsePlatformPackage("@openai/codex-win32-x64")` joins family
     `@openai/codex`.
   - Verify: runner `test:unit`, `test:toolchain`.
+  - **Result:** `db76113`. RED 9/9 assertion failures against a stub; GREEN 9/9; characterization
+    passed first run, not claimed as RED. Added `CODEX_PACKAGE_VERSION_MISMATCH`: the platform
+    package's own `codex-package.json` names its version and entrypoint. **Gate:** runner `verify`
+    exit 0, clean tree at `db76113` — unit 406 (397 + 9), every other count unchanged.
 
-- [ ] **Task 3 — Install, owner-run** (R1.1, R1.6).
+- [x] **Task 3 — Install, owner-run** (R1.1, R1.6).
   - Owner, in the worktree: `npm.cmd install`.
   - Acceptance: the lockfile diff adds only `@openai/codex` and its platform packages; the resolver
     finds `codex.exe`; `codex.exe --version` prints `codex-cli 0.157.1`.
   - Verify: runner `check:toolchain`, `git-status` (agent reviews the lockfile diff).
+  - **Result:** owner ran `npm.cmd install`. The lockfile diff is two hunks, 132 insertions, 0
+    deletions: the seven `@openai/codex` entries (launcher plus six platform packages, each with an
+    integrity hash) and `devDependencies` on the runtime-codex workspace. Installed:
+    `@openai/codex` and `@openai/codex-win32-x64`, whose `codex-package.json` states 0.157.1 and
+    entrypoint `bin/codex.exe` (322,515,248 bytes). **Deferred, stated:** the agent shell cannot
+    execute a Windows binary, so `codex.exe --version` is first observed by the owner-run Task 4
+    upgrade, which refuses unless it prints `codex-cli 0.157.1`. The gate is Task 4's `verify`.
 
 - [ ] **Task 4 — Upgrade command and surface diff** (R4).
   - Files: `scripts/codex-surface-diff.mjs`, `scripts/codex-surface-diff.test.mjs`,
