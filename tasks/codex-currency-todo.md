@@ -12,7 +12,9 @@ Authority: `docs/evidence/runtime/decision-record-2026-09-25-codex-currency.md`.
 - **Work happens in the worktree** `.worktrees/codex-currency` on branch `codex-currency`, never in
   the main working copy, which belongs to Phase 7-O.
 - **RED before GREEN.** The RED is an assertion failure against a deliberate stub, recorded in
-  `docs/evidence/runtime/codex-currency/red-green-log.md` before GREEN and never re-run afterwards.
+  `tasks/codex-currency-red-green.md` before GREEN and never re-run afterwards. It moves to
+  `docs/evidence/runtime/codex-currency/red-green-log.md` at Task 13 with one owner-run provenance
+  write (owner ruling 2026-09-25, so task gates do not wait on provenance writes).
   A test that cannot fail against its stub is named as such, not claimed as RED.
 - **The gate is a runner result on a clean tree** in the worktree, with the command named beside
   every count. Container runs are the inner loop and are recorded as container-GREEN only.
@@ -25,7 +27,7 @@ Authority: `docs/evidence/runtime/decision-record-2026-09-25-codex-currency.md`.
 
 ## Tasks
 
-- [ ] **Task 1 — Worktree, owner-run** (CP-1).
+- [x] **Task 1 — Worktree, owner-run** (CP-1).
   - Owner, from `C:\Users\nater\CuckCode` in PowerShell:
     `git worktree add .worktrees/codex-currency -b codex-currency`;
     `Add-Content .git/info/exclude '.worktrees/'`; then in the worktree `npm.cmd install` and
@@ -37,6 +39,20 @@ Authority: `docs/evidence/runtime/decision-record-2026-09-25-codex-currency.md`.
     documents; the worktree runner answers `git-status` with the new branch and a clean tree after
     the first commit.
   - Verify: runner `check:toolchain` in the worktree passes.
+  - **Result, 2026-09-25 (PT):** done. Worktree on `codex-currency`, excluded, installed, runner
+    live. Commits `fa89280` (the four documents, moved out of the main copy), `7e58e99` (lockfile
+    resync — pre-existing drift at `b0af24d`, owner ruling), `4c62849` (provenance line for the
+    decision record, owner-run `phase5:provenance:write`). **Gate:** runner `verify` exit 0 on a
+    clean tree at `4c62849`, `evidenceChanged: false` — unit 397, component 73, integration 67 + 3
+    skipped, contract 77, e2e 50, a11y 46, visual 62.
+  - **Deviations, stated:** (1) `check:toolchain` is not on the runner allowlist; `verify`, which
+    runs it, was the gate. The same holds for every checklist gate naming `test:protocol`,
+    `test:toolchain`, `test:runtime` or `phase5:provenance`: `verify` substitutes. (2) The 12
+    Phases 0–3 artifacts whose ledger digests are of CRLF bytes were given the main copy's exact
+    bytes in this worktree, by owner ruling, after checking each differs only by line endings; git
+    sees no change. (3) Git runs here only with an explicit `--git-dir`; the worktree's `.git`
+    pointer is a Windows path. Commits over the bridge leave lock files, removed under the
+    session's delete permission. All three go to the Task 13 dogfood entry.
 
 - [ ] **Task 2 — Pin module and executable resolver** (R1.2, R1.3, R1.5, R2.1).
   - Files: `packages/runtime-codex/package.json` (declaration `"@openai/codex": "0.157.1"`, no

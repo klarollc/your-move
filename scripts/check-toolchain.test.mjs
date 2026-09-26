@@ -132,3 +132,18 @@ test("returns nothing when there is no node_modules tree to read", () => {
 
   assert.deepEqual(readInstalledPackageNames(join(root, "node_modules")), []);
 });
+
+test("the Codex platform package joins the @openai/codex family, so a cross-platform install is caught", () => {
+  const wrongHost = checkNativePlatform(["@openai/codex", "@openai/codex-linux-x64"], {
+    platform: "win32",
+    arch: "x64",
+  });
+  assert.equal(wrongHost.ok, false);
+  assert.match(wrongHost.errors[0], /^@openai\/codex has no build for win32-x64/);
+
+  const rightHost = checkNativePlatform(["@openai/codex", "@openai/codex-win32-x64"], {
+    platform: "win32",
+    arch: "x64",
+  });
+  assert.equal(rightHost.ok, true);
+});
