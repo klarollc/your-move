@@ -172,7 +172,7 @@ fallback`, chromium-1280) never saw its canvas within 5 s; the commit touches no
     browser-timing flake in eight gate runs; both recorded, neither reproduced; goes to the Task 13
     dogfood entry.
 
-- [ ] **Task 9 — Supervisor: server requests and notification subscription** (R6.5, R6.2).
+- [x] **Task 9 — Supervisor: server requests and notification subscription** (R6.5, R6.2).
   - Files: `supervisor.ts`, `supervisor.integration.test.ts`, `fake-app-server.mjs` (modes
     `server-request`, `retry-then-fail`).
   - Acceptance: a server request is answered with a JSON-RPC error and surfaces as
@@ -180,6 +180,12 @@ fallback`, chromium-1280) never saw its canvas within 5 s; the commit touches no
     a subscriber in order; `CODEX_ARGS` and the request allow-list are unchanged.
   - RED: today's behaviour — the request is swallowed and the turn times out.
   - Verify: runner `test:integration`, `test:runtime`.
+  - **Result:** `c9be21c`. RED 2/3 against a no-delivery stub; the first failure exposed a second
+    defect — a server request sharing `turn/start`'s id resolved `turn/start` as `undefined` — now
+    fixed by routing server and client ids apart. **Gate:** first `verify` exit 1 — one e2e test
+    (`Phase 4 camera is bounded…`, chromium-1440) timed out at 34.6 s; re-run on the same clean
+    commit exit 0 — integration 70 + 3 skipped, e2e 50/50, others unchanged. Third browser flake in
+    ten gate runs.
 
 - [ ] **Task 10 — Shared turn runner** (R6.1, R6.3, R6.4, R6.6, CP-3, CX-3, CX-4).
   - Files: `turn-runner.ts` and its tests; `failure-classification.ts`; `fake-app-server.mjs`

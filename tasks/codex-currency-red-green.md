@@ -289,3 +289,68 @@ A refused request is answered `{ id, error: { code: -32601 } }`, recorded in
 `refusedServerRequests`, and published to subscribers as `serverRequestRefused` naming the method.
 Failing the active turn on that event is the turn runner's job (Task 10). `CODEX_ARGS` and the
 request allow-list are unchanged.
+
+## Task 10 — Shared turn runner
+
+`failure-classification.ts` keeps Codex's own `codexErrorInfo` (variant and HTTP status) and
+`additionalDetails`, and marks exactly CX-4's four classes as transport. `turn-runner.ts` is
+`runTurn(supervisor, { threadId, input, clock?, retryBudget?, limits? })`. Time is injected through
+a `Clock` (`now`, `setTimer`, `sleep`); tests use `fixtures/manual-clock.ts`, so a 180 s idle limit,
+a 900 s cap and a 30 s backoff cost nothing.
+
+**RED**, container mirror, `vitest run --project unit` on the two new test files against stubs
+(classification returns empty; `runTurn` returns `{ ok: false, code: "STUB" }`):
+
+```text
+AssertionError: expected { message: '', variant: null, …(3) } to deeply equal { …(5) }
+AssertionError: expected [] to deeply equal [ 'httpConnectionFailed', …(3) ]
+AssertionError: usageLimitExceeded: expected null to be 'usageLimitExceeded' // Object.is equality
+AssertionError: expected { message: '', variant: null, …(3) } to deeply equal { message: 'odd', variant: null, …(3) }
+AssertionError: expected false to be true // Object.is equality
+AssertionError: expected false to be true // Object.is equality
+AssertionError: expected false to be true // Object.is equality
+AssertionError: expected { ok: false, code: 'STUB', …(3) } to match object { Object (ok, code) }
+AssertionError: expected { ok: false, code: 'STUB', …(3) } to match object { Object (ok, code) }
+AssertionError: expected +0 to be 1 // Object.is equality
+AssertionError: expected { ok: false, code: 'STUB', …(3) } to match object { ok: false, code: 'TURN_FAILED' }
+AssertionError: expected { ok: false, code: 'STUB', …(3) } to match object { ok: false, code: 'TURN_FAILED' }
+AssertionError: expected { ok: false, code: 'STUB', …(3) } to match object { ok: false, code: 'TURN_FAILED' }
+AssertionError: expected { ok: false, code: 'STUB', …(3) } to match object { ok: false, code: 'TURN_FAILED' }
+AssertionError: expected { ok: false, code: 'STUB', …(3) } to match object { ok: false, …(1) }
+AssertionError: expected { ok: false, code: 'STUB', …(3) } to match object { ok: false, code: 'RUNTIME_FAILURE' }
+Tests  16 failed (16)
+```
+
+Sixteen of sixteen are assertion failures: four classification, twelve runner. They cover
+completion; Codex's retries recorded in order; a slow but streaming turn not interrupted; a silent
+turn interrupted at exactly 180 000 ms and not at 179 999; the 900 s cap; one transport retry after
+exactly 30 000 ms and not before; a second transport failure stopping; a usage limit, a transport
+failure with output, and a spent budget each never retried; a refused server request failing the
+turn by name; and a `turn/start` that throws.
+
+**A defect in my own GREEN, found by the RED suite:** the first implementation let the
+`turn/completed` that answers our own interrupt overwrite `lastMethod`, so the record would have
+named the interrupt's reply rather than what the turn last did. `lastMethod` now freezes when a
+limit fires. **GREEN** 16/16, plus an added assertion that no timer is left pending after a turn.
+
+**End-to-end over a real child process, written after GREEN and not claimed as RED:** five
+fake-app-server modes (`transport-fail-once`, `transport-fail-twice`, `non-transport-fail`,
+`silent-turn`, `server-request`) through `CodexStdioSupervisor` and `runTurn` with a manual clock.
+5/5.
+
+**Both call sites moved onto the runner (CP-3).** The kickoff session's `turn` now returns
+`attempts` beside its result. The role exercise loses its 90 s wait for the first cached
+`turn/completed` — the defect `waitForTurnCompleted` was written to fix for the kickoff alone — and
+maps runner failures onto its existing codes (`TURN_FAILED` and `TURN_INTERRUPTED` to
+`TURN_COMPLETION_INVALID`, everything else to `RUNTIME_FAILURE` with the runner code in `detail`),
+so its result shape and record schema are unchanged. Its unit fake now delivers the completion as
+a notification after `turn/start`, as the live runtime does.
+
+Mirror totals: unit 441 (425 + 16); runtime-codex integration 20 + 3 skipped (15 + 5);
+`test:runtime` green; `test:protocol` 21/21; `tsc -b`, scripts typecheck, ESLint and Prettier clean.
+
+**Known, stated, not addressed:** a transport retry re-submits the same input as a new turn on the
+same thread, so the failed turn's user message stays in the thread history; Codex 0.157 has no
+rollback. And a reasoning model that thinks silently for more than 180 s will now be interrupted —
+CX-3's choice, and no shorter than the 180 s wall clock that ended pass 9. The smoke turn will show
+whether `gpt-5.6-sol` streams anything while it reasons.

@@ -6,12 +6,14 @@ import { composeRole, type RoleBrief } from "@cuckcode/domain";
 import {
   CodexStdioSupervisor,
   classifyTurnItems,
+  runTurn,
   buildBindingReport,
   collectHandshakeFacts,
   createControlledCodexHome,
   exerciseThreadStartParams,
   type BindingExpectation,
   type ControlledCodexHome,
+  type TurnAttempt,
   resolveInstalledCodexExecutable,
 } from "@cuckcode/runtime-codex";
 import type { RuntimeBindingReport } from "@cuckcode/contracts";
@@ -41,8 +43,14 @@ const CREDENTIAL_SOURCE = resolve(
 export type ObservedTurnEffect = { kind: string; phase: string };
 
 export type TurnResult =
-  | { ok: true; text: string; effects: ObservedTurnEffect[] }
-  | { ok: false; code: string; detail: string; effects: ObservedTurnEffect[] };
+  | { ok: true; text: string; effects: ObservedTurnEffect[]; attempts: TurnAttempt[] }
+  | {
+      ok: false;
+      code: string;
+      detail: string;
+      effects: ObservedTurnEffect[];
+      attempts: TurnAttempt[];
+    };
 
 export type KickoffSession = {
   roleId: string;
@@ -145,77 +153,49 @@ export async function openKickoffSession(input: {
       report: binding.report,
       turn: async (text: string): Promise<TurnResult> => {
         const effects: ObservedTurnEffect[] = [];
-        try {
-          const started = await live.request(
-            "turn/start",
-            { threadId, input: [{ type: "text", text }] },
-            60_000,
-          );
-          const turnId = (started as { turn?: { id?: string } }).turn?.id;
-          if (typeof turnId !== "string") {
-            return {
-              ok: false,
-              code: "TURN_ID_MISSING",
-              detail: "turn/start returned no turn id",
-              effects,
-            };
-          }
+        // The shared runner (CP-3): activity-aware limits with interrupt, Codex's retries and
+        // failure class recorded, refused server requests failing by name, and at most one
+        // transport retry from the run's budget. It matches on the turn id, which is what keeps a
+        // thirteen-turn round from replaying turn one.
+        const run = await runTurn(live, { threadId, input: [{ type: "text", text }] });
+        const turnId = run.turn?.id ?? run.attempts.at(-1)?.turnId ?? "unknown";
+        const items = run.turn?.items ?? [];
 
-          // Matching on the turn id is what keeps a thirteen-turn round from replaying turn one.
-          const completed = await live.waitForTurnCompleted(turnId, 180_000);
-          const turn = (
-            completed.params as {
-              turn?: {
-                status?: string;
-                items?: unknown[];
-                error?: { message?: string } | null;
-              };
-            }
-          ).turn;
-          const items = Array.isArray(turn?.items) ? turn.items : [];
-
-          // One classification for every caller (R5). An item nobody has classified stops the turn
-          // rather than passing as text.
-          const classified = classifyTurnItems(items);
-          for (const type of classified.effects) {
-            effects.push({ kind: itemKindFor(type), phase: "completed" });
-          }
-          if (classified.unclassified.length > 0) {
-            return {
-              ok: false,
-              code: "UNCLASSIFIED_ITEM_TYPE",
-              detail: `turn ${turnId} reported item types with no classification: ${classified.unclassified.join(", ")}`,
-              effects,
-            };
-          }
-
-          if (turn?.status !== "completed") {
-            return {
-              ok: false,
-              code: "TURN_COMPLETION_INVALID",
-              detail: describeTurnCompletionFailure(turnId, turn),
-              effects,
-            };
-          }
-
-          const message = items
-            .filter((item) => (item as { type?: unknown }).type === "agentMessage")
-            .map((item) => String((item as { text?: unknown }).text ?? ""))
-            .join("\n")
-            .trim();
-
-          if (message.length === 0) {
-            return { ok: false, code: "EMPTY_RESPONSE", detail: "no agent message", effects };
-          }
-          return { ok: true, text: message, effects };
-        } catch (cause) {
+        // One classification for every caller (R5). Effects are reported even from a turn that
+        // failed, and an item nobody has classified stops the turn rather than passing as text.
+        const classified = classifyTurnItems(items);
+        for (const type of classified.effects) {
+          effects.push({ kind: itemKindFor(type), phase: "completed" });
+        }
+        if (!run.ok) {
+          return { ok: false, code: run.code, detail: run.detail, effects, attempts: run.attempts };
+        }
+        if (classified.unclassified.length > 0) {
           return {
             ok: false,
-            code: "RUNTIME_FAILURE",
-            detail: cause instanceof Error ? cause.message : "turn did not complete",
+            code: "UNCLASSIFIED_ITEM_TYPE",
+            detail: `turn ${turnId} reported item types with no classification: ${classified.unclassified.join(", ")}`,
             effects,
+            attempts: run.attempts,
           };
         }
+
+        const message = items
+          .filter((item) => (item as { type?: unknown }).type === "agentMessage")
+          .map((item) => String((item as { text?: unknown }).text ?? ""))
+          .join("\n")
+          .trim();
+
+        if (message.length === 0) {
+          return {
+            ok: false,
+            code: "EMPTY_RESPONSE",
+            detail: "no agent message",
+            effects,
+            attempts: run.attempts,
+          };
+        }
+        return { ok: true, text: message, effects, attempts: run.attempts };
       },
       close: async (): Promise<void> => {
         await live.stop();

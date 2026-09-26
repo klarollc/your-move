@@ -1,5 +1,6 @@
 import type { RuntimeBindingReport } from "@cuckcode/contracts";
 
+import { runTurn, type Clock, type TurnSupervisor } from "./turn-runner.js";
 import { classifyTurnItems } from "./item-classification.js";
 import { buildBindingReport, collectHandshakeFacts, type BindingExpectation } from "./binding.js";
 
@@ -26,7 +27,7 @@ export type ExerciseSupervisor = Readonly<{
     params: Record<string, unknown>,
     timeoutMs?: number,
   ) => Promise<unknown>;
-  waitForNotification: (method: string, timeoutMs?: number) => Promise<Record<string, unknown>>;
+  subscribe: TurnSupervisor["subscribe"];
   stop: () => Promise<void>;
 }>;
 
@@ -71,6 +72,8 @@ export async function runRoleExercise(input: {
   taskPrompt?: string;
   /** Text sent as the turn input. Defaults to the exercise's own opening line. */
   turnInput?: string;
+  /** Injected in tests; live runs use the system clock. */
+  clock?: Clock;
 }): Promise<RoleExerciseResult> {
   if (input.expected.expectedReasoningEffort === null) {
     return {
@@ -135,24 +138,23 @@ export async function runRoleExercise(input: {
         detail: "thread/start omitted the provider thread identifier",
       };
     }
-    const turnStart = await input.supervisor.request(
-      "turn/start",
-      {
-        threadId,
-        input: [{ type: "text", text: input.turnInput ?? "Begin the bounded role exercise." }],
-      },
-      30_000,
-    );
-    const turnId = nestedId(turnStart, "turn");
-    if (!turnId) {
+    // The shared runner (CP-3) replaces a 90 s wait for the first cached turn/completed, which
+    // could have returned another turn's completion.
+    const run = await runTurn(input.supervisor, {
+      threadId,
+      input: [{ type: "text", text: input.turnInput ?? "Begin the bounded role exercise." }],
+      ...(input.clock ? { clock: input.clock } : {}),
+    });
+    if (!run.ok) {
+      const incomplete = run.code === "TURN_FAILED" || run.code === "TURN_INTERRUPTED";
       return {
         performed: false,
-        code: "TURN_COMPLETION_INVALID",
-        detail: "turn/start omitted the provider turn identifier",
+        code: incomplete ? "TURN_COMPLETION_INVALID" : "RUNTIME_FAILURE",
+        detail: incomplete ? run.detail : `${run.code}: ${run.detail}`,
       };
     }
-
-    const completed = await input.supervisor.waitForNotification("turn/completed", 90_000);
+    const turnId = run.turn.id;
+    const completed = { method: "turn/completed", params: { threadId, turn: run.turn } };
     const checked = checkCompletedTurn(completed, threadId, turnId);
     if (!checked.ok) return checked.result;
     return {

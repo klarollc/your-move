@@ -7,3 +7,5 @@ export * from "./role-exercise.js";
 export * from "./role-exercise-plan.js";
 export * from "./codex-pin.js";
 export * from "./item-classification.js";
+export * from "./failure-classification.js";
+export * from "./turn-runner.js";

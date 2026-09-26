@@ -7,6 +7,7 @@ import {
   runRoleExercise,
   type ExerciseSupervisor,
 } from "./role-exercise.js";
+import type { SupervisorEvent } from "./supervisor.js";
 
 const expected = {
   requestedModel: "gpt-5.6-luna",
@@ -28,6 +29,18 @@ const observedThread = {
 
 function supervisor(overrides: Partial<{ threadStart: unknown; completed: unknown }> = {}) {
   const calls: Array<{ method: string; params: Record<string, unknown> }> = [];
+  const listeners = new Set<(event: SupervisorEvent) => void>();
+  const completion = (overrides.completed ?? {
+    method: "turn/completed",
+    params: {
+      threadId: "thread_1",
+      turn: {
+        id: "turn_1",
+        status: "completed",
+        items: [{ id: "item_1", type: "agentMessage", text: "EXERCISE_OK" }],
+      },
+    },
+  }) as { method: string; params: unknown };
   const instance: ExerciseSupervisor = {
     async start() {
       return {
@@ -43,21 +56,23 @@ function supervisor(overrides: Partial<{ threadStart: unknown; completed: unknow
     async request(method, params) {
       calls.push({ method, params });
       if (method === "thread/start") return overrides.threadStart ?? observedThread;
-      if (method === "turn/start") return { turn: { id: "turn_1" } };
+      if (method === "turn/start") {
+        // The completion arrives as a notification after turn/start answers, as it does live.
+        queueMicrotask(() => {
+          for (const listener of [...listeners])
+            listener({
+              kind: "notification",
+              method: completion.method,
+              params: completion.params,
+            });
+        });
+        return { turn: { id: "turn_1" } };
+      }
       throw new Error(`unexpected method ${method}`);
     },
-    async waitForNotification() {
-      return (overrides.completed ?? {
-        method: "turn/completed",
-        params: {
-          threadId: "thread_1",
-          turn: {
-            id: "turn_1",
-            status: "completed",
-            items: [{ id: "item_1", type: "agentMessage", text: "EXERCISE_OK" }],
-          },
-        },
-      }) as Record<string, unknown>;
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => void listeners.delete(listener);
     },
     async stop() {},
   };

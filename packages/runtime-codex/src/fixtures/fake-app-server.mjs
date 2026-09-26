@@ -115,6 +115,52 @@ for await (const line of lines) {
         },
       },
     });
+  } else if (message.method === "turn/interrupt" && mode === "silent-turn") {
+    write({ id: message.id, result: {} });
+    write({
+      method: "turn/completed",
+      params: {
+        threadId: "thread_fixture",
+        turn: { id: message.params.turnId, status: "interrupted", items: [] },
+      },
+    });
+  } else if (message.method === "turn/start" && mode === "silent-turn") {
+    write({ id: message.id, result: { turn: { id: "turn_silent" } } });
+    write({
+      method: "turn/started",
+      params: { threadId: "thread_fixture", turnId: "turn_silent" },
+    });
+  } else if (
+    message.method === "turn/start" &&
+    ["transport-fail-once", "transport-fail-twice", "non-transport-fail"].includes(mode)
+  ) {
+    turnSequence += 1;
+    const turnId = `turn_${turnSequence}`;
+    write({ id: message.id, result: { turn: { id: turnId } } });
+    const fail =
+      mode === "non-transport-fail" || mode === "transport-fail-twice" || turnSequence === 1;
+    const codexErrorInfo =
+      mode === "non-transport-fail"
+        ? "usageLimitExceeded"
+        : { responseStreamDisconnected: { httpStatusCode: null } };
+    write({
+      method: "turn/completed",
+      params: {
+        threadId: "thread_fixture",
+        turn: fail
+          ? {
+              id: turnId,
+              status: "failed",
+              items: [],
+              error: { message: "failed", codexErrorInfo, additionalDetails: null },
+            }
+          : {
+              id: turnId,
+              status: "completed",
+              items: [{ id: `item_${turnSequence}`, type: "agentMessage", text: "RECOVERED" }],
+            },
+      },
+    });
   } else if (message.method === "turn/start") {
     turnSequence += 1;
     const turnId = mode === "multiturn" ? `turn_${turnSequence}` : "turn_fixture";
