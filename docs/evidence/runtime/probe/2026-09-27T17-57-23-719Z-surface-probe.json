@@ -1,0 +1,13 @@
+{
+  "schema": "cuckcode.codex-probe-surface.v1",
+  "status": "A surface probe. No turn was started; it approves nothing.",
+  "codexPin": "0.157.1",
+  "requestedModel": "gpt-5.6-sol",
+  "startedAt": "2026-09-27T17:57:23.719Z",
+  "turns": 0,
+  "endedAt": "2026-09-27T17:57:33.415Z",
+  "code": "PROBE_RUNTIME_FAILURE",
+  "step": "mcpServerStatus/list (control)",
+  "detail": "LINE_TOO_LARGE",
+  "sessionLog": "docs/evidence/runtime/sessions/run-codex-probe-surface/2026-09-27T17-57-27-911Z-surface-probe.jsonl"
+}

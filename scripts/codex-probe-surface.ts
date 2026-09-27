@@ -183,3 +183,36 @@ async function startAndList(
 function message(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause);
 }
+
+/**
+ * Owner ruling 2026-09-27: a committed probe record keeps what proves the policy (each server's
+ * name and status, and how many tools and connectors it carried) but no connector or tool name,
+ * because the control's codex_apps catalog lists which apps the account has connected. Applied to
+ * a held capture; the original stays outside the repository.
+ */
+export function redactProbeRecord(record: Record<string, unknown>): Record<string, unknown> {
+  if (record.redaction !== undefined) throw new Error("PROBE_RECORD_ALREADY_REDACTED");
+  const sides = ["control", "policy"].filter((side) => isObject(record[side]));
+  if (sides.length === 0) throw new Error("PROBE_RECORD_NOTHING_TO_REDACT");
+  const redacted: Record<string, unknown> = { ...record };
+  for (const side of sides) {
+    const value = record[side] as Record<string, unknown>;
+    const servers = value.servers as ObservedMcpServer[];
+    redacted[side] = {
+      ...value,
+      servers: servers.map((server) => ({
+        name: server.name,
+        status: server.status,
+        toolCount: server.toolNames.length,
+        // A connector is the part of a tool name before its first dot; a name without one is its
+        // own connector.
+        connectorCount: new Set(server.toolNames.map((name) => name.split(".", 1)[0])).size,
+      })),
+    };
+  }
+  return { ...redacted, redaction: "tool-names-v1", redactedAfterCapture: true };
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}

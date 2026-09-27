@@ -1173,3 +1173,27 @@ if so, disable it and prove the absence with an adversarial test before any budg
 tool surface Codex actually starts in the binding report, and prove `codex_apps` no longer starts
 with one authenticated, turn-free probe. The same ruling covers the log identifiers: redact, then
 commit (`docs/evidence/runtime/decision-record-2026-09-26-codex-follow-up-rulings.md`). Not yet built.
+
+**Built and proved 2026-09-27** (follow-up Tasks 5 and 6, `codex-currency`). Every session's
+`thread/start` now sets 145 of the pinned binary's 150 features off (`FEATURE_POLICY`); after it,
+`mcpServerStatus/list` runs, and any server still started refuses the binding
+(`TOOL_SURFACE_PRESENT`) before a turn. The owner's signed-in probe, one session with no turn:
+
+- First run (`docs/evidence/runtime/probe/2026-09-27T17-57-23-719Z-surface-probe.json`):
+  `PROBE_RUNTIME_FAILURE` at the control's listing, `LINE_TOO_LARGE` — the control's `codex_apps`
+  catalog exceeded the supervisor's 1 MiB per-message bound. Its session log still shows
+  `codex_apps` reaching `ready` in the control thread. The probe's bound was raised to 64 MiB;
+  every other session keeps 1 MiB, where an oversized listing fails closed.
+- Second run (`docs/evidence/runtime/probe/2026-09-27T18-12-30-669Z-surface-probe.json`):
+  `PROBE_OK`. Control: `codex_apps` connected, 427 tools across 18 connectors. Policy: no server.
+  By owner ruling the committed record keeps counts only; the capture with tool names is held in
+  `.cuckcode/held-session-logs/`, because the names show which apps the account has connected.
+
+Not established by the probe: whether a turn authenticates with `secret_auth_storage` off.
+`account/read` runs once per process, before any thread applies the policy, so only a turn under
+the policy settles it (owner ruling 2026-09-27: left open until the next real turn).
+
+Also observed in the policy thread, not a defect: Codex sends four `deprecationNotice`s for
+deprecated settings the policy turns off (a TUI transcript setting, the legacy Linux sandbox, two
+`web_search` forms). They will appear in every session log. Candidate: leave deprecated, off-by-default
+features out of the config. Unruled.

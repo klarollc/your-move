@@ -7,6 +7,7 @@ import { featureDisableConfig } from "@cuckcode/runtime-codex";
 import {
   PROBE_MAX_LINE_BYTES,
   guardProbeRequests,
+  redactProbeRecord,
   runCodexProbeSurface,
   type ProbeDependencies,
   type ProbeRuntime,
@@ -194,5 +195,46 @@ describe("the probe's message bound", () => {
     expect(PROBE_MAX_LINE_BYTES).toBeGreaterThan(1_048_576);
     const live = readFileSync(new URL("./run-codex-probe-surface.ts", import.meta.url), "utf8");
     expect(live).toContain("maxLineBytes: PROBE_MAX_LINE_BYTES");
+  });
+});
+
+describe("redacting a held probe record (owner ruling 2026-09-27)", () => {
+  const captured = {
+    schema: "cuckcode.codex-probe-surface.v1",
+    code: "PROBE_OK",
+    turns: 0,
+    control: {
+      servers: [
+        {
+          name: "codex_apps",
+          status: "connected",
+          toolNames: ["github.search", "github.create_issue", "gmail.send", "hotline"],
+        },
+      ],
+    },
+    policy: { servers: [], featuresDisabled: 145 },
+    sessionLog: "docs/evidence/runtime/sessions/run-codex-probe-surface/log.jsonl",
+  };
+
+  it("keeps each server's name, status and counts, and no connector or tool name", () => {
+    const redacted = redactProbeRecord(captured);
+    expect(redacted).toEqual({
+      ...captured,
+      control: {
+        servers: [{ name: "codex_apps", status: "connected", toolCount: 4, connectorCount: 3 }],
+      },
+      policy: { servers: [], featuresDisabled: 145 },
+      redaction: "tool-names-v1",
+      redactedAfterCapture: true,
+    });
+    const text = JSON.stringify(redacted);
+    for (const leaked of ["github", "gmail", "hotline", "search"]) {
+      expect(text).not.toContain(leaked);
+    }
+  });
+
+  it("refuses a record that is already redacted or has no servers to redact", () => {
+    expect(() => redactProbeRecord(redactProbeRecord(captured))).toThrow(/ALREADY_REDACTED/u);
+    expect(() => redactProbeRecord({ code: "CODEX_DRIFT" })).toThrow(/NOTHING_TO_REDACT/u);
   });
 });

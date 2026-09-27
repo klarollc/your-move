@@ -1,0 +1,28 @@
+{
+  "schema": "cuckcode.codex-probe-surface.v1",
+  "status": "A surface probe. No turn was started; it approves nothing.",
+  "codexPin": "0.157.1",
+  "requestedModel": "gpt-5.6-sol",
+  "startedAt": "2026-09-27T18:12:30.669Z",
+  "turns": 0,
+  "endedAt": "2026-09-27T18:12:36.132Z",
+  "code": "PROBE_OK",
+  "authMode": "chatgpt",
+  "control": {
+    "servers": [
+      {
+        "name": "codex_apps",
+        "status": "connected",
+        "toolCount": 427,
+        "connectorCount": 18
+      }
+    ]
+  },
+  "policy": {
+    "servers": [],
+    "featuresDisabled": 145
+  },
+  "sessionLog": "docs/evidence/runtime/sessions/run-codex-probe-surface/2026-09-27T18-12-31-992Z-surface-probe.jsonl",
+  "redaction": "tool-names-v1",
+  "redactedAfterCapture": true
+}
