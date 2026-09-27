@@ -13,6 +13,16 @@ const PEOPLE = [
   "Release Reviewer",
 ];
 
+const ZONES = [
+  "Reception",
+  "Team work area",
+  "Project Library",
+  "Collaboration table",
+  "Review station",
+  "Manager desk",
+  "Delivery area",
+];
+
 const overlaps = (
   a: { x: number; y: number; width: number; height: number },
   b: { x: number; y: number; width: number; height: number },
@@ -60,10 +70,17 @@ async function expectWhollyVisible(page: Page, name: RegExp | string) {
   );
 }
 
-/** Every person's name is drawn whole: not covered by its button, and not cut off by its card. */
+/**
+ * Every name in the outline is drawn whole: not covered by its button, and not cut off by its card.
+ * People and zones both (the zone cards regressed in Task 9d's first capture).
+ */
 async function expectNamesReadable(page: Page) {
-  for (const person of PEOPLE) {
-    const button = page.getByRole("button", { name: `Inspect ${person}` });
+  const cards = [
+    ...PEOPLE.map((person) => ({ person, action: `Inspect ${person}` })),
+    ...ZONES.map((person) => ({ person, action: `Locate ${person}` })),
+  ];
+  for (const { person, action } of cards) {
+    const button = page.getByRole("button", { name: action });
     const name = page
       .getByRole("region", { name: "Office outline" })
       .getByRole("heading", { name: person, exact: true });

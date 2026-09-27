@@ -592,8 +592,19 @@ Browser evidence, version 1`, in `evidence-link.component.test.tsx` (twice),
         group instead of the item's absence. Its field helper matches exact text, because
         Playwright cannot serialize a regular expression containing the apostrophe in "What's
         happening".
-    - **Owner-run step:** rerun the Task 9 captures, then record provenance; F-9-1 to F-9-4 are
-      re-checked against them.
+    - **Owner re-capture, 2026-09-27** (`5bdd529`). F-9-1 and F-9-2 read as resolved.
+      9d introduced a regression. The zone grid flowing to fit put the zone cards in five narrow
+      columns at 1440, where each `Locate …` button covered the zone's name: F-9-3's defect, on
+      zones. The overlap check had covered people only. Now fixed:
+      - The check covers zone cards. RED: 4 failed, both viewports, at normal size and at 200%.
+      - Every outline card stacks name, state, then button. GREEN: e2e 58, visual 64, a11y 46.
+      - The RED run against the unfixed CSS stands as the revert mutation.
+    - **The art-reference supplement.** The owner approved it on 2026-09-27, and it applies
+      from here (`docs/art-reference-approval-2026-09-27.md`; pack hashes verified). AR-04 and
+      constitution rule 1 reject persistent card grids around the office. The Phase 4 Office
+      outline is such a grid. Owner ruling, the same day: fix the regression, then draft a
+      design amendment making the outline an on-demand surface (Task 9e, below), because the
+      remaining part of F-9-4 cannot clear while the grid persists.
 
 - [ ] Task 10: Comprehension preparation (spec §8.7).
   - Acceptance: the six task URLs, fixture logs and answer key are aligned to the accepted UI and

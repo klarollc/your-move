@@ -147,10 +147,12 @@
   gap: 10px;
 }
 
+/* Every outline card stacks: name and state, then its button, so no button covers a name
+   (Task 9d, F-9-3; the zone cards regressed in 9d's first capture). */
 .office-zone-list > li,
 .office-zone-list ol > li {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
   align-items: start;
   padding: 10px;
@@ -172,10 +174,10 @@
 /* Person cards: name, one state word, relationship, then the button below, so the button never
    covers the name (Task 9d, F-9-3). */
 .office-zone-list ol > li {
-  grid-template-columns: minmax(0, 1fr);
   background: #f8f8f5;
 }
 
+.office-zone-list > li > button,
 .office-zone-list ol > li button {
   justify-self: start;
 }
