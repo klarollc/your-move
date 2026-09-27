@@ -11,6 +11,12 @@
       "verified": true
     },
     {
+      "id": "outline-open",
+      "path": "/",
+      "capture": "phase-7-o/browser/chromium-1280/outline-open.png",
+      "verified": true
+    },
+    {
       "id": "selected-agent",
       "path": "/",
       "capture": "phase-7-o/browser/chromium-1280/selected-agent.png",
@@ -90,7 +96,7 @@
       "performed": true,
       "method": "Tab to the skip link, Enter to the outline, Tab to Inspect Test Engineer, Enter",
       "observed": {
-        "tabPressesToTarget": 6
+        "tabPressesToTarget": 7
       }
     },
     "pointer": {
@@ -105,7 +111,7 @@
       "performed": true,
       "method": "CDP device-metrics emulation at half width and DPR 2, asserted before use",
       "observed": {
-        "pageHorizontalScrollPx": 0,
+        "pageHorizontalScrollPx": 80,
         "capture": "phase-7-o/browser/chromium-1280/zoom-200-selected-agent.png"
       }
     },
