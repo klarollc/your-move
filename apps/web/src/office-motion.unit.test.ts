@@ -39,4 +39,21 @@ describe("the office motion cue", () => {
     expect(empty.handoffs).toEqual([]);
     expect(motionFrom(empty, { ...settled, reducedMotion: false })).toBeUndefined();
   });
+
+  // Task 9f-4, constitution rule 6 (AR-03 "Information unavailable"): while updates are
+  // unavailable, no work is shown moving. The handoff stays as a recorded fact, not as travel.
+  it.each([false, true])(
+    "suspends travel while updates are unavailable (reduced motion %s)",
+    (reducedMotion) => {
+      const cue = motionFrom(officeModelFor("ready").model, {
+        ...settled,
+        reducedMotion,
+        updatesUnavailable: true,
+      });
+      expect(cue).toMatchObject({
+        presentation: "persistent-label",
+        label: `Handoff to Visual QA Reviewer recorded · revision ${handoffRevision}`,
+      });
+    },
+  );
 });

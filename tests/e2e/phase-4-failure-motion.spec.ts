@@ -75,3 +75,13 @@ test("@e2e Phase 7-O shows no motion cue for a log that records no handoff", asy
   await expect(page.getByRole("region", { name: "Office outline" })).toBeVisible();
   await expect(page.getByTestId("semantic-motion-cue")).toHaveCount(0);
 });
+
+// Phase 7-O Task 9f-4, constitution rule 6: a stale workspace shows no work moving.
+test("@e2e Phase 7-O suspends the handoff's travel while updates are unavailable", async ({
+  page,
+}) => {
+  await page.goto("/?state=stale&motion=handoff&checkpoint=responsibility-transferred");
+  const cue = page.getByTestId("semantic-motion-cue");
+  await expect(cue).toHaveAttribute("data-motion-presentation", "persistent-label");
+  expect(await cue.evaluate((element) => element.getAnimations().length)).toBe(0);
+});

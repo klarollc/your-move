@@ -216,7 +216,15 @@ export function officeLibraryFor(
  */
 export function motionFrom(
   model: OfficeReadModel,
-  options: Readonly<{ reducedMotion: boolean; checkpoint: string }>,
+  options: Readonly<{
+    reducedMotion: boolean;
+    checkpoint: string;
+    /**
+     * Task 9f-4, constitution rule 6: while updates are unavailable, no work is shown moving; the
+     * handoff stays a recorded fact.
+     */
+    updatesUnavailable?: boolean;
+  }>,
 ): OfficeMotionCue | undefined {
   const plan = planSemanticMotion({
     canonicalRevision: revisionOf(model),
@@ -229,7 +237,7 @@ export function motionFrom(
       canonicalRevision: handoff.revision,
     })),
     reducedMotion: options.reducedMotion,
-    motionPaused: false,
+    motionPaused: options.updatesUnavailable ?? false,
     clock: () => 0,
   });
   const lead = plan.lead;

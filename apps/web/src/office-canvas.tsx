@@ -33,6 +33,9 @@ import {
 } from "./office-scene-adapter.js";
 import { createPixiSceneRenderer } from "./pixi-scene-renderer.js";
 
+/** Shell states in which current activity is unknown (constitution rule 6; AR-03). */
+const UPDATES_UNAVAILABLE: ReadonlySet<OfficeShellState> = new Set(["stale", "offline"]);
+
 const sceneDescriptors: readonly SceneDescriptor[] = Object.freeze([
   zone("zone_reception", -340, -20, 150, 130, 0),
   zone("zone_team", -150, -40, 650, 190, 0),
@@ -144,7 +147,11 @@ export function OfficeWorkspace({
   const library = useMemo(() => officeLibraryFor(state, fixtureId), [state, fixtureId]);
   const labels = useMemo(() => sceneLabelsFrom(office.model), [office]);
   const motion = motionEnabled
-    ? motionFrom(office.model, { reducedMotion, checkpoint: motionCheckpoint })
+    ? motionFrom(office.model, {
+        reducedMotion,
+        checkpoint: motionCheckpoint,
+        updatesUnavailable: UPDATES_UNAVAILABLE.has(state),
+      })
     : undefined;
   const showPersistedScene = !["loading", "empty", "error", "canvas-loss"].includes(state);
 
