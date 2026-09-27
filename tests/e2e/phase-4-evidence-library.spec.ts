@@ -20,9 +20,10 @@ test("@e2e Phase 4 Library preserves lifecycle, evidence lanes, and spatial orig
 }, testInfo) => {
   await page.goto("/");
   const scene = page.getByRole("region", { name: "Office scene" });
-  // Task 9e (P-4): the outline takes its own width, so the library's 420 px is measured from it.
-  await openOfficeOutline(page);
+  // Task 9f-2 (P-4): one surface at a time, so the library's 420 px is measured from the office
+  // with nothing open.
   const initialScene = await scene.boundingBox();
+  await openOfficeOutline(page);
 
   await page.getByRole("button", { name: "Locate Project Library" }).click();
   const openLibrary = page.getByRole("button", { name: "Open Project Library" });
@@ -58,14 +59,17 @@ test("@e2e Phase 4 Library preserves lifecycle, evidence lanes, and spatial orig
   await viewEvidence.click();
   const focused = page.getByRole("dialog", { name: "Evidence: evidence_browser v1" });
   await expect(focused).toContainText("agent_test_engineer");
+  await page.screenshot({ path: testInfo.outputPath("project-library.png") });
+  // Task 9f-2 (P-2): locating the origin replaces the Library with the inspector; going back
+  // returns to the Library with focus on the record that was open.
   await page.getByRole("button", { name: "Locate origin in office" }).click();
   await expect(scene).toHaveAttribute("data-selected-entity-id", "agent_test_engineer");
-  await page.getByRole("button", { name: "Close evidence" }).click();
+  await expect(library).toHaveCount(0);
+  await page.getByRole("button", { name: "Back to Library" }).click();
   await expect(viewEvidence).toBeFocused();
-  await page.screenshot({ path: testInfo.outputPath("project-library.png") });
 
   await page.getByRole("button", { name: "Close Library" }).click();
-  await expect(page.getByRole("region", { name: "Office outline" })).toBeFocused();
+  await expect(page.getByRole("button", { name: "Open Project Library" })).toBeFocused();
 });
 
 // Phase 7-O Task 8b-3 (P-4): the review station opens the Library unfocused. The visual evidence

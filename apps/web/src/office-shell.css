@@ -70,6 +70,26 @@
   color: #55585a;
 }
 
+.office-project-bar .office-project-identity {
+  column-gap: 8px;
+}
+
+.office-outline-technical {
+  margin: 0 0 12px;
+  font-size: 0.875rem;
+}
+
+.office-outline-technical dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 2px 12px;
+  margin: 6px 0 0;
+}
+
+.office-outline-technical dd {
+  margin: 0;
+}
+
 .office-project-bar {
   grid-row: 1;
 }
@@ -135,16 +155,6 @@
   right: 0;
   width: auto;
   border-right: 0;
-}
-
-.office-shell[data-outline-primary="true"][data-inspector-open="true"] .office-outline {
-  right: 320px;
-}
-
-/* Beside the inspector (A-2), the outline narrows rather than running under it when space is
-   short (200% zoom). */
-.office-shell[data-outline-primary="false"][data-inspector-open="true"] .office-outline {
-  width: min(400px, calc(100% - 320px));
 }
 
 .office-shell[data-outline-open="true"][data-outline-primary="false"] .office-scene {
@@ -291,6 +301,13 @@
   justify-content: space-between;
   gap: 12px;
   align-items: start;
+}
+
+.office-inspector-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+  gap: 6px;
 }
 
 .office-inspector h2,

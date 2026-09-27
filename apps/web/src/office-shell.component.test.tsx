@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 import type { BrowserLibraryProjection } from "@cuckcode/application";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 
@@ -136,7 +136,8 @@ describe("OfficeShell", () => {
 
     await user.keyboard("{Escape}");
     expect(inspector).not.toBeInTheDocument();
-    expect(trigger).toHaveFocus();
+    // Task 9f-2 (P-2): the surface is rebuilt on return, so the control is found again by name.
+    expect(screen.getByRole("button", { name: "Inspect Implementation Engineer" })).toHaveFocus();
   });
   it.each<{
     state: Exclude<OfficeShellState, "ready">;
@@ -221,7 +222,7 @@ describe("OfficeShell manager attention", () => {
   it("uses canonical order, locates the office target, and restores rail focus", async () => {
     const user = userEvent.setup();
     render(<OfficeShell state="ready" onDisposition={fixtureDisposition} />);
-    const trigger = screen.getByRole("button", { name: "Manager attention (2)" });
+    const trigger = screen.getByRole("button", { name: "1 blocked · 1 review" });
 
     expect(screen.queryByRole("complementary", { name: "Manager attention" })).toBeNull();
     await user.click(trigger);
@@ -238,17 +239,19 @@ describe("OfficeShell manager attention", () => {
     );
     await user.keyboard("{Escape}");
     expect(screen.queryByRole("complementary", { name: "Entity inspector" })).toBeNull();
-    expect(rail).toBeVisible();
+    // Task 9f-2 (P-2): the surface is rebuilt on return, so the control is found again by name.
+    const returned = screen.getByRole("complementary", { name: "Manager attention" });
+    expect(returned).toBeVisible();
 
     await user.click(screen.getByRole("button", { name: "Close attention" }));
-    expect(rail).not.toBeInTheDocument();
+    expect(returned).not.toBeInTheDocument();
     expect(trigger).toHaveFocus();
   });
 
   it("keeps dismissal separate from approval and exposes exact attributable receipts", async () => {
     const user = userEvent.setup();
     render(<OfficeShell state="ready" onDisposition={fixtureDisposition} />);
-    await user.click(screen.getByRole("button", { name: "Manager attention (2)" }));
+    await user.click(screen.getByRole("button", { name: "1 blocked · 1 review" }));
 
     await user.click(screen.getByRole("button", { name: `Dismiss ${blocked}` }));
     expect(screen.getByRole("status")).toHaveTextContent(
@@ -276,7 +279,7 @@ describe("OfficeShell manager attention", () => {
   it.each(["stale", "offline"] as const)("denies manager dispositions while %s", async (state) => {
     const user = userEvent.setup();
     render(<OfficeShell state={state} onDisposition={fixtureDisposition} />);
-    await user.click(screen.getByRole("button", { name: "Manager attention (2)" }));
+    await user.click(screen.getByRole("button", { name: "1 blocked · 1 review" }));
     expect(screen.getAllByRole("button", { name: /^Submit / })).toSatisfy(
       (buttons: HTMLElement[]) => buttons.every((button) => button.hasAttribute("disabled")),
     );
@@ -352,7 +355,8 @@ describe("OfficeShell spatial evidence surfaces", () => {
 
     await user.click(screen.getByRole("button", { name: "Close Library" }));
     expect(library).not.toBeInTheDocument();
-    expect(trigger).toHaveFocus();
+    // Task 9f-2 (P-2): the surface is rebuilt on return, so the control is found again by name.
+    expect(screen.getByRole("button", { name: "Open Project Library" })).toHaveFocus();
   });
 
   // Phase 7-O Task 8b-3 (P-4): the review station opens the Library unfocused; a focused record
@@ -435,7 +439,7 @@ describe("OfficeShell semantic motion cue", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("keeps the office outline present while the kickoff is open and restores trigger focus", async () => {
+  it("keeps the office outline one action away while the kickoff is open and restores trigger focus", async () => {
     const user = userEvent.setup();
     render(<OfficeShell state="ready" kickoff={kickoffModel()} />);
     await openOfficeOutline(user);
@@ -444,8 +448,14 @@ describe("OfficeShell semantic motion cue", () => {
     await user.click(trigger);
 
     expect(screen.getByRole("region", { name: "Collaborative kickoff" })).toBeInTheDocument();
-    // The office is never replaced by the workflow; the equivalent outline stays reachable.
-    expect(screen.getByRole("region", { name: "Office outline" })).toBeInTheDocument();
+    // The office is never replaced by the workflow; the equivalent outline stays reachable. Task
+    // 9f-2 (P-2): one surface at a time, so the outline is one action away in the project bar.
+    expect(screen.queryByRole("region", { name: "Office outline" })).toBeNull();
+    expect(
+      within(screen.getByRole("banner", { name: "Project bar" })).getByRole("button", {
+        name: "Office outline",
+      }),
+    ).toBeVisible();
 
     await user.click(screen.getByRole("button", { name: "Close kickoff" }));
     expect(screen.queryByRole("region", { name: "Collaborative kickoff" })).not.toBeInTheDocument();

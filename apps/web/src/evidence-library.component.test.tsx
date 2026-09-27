@@ -105,7 +105,11 @@ describe("EvidenceLibrary", () => {
     expect(focused).toHaveTextContent("revision 42");
 
     await user.click(screen.getByRole("button", { name: "Locate origin in office" }));
-    expect(onLocateOrigin).toHaveBeenCalledWith("agent_test_engineer");
+    // Task 9f-2 (P-4): the evidence is passed too, so the shell can return to it.
+    expect(onLocateOrigin).toHaveBeenCalledWith("agent_test_engineer", {
+      evidenceId: "evidence_test",
+      version: 1,
+    });
 
     await user.click(screen.getByRole("button", { name: "Close evidence" }));
     expect(focused).not.toBeInTheDocument();

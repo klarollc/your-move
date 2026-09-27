@@ -31,8 +31,14 @@ test("@e2e Phase 4 kickoff opens from its spatial anchors and never authorises w
     "No work is authorised yet",
   );
 
-  // The office is never replaced by the workflow.
-  await expect(page.getByRole("region", { name: "Office outline" })).toBeVisible();
+  // The office is never replaced by the workflow. Task 9f-2 (P-2): one surface at a time, so the
+  // outline is one action away in the project bar rather than open beside the kickoff.
+  await expect(page.getByRole("region", { name: "Office outline" })).toHaveCount(0);
+  await expect(
+    page
+      .locator('header[aria-label="Project bar"]')
+      .getByRole("button", { name: "Office outline" }),
+  ).toBeVisible();
   await expect(page.locator('canvas[data-scene-renderer="pixi"]')).toHaveCount(1);
   await expect(page.locator("main")).toHaveAttribute("data-kickoff-open", "true");
 

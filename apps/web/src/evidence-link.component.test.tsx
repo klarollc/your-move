@@ -121,6 +121,7 @@ describe("the inspector's Evidence links", () => {
     expect(unavailable).not.toHaveTextContent("An unrelated capture.");
     await user.click(within(unavailable).getByRole("button", { name: "Close evidence" }));
     await user.click(screen.getByRole("button", { name: "Close Library" }));
-    expect(link).toHaveFocus();
+    // Task 9f-2 (P-2): the surface is rebuilt on return, so the control is found again by name.
+    expect(screen.getByRole("button", { name: "Open Browser evidence, version 1" })).toHaveFocus();
   });
 });

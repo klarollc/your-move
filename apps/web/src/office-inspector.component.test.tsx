@@ -46,7 +46,7 @@ describe("the inspector and the rail read one record", () => {
   it("gives the rail the same reason and action the inspector shows", async () => {
     const user = userEvent.setup();
     render(<OfficeShell state="ready" />);
-    await user.click(screen.getByRole("button", { name: "Manager attention (2)" }));
+    await user.click(screen.getByRole("button", { name: "1 blocked · 1 review" }));
     const rail = screen.getByRole("complementary", { name: "Manager attention" });
     expect(rail).toHaveTextContent("The Test Engineer needs current browser evidence");
     expect(rail).toHaveTextContent("Redirect the evidence request or decline the blocker.");

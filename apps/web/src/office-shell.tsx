@@ -15,6 +15,7 @@ import {
   NOT_IN_FIXTURE,
   approvalText,
   attentionItemsFrom,
+  attentionSummary,
   blockerText,
   currentWorkText,
   entityOf,
@@ -90,6 +91,25 @@ const kickoffRoleLabels: Readonly<Record<string, string>> = {
   release: "Release Reviewer",
 };
 
+const capitalise = (value: string) =>
+  value.length === 0 ? value : `${value.slice(0, 1).toUpperCase()}${value.slice(1)}`;
+
+/** The contextual surfaces, of which one at most is open (Task 9f-2, P-2). */
+type Surface = "outline" | "attention" | "inspector" | "library" | "kickoff";
+type BackEntry = Readonly<{
+  surface: Surface;
+  focusLabel: string | undefined;
+  /** The inspector's entity when the surface left behind is the inspector. */
+  selection: string | undefined;
+}>;
+const surfaceNames: Readonly<Record<Surface, string>> = {
+  outline: "outline",
+  attention: "attention",
+  inspector: "inspector",
+  library: "Library",
+  kickoff: "kickoff",
+};
+
 /** Ids, labels, relationships and layout order only. What anyone is doing comes from the model. */
 /** States in which the scene cannot be the working surface, so the outline is (Task 9e). */
 const SCENE_UNAVAILABLE: ReadonlySet<string> = new Set([
@@ -139,7 +159,7 @@ const presentations: Record<
   stale: {
     cause: "The last canonical update exceeded the freshness window; activity is uncertain.",
     recovery: "Refresh workspace",
-    runtime: "Runtime freshness unknown",
+    runtime: "Runtime updates unavailable",
   },
   offline: {
     cause: "The loopback runtime is unavailable; persisted state remains inspectable.",
@@ -252,38 +272,50 @@ export function OfficeShell({
     return () => observer.disconnect();
   }, [noticeShown]);
   const libraryTriggerRef = useRef<HTMLButtonElement>(null);
-  const [libraryOpen, setLibraryOpen] = useState(false);
   const kickoffTriggerRef = useRef<HTMLButtonElement>(null);
-  const [kickoffOpen, setKickoffOpen] = useState(false);
   const [initialEvidence, setInitialEvidence] = useState<EvidenceLink | undefined>(undefined);
   const attentionTriggerRef = useRef<HTMLButtonElement>(null);
-  const [attentionOpen, setAttentionOpen] = useState(false);
-  // Task 9e (A-1 to A-3): the outline is on demand, and shown without asking when the scene
-  // cannot be the working surface.
-  const sceneUnavailable = SCENE_UNAVAILABLE.has(state);
-  const [outlineOpen, setOutlineOpen] = useState(sceneUnavailable);
   const outlineTriggerRef = useRef<HTMLButtonElement>(null);
+  // Task 9f-2, owner ruling P-2 (reverses A-2; AR-04, constitution rule 3): one contextual surface
+  // at a time. Moving from one surface to the next keeps a way back: the stack holds the surfaces
+  // left behind and the name of the control used, so going back can focus it again. The outline
+  // is still shown without asking when the scene cannot be the working surface (Task 9e).
+  const sceneUnavailable = SCENE_UNAVAILABLE.has(state);
+  const [surface, setSurface] = useState<Surface | null>(sceneUnavailable ? "outline" : null);
+  const [backStack, setBackStack] = useState<readonly BackEntry[]>([]);
+  const surfaceRef = useRef(surface);
+  surfaceRef.current = surface;
+  const pendingFocusRef = useRef<string | undefined>(undefined);
+  const selectionRef = useRef<string | undefined>(undefined);
   const focusOutlineRef = useRef(false);
+  const outlineOpen = surface === "outline";
+  const attentionOpen = surface === "attention";
+  const libraryOpen = surface === "library";
+  const kickoffOpen = surface === "kickoff";
   useEffect(() => {
-    if (sceneUnavailable) setOutlineOpen(true);
+    if (sceneUnavailable) setSurface((current) => current ?? "outline");
   }, [sceneUnavailable]);
   useEffect(() => {
     if (outlineOpen && focusOutlineRef.current) {
       focusOutlineRef.current = false;
       outlineRef.current?.focus();
     }
-  }, [outlineOpen]);
-  const openOutline = () => {
-    focusOutlineRef.current = true;
-    setAttentionOpen(false);
-    setOutlineOpen(true);
-    if (outlineOpen) outlineRef.current?.focus();
-    setAnnouncement("Office outline opened");
-  };
-  const closeOutline = () => {
-    setOutlineOpen(false);
-    setAnnouncement("Office outline closed");
-    outlineTriggerRef.current?.focus();
+    const label = pendingFocusRef.current;
+    if (!label) return;
+    pendingFocusRef.current = undefined;
+    [...(shellRef.current?.querySelectorAll("button") ?? [])]
+      .find((button) => button.textContent?.trim() === label)
+      ?.focus();
+  }, [surface, outlineOpen]);
+  /** Move to another surface from the current one, remembering the way back. */
+  const advance = (next: Surface, focusLabel?: string) => {
+    const current = surfaceRef.current;
+    if (current && current !== next) {
+      const selection = current === "inspector" ? selectionRef.current : undefined;
+      setBackStack((stack) => [...stack, { surface: current, focusLabel, selection }]);
+    }
+    surfaceRef.current = next;
+    setSurface(next);
   };
   const [dismissedAttentionIds, setDismissedAttentionIds] = useState<ReadonlySet<string>>(
     () => new Set(),
@@ -312,8 +344,12 @@ export function OfficeShell({
             : `Canonical workspace revision ${revision} is not current: ${notCurrentReasons(model)}.`,
         }
       : presentations[state];
+  // Task 9f-1, owner ruling 9f-1a: the MDD's runtime health stays in the bar, in plain words.
+  const health = capitalise(presentation.runtime.replace(/^Runtime /u, ""));
   const selection = selectedEntityId ?? internalSelection;
+  selectionRef.current = selection;
   const selectedEntity = officeShellEntities.find(({ entityId }) => entityId === selection);
+  const inspectorOpen = surface === "inspector" && Boolean(selectedEntity);
   const visibleAttention = attention.filter(
     ({ attentionId }) => !dismissedAttentionIds.has(attentionId),
   );
@@ -323,53 +359,87 @@ export function OfficeShell({
     if (!selectedEntityId) return;
     const entity = officeShellEntities.find(({ entityId }) => entityId === selectedEntityId);
     setAnnouncement(`${entity?.label ?? selectedEntityId} selected`);
+    // A selection made in the scene opens the inspector in place of what was open.
+    if (surfaceRef.current !== "inspector") advance("inspector");
   }, [selectedEntityId]);
   const selectEntity = (entityId: string, trigger: HTMLButtonElement) => {
     selectionTriggerRef.current = trigger;
+    advance("inspector", trigger.textContent?.trim());
     setInternalSelection(entityId);
     onSelectEntity?.(entityId);
     const entity = officeShellEntities.find((candidate) => candidate.entityId === entityId);
     setAnnouncement(`${entity?.label ?? entityId} selected`);
   };
 
-  const closeInspector = () => {
+  const clearSelection = () => {
+    if (!selection) return;
     setInternalSelection(undefined);
     onSelectEntity?.(undefined);
-    setAnnouncement("Inspector closed");
-    selectionTriggerRef.current?.focus();
+  };
+  /** Open a surface from the project bar: a fresh start, with nothing to go back to. */
+  const openFromBar = (next: Surface | null) => {
+    clearSelection();
+    setBackStack([]);
+    surfaceRef.current = next;
+    setSurface(next);
+  };
+  const openOutline = () => {
+    focusOutlineRef.current = true;
+    openFromBar("outline");
+    if (outlineOpen) outlineRef.current?.focus();
+    setAnnouncement("Office outline opened");
+  };
+  const triggerFor = (origin: Surface | undefined) =>
+    origin === "outline"
+      ? outlineTriggerRef.current
+      : origin === "attention"
+        ? attentionTriggerRef.current
+        : undefined;
+  /** Close whatever is open and return to the office, focusing what began this journey. */
+  const closeToOffice = (announcement: string) => {
+    const origin = backStack[0]?.surface ?? surfaceRef.current ?? undefined;
+    const leaving = surfaceRef.current;
+    openFromBar(null);
+    setAnnouncement(announcement);
+    const trigger = triggerFor(origin);
+    if (trigger) trigger.focus();
+    else if (leaving === "inspector") selectionTriggerRef.current?.focus();
+    else (outlineTriggerRef.current ?? undefined)?.focus();
+  };
+  const closeOutline = () => closeToOffice("Office outline closed");
+  const closeAttention = () => closeToOffice("Manager attention closed");
+  const closeInspector = () => closeToOffice("Inspector closed");
+  /** Go back one surface, or close to the office when there is nothing to go back to. */
+  const back = () => {
+    const previous = backStack.at(-1);
+    const leaving = surfaceRef.current;
+    if (!previous) {
+      closeToOffice(
+        leaving === "inspector"
+          ? "Inspector closed"
+          : `${surfaceNames[leaving ?? "outline"]} closed`,
+      );
+      return;
+    }
+    if (previous.surface === "inspector" && previous.selection) {
+      setInternalSelection(previous.selection);
+      onSelectEntity?.(previous.selection);
+    } else if (leaving === "inspector") clearSelection();
+    setBackStack((stack) => stack.slice(0, -1));
+    pendingFocusRef.current = previous.focusLabel;
+    surfaceRef.current = previous.surface;
+    setSurface(previous.surface);
+    setAnnouncement(`Back to ${surfaceNames[previous.surface]}`);
   };
 
   useEffect(() => {
-    if (!selectedEntity || libraryOpen || kickoffOpen) return;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") closeInspector();
+    // The Library and the kickoff handle their own Escape; each closes through `back`.
+    if (!surface || libraryOpen || kickoffOpen) return;
+    const backOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") back();
     };
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
-  });
-
-  const closeAttention = () => {
-    setAttentionOpen(false);
-    setAnnouncement("Manager attention closed");
-    attentionTriggerRef.current?.focus();
-  };
-
-  useEffect(() => {
-    if (!attentionOpen || selectedEntity || libraryOpen || kickoffOpen) return;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") closeAttention();
-    };
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
-  });
-
-  useEffect(() => {
-    if (!outlineOpen || selectedEntity || libraryOpen || kickoffOpen) return;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") closeOutline();
-    };
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
+    window.addEventListener("keydown", backOnEscape);
+    return () => window.removeEventListener("keydown", backOnEscape);
   });
   // One state word, and "Needs you" when a held item needs the manager (Task 9d, F-9-3).
   const personState = (entityId: string) => {
@@ -385,7 +455,7 @@ export function OfficeShell({
       className="office-shell"
       ref={shellRef}
       aria-label="CuckCode office workspace"
-      data-inspector-open={Boolean(selectedEntity)}
+      data-inspector-open={inspectorOpen}
       data-attention-open={attentionOpen}
       data-outline-open={outlineOpen}
       data-outline-primary={sceneUnavailable}
@@ -409,12 +479,12 @@ export function OfficeShell({
         aria-label="Project bar"
         data-testid="persistent-structure"
       >
-        <div>
+        <div className="office-project-identity">
           <h1 className="office-product-name">CuckCode</h1>
-          <span>Outcome: truthful graybox office</span>
+          <span aria-hidden="true">/</span>
+          <span>truthful graybox office</span>
         </div>
-        <span>{presentation.runtime}</span>
-        <span>Local session · revision {revision}</span>
+        <span className="office-health">{health}</span>
         <button
           ref={outlineTriggerRef}
           id="office-outline-open"
@@ -431,12 +501,11 @@ export function OfficeShell({
             type="button"
             aria-expanded={attentionOpen}
             onClick={() => {
-              setOutlineOpen(false);
-              setAttentionOpen(true);
+              openFromBar("attention");
               setAnnouncement(`${visibleAttention.length} manager attention items opened`);
             }}
           >
-            Manager attention ({visibleAttention.length})
+            {attentionSummary(visibleAttention)}
           </button>
         ) : null}
         <button
@@ -516,6 +585,16 @@ export function OfficeShell({
               Close outline
             </button>
           </header>
+          {/* Task 9f-1: the session's runtime and revision, off the bar (AR-04). */}
+          <details className="office-outline-technical">
+            <summary>Technical detail</summary>
+            <dl>
+              <dt>Runtime</dt>
+              <dd>{presentation.runtime}</dd>
+              <dt>Session</dt>
+              <dd>Local session · revision {revision}</dd>
+            </dl>
+          </details>
           {state === "ready" ? (
             <p data-testid="workspace-cause">Cause: {presentation.cause}</p>
           ) : null}
@@ -577,6 +656,7 @@ export function OfficeShell({
           available={dispositionsAvailable}
           onClose={closeAttention}
           onLocate={(item) => {
+            advance("inspector", `Locate ${item.label}`);
             setInternalSelection(item.entityId);
             onSelectEntity?.(item.entityId);
             setAnnouncement(`${item.label} located in the office`);
@@ -595,7 +675,7 @@ export function OfficeShell({
           }
         />
       ) : null}
-      {selectedEntity ? (
+      {inspectorOpen && selectedEntity ? (
         <aside
           className="office-inspector"
           aria-label="Entity inspector"
@@ -606,9 +686,16 @@ export function OfficeShell({
               <p>Selected entity</p>
               <h2>{selectedEntity.label}</h2>
             </div>
-            <button type="button" onClick={closeInspector}>
-              Close inspector
-            </button>
+            <div className="office-inspector-actions">
+              {backStack.length > 0 ? (
+                <button type="button" onClick={back}>
+                  Back to {surfaceNames[backStack.at(-1)!.surface]}
+                </button>
+              ) : null}
+              <button type="button" onClick={closeInspector}>
+                Close inspector
+              </button>
+            </div>
           </header>
           <InspectorFields
             model={model}
@@ -620,7 +707,7 @@ export function OfficeShell({
                   onOpenEvidence: (link: EvidenceLink, trigger: HTMLButtonElement) => {
                     libraryTriggerRef.current = trigger;
                     setInitialEvidence(link);
-                    setLibraryOpen(true);
+                    advance("library", trigger.textContent?.trim());
                     setAnnouncement(`Evidence ${link.evidenceId} version ${link.version} opened`);
                   },
                 }
@@ -637,9 +724,9 @@ export function OfficeShell({
             <button
               ref={libraryTriggerRef}
               type="button"
-              onClick={() => {
+              onClick={(event) => {
                 setInitialEvidence(undefined);
-                setLibraryOpen(true);
+                advance("library", event.currentTarget.textContent?.trim());
                 setAnnouncement(`${selectedEntity.label} evidence opened`);
               }}
             >
@@ -650,8 +737,8 @@ export function OfficeShell({
             <button
               ref={kickoffTriggerRef}
               type="button"
-              onClick={() => {
-                setKickoffOpen(true);
+              onClick={(event) => {
+                advance("kickoff", event.currentTarget.textContent?.trim());
                 setAnnouncement(`Collaborative kickoff opened from ${selectedEntity.label}`);
               }}
             >
@@ -665,10 +752,8 @@ export function OfficeShell({
           model={kickoff}
           roleLabels={kickoffRoleLabels}
           onClose={() => {
-            setKickoffOpen(false);
+            back();
             setAnnouncement("Collaborative kickoff closed");
-            if (kickoffTriggerRef.current) kickoffTriggerRef.current.focus();
-            else (outlineRef.current ?? outlineTriggerRef.current)?.focus();
           }}
         />
       ) : null}
@@ -680,12 +765,12 @@ export function OfficeShell({
           projection={library}
           {...(initialEvidence ? { initialEvidence } : {})}
           onClose={() => {
-            setLibraryOpen(false);
+            back();
             setAnnouncement("Project Library closed");
-            if (libraryTriggerRef.current) libraryTriggerRef.current.focus();
-            else (outlineRef.current ?? outlineTriggerRef.current)?.focus();
           }}
-          onLocateOrigin={(entityId) => {
+          onLocateOrigin={(entityId, evidence) => {
+            // Back from the inspector returns to the Library, on the record that was open.
+            advance("inspector", `View ${evidence.evidenceId} v${evidence.version}`);
             setInternalSelection(entityId);
             onSelectEntity?.(entityId);
             setAnnouncement(`${entityId} located from evidence`);

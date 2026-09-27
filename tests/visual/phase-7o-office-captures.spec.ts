@@ -58,7 +58,7 @@ const JOURNEYS: readonly Journey[] = [
       // Task 9e: the office is the whole surface; nothing is wrong, so no notice is shown.
       await expect(page.getByRole("region", { name: "Office outline" })).toHaveCount(0);
       await expect(page.getByTestId("workspace-notice")).toHaveCount(0);
-      await expect(page.getByRole("button", { name: "Manager attention (2)" })).toBeVisible();
+      await expect(page.getByRole("button", { name: "1 blocked · 1 review" })).toBeVisible();
       await expect(page.getByRole("button", { name: "Office outline", exact: true })).toBeVisible();
     },
   },
@@ -90,7 +90,7 @@ const JOURNEYS: readonly Journey[] = [
   {
     id: "blocked-item",
     path: "/",
-    drive: (page) => page.getByRole("button", { name: "Manager attention (2)" }).click(),
+    drive: (page) => page.getByRole("button", { name: "1 blocked · 1 review" }).click(),
     verify: async (page) => {
       const rail = page.getByRole("complementary", { name: "Manager attention" });
       await expect(rail).toContainText("Provide current browser evidence: blocked");

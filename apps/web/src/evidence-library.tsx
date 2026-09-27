@@ -16,7 +16,8 @@ export function EvidenceLibrary({
   /** Open at this record and version (spec §6). Never falls back to another record. */
   initialEvidence?: EvidenceLink;
   onClose: () => void;
-  onLocateOrigin: (entityId: string) => void;
+  /** The evidence is passed so a caller can come back to it (Task 9f-2). */
+  onLocateOrigin: (entityId: string, evidence: EvidenceLink) => void;
 }>) {
   const libraryRef = useRef<HTMLElement>(null);
   const linked = initialEvidence
@@ -165,7 +166,10 @@ export function EvidenceLibrary({
               type="button"
               onClick={() => {
                 if (focusedEvidence.originatingEntityId) {
-                  onLocateOrigin(focusedEvidence.originatingEntityId);
+                  onLocateOrigin(focusedEvidence.originatingEntityId, {
+                    evidenceId: focusedEvidence.evidenceId,
+                    version: focusedEvidence.version,
+                  });
                 }
               }}
             >

@@ -6,9 +6,11 @@ test("@e2e Phase 4 outline selection resizes the scene and restores trigger focu
 }, testInfo) => {
   await page.goto("/");
   const scene = page.getByRole("region", { name: "Office scene" });
-  // Task 9e (P-4): measured with the outline open, so the inspector's 320 px is what is compared.
-  await openOfficeOutline(page);
+  // Task 9f-2 (P-4): the inspector replaces the outline, so its 320 px is measured from the office
+  // with nothing open.
   const before = await scene.boundingBox();
+  await openOfficeOutline(page);
+  const withOutline = await scene.boundingBox();
   const trigger = page.getByRole("button", { name: "Inspect Product Designer" });
 
   await trigger.click();
@@ -24,7 +26,8 @@ test("@e2e Phase 4 outline selection resizes the scene and restores trigger focu
   await page.keyboard.press("Escape");
   await expect(inspector).toHaveCount(0);
   await expect(trigger).toBeFocused();
-  expect((await scene.boundingBox())?.width).toBe(before?.width);
+  await expect(page.getByRole("region", { name: "Office outline" })).toBeVisible();
+  expect((await scene.boundingBox())?.width).toBe(withOutline?.width);
 });
 
 test("@e2e Phase 4 canvas selection opens the same stable entity inspector", async ({ page }) => {

@@ -50,7 +50,7 @@ describe("the office is the default surface", () => {
     const user = userEvent.setup();
     render(<OfficeShell state="ready" />);
     await user.click(within(bar()).getByRole("button", { name: "Office outline" }));
-    await user.click(screen.getByRole("button", { name: "Manager attention (2)" }));
+    await user.click(screen.getByRole("button", { name: "1 blocked · 1 review" }));
     expect(screen.getByRole("complementary", { name: "Manager attention" })).toBeVisible();
     expect(outline()).toBeNull();
     await user.click(within(bar()).getByRole("button", { name: "Office outline" }));
@@ -58,17 +58,18 @@ describe("the office is the default surface", () => {
     expect(screen.queryByRole("complementary", { name: "Manager attention" })).toBeNull();
   });
 
-  it("keeps the outline open beside the inspector, and returns focus to the Inspect button", async () => {
+  // Task 9f-2, owner ruling P-2 reverses A-2: the inspector replaces the outline, and Escape
+  // returns to it with focus on the Inspect button used.
+  it("replaces the outline with the inspector, and Escape returns focus to the Inspect button", async () => {
     const user = userEvent.setup();
     render(<OfficeShell state="ready" />);
     await user.click(within(bar()).getByRole("button", { name: "Office outline" }));
-    const inspect = screen.getByRole("button", { name: "Inspect Test Engineer" });
-    await user.click(inspect);
+    await user.click(screen.getByRole("button", { name: "Inspect Test Engineer" }));
     expect(screen.getByRole("complementary", { name: "Entity inspector" })).toBeVisible();
-    expect(outline()).toBeVisible();
+    expect(outline()).toBeNull();
     await user.keyboard("{Escape}");
     expect(screen.queryByRole("complementary", { name: "Entity inspector" })).toBeNull();
-    expect(inspect).toHaveFocus();
+    expect(screen.getByRole("button", { name: "Inspect Test Engineer" })).toHaveFocus();
     expect(outline()).toBeVisible();
   });
 

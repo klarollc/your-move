@@ -10,7 +10,7 @@ test("@e2e Phase 4 manager attention locates, dismisses, and records an exact di
   await page.goto("/");
   const scene = page.getByRole("region", { name: "Office scene" });
   const initialScene = await scene.boundingBox();
-  const attentionTrigger = page.getByRole("button", { name: "Manager attention (2)" });
+  const attentionTrigger = page.getByRole("button", { name: "1 blocked · 1 review" });
 
   await attentionTrigger.click();
   const rail = page.getByRole("complementary", { name: "Manager attention" });
@@ -26,7 +26,9 @@ test("@e2e Phase 4 manager attention locates, dismisses, and records an exact di
     .click();
   await expect(scene).toHaveAttribute("data-selected-entity-id", "agent_test_engineer");
   await expect(page.getByRole("complementary", { name: "Entity inspector" })).toBeVisible();
-  expect((initialScene?.width ?? 0) - ((await scene.boundingBox())?.width ?? 0)).toBe(600);
+  // Task 9f-2 (P-2): the inspector replaces the rail, so only its 320 px are taken.
+  await expect(rail).toHaveCount(0);
+  expect((initialScene?.width ?? 0) - ((await scene.boundingBox())?.width ?? 0)).toBe(320);
   await page.keyboard.press("Escape");
   await expect(page.getByRole("complementary", { name: "Entity inspector" })).toHaveCount(0);
   await expect(rail).toBeVisible();
@@ -57,13 +59,13 @@ test("@e2e Phase 4 manager attention locates, dismisses, and records an exact di
   await page.screenshot({ path: testInfo.outputPath("manager-attention.png") });
 
   await page.getByRole("button", { name: "Close attention" }).click();
-  await expect(page.getByRole("button", { name: "Manager attention (1)" })).toBeFocused();
+  await expect(page.getByRole("button", { name: "1 review" })).toBeFocused();
   expect((await scene.boundingBox())?.width).toBe(initialScene?.width);
 });
 
 test("@e2e Phase 4 manager attention fails closed on stale state", async ({ page }) => {
   await page.goto("/?state=stale");
-  await page.getByRole("button", { name: "Manager attention (2)" }).click();
+  await page.getByRole("button", { name: "1 blocked · 1 review" }).click();
   const rail = page.getByRole("complementary", { name: "Manager attention" });
   await expect(rail).toContainText("Refresh the current workspace before recording a disposition.");
   await expect(rail.getByRole("button", { name: /^Submit / }).first()).toBeDisabled();

@@ -157,25 +157,17 @@ test("@e2e Phase 7-O the project bar keeps its controls whole at 200% zoom", asy
   expect(await page.evaluate(() => window.innerWidth), "zoom did not narrow the layout").toBe(
     halfWidth,
   );
-  await expectWhollyVisible(page, "Manager attention (2)");
+  await expectWhollyVisible(page, "1 blocked · 1 review");
   await expectWhollyVisible(page, "Reset view");
   await expectNamesReadable(page);
   // With the inspector open, it must not be drawn over the wrapped project bar.
   await openOfficeOutline(page);
   await page.getByRole("button", { name: "Inspect Test Engineer" }).click();
   await expect(page.getByRole("complementary", { name: "Entity inspector" })).toBeVisible();
-  await expectUncovered(page, "Manager attention (2)");
+  await expectUncovered(page, "1 blocked · 1 review");
   await expectUncovered(page, "Reset view");
-  // Task 9e (A-2): the outline stays open beside the inspector; the two must not overlap.
-  const outlineBox = await page.getByRole("region", { name: "Office outline" }).boundingBox();
-  const inspectorBox = await page
-    .getByRole("complementary", { name: "Entity inspector" })
-    .boundingBox();
-  expect(outlineBox && inspectorBox).toBeTruthy();
-  expect(
-    outlineBox!.x + outlineBox!.width,
-    "the outline runs under the inspector",
-  ).toBeLessThanOrEqual(inspectorBox!.x + 0.5);
+  // Task 9f-2 (P-2, reversing A-2): the inspector replaces the outline; nothing lies under it.
+  await expect(page.getByRole("region", { name: "Office outline" })).toHaveCount(0);
   await client.send("Emulation.clearDeviceMetricsOverride");
   await client.detach();
 });

@@ -51,6 +51,32 @@ const reasonText: Readonly<Record<OfficeAttentionView["reason"], string>> = {
   question_open: "question open",
 };
 
+/**
+ * The bar's attention count by kind (Task 9f-1, owner ruling P-4; AR-01, constitution rule 5): a
+ * blocker, a question and a review are different obligations, not one alert total. Only non-zero
+ * groups are shown, and a reason outside these groups is counted as "other" rather than dropped.
+ */
+const summaryGroups: readonly Readonly<{
+  reasons: readonly string[];
+  one: string;
+  many: string;
+}>[] = [
+  { reasons: ["blocked", "failed"], one: "blocked", many: "blocked" },
+  { reasons: ["question_open", "waiting_input"], one: "question", many: "questions" },
+  { reasons: ["review_requested", "approval_required"], one: "review", many: "reviews" },
+];
+
+export function attentionSummary(items: readonly Readonly<{ reason: string }>[]): string {
+  const parts = summaryGroups.flatMap(({ reasons, one, many }) => {
+    const count = items.filter((item) => reasons.includes(item.reason)).length;
+    return count > 0 ? [`${count} ${count === 1 ? one : many}`] : [];
+  });
+  const known = new Set(summaryGroups.flatMap(({ reasons }) => reasons));
+  const other = items.filter((item) => !known.has(item.reason)).length;
+  if (other > 0) parts.push(`${other} other`);
+  return parts.join(" · ");
+}
+
 export const NO_REASON = "No reason recorded";
 export const NO_ACTION = "No requested action recorded";
 export const NOT_ASSIGNED = "Work is not assigned";
