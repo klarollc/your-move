@@ -7,8 +7,8 @@ const mode = process.env.CUCKCODE_FAKE_MODE ?? "normal";
 // when its tool features are on (F1.4).
 // `apps-by-feature` is a signed-in Codex whose codex_apps server starts unless the latest
 // thread/start turned the `apps` feature off: the shape the surface probe proves (F1.5).
-// `apps-large-by-feature` is the same with a tool catalog over 1 MiB, as the signed-in 0.157.1
-// control returned on 2026-09-27.
+// `apps-large-by-feature` is the same with a tool catalog over 1 MiB, as the pinned binary's
+// signed-in control returned on 2026-09-27.
 const appsByFeature = mode === "apps-by-feature" || mode === "apps-large-by-feature";
 const exerciseLike = mode === "exercise" || mode === "tool-surface" || appsByFeature;
 let latestFeatures;
