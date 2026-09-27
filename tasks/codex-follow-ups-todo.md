@@ -139,7 +139,16 @@ signed-in session but never starts a turn.
     fixed in `78873e1`; `fu6-prov-01` exit 0 with no stale digests; `fu6-verify-03` at `78873e1`:
     exit 0, not dirty, evidence unchanged.
 
-- [ ] **Task 7 — On `main`, after the merge (F2.4).**
+- [x] **Task 7 — On `main`, after the merge (F2.4).**
   - Convert the main copy's twelve files to LF in place, after checking each differs only by line
     endings; no provenance write (the ledger already holds the LF digests); owner runs `verify` on
     `main`.
+  - Result (2026-09-27): `main` merged into `codex-currency` in the worktree (`58c36f3`; conflicts in
+    `package.json`, the ledger and the register; main's DF-025 renumbered DF-028 by owner ruling),
+    register re-recorded (`95d7641`), worktree `verify` exit 0. Then `main` and the checked-out
+    `hermes/phase-4-task-15-evidence` fast-forwarded to `95d7641`. In the main copy the twelve
+    files went to LF, each byte-identical to `HEAD`, with no diff. Its first `verify` stopped at the
+    drift check (`CODEX_EXECUTABLE_UNRESOLVED`): the main copy had never installed the pinned Codex.
+    After the owner's `npm install` (lockfile unchanged), `fu7-verify-main-02` at `95d7641`: exit 0,
+    not dirty, evidence unchanged. The main runner still holds its pre-merge allowlist until it is
+    restarted.
