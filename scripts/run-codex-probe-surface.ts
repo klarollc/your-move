@@ -11,7 +11,7 @@ import {
   resolveInstalledCodexExecutable,
 } from "@cuckcode/runtime-codex";
 
-import { probeRuntime, runCodexProbeSurface } from "./codex-probe-surface.js";
+import { PROBE_MAX_LINE_BYTES, probeRuntime, runCodexProbeSurface } from "./codex-probe-surface.js";
 import { assertNoCodexDrift } from "./codex-drift.js";
 import { CREDENTIAL_SOURCE } from "./phase4-kickoff-session.js";
 
@@ -59,6 +59,7 @@ try {
       const supervisor = new CodexStdioSupervisor({
         executable: resolveInstalledCodexExecutable(),
         codexHome: home.path,
+        maxLineBytes: PROBE_MAX_LINE_BYTES,
       });
       const log = openSessionLog(supervisor, {
         root: SESSIONS_ROOT,

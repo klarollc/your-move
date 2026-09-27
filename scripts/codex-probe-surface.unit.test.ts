@@ -1,8 +1,11 @@
+import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import { featureDisableConfig } from "@cuckcode/runtime-codex";
 
 import {
+  PROBE_MAX_LINE_BYTES,
   guardProbeRequests,
   runCodexProbeSurface,
   type ProbeDependencies,
@@ -182,5 +185,14 @@ describe("codex surface probe (F1.5, F1.6)", () => {
     await expect(guarded.request("thread/read", {})).rejects.toThrow(/PROBE_METHOD_REFUSED/u);
     await guarded.request("mcpServerStatus/list", {});
     expect(reached).toEqual(["mcpServerStatus/list"]);
+  });
+});
+
+describe("the probe's message bound", () => {
+  it("is raised above the supervisor default, and the live script uses it", () => {
+    // The default stays 1 MiB for every other session: an oversized listing there fails closed.
+    expect(PROBE_MAX_LINE_BYTES).toBeGreaterThan(1_048_576);
+    const live = readFileSync(new URL("./run-codex-probe-surface.ts", import.meta.url), "utf8");
+    expect(live).toContain("maxLineBytes: PROBE_MAX_LINE_BYTES");
   });
 });

@@ -7,7 +7,10 @@ const mode = process.env.CUCKCODE_FAKE_MODE ?? "normal";
 // when its tool features are on (F1.4).
 // `apps-by-feature` is a signed-in Codex whose codex_apps server starts unless the latest
 // thread/start turned the `apps` feature off: the shape the surface probe proves (F1.5).
-const exerciseLike = mode === "exercise" || mode === "tool-surface" || mode === "apps-by-feature";
+// `apps-large-by-feature` is the same with a tool catalog over 1 MiB, as the signed-in 0.157.1
+// control returned on 2026-09-27.
+const appsByFeature = mode === "apps-by-feature" || mode === "apps-large-by-feature";
+const exerciseLike = mode === "exercise" || mode === "tool-surface" || appsByFeature;
 let latestFeatures;
 // Reports the pinned version, as the real binary would. Read from the declaration, never copied.
 const pinned = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"))
@@ -79,15 +82,22 @@ for await (const line of lines) {
       `${JSON.stringify({ id: message.id, result: { thread: { id: "thread_fixture" }, ...exercise } })}\n`,
     );
   } else if (message.method === "mcpServerStatus/list") {
-    const appsOn =
-      mode === "tool-surface" || (mode === "apps-by-feature" && latestFeatures?.apps !== false);
+    const appsOn = mode === "tool-surface" || (appsByFeature && latestFeatures?.apps !== false);
     const data = appsOn
       ? [
           {
             name: "codex_apps",
             authStatus: "oAuth",
             runtimeStatus: "connected",
-            tools: { github_search: {}, gmail_send: {} },
+            tools:
+              mode === "apps-large-by-feature"
+                ? Object.fromEntries(
+                    Array.from({ length: 300 }, (_, index) => [
+                      `app_tool_${index}`,
+                      { description: "x".repeat(6_000) },
+                    ]),
+                  )
+                : { github_search: {}, gmail_send: {} },
             resources: [],
             resourceTemplates: [],
           },

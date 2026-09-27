@@ -37,6 +37,14 @@ export type ProbeDependencies = {
   now: () => string;
 };
 
+/**
+ * The probe's per-message bound. On 2026-09-27 the signed-in control's codex_apps listing exceeded
+ * the supervisor's 1 MiB default and the probe stopped with LINE_TOO_LARGE. Only the probe raises
+ * it, because only the probe asks for a listing without the policy; every other session keeps the
+ * default, where an oversized listing fails closed before any binding.
+ */
+export const PROBE_MAX_LINE_BYTES = 64 * 1_048_576;
+
 /** The only two methods the probe may send. A turn is not among them, by construction. */
 const PROBE_METHODS: ReadonlySet<string> = new Set(["thread/start", "mcpServerStatus/list"]);
 const APPS_SERVER = "codex_apps";

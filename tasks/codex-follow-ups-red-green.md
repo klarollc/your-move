@@ -71,3 +71,16 @@ once, at Task 6's provenance write, when these entries move into its "Follow-ups
 - The drift-placement guard (`codex-drift.unit.test.ts`) caught the new script constructing its own
   supervisor; the script now calls `await assertNoCodexDrift()` in the form the guard checks, and
   the guard lists it. Whole mirror: unit 486, integration 78 (3 skipped), typecheck, lint clean.
+
+## Task 6 — first owner run and the listing bound
+
+- Owner run 2026-09-27T17:57:23Z (win32-x64, signed in): `PROBE_RUNTIME_FAILURE` at
+  `mcpServerStatus/list (control)`, detail `LINE_TOO_LARGE`. `account/read` and the control
+  `thread/start` succeeded; the session log shows `mcpServer/startupStatus/updated` for
+  `codex_apps` going `starting` → `ready` in the control thread. The control's listing exceeded
+  the supervisor's 1 MiB per-message default.
+- RED: a fake mode whose codex_apps catalog is over 1 MiB; the rehearsal with the default bound
+  reproduced `LINE_TOO_LARGE`, and with the probe's bound (stubbed at the default) failed 1 of 11,
+  with the source guard, 2 of 11 in all, both `AssertionError`.
+- GREEN: `PROBE_MAX_LINE_BYTES` 64 MiB, used only by the probe's supervisor; 11 of 11. Mirror:
+  unit 487, integration 79 (3 skipped), typecheck and lint clean. Every other session keeps 1 MiB.
