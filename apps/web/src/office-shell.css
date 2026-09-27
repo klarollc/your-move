@@ -127,6 +127,53 @@
   display: block;
 }
 
+/* Task 9f-3 (P-3; AR-01): the office carries its own cues, in screen-space text. */
+.office-scene-labels {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+}
+
+.office-scene-label {
+  position: absolute;
+  box-sizing: border-box;
+  max-width: 180px;
+  width: max-content;
+  padding: 2px 8px;
+  border: 1px solid #85888a;
+  border-radius: 12px;
+  background: #f4f4f0;
+  color: #1f2123;
+  font-size: 12px;
+  line-height: 1.3;
+  text-align: center;
+  pointer-events: none;
+}
+
+.office-scene-label[data-placement="above"] {
+  transform: translate(-50%, calc(-100% - 6px));
+}
+
+.office-scene-label[data-placement="below"] {
+  transform: translate(-50%, 6px);
+}
+
+.office-scene-label[data-placement="zone"] {
+  transform: translate(6px, calc(-100% - 6px));
+  border-color: transparent;
+  background: transparent;
+  color: #3b3e40;
+}
+
+/* Amber is for what needs the manager (constitution rule 9); the words say so too. */
+.office-scene-label[data-needs-you="true"] {
+  border-color: #9a6b12;
+  background: #f2c46d;
+}
+
 .office-canvas-placeholder {
   height: 100%;
   display: grid;

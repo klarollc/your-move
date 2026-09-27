@@ -24,9 +24,8 @@ import {
   evidencePlain,
   freshnessWarning,
   happeningText,
-  needsManager,
+  personStateLine,
   needsYouPlain,
-  personStateWord,
   stateWord,
   whyText,
   needsYouText,
@@ -441,12 +440,7 @@ export function OfficeShell({
     window.addEventListener("keydown", backOnEscape);
     return () => window.removeEventListener("keydown", backOnEscape);
   });
-  // One state word, and "Needs you" when a held item needs the manager (Task 9d, F-9-3).
-  const personState = (entityId: string) => {
-    const entity = entityOf(model, entityId);
-    if (entity?.kind !== "person") return "Not in the office read model";
-    return `${personStateWord(entity)}${needsManager(entity) ? " · Needs you" : ""}`;
-  };
+  const personState = (entityId: string) => personStateLine(model, entityId);
   const zones = officeShellEntities.filter(({ kind }) => kind === "zone");
   const people = officeShellEntities.filter(({ kind }) => kind === "person");
 

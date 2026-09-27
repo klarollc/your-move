@@ -20,13 +20,16 @@ import {
   motionFrom,
   officeModelFor,
   revisionOf,
+  sceneLabelsFrom,
   type OfficeModel,
+  type SceneLabel,
 } from "./office-model.js";
 import { OfficeShell, type OfficeShellState } from "./office-shell.js";
 import {
   createOfficeSceneAdapter,
   type OfficeSceneAdapter,
   type SceneDescriptor,
+  type SceneTransform,
 } from "./office-scene-adapter.js";
 import { createPixiSceneRenderer } from "./pixi-scene-renderer.js";
 
@@ -139,6 +142,7 @@ export function OfficeWorkspace({
   // The canonical log for this state is replayed and projected once; every surface reads it.
   const office = useMemo(() => officeModelFor(state, fixtureId), [state, fixtureId]);
   const library = useMemo(() => officeLibraryFor(state, fixtureId), [state, fixtureId]);
+  const labels = useMemo(() => sceneLabelsFrom(office.model), [office]);
   const motion = motionEnabled
     ? motionFrom(office.model, { reducedMotion, checkpoint: motionCheckpoint })
     : undefined;
@@ -161,6 +165,7 @@ export function OfficeWorkspace({
             key={canvasKey}
             onCanvasUnavailable={handleCanvasUnavailable}
             onSelectEntity={setSelectedEntityId}
+            labels={labels}
           />
         ) : undefined
       }
@@ -244,11 +249,15 @@ function executeFixtureDisposition(
 function OfficeCanvas({
   onCanvasUnavailable,
   onSelectEntity,
+  labels,
 }: Readonly<{
   onCanvasUnavailable: (unavailable: boolean) => void;
   onSelectEntity: (entityId: string) => void;
+  labels: readonly SceneLabel[];
 }>) {
   const hostRef = useRef<HTMLDivElement>(null);
+  // The camera the scene was last drawn with, so the labels sit over what they name.
+  const [camera, setCamera] = useState<SceneTransform | undefined>(undefined);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -268,13 +277,13 @@ function OfficeCanvas({
       .then(() => {
         if (cancelled) return;
         adapter.update(sceneDescriptors);
-        resizeScene(adapter, host.clientWidth, host.clientHeight, host);
+        setCamera(resizeScene(adapter, host.clientWidth, host.clientHeight, host));
         observer = new ResizeObserver(([entry]) => {
           if (!entry) return;
           const width = Math.round(entry.contentRect.width);
           const height = Math.round(entry.contentRect.height);
           if (width < 1 || height < 1) return;
-          resizeScene(adapter, width, height, host);
+          setCamera(resizeScene(adapter, width, height, host));
         });
         observer.observe(host);
       })
@@ -289,15 +298,74 @@ function OfficeCanvas({
     };
   }, [onCanvasUnavailable, onSelectEntity]);
 
-  return <div className="office-canvas-host" data-office-canvas-host ref={hostRef} />;
+  return (
+    <>
+      <div className="office-canvas-host" data-office-canvas-host ref={hostRef} />
+      {camera ? <SceneLabels labels={labels} camera={camera} /> : null}
+    </>
+  );
 }
 
+const descriptorsById = new Map(
+  sceneDescriptors.map((descriptor) => [descriptor.entityId, descriptor]),
+);
+const deskOrder = sceneDescriptors
+  .filter(({ entityType }) => entityType === "agent")
+  .map(({ entityId }) => entityId);
+
+/**
+ * Task 9f-3 (P-3; AR-01, constitution rules 2 and 9): horizontal screen-space labels over the
+ * scene. People are labelled over or under their desk, alternately, so neighbours never collide;
+ * zones are named at their lower left. Labels do not take the pointer, so the desk beneath stays
+ * selectable, and they are read as a list by assistive technology.
+ */
+function SceneLabels({
+  labels,
+  camera,
+}: Readonly<{ labels: readonly SceneLabel[]; camera: SceneTransform }>) {
+  const { zoom, translation } = camera;
+  return (
+    <ol className="office-scene-labels" aria-label="People and places in the office">
+      {labels.map((label) => {
+        const descriptor = descriptorsById.get(label.entityId);
+        if (!descriptor) return null;
+        let left: number;
+        let top: number;
+        let placement: "above" | "below" | "zone";
+        if (label.kind === "person") {
+          const above = deskOrder.indexOf(label.entityId) % 2 === 0;
+          placement = above ? "above" : "below";
+          left = (descriptor.x + descriptor.width / 2) * zoom + translation.x;
+          top = (above ? descriptor.y : descriptor.y + descriptor.height) * zoom + translation.y;
+        } else {
+          placement = "zone";
+          left = descriptor.x * zoom + translation.x;
+          top = (descriptor.y + descriptor.height) * zoom + translation.y;
+        }
+        return (
+          <li
+            key={label.entityId}
+            className="office-scene-label"
+            data-scene-label={label.entityId}
+            data-placement={placement}
+            data-needs-you={label.needsYou}
+            style={{ left: `${left}px`, top: `${top}px` }}
+          >
+            {label.state ? `${label.name} · ${label.state}` : label.name}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+/** Resizes and re-frames the scene; returns the camera drawn with, or nothing below the minimum. */
 function resizeScene(
   adapter: OfficeSceneAdapter,
   width: number,
   height: number,
   host: HTMLDivElement,
-) {
+): SceneTransform | undefined {
   adapter.resize(width, height);
   let layout;
   try {
@@ -310,24 +378,26 @@ function resizeScene(
   } catch (error) {
     if (error instanceof RangeError && error.message === "OFFICE_VIEWPORT_BELOW_APPROVED_MINIMUM") {
       host.dataset.officeViewportStatus = "below-approved-minimum";
-      return;
+      return undefined;
     }
     throw error;
   }
   host.dataset.officeViewportStatus = "approved";
   const camera = createOfficeCamera(layout);
-  adapter.setCamera({
+  const drawn: SceneTransform = {
     zoom: camera.zoom,
     translation: {
       x: camera.translation.x,
       y: camera.translation.y - officeLayoutPolicy.projectBarHeight,
     },
-  });
+  };
+  adapter.setCamera(drawn);
   const implementationCenter = {
     x: (80 + 34) * camera.zoom + camera.translation.x,
     y: 34 * camera.zoom + camera.translation.y - officeLayoutPolicy.projectBarHeight,
   };
   host.dataset.agentImplementationScreen = `${implementationCenter.x},${implementationCenter.y}`;
+  return drawn;
 }
 
 function zone(

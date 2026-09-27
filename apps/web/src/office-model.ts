@@ -275,6 +275,49 @@ export function personStateWord(person: OfficePersonView): string {
 
 export const needsManager = (person: OfficePersonView) => person.attention.length > 0;
 
+/** One state word, and "Needs you" when a held item needs the manager (Task 9d, F-9-3). */
+export function personStateLine(model: OfficeReadModel, entityId: string): string {
+  const entity = entityOf(model, entityId);
+  if (entity?.kind !== "person") return "Not in the office read model";
+  return `${personStateWord(entity)}${needsManager(entity) ? " · Needs you" : ""}`;
+}
+
+export type SceneLabel = Readonly<{
+  entityId: string;
+  kind: "person" | "zone";
+  name: string;
+  /** A person's plain state, the same words the outline shows; zones carry their name only. */
+  state: string | undefined;
+  needsYou: boolean;
+}>;
+
+/**
+ * The office's own cues (Task 9f-3, owner ruling P-3; AR-01, constitution rules 2 and 9): each
+ * person's name and plain state, and each zone's name. `needsYou` selects the amber treatment,
+ * and is never set without "Needs you" in the words.
+ */
+export function sceneLabelsFrom(model: OfficeReadModel): readonly SceneLabel[] {
+  return OFFICE_REGISTRY.map((entry) => {
+    if (entry.kind !== "person") {
+      return {
+        entityId: entry.entityId,
+        kind: "zone",
+        name: entry.label,
+        state: undefined,
+        needsYou: false,
+      };
+    }
+    const person = personOf(model, entry.entityId);
+    return {
+      entityId: entry.entityId,
+      kind: "person",
+      name: entry.label,
+      state: personStateLine(model, entry.entityId),
+      needsYou: person ? needsManager(person) : false,
+    };
+  });
+}
+
 export function happeningText(person: OfficePersonView): string {
   const held = person.work.find((work) => heldPhrase[work.state]);
   if (held) return `${heldPhrase[held.state]} ${held.outcome}`;
