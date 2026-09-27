@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { OFFICE_FIXTURES } from "../../apps/web/src/office-fixtures/index.js";
+import { openOfficeOutline } from "../support/office-outline.js";
 
 // Phase 7-O Task 6 (P-4): the revision is the length of the canonical default log, not a literal.
 const revision = OFFICE_FIXTURES.default!.events.length;
@@ -10,6 +11,7 @@ const revision = OFFICE_FIXTURES.default!.events.length;
 
 async function openKickoff(page: Page, query: string, anchor: string) {
   await page.goto(query);
+  await openOfficeOutline(page);
   await page.getByRole("button", { name: `Locate ${anchor}` }).click();
   await page.getByRole("button", { name: "Open collaborative kickoff" }).click();
   await expect(page.getByRole("region", { name: "Collaborative kickoff" })).toBeVisible();

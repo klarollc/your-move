@@ -1,10 +1,13 @@
 import { expect, test } from "@playwright/test";
+import { openOfficeOutline } from "../support/office-outline.js";
 
 test("@e2e Phase 4 outline selection resizes the scene and restores trigger focus", async ({
   page,
 }, testInfo) => {
   await page.goto("/");
   const scene = page.getByRole("region", { name: "Office scene" });
+  // Task 9e (P-4): measured with the outline open, so the inspector's 320 px is what is compared.
+  await openOfficeOutline(page);
   const before = await scene.boundingBox();
   const trigger = page.getByRole("button", { name: "Inspect Product Designer" });
 

@@ -1,6 +1,6 @@
 # The Office outline on demand — design amendment
 
-**Status: PROPOSAL. Approves nothing, amends no requirement, authorizes no implementation.**
+**Status: APPROVED 2026-09-27** (A-1 to A-3 as recommended; A-4 ruled during implementation).
 
 Author: agent, 2026-09-27. Raised by F-9-4 (V1, drift toward a dense technical dashboard) and by
 the owner-approved art supplement of the same day (`docs/art-reference-approval-2026-09-27.md`).
@@ -66,6 +66,13 @@ actions, rather than hidden.
 - **A-3, where the work lands.** Recommendation: a Phase 7-O task, 9e, before Task 10. The
   comprehension answer key and task URLs must be written against the accepted layout. Deferring it
   to Phase 7 would mean aligning Task 10 to a layout the art supplement already rejects.
+
+- **A-4, the workspace status (raised during implementation, owner ruling 2026-09-27).** The
+  status sentence (`workspace-cause`) and its recovery button lived in the outline's header, so a
+  closed outline would have hidden a stale or offline workspace's cause and its recovery action.
+  Ruling: when the workspace is not current, a one-line notice directly under the project bar
+  carries the plain cause and its recovery button. When it is current, nothing extra is shown, and
+  "Canonical workspace revision N is current" moves to the outline's header.
 
 ## 5. What moves (P-4), to be listed at the time
 

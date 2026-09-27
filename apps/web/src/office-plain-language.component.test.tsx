@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { OFFICE_FIXTURES } from "./office-fixtures/index.js";
 import { officeModelFor } from "./office-model.js";
 import { OfficeShell } from "./office-shell.js";
+import { openOfficeOutline } from "./test-support/open-office-outline.js";
 
 /**
  * Phase 7-O Task 9d (F-9-4, V1; spec §6). The inspector's first screen answers what is happening,
@@ -27,6 +28,7 @@ const blocked = events.find(
 const inspect = async (label: string, state: "ready" | "stale" = "ready") => {
   const user = userEvent.setup();
   render(<OfficeShell state={state} />);
+  await openOfficeOutline(user);
   await user.click(screen.getByRole("button", { name: `Inspect ${label}` }));
   return { user, inspector: screen.getByRole("complementary", { name: "Entity inspector" }) };
 };
@@ -101,8 +103,10 @@ describe("the outline reads at a glance", () => {
   const card = (name: string) =>
     screen.getByRole("button", { name: `Inspect ${name}` }).closest("li") as HTMLElement;
 
-  it("gives each person one state word, and says when they need you", () => {
+  it("gives each person one state word, and says when they need you", async () => {
+    const user = userEvent.setup();
     render(<OfficeShell state="ready" />);
+    await openOfficeOutline(user);
     const test = card("Test Engineer");
     expect(test).toHaveTextContent("Blocked");
     expect(test).toHaveTextContent("Needs you");
@@ -113,13 +117,16 @@ describe("the outline reads at a glance", () => {
     expect(lead).not.toHaveTextContent("Needs you");
   });
 
-  it("shows unassigned work in its own group, only when there is some (F-9-1)", () => {
+  it("shows unassigned work in its own group, only when there is some (F-9-1)", async () => {
+    const user = userEvent.setup();
     render(<OfficeShell state="ready" model={officeModelFor("ready", "unassigned")} />);
+    await openOfficeOutline(user);
     const group = screen.getByRole("list", { name: "Unassigned work" });
     expect(group).toHaveTextContent("Write the release notes");
     expect(group).toHaveTextContent("Ready");
     cleanup();
     render(<OfficeShell state="ready" />);
+    await openOfficeOutline(user);
     expect(screen.queryByRole("list", { name: "Unassigned work" })).toBeNull();
   });
 });

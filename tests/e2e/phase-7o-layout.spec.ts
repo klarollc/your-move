@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { openOfficeOutline } from "../support/office-outline.js";
 
 // Phase 7-O Task 9d. Geometry the component tests cannot see: F-9-3 (V2), an outline card's
 // Inspect button covering the person's name, and F-9-2 (V1), the project bar clipping its own
@@ -75,6 +76,7 @@ async function expectWhollyVisible(page: Page, name: RegExp | string) {
  * People and zones both (the zone cards regressed in Task 9d's first capture).
  */
 async function expectNamesReadable(page: Page) {
+  await openOfficeOutline(page);
   const cards = [
     ...PEOPLE.map((person) => ({ person, action: `Inspect ${person}` })),
     ...ZONES.map((person) => ({ person, action: `Locate ${person}` })),
@@ -159,10 +161,35 @@ test("@e2e Phase 7-O the project bar keeps its controls whole at 200% zoom", asy
   await expectWhollyVisible(page, "Reset view");
   await expectNamesReadable(page);
   // With the inspector open, it must not be drawn over the wrapped project bar.
+  await openOfficeOutline(page);
   await page.getByRole("button", { name: "Inspect Test Engineer" }).click();
   await expect(page.getByRole("complementary", { name: "Entity inspector" })).toBeVisible();
   await expectUncovered(page, "Manager attention (2)");
   await expectUncovered(page, "Reset view");
+  // Task 9e (A-2): the outline stays open beside the inspector; the two must not overlap.
+  const outlineBox = await page.getByRole("region", { name: "Office outline" }).boundingBox();
+  const inspectorBox = await page
+    .getByRole("complementary", { name: "Entity inspector" })
+    .boundingBox();
+  expect(outlineBox && inspectorBox).toBeTruthy();
+  expect(
+    outlineBox!.x + outlineBox!.width,
+    "the outline runs under the inspector",
+  ).toBeLessThanOrEqual(inspectorBox!.x + 0.5);
   await client.send("Emulation.clearDeviceMetricsOverride");
   await client.detach();
+});
+
+// Task 9e (A-1 to A-3; AR-01, AR-04): the office fills the screen below the project bar.
+test("@e2e Phase 7-O the office fills the screen below the project bar by default", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const scene = await page.getByRole("region", { name: "Office scene" }).boundingBox();
+  const bar = await page.locator('header[aria-label="Project bar"]').boundingBox();
+  const height = await page.evaluate(() => window.innerHeight);
+  expect(scene && bar).toBeTruthy();
+  expect(Math.abs(scene!.y - (bar!.y + bar!.height)), "scene starts below the bar").toBeLessThan(2);
+  expect(Math.abs(scene!.y + scene!.height - height), "scene reaches the bottom").toBeLessThan(2);
+  await expect(page.getByRole("region", { name: "Office outline" })).toHaveCount(0);
 });

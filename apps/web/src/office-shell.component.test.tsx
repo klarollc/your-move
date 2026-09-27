@@ -10,6 +10,7 @@ import { createKickoff, recordKickoffContribution } from "@cuckcode/domain";
 import type { KickoffBriefing, KickoffContribution } from "@cuckcode/contracts";
 import { OFFICE_FIXTURES } from "./office-fixtures/index.js";
 import { OfficeShell, officeShellEntities, type OfficeShellState } from "./office-shell.js";
+import { openOfficeOutline } from "./test-support/open-office-outline.js";
 
 const zones = [
   "Reception",
@@ -78,7 +79,12 @@ describe("OfficeShell", () => {
     const user = userEvent.setup();
     render(<OfficeShell state="ready" />);
 
-    expect(screen.getAllByTestId("persistent-structure")).toHaveLength(3);
+    // Task 9e (P-4): two persistent structures, the bar and the office; the outline is one action
+    // away. The skip link now opens it, with focus inside.
+    expect(screen.getAllByTestId("persistent-structure")).toHaveLength(2);
+    expect(screen.queryByRole("region", { name: "Office outline" })).toBeNull();
+    expect(screen.getByRole("status")).toHaveTextContent("Workspace current");
+    await user.click(screen.getByRole("link", { name: "Open the Office outline" }));
     expect(screen.getByRole("banner", { name: "Project bar" })).toHaveTextContent("CuckCode");
     expect(screen.getByRole("region", { name: "Office scene" })).toHaveAttribute(
       "data-scene-entity-ids",
@@ -92,15 +98,14 @@ describe("OfficeShell", () => {
     }
     expect(outline.querySelectorAll("[data-canvas-twin-id]")).toHaveLength(13);
     expect(outline).toHaveTextContent("Reports to Delivery Lead");
-
-    await user.click(screen.getByRole("link", { name: "Skip to Office outline" }));
     expect(outline).toHaveFocus();
-    expect(screen.getByRole("status")).toHaveTextContent("Workspace current");
+    expect(screen.getByRole("status")).toHaveTextContent("Office outline opened");
   });
 
   it("shares stable selection with a complete inspector and restores trigger focus", async () => {
     const user = userEvent.setup();
     render(<OfficeShell state="ready" />);
+    await openOfficeOutline(user);
     const trigger = screen.getByRole("button", { name: "Inspect Implementation Engineer" });
 
     expect(
@@ -174,15 +179,23 @@ describe("OfficeShell", () => {
     { state: "conflict", cause: /out-of-order event conflict/i, recovery: "Reconcile conflict" },
     { state: "restart", cause: /runtime restarted/i, recovery: "Restore current state" },
     { state: "cancelled", cause: /manager cancellation/i, recovery: "Review cancellation" },
-  ])("preserves cause, outline, and manager actions in $state", ({ state, cause, recovery }) => {
-    render(<OfficeShell state={state} />);
+  ])(
+    "preserves cause, outline, and manager actions in $state",
+    async ({ state, cause, recovery }) => {
+      const user = userEvent.setup();
+      render(<OfficeShell state={state} />);
 
-    expect(screen.getByRole("region", { name: "Office outline" })).toBeVisible();
-    expect(screen.getByRole("button", { name: "Reset view" })).toBeEnabled();
-    expect(screen.getByTestId("workspace-cause")).toHaveTextContent(cause);
-    expect(screen.getByRole("button", { name: recovery })).toBeEnabled();
-    expect(screen.getByRole("status")).toHaveTextContent(state);
-  });
+      // Task 9e (P-4, A-4): the cause and recovery sit in the status notice; the outline is one
+      // action away (and already open where the scene is unavailable).
+      expect(screen.getByTestId("workspace-notice")).toBeVisible();
+      expect(screen.getByRole("status")).toHaveTextContent(state);
+      await openOfficeOutline(user);
+      expect(screen.getByRole("region", { name: "Office outline" })).toBeVisible();
+      expect(screen.getByRole("button", { name: "Reset view" })).toBeEnabled();
+      expect(screen.getByTestId("workspace-cause")).toHaveTextContent(cause);
+      expect(screen.getByRole("button", { name: recovery })).toBeEnabled();
+    },
+  );
 });
 
 describe("OfficeShell manager attention", () => {
@@ -328,6 +341,7 @@ describe("OfficeShell spatial evidence surfaces", () => {
   it("opens the Project Library from its office entity and restores trigger focus", async () => {
     const user = userEvent.setup();
     render(<OfficeShell state="ready" library={libraryProjection} />);
+    await openOfficeOutline(user);
     await user.click(screen.getByRole("button", { name: "Locate Project Library" }));
     const trigger = screen.getByRole("button", { name: "Open Project Library" });
     await user.click(trigger);
@@ -346,6 +360,7 @@ describe("OfficeShell spatial evidence surfaces", () => {
   it("opens review evidence with a reachable stable office origin", async () => {
     const user = userEvent.setup();
     render(<OfficeShell state="ready" library={libraryProjection} />);
+    await openOfficeOutline(user);
     await user.click(screen.getByRole("button", { name: "Locate Review station" }));
     await user.click(screen.getByRole("button", { name: "Open Project Library" }));
     expect(screen.queryByRole("dialog")).toBeNull();
@@ -398,6 +413,7 @@ describe("OfficeShell semantic motion cue", () => {
       ["zone_collaboration", "Collaboration table"],
       ["zone_manager", "Manager desk"],
     ] as const) {
+      await openOfficeOutline(user);
       await user.click(screen.getByRole("button", { name: `Locate ${label}` }));
       expect(
         screen.getByRole("button", { name: "Open collaborative kickoff" }),
@@ -412,6 +428,7 @@ describe("OfficeShell semantic motion cue", () => {
   it("does not offer the kickoff from an unrelated entity", async () => {
     const user = userEvent.setup();
     render(<OfficeShell state="ready" kickoff={kickoffModel()} />);
+    await openOfficeOutline(user);
     await user.click(screen.getByRole("button", { name: "Locate Review station" }));
     expect(
       screen.queryByRole("button", { name: "Open collaborative kickoff" }),
@@ -421,6 +438,7 @@ describe("OfficeShell semantic motion cue", () => {
   it("keeps the office outline present while the kickoff is open and restores trigger focus", async () => {
     const user = userEvent.setup();
     render(<OfficeShell state="ready" kickoff={kickoffModel()} />);
+    await openOfficeOutline(user);
     await user.click(screen.getByRole("button", { name: "Locate Collaboration table" }));
     const trigger = screen.getByRole("button", { name: "Open collaborative kickoff" });
     await user.click(trigger);
@@ -437,6 +455,7 @@ describe("OfficeShell semantic motion cue", () => {
   it("shows the kickoff round state truthfully from canonical records", async () => {
     const user = userEvent.setup();
     render(<OfficeShell state="ready" kickoff={kickoffModel()} />);
+    await openOfficeOutline(user);
     await user.click(screen.getByRole("button", { name: "Locate Collaboration table" }));
     await user.click(screen.getByRole("button", { name: "Open collaborative kickoff" }));
 

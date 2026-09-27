@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { OFFICE_FIXTURES } from "./office-fixtures/index.js";
 import { officeLibraryFor } from "./office-model.js";
 import { OfficeShell } from "./office-shell.js";
+import { openOfficeOutline } from "./test-support/open-office-outline.js";
 
 /**
  * Phase 7-O Task 8b: the Project Library's evidence is the office log's evidence, so the
@@ -36,6 +37,7 @@ const renderOffice = () => {
 describe("the Project Library reads the office log", () => {
   it("resolves the Test Engineer's evidence link to the recorded item and version", async () => {
     const user = renderOffice();
+    await openOfficeOutline(user);
     await user.click(screen.getByRole("button", { name: "Inspect Test Engineer" }));
     const inspector = screen.getByRole("complementary", { name: "Entity inspector" });
     await user.click(
@@ -57,6 +59,7 @@ describe("the Project Library reads the office log", () => {
 
   it("shows lanes for the kinds the log records, and no Phase 4 evidence", async () => {
     const user = renderOffice();
+    await openOfficeOutline(user);
     await user.click(screen.getByRole("button", { name: "Locate Project Library" }));
     await user.click(screen.getByRole("button", { name: "Open Project Library" }));
     const library = screen.getByRole("complementary", { name: "Project Library" });
@@ -78,6 +81,7 @@ describe("the Project Library reads the office log", () => {
 
   it("opens the library unfocused from the review station, with no kind lookup", async () => {
     const user = renderOffice();
+    await openOfficeOutline(user);
     await user.click(screen.getByRole("button", { name: "Locate Review station" }));
     expect(screen.queryByRole("button", { name: "Open Visual QA evidence" })).toBeNull();
     await user.click(screen.getByRole("button", { name: "Open Project Library" }));

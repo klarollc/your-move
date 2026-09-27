@@ -606,10 +606,74 @@ Browser evidence, version 1`, in `evidence-link.component.test.tsx` (twice),
       design amendment making the outline an on-demand surface (Task 9e, below), because the
       remaining part of F-9-4 cannot clear while the grid persists.
 
-- [ ] Task 9e (**PROPOSED, awaiting owner approval**): the Office outline on demand.
+- [x] Task 9e (**approved 2026-09-27, A-1 to A-3 as recommended; A-4 ruled in implementation**):
+      the Office outline on demand.
   - Proposal and decisions A-1 to A-3: `docs/proposals/2026-09-27-on-demand-office-outline.md`.
   - Why: F-9-4 (V1) cannot clear while a persistent card grid sits under the office (AR-04,
     constitution rule 1).
+  - Baseline: the Codex branch merged by the owner, `95d7641`. Its `verify` passed on a clean tree
+    (unit 557, component 96, integration 79 with 3 skipped, contract 78, e2e 58, a11y 46, visual
+    64, `protocol:codex:drift`). It was pushed as `9282410` with one task-file commit from that
+    session.
+  - Result, 2026-09-27:
+    - **MDD §10 amended (A-1).** The outline is available from any state by one keyboard action,
+      and shown automatically when the scene is unavailable.
+    - **Shell.**
+      - The outline renders only when open. It opens from an `Office outline` bar button
+        (`aria-expanded`) or the first-Tab skip link, now "Open the Office outline", which
+        points at that button.
+      - Focus moves into it on opening; Escape or `Close outline` returns focus.
+      - It shares the left side with the rail: opening one closes the other. It stays open
+        beside the inspector (A-2), narrowing when space is short.
+      - In `loading`, `empty`, `error` and `canvas-loss` it opens by itself and fills the surface.
+      - The shell is now two persistent structures: bar and office.
+    - **Status notice (A-4).** When the workspace is not current, a notice under the bar carries
+      the cause and its recovery button. When it is current, the revision sentence sits in the
+      outline's header. Side panels start below the bar and the notice, which are measured.
+    - **Headings.** The page `<h1>` is the product name in the bar. The outline's heading is now
+      `<h2>`, zones `<h3>`, people `<h4>`.
+    - **RED:** component, 8 of 13 new tests in `office-outline-on-demand.component.test.tsx`
+      ("8 failed | 100 passed (108)"). The four scene-unavailable cases and the
+      unassigned-reachable case could not fail while the outline was always shown, and are named
+      as such. e2e: "the office fills the screen" failed at both viewports.
+    - **Found during GREEN by existing tests, and fixed:**
+      - The skip link's `#office-outline` target does not exist while the outline is closed (axe
+        `skip-link`, the a11y scaffold spec).
+      - The auto-opened outline covered the status notice, so `Retry canvas` could not be clicked
+        (the Phase 4 canvas-loss e2e).
+      - A further check, the outline running under the inspector at 200% on the 1280 viewport,
+        was written and failed first, then fixed.
+    - **Mutations, each confirmed applied, all killed:** outline open by default (7 component
+      tests); skip link only focusing (2); rail not closing the outline (1); no automatic opening
+      (4); no status notice (17); side panels measured from the bar alone (the canvas-loss e2e,
+      both viewports).
+      - Mutations 2 and 3 were first run with a broken restore step, which left mutation 1 in
+        place and created a stray `apps/web/src/shell.9e.tsx`. Those runs are discarded; the file
+        was restored, the stray copy moved out of the repo, and both were rerun.
+    - **Moved assertions (P-4).** Shared helpers `openOfficeOutline(user)`
+      (`apps/web/src/test-support/`) and `openOfficeOutline(page)` (`tests/support/`) are inserted
+      before direct `Inspect …` and `Locate …` actions. That is 26 call sites across 6 component
+      files and 9 specs, excluding the library's `Locate origin in office` and the rail's
+      `Locate …`. Besides:
+      - `office-shell.component.test.tsx`: three persistent structures become two; the skip link
+        is "Open the Office outline" and opens the outline. The per-state test asserts the notice,
+        then opens the outline. Initial-announcement checks run before opening.
+      - `office-inspector` and `office-plain-language` component tests open the outline before
+        reading zones, cards, unassigned work or the ready-state revision.
+      - `tests/e2e/phase-4-office-shell.spec.ts`: two structures, the new skip link, outline
+        content after opening, and the offline notice.
+      - `phase-4-failure-motion`: the outline header checked after opening.
+      - `phase-4-evidence-library` and `phase-4-selection-inspector`: scene widths measured
+        after the outline opens (420 px and 320 px unchanged).
+      - `scaffold.spec.ts`: the `<h1>` is "CuckCode".
+      - `tests/visual/phase-4-checkpoint-c-matrix` and `phase-4-harness`: the notice and outline
+        after opening.
+      - The Task 9 capture spec: journeys wait for the scene; the default journey asserts no
+        outline and no notice; a new `outline-open` journey; the keyboard probe uses the new skip
+        link.
+    - **GREEN:** component 108, e2e 60, a11y 46, visual 64, `typecheck`, `typecheck:scripts`,
+      `lint`.
+    - **Owner-run step:** re-capture the Task 9 evidence, then record provenance.
 
 - [ ] Task 10: Comprehension preparation (spec §8.7).
   - Acceptance: the six task URLs, fixture logs and answer key are aligned to the accepted UI and

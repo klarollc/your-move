@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { OFFICE_FIXTURES } from "../../apps/web/src/office-fixtures/index.js";
+import { openOfficeOutline } from "../support/office-outline.js";
 
 const recordedKinds = [
   ...new Set(
@@ -19,6 +20,8 @@ test("@e2e Phase 4 Library preserves lifecycle, evidence lanes, and spatial orig
 }, testInfo) => {
   await page.goto("/");
   const scene = page.getByRole("region", { name: "Office scene" });
+  // Task 9e (P-4): the outline takes its own width, so the library's 420 px is measured from it.
+  await openOfficeOutline(page);
   const initialScene = await scene.boundingBox();
 
   await page.getByRole("button", { name: "Locate Project Library" }).click();
@@ -71,6 +74,7 @@ test("@e2e Phase 4 review station opens the Library, and its visual evidence by 
   page,
 }) => {
   await page.goto("/");
+  await openOfficeOutline(page);
   await page.getByRole("button", { name: "Locate Review station" }).click();
   await page.getByRole("button", { name: "Open Project Library" }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);

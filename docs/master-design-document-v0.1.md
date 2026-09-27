@@ -651,6 +651,8 @@ The queue is a derived, ordered view of real escalations and approvals, not an i
 
 A keyboard and screen-reader-operable “Office outline” exposes the same people, zones, states, relationships, and actions in a logical hierarchy. This is an equivalent primary interface, not a degraded afterthought.
 
+Amendment 2026-09-27 (owner-approved, A-1 of `docs/proposals/2026-09-27-on-demand-office-outline.md`): the outline is an equivalent primary interface, available from any state by one keyboard action and shown automatically when the scene is unavailable. It is not a persistent region beneath the office. The approved art supplement (`docs/art-reference-approval-2026-09-27.md`, AR-01 and AR-04) keeps the office the default working surface, without surrounding card grids.
+
 ## 11. Role-template import architecture
 
 ### Import record

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { openOfficeOutline } from "../support/office-outline.js";
 
 function browserFailures(page: Page): string[] {
   const failures: string[] = [];
@@ -23,17 +24,20 @@ test("@e2e Phase 4 default office keeps Pixi secondary to the keyboard-first out
   const workspace = page.getByRole("main", { name: "CuckCode office workspace" });
   await expect(workspace).toBeVisible();
   await expect(page.getByText("CuckCode Phase 0 scaffold")).toHaveCount(0);
-  await expect(page.getByTestId("persistent-structure")).toHaveCount(3);
+  // Task 9e (P-4): two persistent structures, the bar and the office. The first Tab reaches the
+  // skip link, which opens the outline with focus inside.
+  await expect(page.getByTestId("persistent-structure")).toHaveCount(2);
   await expect(page.locator('canvas[data-scene-renderer="pixi"]')).toHaveCount(1);
+  await expect(page.getByRole("region", { name: "Office outline" })).toHaveCount(0);
+
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("link", { name: "Open the Office outline" })).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("region", { name: "Office outline" })).toBeFocused();
   await expect(page.getByRole("region", { name: "Office outline" })).toContainText(
     "Release Reviewer",
   );
   await expect(page.getByRole("button", { name: "Inspect Product Designer" })).toBeVisible();
-
-  await page.keyboard.press("Tab");
-  await expect(page.getByRole("link", { name: "Skip to Office outline" })).toBeFocused();
-  await page.keyboard.press("Enter");
-  await expect(page.getByRole("region", { name: "Office outline" })).toBeFocused();
 
   expect(failures).toEqual([]);
   await page.screenshot({ path: testInfo.outputPath("office-shell-ready.png") });
@@ -48,6 +52,9 @@ test("@e2e Phase 4 office preserves causes, actions, and canvas-loss recovery", 
   );
   await expect(page.getByRole("button", { name: "Reconnect runtime" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Reset view" })).toBeVisible();
+  // Task 9e (P-4, A-4): the cause and recovery sit in the status notice; the outline is on demand.
+  await expect(page.getByTestId("workspace-notice")).toBeVisible();
+  await openOfficeOutline(page);
   await expect(page.getByRole("region", { name: "Office outline" })).toBeVisible();
 
   await page.goto("/");

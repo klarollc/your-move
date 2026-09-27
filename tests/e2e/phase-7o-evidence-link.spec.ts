@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { openOfficeOutline } from "../support/office-outline.js";
 
 // Phase 7-O Tasks 8 and 8b (spec §6). The Test Engineer's Evidence link opens the Project Library
 // at the recorded item and version, which since 8b is the office log's own evidence record. The
@@ -7,6 +8,7 @@ test("@e2e Phase 7-O an inspector Evidence link opens the log's record at its ve
   page,
 }) => {
   await page.goto("/");
+  await openOfficeOutline(page);
   await page.getByRole("button", { name: "Inspect Test Engineer" }).click();
   const inspector = page.getByRole("complementary", { name: "Entity inspector" });
   const link = inspector.getByRole("button", { name: "Open Browser evidence, version 1" });

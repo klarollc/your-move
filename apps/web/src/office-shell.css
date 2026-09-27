@@ -20,7 +20,8 @@
   height: 100vh;
   display: grid;
   /* The project bar row grows when its controls wrap (Task 9d, F-9-2: 200% zoom). */
-  grid-template-rows: auto minmax(0, 1fr) 280px;
+  /* Bar, an optional status notice, then the office. The outline is a panel on demand (Task 9e). */
+  grid-template-rows: auto auto minmax(0, 1fr);
   background: #dfe1de;
 }
 
@@ -69,7 +70,27 @@
   color: #55585a;
 }
 
+.office-project-bar {
+  grid-row: 1;
+}
+
+.office-status-notice {
+  grid-row: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 6px 16px;
+  border-bottom: 1px solid #b9ab86;
+  background: #f3efe2;
+}
+
+.office-status-notice p {
+  margin: 0;
+}
+
 .office-scene {
+  grid-row: 3;
   min-height: 0;
   position: relative;
   overflow: hidden;
@@ -94,12 +115,40 @@
   background: repeating-linear-gradient(135deg, #dedfdb 0 12px, #e7e7e3 12px 24px);
 }
 
+/* The Office outline, on demand: a panel over the left of the office, or the whole surface when
+   the scene is unavailable (Task 9e, A-1 to A-3). */
 .office-outline {
-  min-height: 0;
+  position: fixed;
+  z-index: 3;
+  top: var(--office-bar-height, 56px);
+  bottom: 0;
+  left: 0;
+  width: min(400px, 100%);
+  box-sizing: border-box;
   overflow: auto;
   padding: 16px;
-  border-top: 1px solid #676b68;
+  border-right: 1px solid #676b68;
   background: #f4f4f0;
+}
+
+.office-shell[data-outline-primary="true"] .office-outline {
+  right: 0;
+  width: auto;
+  border-right: 0;
+}
+
+.office-shell[data-outline-primary="true"][data-inspector-open="true"] .office-outline {
+  right: 320px;
+}
+
+/* Beside the inspector (A-2), the outline narrows rather than running under it when space is
+   short (200% zoom). */
+.office-shell[data-outline-primary="false"][data-inspector-open="true"] .office-outline {
+  width: min(400px, calc(100% - 320px));
+}
+
+.office-shell[data-outline-open="true"][data-outline-primary="false"] .office-scene {
+  margin-left: 400px;
 }
 
 .office-outline > header {
@@ -109,20 +158,27 @@
   align-items: start;
 }
 
-.office-outline h1,
 .office-outline h2,
 .office-outline h3,
+.office-outline h4,
 .office-outline p {
   margin: 0;
 }
 
-.office-outline h1 {
+.office-outline > header h2 {
   font-size: 18px;
 }
 
-.office-outline h2,
-.office-outline h3 {
+.office-outline h3,
+.office-outline h4 {
   font-size: 15px;
+}
+
+/* The page heading is the product name in the project bar (Task 9e: the outline is on demand). */
+.office-product-name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .office-outline > header p,
@@ -167,7 +223,7 @@
 .office-zone-list ol {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 8px;
 }
 
@@ -213,8 +269,7 @@
   color: #55585a;
 }
 
-.office-shell[data-inspector-open="true"] .office-scene,
-.office-shell[data-inspector-open="true"] .office-outline {
+.office-shell[data-inspector-open="true"] .office-scene {
   margin-right: 320px;
 }
 
@@ -275,12 +330,11 @@
 
 @media (max-height: 820px) {
   .office-shell {
-    grid-template-rows: auto minmax(0, 1fr) 240px;
+    grid-template-rows: auto auto minmax(0, 1fr);
   }
 }
 
-.office-shell[data-attention-open="true"] .office-scene,
-.office-shell[data-attention-open="true"] .office-outline {
+.office-shell[data-attention-open="true"] .office-scene {
   margin-left: 280px;
 }
 
@@ -406,8 +460,7 @@
   overflow-wrap: anywhere;
 }
 
-.office-shell[data-library-open="true"] .office-scene,
-.office-shell[data-library-open="true"] .office-outline {
+.office-shell[data-library-open="true"] .office-scene {
   margin-right: 420px;
 }
 

@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import { EvidenceLibrary } from "./evidence-library.js";
 import { OfficeShell } from "./office-shell.js";
+import { openOfficeOutline } from "./test-support/open-office-outline.js";
 
 /**
  * Phase 7-O Task 8 (spec §6): an Evidence link opens the library at the referenced item and
@@ -89,6 +90,7 @@ describe("the inspector's Evidence links", () => {
   const inspectTestEngineer = async (projection: BrowserLibraryProjection) => {
     const user = userEvent.setup();
     render(<OfficeShell state="ready" library={projection} />);
+    await openOfficeOutline(user);
     await user.click(screen.getByRole("button", { name: "Inspect Test Engineer" }));
     const inspector = screen.getByRole("complementary", { name: "Entity inspector" });
     return { user, inspector };

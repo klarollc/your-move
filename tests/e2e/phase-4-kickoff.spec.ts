@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { OFFICE_FIXTURES } from "../../apps/web/src/office-fixtures/index.js";
+import { openOfficeOutline } from "../support/office-outline.js";
 
 // Phase 7-O Task 6 (P-4): the revision is the length of the canonical default log, not a literal.
 const revision = OFFICE_FIXTURES.default!.events.length;
@@ -19,6 +20,7 @@ test("@e2e Phase 4 kickoff opens from its spatial anchors and never authorises w
   });
 
   await page.goto("/?kickoff=round");
+  await openOfficeOutline(page);
   await page.getByRole("button", { name: "Locate Collaboration table" }).click();
   await page.getByRole("button", { name: "Open collaborative kickoff" }).click();
 
@@ -43,6 +45,7 @@ test("@e2e Phase 4 kickoff preserves attribution, dissent, and unanswered roles"
   page,
 }) => {
   await page.goto("/?kickoff=revision");
+  await openOfficeOutline(page);
   await page.getByRole("button", { name: "Locate Manager desk" }).click();
   await page.getByRole("button", { name: "Open collaborative kickoff" }).click();
 
@@ -67,6 +70,7 @@ test("@e2e Phase 4 kickoff preserves attribution, dissent, and unanswered roles"
 
 test("@e2e Phase 4 kickoff is keyboard operable and restores focus on close", async ({ page }) => {
   await page.goto("/?kickoff=round");
+  await openOfficeOutline(page);
   await page.getByRole("button", { name: "Locate Collaboration table" }).click();
   const trigger = page.getByRole("button", { name: "Open collaborative kickoff" });
   await trigger.focus();
@@ -82,6 +86,7 @@ test("@e2e Phase 4 kickoff is keyboard operable and restores focus on close", as
 
 test("@e2e Phase 4 kickoff stays truthful while the runtime is offline", async ({ page }) => {
   await page.goto("/?kickoff=round&state=offline");
+  await openOfficeOutline(page);
   await page.getByRole("button", { name: "Locate Collaboration table" }).click();
   await page.getByRole("button", { name: "Open collaborative kickoff" }).click();
 
@@ -97,6 +102,7 @@ test("@e2e Phase 4 kickoff stays truthful while the runtime is offline", async (
 test("@e2e Phase 4 kickoff keeps meaning with reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/?kickoff=revision");
+  await openOfficeOutline(page);
   await page.getByRole("button", { name: "Locate Collaboration table" }).click();
   await page.getByRole("button", { name: "Open collaborative kickoff" }).click();
 

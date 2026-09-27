@@ -91,6 +91,14 @@ const kickoffRoleLabels: Readonly<Record<string, string>> = {
 };
 
 /** Ids, labels, relationships and layout order only. What anyone is doing comes from the model. */
+/** States in which the scene cannot be the working surface, so the outline is (Task 9e). */
+const SCENE_UNAVAILABLE: ReadonlySet<string> = new Set([
+  "loading",
+  "empty",
+  "error",
+  "canvas-loss",
+]);
+
 export const officeShellEntities: readonly OfficeEntity[] = Object.freeze(
   OFFICE_REGISTRY.map((entry) => ({
     entityId: entry.entityId,
@@ -224,21 +232,25 @@ export function OfficeShell({
   const shellRef = useRef<HTMLElement>(null);
   const barRef = useRef<HTMLElement>(null);
   // Side panels start below the project bar, which wraps to more rows when narrow or zoomed
-  // (Task 9d, F-9-2). Its measured height is published as --office-bar-height.
+  // (Task 9d, F-9-2), and below the status notice when one is shown (Task 9e, A-4). The measured
+  // offset is published as --office-bar-height.
+  const noticeRef = useRef<HTMLDivElement>(null);
+  const noticeShown = state !== "ready";
   useEffect(() => {
     const bar = barRef.current;
     const shell = shellRef.current;
     if (!bar || !shell || typeof ResizeObserver === "undefined") return;
-    const publish = () =>
-      shell.style.setProperty(
-        "--office-bar-height",
-        `${Math.ceil(bar.getBoundingClientRect().height)}px`,
-      );
+    const publish = () => {
+      const bottom = (noticeRef.current ?? bar).getBoundingClientRect().bottom;
+      const top = shell.getBoundingClientRect().top;
+      shell.style.setProperty("--office-bar-height", `${Math.ceil(bottom - top)}px`);
+    };
     publish();
     const observer = new ResizeObserver(publish);
     observer.observe(bar);
+    if (noticeRef.current) observer.observe(noticeRef.current);
     return () => observer.disconnect();
-  }, []);
+  }, [noticeShown]);
   const libraryTriggerRef = useRef<HTMLButtonElement>(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const kickoffTriggerRef = useRef<HTMLButtonElement>(null);
@@ -246,6 +258,33 @@ export function OfficeShell({
   const [initialEvidence, setInitialEvidence] = useState<EvidenceLink | undefined>(undefined);
   const attentionTriggerRef = useRef<HTMLButtonElement>(null);
   const [attentionOpen, setAttentionOpen] = useState(false);
+  // Task 9e (A-1 to A-3): the outline is on demand, and shown without asking when the scene
+  // cannot be the working surface.
+  const sceneUnavailable = SCENE_UNAVAILABLE.has(state);
+  const [outlineOpen, setOutlineOpen] = useState(sceneUnavailable);
+  const outlineTriggerRef = useRef<HTMLButtonElement>(null);
+  const focusOutlineRef = useRef(false);
+  useEffect(() => {
+    if (sceneUnavailable) setOutlineOpen(true);
+  }, [sceneUnavailable]);
+  useEffect(() => {
+    if (outlineOpen && focusOutlineRef.current) {
+      focusOutlineRef.current = false;
+      outlineRef.current?.focus();
+    }
+  }, [outlineOpen]);
+  const openOutline = () => {
+    focusOutlineRef.current = true;
+    setAttentionOpen(false);
+    setOutlineOpen(true);
+    if (outlineOpen) outlineRef.current?.focus();
+    setAnnouncement("Office outline opened");
+  };
+  const closeOutline = () => {
+    setOutlineOpen(false);
+    setAnnouncement("Office outline closed");
+    outlineTriggerRef.current?.focus();
+  };
   const [dismissedAttentionIds, setDismissedAttentionIds] = useState<ReadonlySet<string>>(
     () => new Set(),
   );
@@ -323,6 +362,15 @@ export function OfficeShell({
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
   });
+
+  useEffect(() => {
+    if (!outlineOpen || selectedEntity || libraryOpen || kickoffOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeOutline();
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  });
   // One state word, and "Needs you" when a held item needs the manager (Task 9d, F-9-3).
   const personState = (entityId: string) => {
     const entity = entityOf(model, entityId);
@@ -339,18 +387,20 @@ export function OfficeShell({
       aria-label="CuckCode office workspace"
       data-inspector-open={Boolean(selectedEntity)}
       data-attention-open={attentionOpen}
+      data-outline-open={outlineOpen}
+      data-outline-primary={sceneUnavailable}
       data-library-open={libraryOpen}
       data-kickoff-open={kickoffOpen}
     >
       <a
         className="office-skip-link"
-        href="#office-outline"
+        href="#office-outline-open"
         onClick={(event) => {
           event.preventDefault();
-          outlineRef.current?.focus();
+          openOutline();
         }}
       >
-        Skip to Office outline
+        Open the Office outline
       </a>
 
       <header
@@ -360,17 +410,28 @@ export function OfficeShell({
         data-testid="persistent-structure"
       >
         <div>
-          <strong>CuckCode</strong>
+          <h1 className="office-product-name">CuckCode</h1>
           <span>Outcome: truthful graybox office</span>
         </div>
         <span>{presentation.runtime}</span>
         <span>Local session · revision {revision}</span>
+        <button
+          ref={outlineTriggerRef}
+          id="office-outline-open"
+          type="button"
+          aria-expanded={outlineOpen}
+          aria-controls="office-outline"
+          onClick={() => (outlineOpen ? closeOutline() : openOutline())}
+        >
+          Office outline
+        </button>
         {visibleAttention.length > 0 ? (
           <button
             ref={attentionTriggerRef}
             type="button"
             aria-expanded={attentionOpen}
             onClick={() => {
+              setOutlineOpen(false);
               setAttentionOpen(true);
               setAnnouncement(`${visibleAttention.length} manager attention items opened`);
             }}
@@ -388,6 +449,24 @@ export function OfficeShell({
           Reset view
         </button>
       </header>
+
+      {state !== "ready" ? (
+        // A-4: when the workspace is not current, its cause and recovery sit under the bar.
+        <div className="office-status-notice" data-testid="workspace-notice" ref={noticeRef}>
+          <p data-testid="workspace-cause">Cause: {presentation.cause}</p>
+          {presentation.recovery ? (
+            <button
+              type="button"
+              onClick={() => {
+                onRecovery?.();
+                setAnnouncement(`${presentation.recovery} requested`);
+              }}
+            >
+              {presentation.recovery}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
 
       <section
         className="office-scene"
@@ -419,83 +498,78 @@ export function OfficeShell({
         ) : null}
       </section>
 
-      <section
-        id="office-outline"
-        className="office-outline"
-        aria-label="Office outline"
-        data-testid="persistent-structure"
-        ref={outlineRef}
-        tabIndex={-1}
-      >
-        <header>
-          <div>
-            <h1>Office outline</h1>
-            <p>Equivalent people, zones, states, relationships, and actions.</p>
-          </div>
-          <strong>{state === "ready" ? "Current" : state}</strong>
-        </header>
-        <p data-testid="workspace-cause">Cause: {presentation.cause}</p>
-        {presentation.recovery ? (
-          <button
-            type="button"
-            onClick={() => {
-              onRecovery?.();
-              setAnnouncement(`${presentation.recovery} requested`);
-            }}
-          >
-            {presentation.recovery}
-          </button>
-        ) : null}
+      {outlineOpen ? (
+        <section
+          id="office-outline"
+          className="office-outline"
+          aria-label="Office outline"
+          ref={outlineRef}
+          tabIndex={-1}
+        >
+          <header>
+            <div>
+              <h2>Office outline</h2>
+              <p>Equivalent people, zones, states, relationships, and actions.</p>
+            </div>
+            <strong>{state === "ready" ? "Current" : state}</strong>
+            <button type="button" onClick={closeOutline}>
+              Close outline
+            </button>
+          </header>
+          {state === "ready" ? (
+            <p data-testid="workspace-cause">Cause: {presentation.cause}</p>
+          ) : null}
 
-        <ol className="office-zone-list" aria-label="Office zones">
-          {zones.map((zone) => (
-            <li key={zone.entityId} data-canvas-twin-id={zone.entityId}>
-              <div>
-                <h2>{zone.label}</h2>
-                <p>State: Layout only — no canonical state record</p>
-              </div>
-              <button
-                type="button"
-                onClick={(event) => selectEntity(zone.entityId, event.currentTarget)}
-              >
-                Locate {zone.label}
-              </button>
-              {zone.entityId === "zone_team" ? (
-                <ol aria-label="Office people">
-                  {people.map((person) => (
-                    <li key={person.entityId} data-canvas-twin-id={person.entityId}>
-                      <div>
-                        <h3>{person.label}</h3>
-                        <p>{personState(person.entityId)}</p>
-                        <p>{person.relationship}</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={(event) => selectEntity(person.entityId, event.currentTarget)}
-                      >
-                        Inspect {person.label}
-                      </button>
-                    </li>
-                  ))}
-                </ol>
-              ) : null}
-            </li>
-          ))}
-        </ol>
-        {model.unassignedWork.length > 0 ? (
-          <div className="office-unassigned">
-            <h2 id="office-unassigned-heading">Unassigned work</h2>
-            {/* Task 9d, F-9-1: work nobody holds, which no person's card or inspector lists. */}
-            <ol aria-label="Unassigned work">
-              {model.unassignedWork.map((work) => (
-                <li key={work.workItemId}>
-                  <strong>{work.outcome}</strong> <span>{stateWord(work.state)}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
-        ) : null}
-      </section>
+          <ol className="office-zone-list" aria-label="Office zones">
+            {zones.map((zone) => (
+              <li key={zone.entityId} data-canvas-twin-id={zone.entityId}>
+                <div>
+                  <h3>{zone.label}</h3>
+                  <p>State: Layout only — no canonical state record</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={(event) => selectEntity(zone.entityId, event.currentTarget)}
+                >
+                  Locate {zone.label}
+                </button>
+                {zone.entityId === "zone_team" ? (
+                  <ol aria-label="Office people">
+                    {people.map((person) => (
+                      <li key={person.entityId} data-canvas-twin-id={person.entityId}>
+                        <div>
+                          <h4>{person.label}</h4>
+                          <p>{personState(person.entityId)}</p>
+                          <p>{person.relationship}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(event) => selectEntity(person.entityId, event.currentTarget)}
+                        >
+                          Inspect {person.label}
+                        </button>
+                      </li>
+                    ))}
+                  </ol>
+                ) : null}
+              </li>
+            ))}
+          </ol>
+          {model.unassignedWork.length > 0 ? (
+            <div className="office-unassigned">
+              <h3 id="office-unassigned-heading">Unassigned work</h3>
+              {/* Task 9d, F-9-1: work nobody holds, which no person's card or inspector lists. */}
+              <ol aria-label="Unassigned work">
+                {model.unassignedWork.map((work) => (
+                  <li key={work.workItemId}>
+                    <strong>{work.outcome}</strong> <span>{stateWord(work.state)}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
 
       {attentionOpen && visibleAttention.length > 0 ? (
         <AttentionRail
@@ -594,7 +668,7 @@ export function OfficeShell({
             setKickoffOpen(false);
             setAnnouncement("Collaborative kickoff closed");
             if (kickoffTriggerRef.current) kickoffTriggerRef.current.focus();
-            else outlineRef.current?.focus();
+            else (outlineRef.current ?? outlineTriggerRef.current)?.focus();
           }}
         />
       ) : null}
@@ -609,7 +683,7 @@ export function OfficeShell({
             setLibraryOpen(false);
             setAnnouncement("Project Library closed");
             if (libraryTriggerRef.current) libraryTriggerRef.current.focus();
-            else outlineRef.current?.focus();
+            else (outlineRef.current ?? outlineTriggerRef.current)?.focus();
           }}
           onLocateOrigin={(entityId) => {
             setInternalSelection(entityId);

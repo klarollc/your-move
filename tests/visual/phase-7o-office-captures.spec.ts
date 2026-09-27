@@ -5,6 +5,7 @@ import { expect, test, type Locator, type Page, type TestInfo } from "@playwrigh
 
 import { OFFICE_FIXTURES } from "../../apps/web/src/office-fixtures/index.js";
 import { evidenceOutputPath } from "../support/evidence-output.js";
+import { openOfficeOutline } from "../support/office-outline.js";
 
 /**
  * Phase 7-O Task 9 (spec §8, criterion 6): current-build captures of the office at both D-07
@@ -43,6 +44,7 @@ const field = (page: Page, term: string): Locator =>
     .and(page.locator("dt"))
     .locator("xpath=following-sibling::dd[1]");
 const inspect = (label: string) => async (page: Page) => {
+  await openOfficeOutline(page);
   await page.getByRole("button", { name: `Inspect ${label}` }).click();
   await expect(inspector(page)).toBeVisible();
 };
@@ -53,10 +55,25 @@ const JOURNEYS: readonly Journey[] = [
     id: "default",
     path: "/",
     verify: async (page) => {
+      // Task 9e: the office is the whole surface; nothing is wrong, so no notice is shown.
+      await expect(page.getByRole("region", { name: "Office outline" })).toHaveCount(0);
+      await expect(page.getByTestId("workspace-notice")).toHaveCount(0);
+      await expect(page.getByRole("button", { name: "Manager attention (2)" })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Office outline", exact: true })).toBeVisible();
+    },
+  },
+  {
+    id: "outline-open",
+    path: "/",
+    drive: openOfficeOutline,
+    verify: async (page) => {
+      // Task 9e (A-1): one action away, with the revision stated in its header (A-4).
       await expect(cause(page)).toContainText(
         `Canonical workspace revision ${revision} is current.`,
       );
-      await expect(page.getByRole("button", { name: "Manager attention (2)" })).toBeVisible();
+      await expect(page.getByRole("region", { name: "Office outline" })).toContainText(
+        "Blocked · Needs you",
+      );
     },
   },
   {
@@ -131,6 +148,7 @@ const JOURNEYS: readonly Journey[] = [
   {
     id: "unassigned-work",
     path: "/?fixture=unassigned",
+    drive: openOfficeOutline,
     verify: async (page) => {
       await expect(cause(page)).toContainText("is current");
       // F-9-1 (V1), fixed in Task 9d: unassigned work has its own group in the outline.
@@ -203,7 +221,7 @@ test("@visual Phase 7-O office captures, with console, network, input, zoom and 
   const journeys: Array<Record<string, unknown>> = [];
   for (const journey of JOURNEYS) {
     await page.goto(`${ORIGIN}${journey.path}`);
-    await expect(page.getByRole("region", { name: "Office outline" })).toBeVisible();
+    await expect(page.getByRole("region", { name: "Office scene" })).toBeVisible();
     await journey.drive?.(page);
     await journey.verify(page);
     journeys.push({
@@ -215,10 +233,11 @@ test("@visual Phase 7-O office captures, with console, network, input, zoom and 
     });
   }
 
-  // Keyboard: skip link, outline, a person, the inspector, and focus back on Escape.
+  // Keyboard: the skip link opens the outline, then a person, the inspector, and focus back on
+  // Escape.
   await page.goto(`${ORIGIN}/`);
   await page.keyboard.press("Tab");
-  await expect(page.getByRole("link", { name: "Skip to Office outline" })).toBeFocused();
+  await expect(page.getByRole("link", { name: "Open the Office outline" })).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page.getByRole("region", { name: "Office outline" })).toBeFocused();
   const target = page.getByRole("button", { name: "Inspect Test Engineer" });

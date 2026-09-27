@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { OFFICE_FIXTURES } from "./office-fixtures/index.js";
 import { OFFICE_REGISTRY } from "./office-fixtures/registry.js";
 import { OfficeShell } from "./office-shell.js";
+import { openOfficeOutline } from "./test-support/open-office-outline.js";
 
 /**
  * Phase 7-O Task 6: the rail, outline and inspector render from the office read model. The named
@@ -19,6 +20,7 @@ afterEach(cleanup);
 const inspect = async (label: string) => {
   const user = userEvent.setup();
   render(<OfficeShell state="ready" />);
+  await openOfficeOutline(user);
   await user.click(screen.getByRole("button", { name: `Inspect ${label}` }));
   return screen.getByRole("complementary", { name: "Entity inspector" });
 };
@@ -68,16 +70,21 @@ describe("the inspector and the rail read one record", () => {
     expect(field(inspector, "Permissions")).toHaveTextContent("Unavailable in this fixture");
   });
 
-  it("shows zones as layout only, with no invented state", () => {
+  it("shows zones as layout only, with no invented state", async () => {
+    const user = userEvent.setup();
     render(<OfficeShell state="ready" />);
+    await openOfficeOutline(user);
     const outline = screen.getByRole("region", { name: "Office outline" });
     expect(outline).not.toHaveTextContent("Candidate intake");
     expect(outline).not.toHaveTextContent("Reviewing deterministic tests");
     expect(outline).toHaveTextContent("Layout only");
   });
 
-  it("states the canonical revision the log actually reached", () => {
+  it("states the canonical revision the log actually reached", async () => {
+    const user = userEvent.setup();
     render(<OfficeShell state="ready" />);
+    // Task 9e (A-4): when current, the revision is stated in the outline's header.
+    await openOfficeOutline(user);
     const revision = OFFICE_FIXTURES.default!.events.length;
     expect(screen.getByTestId("workspace-cause")).toHaveTextContent(
       `Canonical workspace revision ${revision} is current.`,
@@ -100,7 +107,7 @@ describe("the inspector and the rail read one record", () => {
     expect(needs).toHaveTextContent(blockedEvent!.eventId);
   });
 
-  it("never states a revision as current when the read model is not current", () => {
+  it("never states a revision as current when the read model is not current", async () => {
     // A duplicate event id carrying a different payload is a replay conflict (DUPLICATE_EVENT_CONFLICT).
     const events = OFFICE_FIXTURES.default!.events;
     const last = events.at(-1)!;
@@ -111,7 +118,9 @@ describe("the inspector and the rail read one record", () => {
       registry: OFFICE_REGISTRY,
     });
     expect(model.current).toBe(false);
+    const user = userEvent.setup();
     render(<OfficeShell state="ready" model={{ model, overlay: null }} />);
+    await openOfficeOutline(user);
     const cause = screen.getByTestId("workspace-cause");
     expect(cause).not.toHaveTextContent("is current");
     expect(cause).toHaveTextContent("is not current");
