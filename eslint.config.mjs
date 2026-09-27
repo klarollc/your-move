@@ -5,6 +5,7 @@ export default tseslint.config(
   {
     ignores: [
       ".restore/**",
+      ".worktrees/**",
       ".cuckcode/**",
       "coverage/**",
       "**/dist/**",

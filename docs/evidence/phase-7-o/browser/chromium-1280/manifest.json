@@ -1,0 +1,128 @@
+{
+  "schema": "cuckcode.phase-7-o.browser-captures.v1",
+  "project": "chromium-1280",
+  "origin": "http://127.0.0.1:4174",
+  "defaultLogRevision": 35,
+  "journeys": [
+    {
+      "id": "default",
+      "path": "/",
+      "capture": "phase-7-o/browser/chromium-1280/default.png",
+      "verified": true
+    },
+    {
+      "id": "selected-agent",
+      "path": "/",
+      "capture": "phase-7-o/browser/chromium-1280/selected-agent.png",
+      "verified": true
+    },
+    {
+      "id": "blocked-item",
+      "path": "/",
+      "capture": "phase-7-o/browser/chromium-1280/blocked-item.png",
+      "verified": true
+    },
+    {
+      "id": "waiting",
+      "path": "/",
+      "capture": "phase-7-o/browser/chromium-1280/waiting.png",
+      "verified": true
+    },
+    {
+      "id": "stale",
+      "path": "/?state=stale",
+      "capture": "phase-7-o/browser/chromium-1280/stale.png",
+      "verified": true
+    },
+    {
+      "id": "offline",
+      "path": "/?state=offline",
+      "capture": "phase-7-o/browser/chromium-1280/offline.png",
+      "verified": true
+    },
+    {
+      "id": "missing-evidence",
+      "path": "/",
+      "capture": "phase-7-o/browser/chromium-1280/missing-evidence.png",
+      "verified": true
+    },
+    {
+      "id": "completed-unapproved",
+      "path": "/?fixture=completed-unapproved",
+      "capture": "phase-7-o/browser/chromium-1280/completed-unapproved.png",
+      "verified": true
+    },
+    {
+      "id": "unassigned-work",
+      "path": "/?fixture=unassigned",
+      "capture": "phase-7-o/browser/chromium-1280/unassigned-work.png",
+      "verified": true
+    },
+    {
+      "id": "conflict",
+      "path": "/?state=conflict",
+      "capture": "phase-7-o/browser/chromium-1280/conflict.png",
+      "verified": true
+    },
+    {
+      "id": "evidence-link",
+      "path": "/",
+      "capture": "phase-7-o/browser/chromium-1280/evidence-link.png",
+      "verified": true
+    }
+  ],
+  "checks": {
+    "console": {
+      "performed": true,
+      "method": "console errors collected across every journey and probe",
+      "observed": []
+    },
+    "network": {
+      "performed": true,
+      "method": "every request URL and every failed request, across every journey and probe",
+      "observed": {
+        "requestCount": 19,
+        "external": [],
+        "failed": []
+      }
+    },
+    "keyboard": {
+      "performed": true,
+      "method": "Tab to the skip link, Enter to the outline, Tab to Inspect Test Engineer, Enter",
+      "observed": {
+        "tabPressesToTarget": 6
+      }
+    },
+    "pointer": {
+      "performed": true,
+      "method": "click the Implementation Engineer on the Pixi canvas; the inspector reads waiting"
+    },
+    "focusReturn": {
+      "performed": true,
+      "method": "Escape from the inspector; Escape from an evidence dialog, then Close Library"
+    },
+    "zoom200": {
+      "performed": true,
+      "method": "CDP device-metrics emulation at half width and DPR 2, asserted before use",
+      "observed": {
+        "pageHorizontalScrollPx": 0,
+        "capture": "phase-7-o/browser/chromium-1280/zoom-200-selected-agent.png"
+      }
+    },
+    "reducedMotion": {
+      "performed": true,
+      "method": "prefers-reduced-motion: reduce; the handoff cue is a label with no animation",
+      "observed": {
+        "capture": "phase-7-o/browser/chromium-1280/reduced-motion-handoff.png"
+      }
+    },
+    "nonColourMeaning": {
+      "performed": true,
+      "method": "every journey asserts its state in words before it is captured"
+    },
+    "phase6Direction": {
+      "performed": false,
+      "method": "comparison against the Active Phase 6 direction is the owner's, by eye"
+    }
+  }
+}

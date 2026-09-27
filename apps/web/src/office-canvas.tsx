@@ -1,8 +1,4 @@
-import {
-  executeAttentionCommand,
-  projectKickoffReadModel,
-  type BrowserLibraryProjection,
-} from "@cuckcode/application";
+import { executeAttentionCommand, projectKickoffReadModel } from "@cuckcode/application";
 import type { KickoffBriefing, KickoffContribution } from "@cuckcode/contracts";
 import {
   createKickoff,
@@ -10,19 +6,22 @@ import {
   recordKickoffSynthesis,
   type KickoffState,
 } from "@cuckcode/domain";
-import {
-  createOfficeCamera,
-  createOfficeLayout,
-  officeLayoutPolicy,
-  planSemanticMotion,
-} from "@cuckcode/ui-system";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { createOfficeCamera, createOfficeLayout, officeLayoutPolicy } from "@cuckcode/ui-system";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type {
   AttentionDisposition,
   OfficeAttentionItem,
   OfficeDispositionResult,
 } from "./attention-rail.js";
+import {
+  attentionItemsFrom,
+  officeLibraryFor,
+  motionFrom,
+  officeModelFor,
+  revisionOf,
+  type OfficeModel,
+} from "./office-model.js";
 import { OfficeShell, type OfficeShellState } from "./office-shell.js";
 import {
   createOfficeSceneAdapter,
@@ -45,79 +44,6 @@ const sceneDescriptors: readonly SceneDescriptor[] = Object.freeze([
   zone("zone_review", 230, 210, 180, 110, 9),
   zone("zone_manager", -230, 370, 240, 100, 10),
   zone("zone_delivery", 260, 370, 180, 100, 11),
-]);
-
-const knowledgeStatuses = [
-  "authoritative",
-  "approved",
-  "provisional",
-  "contested",
-  "stale",
-  "superseded",
-  "rejected",
-] as const;
-
-const libraryProjection: BrowserLibraryProjection = {
-  knowledge: knowledgeStatuses.map((status, index) => ({
-    knowledgeId: `knowledge_${status}`,
-    status,
-    title: `${status.slice(0, 1).toUpperCase()}${status.slice(1)} project record`,
-    snippet: `Browser-safe ${status} context remains explicitly labeled.`,
-    revision: index + 1,
-    originatingEntityId: "zone_library",
-  })),
-  evidence: [
-    {
-      evidenceId: "evidence_task_11_test",
-      kind: "test",
-      status: "complete",
-      summary: "Automated verification completed; manager approval remains separate.",
-      revision: 42,
-      originatingEntityId: "agent_test_engineer",
-      approved: false,
-    },
-    {
-      evidenceId: "evidence_task_11_visual",
-      kind: "visual",
-      status: "approved",
-      summary: "Graybox composition approved for the bounded interaction gate.",
-      revision: 42,
-      originatingEntityId: "zone_review",
-      approved: true,
-    },
-    {
-      evidenceId: "evidence_task_11_release",
-      kind: "release",
-      status: "pending",
-      summary: "Release review has not started; completion is not implied.",
-      revision: 42,
-      originatingEntityId: "zone_delivery",
-      approved: false,
-    },
-  ],
-};
-
-const officeAttention: readonly OfficeAttentionItem[] = Object.freeze([
-  {
-    attentionId: "attention_blocked_test",
-    entityId: "agent_test_engineer",
-    label: "Test evidence is blocked",
-    reason: "blocked",
-    priority: 10,
-    causeEventId: "event_test_blocked",
-    plainLanguage: "The Test Engineer needs the current browser evidence.",
-    requiredAction: "Redirect the evidence request or decline the blocker.",
-  },
-  {
-    attentionId: "attention_graybox_review",
-    entityId: "agent_implementation_engineer",
-    label: "Graybox review requested",
-    reason: "review_requested",
-    priority: 40,
-    causeEventId: "event_review_requested",
-    plainLanguage: "The Implementation Engineer is waiting for a manager disposition.",
-    requiredAction: "Approve, decline, defer, cancel, or redirect the request.",
-  },
 ]);
 
 // Deterministic kickoff fixtures. These are graybox records, not a live kickoff: no role is
@@ -197,41 +123,24 @@ export function OfficeWorkspace({
   motionEnabled = false,
   motionCheckpoint = "settled",
   kickoffFixture,
+  fixtureId,
 }: Readonly<{
   initialState: OfficeShellState;
   motionEnabled?: boolean;
   motionCheckpoint?: string;
   kickoffFixture?: KickoffFixtureId | undefined;
+  /** A named office log (`?fixture=`) rendered instead of the state's own log. */
+  fixtureId?: string | undefined;
 }>) {
   const [state, setState] = useState(initialState);
   const [canvasKey, setCanvasKey] = useState(0);
   const [selectedEntityId, setSelectedEntityId] = useState<string | undefined>(undefined);
   const reducedMotion = useReducedMotion();
-  const motionPlan = motionEnabled
-    ? planSemanticMotion({
-        canonicalRevision: 44,
-        transitions: [
-          {
-            transitionId: "transition_handoff_review",
-            semantic: "handoff",
-            entityId: "agent_implementation_engineer",
-            fromEntityId: "zone_team",
-            toEntityId: "zone_review",
-            canonicalRevision: 43,
-          },
-          {
-            transitionId: "transition_delivery_queue",
-            semantic: "delivery",
-            entityId: "artifact_graybox",
-            fromEntityId: "zone_review",
-            toEntityId: "zone_delivery",
-            canonicalRevision: 44,
-          },
-        ],
-        reducedMotion,
-        motionPaused: false,
-        clock: () => 1_723_680_000_000,
-      })
+  // The canonical log for this state is replayed and projected once; every surface reads it.
+  const office = useMemo(() => officeModelFor(state, fixtureId), [state, fixtureId]);
+  const library = useMemo(() => officeLibraryFor(state, fixtureId), [state, fixtureId]);
+  const motion = motionEnabled
+    ? motionFrom(office.model, { reducedMotion, checkpoint: motionCheckpoint })
     : undefined;
   const showPersistedScene = !["loading", "empty", "error", "canvas-loss"].includes(state);
 
@@ -260,26 +169,12 @@ export function OfficeWorkspace({
       selectedEntityId={selectedEntityId}
       onSelectEntity={setSelectedEntityId}
       {...(kickoffFixture ? { kickoff: kickoffFixtures[kickoffFixture] } : {})}
-      attention={officeAttention}
-      library={libraryProjection}
-      {...(motionPlan?.lead
-        ? {
-            motion: {
-              canonicalRevision: motionPlan.canonicalState.revision,
-              presentation: motionPlan.lead.presentation,
-              checkpoint: motionCheckpoint,
-              label:
-                motionPlan.lead.presentation === "travel"
-                  ? "Handoff moving to Review station"
-                  : motionPlan.lead.persistentLabel,
-              announcement: motionPlan.lead.announcement,
-              queuedCount: motionPlan.queued.length,
-              loop: motionPlan.lead.loop,
-              runtimePaused: motionPlan.runtimePaused,
-            },
-          }
-        : {})}
-      onDisposition={(item, intent, scope) => executeFixtureDisposition(state, item, intent, scope)}
+      model={office}
+      library={library}
+      {...(motion ? { motion } : {})}
+      onDisposition={(item, intent, scope) =>
+        executeFixtureDisposition(state, office, item, intent, scope)
+      }
     />
   );
 }
@@ -298,17 +193,19 @@ function useReducedMotion(): boolean {
 
 function executeFixtureDisposition(
   state: OfficeShellState,
+  office: OfficeModel,
   item: OfficeAttentionItem,
   intent: AttentionDisposition,
   scope: Record<string, string>,
 ): OfficeDispositionResult {
   const commandId = `command_${item.attentionId}_${intent}`;
+  const revision = revisionOf(office.model);
   const result = executeAttentionCommand({
     command: {
       schemaVersion: 1,
       commandId,
       projectId: "project_graybox",
-      expectedRevision: 42,
+      expectedRevision: revision,
       actor: { actorType: "manager", actorId: "manager_local" },
       intent,
       targetEntityId: item.entityId,
@@ -316,11 +213,11 @@ function executeFixtureDisposition(
     },
     current: {
       projectId: "project_graybox",
-      revision: 42,
-      freshness: state === "stale" ? "stale" : "current",
+      revision,
+      freshness: state === "stale" || !office.model.current ? "stale" : "current",
       connection:
         state === "offline" ? "disconnected" : state === "error" ? "timeout" : "connected",
-      attention: officeAttention,
+      attention: attentionItemsFrom(office.model),
     },
   });
   if (!result.ok) {

@@ -17,6 +17,8 @@ const snapshot = (): CanonicalProjectSnapshot => ({
         requiredEvidenceKinds: ["unit"],
         updatedByEventId: "event_blocked",
         updatedAt: "2026-08-13T23:00:00.000Z",
+        assignment: null,
+        condition: null,
       },
       work_alpha: {
         workItemId: "work_alpha",
@@ -26,6 +28,8 @@ const snapshot = (): CanonicalProjectSnapshot => ({
         requiredEvidenceKinds: ["browser"],
         updatedByEventId: "event_completed",
         updatedAt: "2026-08-13T23:00:01.000Z",
+        assignment: null,
+        condition: null,
       },
     },
     evidence: {

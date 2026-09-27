@@ -18,6 +18,8 @@ const snapshot: CanonicalProjectSnapshot = {
         requiredEvidenceKinds: ["unit"],
         updatedByEventId: "event_completed",
         updatedAt: "2026-08-13T23:00:00.000Z",
+        assignment: null,
+        condition: null,
       },
     },
     evidence: {

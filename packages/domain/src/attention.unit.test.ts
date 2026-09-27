@@ -20,6 +20,8 @@ const snapshot: CanonicalProjectSnapshot = {
         requiredEvidenceKinds: [],
         updatedByEventId: "event_03",
         updatedAt: "2026-08-13T23:00:03.000Z",
+        assignment: null,
+        condition: null,
       },
       work_waiting: {
         workItemId: "work_waiting",
@@ -29,6 +31,8 @@ const snapshot: CanonicalProjectSnapshot = {
         requiredEvidenceKinds: [],
         updatedByEventId: "event_02",
         updatedAt: "2026-08-13T23:00:02.000Z",
+        assignment: null,
+        condition: null,
       },
       work_blocked: {
         workItemId: "work_blocked",
@@ -38,6 +42,8 @@ const snapshot: CanonicalProjectSnapshot = {
         requiredEvidenceKinds: [],
         updatedByEventId: "event_01",
         updatedAt: "2026-08-13T23:00:01.000Z",
+        assignment: null,
+        condition: null,
       },
     },
     evidence: {},

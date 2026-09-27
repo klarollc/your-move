@@ -10,6 +10,7 @@ Read these files before proposing or making changes:
 2. `.ui-craft/brief.md`
 3. `.ui-craft/tokens.md`
 4. The latest approved task plan, when one exists
+5. For UI work: `docs/art-reference-approval-2026-09-27.md` and its approved local A/B reference pack (AR-01–AR-04). The pack is an authoritative visual supplement, not implementation approval. If it is missing or its hashes differ, stop affected visual work; do not substitute an approximation.
 
 If implementation and documentation disagree, stop. Update and approve the design document before changing behavior.
 

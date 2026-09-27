@@ -13,3 +13,7 @@ test-results/
 *.sqlite-shm
 test-results-current-build/
 debug.log
+
+# Local art-reference work, kept out of the repo by owner ruling 2026-09-27.
+/output/
+/art-reference-brainstorm-*.md

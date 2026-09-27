@@ -1,4 +1,12 @@
-import { parseProjectEvent, type ProjectEvent } from "@cuckcode/contracts";
+import {
+  parseProjectEvent,
+  validateWorkAssignmentPayload,
+  validateWorkTransitionPayload,
+  type ProjectEvent,
+  type WorkCondition,
+} from "@cuckcode/contracts";
+
+import { applyStaffingEvent, createStaffingTruth, type StaffingTruth } from "./staffing-truth.js";
 
 export type WorkState =
   | "draft"
@@ -14,6 +22,20 @@ export type WorkState =
   | "paused"
   | "cancelled";
 
+/** The role assignment that holds a work item, and the event that bound it (spec §3.1). */
+export type WorkAssignmentTruth = { roleAssignmentId: string; eventId: string };
+
+/**
+ * Why a work item is blocked, waiting or under review, as asserted by a version-2 transition
+ * (spec §3.2). `source` and `trust` come from that event's envelope: the summary is a recorded claim
+ * by whoever emitted it, never system truth.
+ */
+export type WorkConditionTruth = WorkCondition & {
+  eventId: string;
+  source: ProjectEvent["source"];
+  trust: ProjectEvent["trust"];
+};
+
 export type WorkItemTruth = {
   workItemId: string;
   outcome: string;
@@ -22,6 +44,8 @@ export type WorkItemTruth = {
   requiredEvidenceKinds: string[];
   updatedByEventId: string;
   updatedAt: string;
+  assignment: WorkAssignmentTruth | null;
+  condition: WorkConditionTruth | null;
 };
 
 export type EvidenceTruth = {
@@ -50,7 +74,10 @@ export type WorkTruthIssue = {
     | "INVALID_WORK_TRANSITION"
     | "VERIFICATION_EVIDENCE_MISSING"
     | "UNAUTHORIZED_APPROVAL"
-    | "INVALID_APPROVAL";
+    | "INVALID_APPROVAL"
+    | "WORK_ASSIGNMENT_INVALID"
+    | "WORK_ALREADY_ASSIGNED"
+    | "WORK_ORPHANED";
   eventId: string;
   workItemId?: string;
   message: string;
@@ -80,15 +107,22 @@ const transitions: Record<WorkState, readonly WorkState[]> = {
 
 export function reduceWorkTruth(input: readonly unknown[]): WorkTruthState {
   const state: WorkTruthState = { workItems: {}, evidence: {}, approvals: {}, issues: [] };
+  // Work assignment is valid only against staffing as it stood at that point in the log, so
+  // staffing is replayed alongside, through its own reducer, and never re-derived here.
+  const staffing = createStaffingTruth();
 
   for (const candidate of input) {
     const parsed = parseProjectEvent(candidate);
     if (!parsed.ok) continue;
     const event = parsed.value;
+    applyStaffingEvent(staffing, event);
     if (event.kind === "work.created") createWorkItem(state, event);
     if (event.kind === "evidence.recorded") recordEvidence(state, event);
     if (event.kind === "work.transitioned") transitionWorkItem(state, event);
     if (event.kind === "approval.recorded") recordApproval(state, event);
+    if (event.kind === "work.assigned") assignWork(state, event, staffing);
+    if (event.kind === "work.released") releaseWork(state, event);
+    if (event.kind === "role.released") orphanReleasedWork(state, event, staffing);
   }
 
   return state;
@@ -110,6 +144,8 @@ function createWorkItem(state: WorkTruthState, event: ProjectEvent): void {
     requiredEvidenceKinds,
     updatedByEventId: event.eventId,
     updatedAt: event.occurredAt,
+    assignment: null,
+    condition: null,
   };
 }
 
@@ -154,6 +190,20 @@ function transitionWorkItem(state: WorkTruthState, event: ProjectEvent): void {
     issue(state, "WORK_ITEM_NOT_FOUND", event, "work item does not exist", workItemId);
     return;
   }
+  const contract = validateWorkTransitionPayload(event.payload);
+  if (!contract.ok && ("payloadVersion" in event.payload || "condition" in event.payload)) {
+    issue(state, "MALFORMED_WORK_EVENT", event, contract.issues.join("; "), workItemId);
+    return;
+  }
+  const condition =
+    contract.ok && contract.value.payloadVersion === 2 && contract.value.condition
+      ? {
+          ...contract.value.condition,
+          eventId: event.eventId,
+          source: event.source,
+          trust: event.trust,
+        }
+      : null;
   if (fromRevision !== item.revision || !toState || !transitions[item.state].includes(toState)) {
     issue(
       state,
@@ -190,7 +240,91 @@ function transitionWorkItem(state: WorkTruthState, event: ProjectEvent): void {
     revision: item.revision + 1,
     updatedByEventId: event.eventId,
     updatedAt: event.occurredAt,
+    condition,
   };
+}
+
+function assignWork(state: WorkTruthState, event: ProjectEvent, staffing: StaffingTruth): void {
+  const contract = validateWorkAssignmentPayload(event.payload);
+  if (!contract.ok) {
+    issue(state, "MALFORMED_WORK_EVENT", event, contract.issues.join("; "));
+    return;
+  }
+  const { workItemId, roleAssignmentId } = contract.value;
+  const item = state.workItems[workItemId];
+  if (!item) {
+    issue(state, "WORK_ITEM_NOT_FOUND", event, "work item does not exist", workItemId);
+    return;
+  }
+  if (!staffing.assignments[roleAssignmentId]) {
+    issue(
+      state,
+      "WORK_ASSIGNMENT_INVALID",
+      event,
+      `role assignment ${roleAssignmentId} is not active`,
+      workItemId,
+    );
+    return;
+  }
+  if (item.assignment) {
+    issue(
+      state,
+      "WORK_ALREADY_ASSIGNED",
+      event,
+      `work is held by ${item.assignment.roleAssignmentId}; release it first`,
+      workItemId,
+    );
+    return;
+  }
+  state.workItems[workItemId] = {
+    ...item,
+    assignment: { roleAssignmentId, eventId: event.eventId },
+  };
+}
+
+function releaseWork(state: WorkTruthState, event: ProjectEvent): void {
+  const contract = validateWorkAssignmentPayload(event.payload);
+  if (!contract.ok) {
+    issue(state, "MALFORMED_WORK_EVENT", event, contract.issues.join("; "));
+    return;
+  }
+  const { workItemId, roleAssignmentId } = contract.value;
+  const item = state.workItems[workItemId];
+  if (!item) {
+    issue(state, "WORK_ITEM_NOT_FOUND", event, "work item does not exist", workItemId);
+    return;
+  }
+  if (item.assignment?.roleAssignmentId !== roleAssignmentId) {
+    issue(
+      state,
+      "WORK_ASSIGNMENT_INVALID",
+      event,
+      `work is not held by ${roleAssignmentId}`,
+      workItemId,
+    );
+    return;
+  }
+  state.workItems[workItemId] = { ...item, assignment: null };
+}
+
+/** Work held by a role assignment staffing has just released is left unassigned and flagged. */
+function orphanReleasedWork(
+  state: WorkTruthState,
+  event: ProjectEvent,
+  staffing: StaffingTruth,
+): void {
+  for (const item of Object.values(state.workItems)) {
+    const held = item.assignment?.roleAssignmentId;
+    if (!held || staffing.assignments[held]) continue;
+    state.workItems[item.workItemId] = { ...item, assignment: null };
+    issue(
+      state,
+      "WORK_ORPHANED",
+      event,
+      `role assignment ${held} was released while it held this work`,
+      item.workItemId,
+    );
+  }
 }
 
 function recordApproval(state: WorkTruthState, event: ProjectEvent): void {

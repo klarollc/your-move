@@ -1,4 +1,11 @@
 import { expect, test } from "@playwright/test";
+import { OFFICE_FIXTURES } from "../../apps/web/src/office-fixtures/index.js";
+
+// Phase 7-O Task 9, owner ruling (a) (P-4): the cue comes from the default log's recorded handoff.
+// Its revisions are the log's, not the Phase 4 literals 43 and 44.
+const events = OFFICE_FIXTURES.default!.events;
+const revision = events.length;
+const handoffRevision = events.findIndex((event) => event.kind === "handoff.recorded") + 1;
 
 const failureStates = [
   ["offline", "loopback runtime is unavailable", "Reconnect runtime"],
@@ -33,7 +40,7 @@ test("@e2e Phase 4 semantic motion uses a named checkpoint after canonical state
 }) => {
   await page.goto("/?motion=handoff&checkpoint=responsibility-transferred");
   const cue = page.getByTestId("semantic-motion-cue");
-  await expect(cue).toHaveAttribute("data-canonical-revision", "44");
+  await expect(cue).toHaveAttribute("data-canonical-revision", String(revision));
   await expect(cue).toHaveAttribute("data-motion-presentation", "travel");
   await expect(cue).toHaveAttribute("data-motion-checkpoint", "responsibility-transferred");
   await expect(cue).toHaveAttribute("data-motion-loop", "false");
@@ -50,10 +57,18 @@ test("@e2e Phase 4 reduced motion preserves meaning with immediate placement", a
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/?motion=handoff&checkpoint=responsibility-transferred");
   const cue = page.getByTestId("semantic-motion-cue");
-  await expect(cue).toHaveAttribute("data-canonical-revision", "44");
+  await expect(cue).toHaveAttribute("data-canonical-revision", String(revision));
   await expect(cue).toHaveAttribute("data-motion-presentation", "immediate-placement");
-  await expect(cue).toContainText("Handoff recorded at Review station · revision 43");
-  await expect(page.getByRole("status")).toContainText("Handoff moved to Review station");
+  await expect(cue).toContainText(
+    `Handoff to Visual QA Reviewer recorded · revision ${handoffRevision}`,
+  );
+  await expect(page.getByRole("status")).toContainText("Handoff to Visual QA Reviewer recorded");
   expect(await cue.evaluate((element) => element.getAnimations().length)).toBe(0);
   await page.screenshot({ path: testInfo.outputPath("reduced-motion-handoff.png") });
+});
+
+test("@e2e Phase 7-O shows no motion cue for a log that records no handoff", async ({ page }) => {
+  await page.goto("/?state=empty&motion=handoff&checkpoint=responsibility-transferred");
+  await expect(page.getByRole("region", { name: "Office outline" })).toBeVisible();
+  await expect(page.getByTestId("semantic-motion-cue")).toHaveCount(0);
 });

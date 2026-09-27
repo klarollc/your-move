@@ -1,0 +1,28 @@
+import { expect, test } from "@playwright/test";
+
+// Phase 7-O Tasks 8 and 8b (spec §6). The Test Engineer's Evidence link opens the Project Library
+// at the recorded item and version, which since 8b is the office log's own evidence record. The
+// unavailable path is covered by apps/web/src/evidence-link.component.test.tsx.
+test("@e2e Phase 7-O an inspector Evidence link opens the log's record at its version", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Inspect Test Engineer" }).click();
+  const inspector = page.getByRole("complementary", { name: "Entity inspector" });
+  const link = inspector.getByRole("button", { name: "Open Browser evidence, version 1" });
+  await link.click();
+
+  const library = page.getByRole("complementary", { name: "Project Library" });
+  await expect(library).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Evidence link unavailable" })).toHaveCount(0);
+  const focused = page.getByRole("dialog", { name: "Evidence: evidence_browser v1" });
+  await expect(focused).toContainText("Failed");
+  await expect(focused).toContainText("No summary recorded");
+  await expect(focused).toContainText("work_browser_evidence");
+
+  await page.keyboard.press("Escape");
+  await expect(focused).toHaveCount(0);
+  await expect(library).toBeFocused();
+  await page.getByRole("button", { name: "Close Library" }).click();
+  await expect(link).toBeFocused();
+});

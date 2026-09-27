@@ -75,4 +75,35 @@ describe("replayProject", () => {
 
     expect(stableStringify(input)).toBe(before);
   });
+
+  // Phase 7-O Task 9, owner ruling (a): a handoff keeps its direction and work item, so the office
+  // can show a cue only for a handoff the log records. Collaborations are unchanged.
+  it("keeps a recorded handoff's direction and work item, and adds nothing to collaborations", () => {
+    const handoff = {
+      handoffId: "handoff_slice",
+      participantIds: ["agent_visual", "agent_implementation"],
+      fromAgentId: "agent_implementation",
+      toAgentId: "agent_visual",
+      workItemId: "work_notice",
+    };
+    const snapshot = replayProject([
+      ...fixture,
+      event(4, "event_04", "handoff.recorded", handoff),
+      event(5, "event_05", "collaboration.recorded", {
+        collaborationId: "collaboration_round",
+        participantIds: ["agent_visual", "agent_implementation"],
+      }),
+    ]);
+    expect(snapshot.collaborations.handoff_slice).toMatchObject({
+      kind: "handoff",
+      participantIds: ["agent_implementation", "agent_visual"],
+      handoff: {
+        fromAgentId: "agent_implementation",
+        toAgentId: "agent_visual",
+        workItemId: "work_notice",
+      },
+      updatedByEventId: "event_04",
+    });
+    expect(snapshot.collaborations.collaboration_round).not.toHaveProperty("handoff");
+  });
 });

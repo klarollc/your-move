@@ -1,4 +1,5 @@
 .restore/
+.worktrees/
 .cuckcode/
 coverage/
 **/dist/
@@ -12,3 +13,7 @@ AGENTS.md
 README.md
 packages/runtime-codex/protocol/*/schemas/
 roles/
+
+# Local art-reference work, untracked by owner ruling 2026-09-27.
+output/
+art-reference-brainstorm-*.md

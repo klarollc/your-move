@@ -1042,6 +1042,62 @@ took 2 minutes 29 seconds, and `evidenceChanged` was false.
 What it does not remove: the owner still starts the runner, still runs every evidence write, live
 run and promotion, and remains the authority. The runner moves the relay, not the authority.
 
+### DF-023 — Accepted Phase 5 evidence goes stale whenever production packages grow
+
+Observed 2026-09-25, at the end of Phase 7-O Task 1, one day after the owner accepted Phase 5.
+
+`npm run verify` failed at `phase5:sideeffects` with the committed side-effect review `STALE`. Task 1
+had added one module, `packages/contracts/src/work-payloads.ts`, and nothing else. The Decision
+Notice fixture imports the `@cuckcode/contracts` barrel, so the review's import walk now reached 37
+modules rather than 36. The findings were unchanged, zero in all five categories. The evidence was
+stale only because ordinary production work had widened a graph the fixture happens to share.
+
+## What it cost
+
+One red `verify`, one unpushed commit, and two owner commands (`phase5:sideeffects:write`, then
+`phase5:provenance:write`) before the task could close. Every Phase 7-O task that touches
+`contracts` or `domain` will cost the same, and the regenerated artifact is a new version of
+evidence the owner accepted the day before.
+
+## The shape
+
+A gate that measures the right property over the wrong boundary. The review exists to show the
+fixture has no side effects. It re-derives that from the live import graph on every `verify`, so it
+keeps asserting something about production code the fixture merely links against. This is the D-24
+isolation question showing up as friction: the fixture lives in `packages/domain` and `apps/web`, not
+in `fixtures/`, so it cannot be frozen without freezing production.
+
+## Product response
+
+None ruled. Option A, regenerate after each task, was taken on 2026-09-25. Option B, check the
+review against the accepted version rather than re-deriving it, belongs to the D-24 review due
+2026-10-09.
+
+### DF-024 — A test near its time limit failed a different test
+
+Observed 2026-09-26, during Phase 7-O Task 5.
+
+`npm run test:component` failed intermittently in `decision-notice.component.test.tsx`. The
+C-10 focus-contract test ran in about 4.2 s against Vitest's 5 s default. On a slow run it timed
+out, and its pending `userEvent` typing carried into the next test, which then failed on text it
+never typed. The failure report named the wrong test.
+
+## What it cost
+
+Two red component runs, and time spent reading the innocent test before the timing was found. A
+retry would have passed and hidden it.
+
+## The shape
+
+A timeout is not isolation. When a test times out, Vitest moves on, but the test's queued input
+does not stop. The symptom lands wherever the leftover work lands.
+
+## Product response
+
+The owner approved a 15 s timeout on that one test, with a note on why (`5e3efe9`). Not ruled: a
+general rule that tests near their limit are flagged, or that `userEvent` sessions are torn down on
+timeout.
+
 ### DF-025 — The harness kept its own summary of a failure and threw away the provider's
 
 Observed 2026-09-25, diagnosing release-review passes 6 to 9; fixed on branch `codex-currency`
@@ -1197,3 +1253,40 @@ Also observed in the policy thread, not a defect: Codex sends four `deprecationN
 deprecated settings the policy turns off (a TUI transcript setting, the legacy Linux sandbox, two
 `web_search` forms). They will appear in every session log. Candidate: leave deprecated, off-by-default
 features out of the config. Unruled.
+
+### DF-028 — A zoom probe that checked the pixel ratio, not the layout
+
+Numbered DF-025 on `main` until the `codex-currency` merge on 2026-09-27, where it met that
+branch's own DF-025; renumbered by owner ruling because the branch's entries are cited in
+ledgered evidence and this one was cited only here.
+
+Observed 2026-09-26, while writing the Phase 7-O Task 9 capture spec.
+
+The first version of the 200% zoom probe set the CDP device-metrics override before navigating,
+and asserted only that `devicePixelRatio` was 2. It passed on both viewports. Its capture was
+indistinguishable from the unzoomed page: the layout had never narrowed. The probe would have
+recorded "200% zoom: performed" over a page that was never zoomed. It was caught by looking at the
+capture, not by any test.
+
+## What it cost
+
+One rewritten probe before commit. Had it shipped, criterion 6's zoom check would have been
+false evidence, and F-9-2 (the project bar clipping its own controls at 200%) would not have been
+found.
+
+## The shape
+
+This is Phase 5 decision 9-C again: an emulation asserted by a property it sets, not by the
+effect it exists to cause. The Phase 5 matrix already asserts `innerWidth`; the new probe was
+written without reading it first.
+
+## Product response
+
+The probe now zooms after navigation, asserts `innerWidth` is half the viewport, and captures
+through the same CDP session. A mutation that clears the override fails it on both projects. Not
+ruled: a shared zoom helper in `tests/support/` so the next probe cannot omit the width check.
+
+Also observed in the same session, and not yet a pattern: one `verify` run failed a Phase 4
+kickoff e2e at 1280 with a blank page (the app never rendered in 30 s). The same URL rendered at
+1440 in that run, and two further `test:e2e` runs and a third `verify` were clean. Recorded here
+so a recurrence can be recognised.

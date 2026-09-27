@@ -1,5 +1,5 @@
 import type { BrowserLibraryProjection, projectKickoffReadModel } from "@cuckcode/application";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import {
   AttentionRail,
@@ -7,8 +7,35 @@ import {
   type OfficeAttentionItem,
   type OfficeDispositionResult,
 } from "./attention-rail.js";
-import { EvidenceLibrary } from "./evidence-library.js";
+import { EvidenceLibrary, type EvidenceLink } from "./evidence-library.js";
 import { KickoffPanel } from "./kickoff-panel.js";
+import { OFFICE_REGISTRY } from "./office-fixtures/registry.js";
+import {
+  NOT_ASSIGNED,
+  NOT_IN_FIXTURE,
+  approvalText,
+  attentionItemsFrom,
+  blockerText,
+  currentWorkText,
+  entityOf,
+  evidenceText,
+  approvalPlain,
+  evidencePlain,
+  freshnessWarning,
+  happeningText,
+  needsManager,
+  needsYouPlain,
+  personStateWord,
+  stateWord,
+  whyText,
+  needsYouText,
+  notCurrentReasons,
+  officeModelFor,
+  personStateText,
+  requestedActionText,
+  revisionOf,
+  type OfficeModel,
+} from "./office-model.js";
 import "./office-shell.css";
 
 export type OfficeShellState =
@@ -45,7 +72,6 @@ type OfficeEntity = Readonly<{
   entityId: string;
   label: string;
   kind: "zone" | "person";
-  state: string;
   relationship?: string;
 }>;
 
@@ -64,74 +90,22 @@ const kickoffRoleLabels: Readonly<Record<string, string>> = {
   release: "Release Reviewer",
 };
 
-export const officeShellEntities: readonly OfficeEntity[] = Object.freeze([
-  { entityId: "zone_reception", label: "Reception", kind: "zone", state: "Candidate intake" },
-  { entityId: "zone_team", label: "Team work area", kind: "zone", state: "Six role stations" },
-  {
-    entityId: "agent_delivery_lead",
-    label: "Delivery Lead",
-    kind: "person",
-    state: "Available",
-    relationship: "Coordinates the office team",
-  },
-  {
-    entityId: "agent_product_designer",
-    label: "Product Designer",
-    kind: "person",
-    state: "Available",
-    relationship: "Reports to Delivery Lead",
-  },
-  {
-    entityId: "agent_implementation_engineer",
-    label: "Implementation Engineer",
-    kind: "person",
-    state: "Working on the approved graybox slice",
-    relationship: "Reports to Delivery Lead",
-  },
-  {
-    entityId: "agent_test_engineer",
-    label: "Test Engineer",
-    kind: "person",
-    state: "Reviewing deterministic tests",
-    relationship: "Reports to Delivery Lead",
-  },
-  {
-    entityId: "agent_visual_qa_reviewer",
-    label: "Visual QA Reviewer",
-    kind: "person",
-    state: "Awaiting current-build evidence",
-    relationship: "Reports to Delivery Lead",
-  },
-  {
-    entityId: "agent_release_reviewer",
-    label: "Release Reviewer",
-    kind: "person",
-    state: "Not yet requested",
-    relationship: "Reports to Delivery Lead",
-  },
-  { entityId: "zone_library", label: "Project Library", kind: "zone", state: "Current" },
-  {
-    entityId: "zone_collaboration",
-    label: "Collaboration table",
-    kind: "zone",
-    state: "No active session",
-  },
-  { entityId: "zone_review", label: "Review station", kind: "zone", state: "Idle" },
-  {
-    entityId: "zone_manager",
-    label: "Manager desk",
-    kind: "zone",
-    state: "Current priority visible",
-  },
-  { entityId: "zone_delivery", label: "Delivery area", kind: "zone", state: "No delivery" },
-]);
+/** Ids, labels, relationships and layout order only. What anyone is doing comes from the model. */
+export const officeShellEntities: readonly OfficeEntity[] = Object.freeze(
+  OFFICE_REGISTRY.map((entry) => ({
+    entityId: entry.entityId,
+    label: entry.label,
+    kind: entry.kind,
+    ...(entry.kind === "person" && entry.relationship ? { relationship: entry.relationship } : {}),
+  })),
+);
 
 const presentations: Record<
   OfficeShellState,
   Readonly<{ cause: string; recovery?: string; runtime: string }>
 > = {
   ready: {
-    cause: "Canonical workspace revision 42 is current.",
+    cause: "", // Stated from the model's revision at render time.
     runtime: "Runtime connected",
   },
   loading: {
@@ -223,7 +197,7 @@ export function OfficeShell({
   onResetView,
   selectedEntityId,
   onSelectEntity,
-  attention = [],
+  model: modelProp,
   onDisposition,
   library,
   motion,
@@ -235,7 +209,8 @@ export function OfficeShell({
   onResetView?: () => void;
   selectedEntityId?: string | undefined;
   onSelectEntity?: (entityId: string | undefined) => void;
-  attention?: readonly OfficeAttentionItem[];
+  /** The office read model to render; the shell projects the state's fixture log when omitted. */
+  model?: OfficeModel;
   onDisposition?: (
     item: OfficeAttentionItem,
     intent: AttentionDisposition,
@@ -246,13 +221,29 @@ export function OfficeShell({
   kickoff?: KickoffReadModel;
 }>) {
   const outlineRef = useRef<HTMLElement>(null);
+  const shellRef = useRef<HTMLElement>(null);
+  const barRef = useRef<HTMLElement>(null);
+  // Side panels start below the project bar, which wraps to more rows when narrow or zoomed
+  // (Task 9d, F-9-2). Its measured height is published as --office-bar-height.
+  useEffect(() => {
+    const bar = barRef.current;
+    const shell = shellRef.current;
+    if (!bar || !shell || typeof ResizeObserver === "undefined") return;
+    const publish = () =>
+      shell.style.setProperty(
+        "--office-bar-height",
+        `${Math.ceil(bar.getBoundingClientRect().height)}px`,
+      );
+    publish();
+    const observer = new ResizeObserver(publish);
+    observer.observe(bar);
+    return () => observer.disconnect();
+  }, []);
   const libraryTriggerRef = useRef<HTMLButtonElement>(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const kickoffTriggerRef = useRef<HTMLButtonElement>(null);
   const [kickoffOpen, setKickoffOpen] = useState(false);
-  const [initialEvidenceKind, setInitialEvidenceKind] = useState<
-    "test" | "visual" | "release" | undefined
-  >(undefined);
+  const [initialEvidence, setInitialEvidence] = useState<EvidenceLink | undefined>(undefined);
   const attentionTriggerRef = useRef<HTMLButtonElement>(null);
   const [attentionOpen, setAttentionOpen] = useState(false);
   const [dismissedAttentionIds, setDismissedAttentionIds] = useState<ReadonlySet<string>>(
@@ -269,7 +260,19 @@ export function OfficeShell({
   useEffect(() => {
     if (motion) setAnnouncement(motion.announcement);
   }, [motion]);
-  const presentation = presentations[state];
+  const office = useMemo(() => modelProp ?? officeModelFor(state), [modelProp, state]);
+  const { model } = office;
+  const revision = revisionOf(model);
+  const attention = attentionItemsFrom(model);
+  const presentation =
+    state === "ready"
+      ? {
+          ...presentations.ready,
+          cause: model.current
+            ? `Canonical workspace revision ${revision} is current.`
+            : `Canonical workspace revision ${revision} is not current: ${notCurrentReasons(model)}.`,
+        }
+      : presentations[state];
   const selection = selectedEntityId ?? internalSelection;
   const selectedEntity = officeShellEntities.find(({ entityId }) => entityId === selection);
   const visibleAttention = attention.filter(
@@ -320,12 +323,19 @@ export function OfficeShell({
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
   });
+  // One state word, and "Needs you" when a held item needs the manager (Task 9d, F-9-3).
+  const personState = (entityId: string) => {
+    const entity = entityOf(model, entityId);
+    if (entity?.kind !== "person") return "Not in the office read model";
+    return `${personStateWord(entity)}${needsManager(entity) ? " · Needs you" : ""}`;
+  };
   const zones = officeShellEntities.filter(({ kind }) => kind === "zone");
   const people = officeShellEntities.filter(({ kind }) => kind === "person");
 
   return (
     <main
       className="office-shell"
+      ref={shellRef}
       aria-label="CuckCode office workspace"
       data-inspector-open={Boolean(selectedEntity)}
       data-attention-open={attentionOpen}
@@ -345,6 +355,7 @@ export function OfficeShell({
 
       <header
         className="office-project-bar"
+        ref={barRef}
         aria-label="Project bar"
         data-testid="persistent-structure"
       >
@@ -353,7 +364,7 @@ export function OfficeShell({
           <span>Outcome: truthful graybox office</span>
         </div>
         <span>{presentation.runtime}</span>
-        <span>Local session · revision 42</span>
+        <span>Local session · revision {revision}</span>
         {visibleAttention.length > 0 ? (
           <button
             ref={attentionTriggerRef}
@@ -441,7 +452,7 @@ export function OfficeShell({
             <li key={zone.entityId} data-canvas-twin-id={zone.entityId}>
               <div>
                 <h2>{zone.label}</h2>
-                <p>State: {zone.state}</p>
+                <p>State: Layout only — no canonical state record</p>
               </div>
               <button
                 type="button"
@@ -455,8 +466,8 @@ export function OfficeShell({
                     <li key={person.entityId} data-canvas-twin-id={person.entityId}>
                       <div>
                         <h3>{person.label}</h3>
-                        <p>State: {person.state}</p>
-                        <p>Relationship: {person.relationship}</p>
+                        <p>{personState(person.entityId)}</p>
+                        <p>{person.relationship}</p>
                       </div>
                       <button
                         type="button"
@@ -471,6 +482,19 @@ export function OfficeShell({
             </li>
           ))}
         </ol>
+        {model.unassignedWork.length > 0 ? (
+          <div className="office-unassigned">
+            <h2 id="office-unassigned-heading">Unassigned work</h2>
+            {/* Task 9d, F-9-1: work nobody holds, which no person's card or inspector lists. */}
+            <ol aria-label="Unassigned work">
+              {model.unassignedWork.map((work) => (
+                <li key={work.workItemId}>
+                  <strong>{work.outcome}</strong> <span>{stateWord(work.state)}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        ) : null}
       </section>
 
       {attentionOpen && visibleAttention.length > 0 ? (
@@ -512,28 +536,22 @@ export function OfficeShell({
               Close inspector
             </button>
           </header>
-          <dl>
-            <dt>State</dt>
-            <dd>{selectedEntity.state}</dd>
-            <dt>Cause</dt>
-            <dd>Canonical workspace revision 42 fixture</dd>
-            <dt>Updated</dt>
-            <dd>Revision 42</dd>
-            <dt>Freshness</dt>
-            <dd>{state === "ready" ? "Current" : state}</dd>
-            <dt>Current work</dt>
-            <dd>{selectedEntity.kind === "person" ? selectedEntity.state : "Zone operations"}</dd>
-            <dt>Blocker</dt>
-            <dd>None recorded</dd>
-            <dt>Evidence</dt>
-            <dd>Deterministic graybox fixture</dd>
-            <dt>Runtime binding</dt>
-            <dd>Loopback session · simulated</dd>
-            <dt>Permissions</dt>
-            <dd>Inspect and select only</dd>
-            <dt>Technical trail</dt>
-            <dd>workspace revision 42 · {selectedEntity.entityId}</dd>
-          </dl>
+          <InspectorFields
+            model={model}
+            entityId={selectedEntity.entityId}
+            overlay={office.overlay}
+            revision={revision}
+            {...(library
+              ? {
+                  onOpenEvidence: (link: EvidenceLink, trigger: HTMLButtonElement) => {
+                    libraryTriggerRef.current = trigger;
+                    setInitialEvidence(link);
+                    setLibraryOpen(true);
+                    setAnnouncement(`Evidence ${link.evidenceId} version ${link.version} opened`);
+                  },
+                }
+              : {})}
+          />
           <button
             type="button"
             onClick={() => setAnnouncement(`${selectedEntity.label} located in the office`)}
@@ -546,22 +564,12 @@ export function OfficeShell({
               ref={libraryTriggerRef}
               type="button"
               onClick={() => {
-                setInitialEvidenceKind(
-                  selectedEntity.entityId === "zone_review"
-                    ? "visual"
-                    : selectedEntity.entityId === "zone_delivery"
-                      ? "release"
-                      : undefined,
-                );
+                setInitialEvidence(undefined);
                 setLibraryOpen(true);
                 setAnnouncement(`${selectedEntity.label} evidence opened`);
               }}
             >
-              {selectedEntity.entityId === "zone_review"
-                ? "Open Visual QA evidence"
-                : selectedEntity.entityId === "zone_delivery"
-                  ? "Open Release evidence"
-                  : "Open Project Library"}
+              Open Project Library
             </button>
           ) : null}
           {kickoff && kickoffAnchors.includes(selectedEntity.entityId) ? (
@@ -592,9 +600,11 @@ export function OfficeShell({
       ) : null}
       {libraryOpen && library ? (
         <EvidenceLibrary
-          key={initialEvidenceKind ?? "library"}
+          key={
+            initialEvidence ? `${initialEvidence.evidenceId}@${initialEvidence.version}` : "library"
+          }
           projection={library}
-          {...(initialEvidenceKind ? { initialEvidenceKind } : {})}
+          {...(initialEvidence ? { initialEvidence } : {})}
           onClose={() => {
             setLibraryOpen(false);
             setAnnouncement("Project Library closed");
@@ -612,5 +622,137 @@ export function OfficeShell({
         {announcement}
       </p>
     </main>
+  );
+}
+
+function InspectorFields({
+  model,
+  entityId,
+  overlay,
+  revision,
+  onOpenEvidence,
+}: Readonly<{
+  model: OfficeModel["model"];
+  entityId: string;
+  overlay: string | null;
+  revision: number;
+  /** Present when a Project Library is available to open the evidence in. */
+  onOpenEvidence?: (link: EvidenceLink, trigger: HTMLButtonElement) => void;
+}>) {
+  const entity = entityOf(model, entityId);
+  const trail = `workspace revision ${revision} · last event ${model.source.lastEventId ?? "none"} · ${entityId}`;
+  if (!entity || entity.kind === "zone") {
+    return (
+      <>
+        <dl className="office-inspector-answers">
+          <dt>What&apos;s happening</dt>
+          <dd>Layout only — no canonical state record</dd>
+        </dl>
+        <details className="office-inspector-technical">
+          <summary>Technical detail</summary>
+          <dl>
+            <dt>State</dt>
+            <dd>Layout only — no canonical state record</dd>
+            <dt>Cause</dt>
+            <dd>No cause event recorded</dd>
+            <dt>Current work</dt>
+            <dd>{NOT_ASSIGNED}</dd>
+            <dt>Runtime binding</dt>
+            <dd>{NOT_IN_FIXTURE}</dd>
+            <dt>Permissions</dt>
+            <dd>{NOT_IN_FIXTURE}</dd>
+            <dt>Technical trail</dt>
+            <dd>{trail}</dd>
+          </dl>
+        </details>
+      </>
+    );
+  }
+  const agent = entity.agent;
+  const recorded = agent.status === "recorded" ? agent : null;
+  const freshness = recorded ? recorded.freshness : "unavailable";
+  const runtime = entity.runtime;
+  const warning = freshnessWarning(entity, model, overlay);
+  return (
+    <>
+      {warning ? (
+        <p className="office-inspector-warning" role="note">
+          {warning}
+        </p>
+      ) : null}
+      <dl className="office-inspector-answers">
+        <dt>What&apos;s happening</dt>
+        <dd>{happeningText(entity)}</dd>
+        <dt>Why</dt>
+        <dd>{whyText(entity)}</dd>
+        <dt>What needs you</dt>
+        <dd>{needsYouPlain(entity)}</dd>
+        <dt>Evidence</dt>
+        <dd>
+          {evidencePlain(entity)}
+          {onOpenEvidence
+            ? entity.work
+                .flatMap((work) => work.evidence)
+                .map(({ evidenceId, kind, version }) => (
+                  <button
+                    key={`${evidenceId}@${version}`}
+                    type="button"
+                    onClick={(event) =>
+                      onOpenEvidence({ evidenceId, version }, event.currentTarget)
+                    }
+                  >
+                    Open {stateWord(kind)} evidence, version {version}
+                  </button>
+                ))
+            : null}
+        </dd>
+        <dt>Approval</dt>
+        <dd>{approvalPlain(entity)}</dd>
+      </dl>
+      {/* Owner rulings 9d-1 and 9d-2: identifiers, codes and attribution words are on demand. */}
+      <details className="office-inspector-technical">
+        <summary>Technical detail</summary>
+        <dl>
+          <dt>State</dt>
+          <dd>{personStateText(entity)}</dd>
+          <dt>Cause</dt>
+          <dd>{recorded?.causeEventId ?? "No cause event recorded"}</dd>
+          <dt>Updated</dt>
+          <dd>{recorded?.updatedAt ?? "Not recorded"}</dd>
+          <dt>Freshness</dt>
+          <dd>
+            {freshness}
+            {overlay ? ` · workspace ${overlay}` : ""}
+            {model.current ? "" : " · the office read model is not current"}
+          </dd>
+          <dt>Current work</dt>
+          <dd>{currentWorkText(entity)}</dd>
+          <dt>Needs you</dt>
+          <dd>{needsYouText(entity)}</dd>
+          <dt>Blocker</dt>
+          <dd>{blockerText(entity)}</dd>
+          <dt>Requested action</dt>
+          <dd>{requestedActionText(entity)}</dd>
+          <dt>Approval status</dt>
+          <dd>{approvalText(entity)}</dd>
+          <dt>Evidence records</dt>
+          <dd>{evidenceText(entity)}</dd>
+          <dt>Runtime binding</dt>
+          <dd>
+            {runtime.status === "recorded"
+              ? `${runtime.source} v${runtime.version}${runtime.fixture ? " · fixture" : ""}`
+              : NOT_IN_FIXTURE}
+          </dd>
+          <dt>Permissions</dt>
+          <dd>
+            {runtime.status === "recorded"
+              ? runtime.permissions.join(", ") || "None recorded"
+              : NOT_IN_FIXTURE}
+          </dd>
+          <dt>Technical trail</dt>
+          <dd>{trail}</dd>
+        </dl>
+      </details>
+    </>
   );
 }

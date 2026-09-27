@@ -1,4 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
+import { OFFICE_FIXTURES } from "../../apps/web/src/office-fixtures/index.js";
+
+// Phase 7-O Task 6 (P-4): the revision is the length of the canonical default log, not a literal.
+const revision = OFFICE_FIXTURES.default!.events.length;
 
 // Named kickoff states for the Phase 4 graybox capture matrix. Captures land in the ephemeral
 // per-test output directory, matching the Checkpoint C precedent: they are current-build evidence,
@@ -57,7 +61,7 @@ test("@visual Phase 4 captures the kickoff while the runtime is offline", async 
   await openKickoff(page, "/?kickoff=round&state=offline", "Collaboration table");
 
   await expect(page.getByTestId("workspace-cause")).not.toContainText(
-    "Canonical workspace revision 42 is current",
+    `Canonical workspace revision ${revision} is current`,
   );
   await expect(page.getByTestId("kickoff-decision-impact")).toContainText(
     "No work is authorised yet",

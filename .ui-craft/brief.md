@@ -2,6 +2,15 @@
 
 Status: Draft v0.1 — confirmed product intent, spatial model, and visual thesis; detailed art system pending owner discovery
 
+## Approved visual supplement — 2026-09-27
+
+The completed A/B pack (architectural clarity plus human studio warmth) and its constitution are
+owner-approved. Read [the approval record](../docs/art-reference-approval-2026-09-27.md) and the
+local AR-01–AR-04 plates before UI work. This dated supplement controls the pack's approval status
+over earlier discovery-pending language. It preserves the Active system and separate implementation
+gates. Keep the office primary, contextual detail focused, and technical evidence on demand.
+Do not infer approval of exact raster colors, geometry, identities or runtime behavior.
+
 ## 1. Product identity
 
 CuckCode makes an office scene the primary surface for directing a real multi-agent workflow. The
@@ -86,4 +95,3 @@ The visual thesis, fixed camera orientation, material direction, warm-amber role
 - exact humanist sans and monospace families, licensing, fallback stacks, type scale, and information-density measurements;
 - exact avatar proportions, silhouette tests, inclusive modular library, identity-brief schema, Candidate asset workflow, and personalization comprehension tests;
 - exact travel speeds, path curves, easing tokens, concurrency priority, animation checkpoints, and reduced-motion rendered states.
-

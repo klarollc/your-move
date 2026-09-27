@@ -8,6 +8,7 @@ import type { AttentionDisposition, OfficeAttentionItem } from "./attention-rail
 import { projectKickoffReadModel } from "@cuckcode/application";
 import { createKickoff, recordKickoffContribution } from "@cuckcode/domain";
 import type { KickoffBriefing, KickoffContribution } from "@cuckcode/contracts";
+import { OFFICE_FIXTURES } from "./office-fixtures/index.js";
 import { OfficeShell, officeShellEntities, type OfficeShellState } from "./office-shell.js";
 
 const zones = [
@@ -185,35 +186,18 @@ describe("OfficeShell", () => {
 });
 
 describe("OfficeShell manager attention", () => {
-  const attentionItems = [
-    {
-      attentionId: "attention_blocked_test",
-      entityId: "agent_test_engineer",
-      label: "Test evidence is blocked",
-      reason: "blocked",
-      priority: 10,
-      causeEventId: "event_test_blocked",
-      plainLanguage: "The Test Engineer needs the current browser evidence.",
-      requiredAction: "Redirect the evidence request or decline the blocker.",
-    },
-    {
-      attentionId: "attention_graybox_review",
-      entityId: "agent_implementation_engineer",
-      label: "Graybox review requested",
-      reason: "review_requested",
-      priority: 40,
-      causeEventId: "event_review_requested",
-      plainLanguage: "The Implementation Engineer is waiting for a manager disposition.",
-      requiredAction: "Approve, decline, defer, cancel, or redirect the request.",
-    },
-  ] as const;
+  // Phase 7-O Task 6 (P-4): the rail reads the office read model of the state's canonical log, so
+  // the items, labels and revision come from that log rather than a hand-written list.
+  const revision = OFFICE_FIXTURES.default!.events.length;
+  const blocked = "Provide current browser evidence: blocked";
+  const review = "Deliver the approved graybox slice: review requested";
 
   const fixtureDisposition = (item: OfficeAttentionItem, intent: AttentionDisposition) => ({
     ok: true as const,
     receipt: {
       receiptId: `receipt_command_${item.attentionId}_${intent}`,
-      acceptedRevision: 42,
-      resultingRevision: 43,
+      acceptedRevision: revision,
+      resultingRevision: revision + 1,
       targetEntityId: item.entityId,
       disposition: intent,
       correlationId: `command_${item.attentionId}_${intent}`,
@@ -223,9 +207,7 @@ describe("OfficeShell manager attention", () => {
 
   it("uses canonical order, locates the office target, and restores rail focus", async () => {
     const user = userEvent.setup();
-    render(
-      <OfficeShell state="ready" attention={attentionItems} onDisposition={fixtureDisposition} />,
-    );
+    render(<OfficeShell state="ready" onDisposition={fixtureDisposition} />);
     const trigger = screen.getByRole("button", { name: "Manager attention (2)" });
 
     expect(screen.queryByRole("complementary", { name: "Manager attention" })).toBeNull();
@@ -233,10 +215,10 @@ describe("OfficeShell manager attention", () => {
     const rail = screen.getByRole("complementary", { name: "Manager attention" });
     expect(rail.querySelectorAll("[data-attention-id]")[0]).toHaveAttribute(
       "data-attention-id",
-      "attention_blocked_test",
+      "attention_work_browser_evidence",
     );
 
-    await user.click(screen.getByRole("button", { name: "Locate Test evidence is blocked" }));
+    await user.click(screen.getByRole("button", { name: `Locate ${blocked}` }));
     expect(screen.getByRole("region", { name: "Office scene" })).toHaveAttribute(
       "data-selected-entity-id",
       "agent_test_engineer",
@@ -252,39 +234,35 @@ describe("OfficeShell manager attention", () => {
 
   it("keeps dismissal separate from approval and exposes exact attributable receipts", async () => {
     const user = userEvent.setup();
-    render(
-      <OfficeShell state="ready" attention={attentionItems} onDisposition={fixtureDisposition} />,
-    );
+    render(<OfficeShell state="ready" onDisposition={fixtureDisposition} />);
     await user.click(screen.getByRole("button", { name: "Manager attention (2)" }));
 
-    await user.click(screen.getByRole("button", { name: "Dismiss Test evidence is blocked" }));
+    await user.click(screen.getByRole("button", { name: `Dismiss ${blocked}` }));
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Test evidence is blocked dismissed from this view; no disposition was recorded",
+      `${blocked} dismissed from this view; no disposition was recorded`,
     );
     expect(screen.queryByText(/receipt_command_attention/i)).toBeNull();
 
     await user.selectOptions(
-      screen.getByRole("combobox", { name: "Disposition for Graybox review requested" }),
+      screen.getByRole("combobox", { name: `Disposition for ${review}` }),
       "approve",
     );
     await user.type(
-      screen.getByRole("textbox", { name: "Reason for Graybox review requested" }),
+      screen.getByRole("textbox", { name: `Reason for ${review}` }),
       "Reviewed against the bounded graybox gate.",
     );
-    await user.click(screen.getByRole("button", { name: "Submit Graybox review requested" }));
+    await user.click(screen.getByRole("button", { name: `Submit ${review}` }));
 
     const receipt = screen.getByRole("status", { name: "Disposition receipt" });
-    expect(receipt).toHaveTextContent("receipt_command_attention_graybox_review_approve");
-    expect(receipt).toHaveTextContent("revision 42 → 43");
+    expect(receipt).toHaveTextContent("receipt_command_attention_work_graybox_slice_approve");
+    expect(receipt).toHaveTextContent(`revision ${revision} → ${revision + 1}`);
     expect(receipt).toHaveTextContent("agent_implementation_engineer");
     expect(receipt).toHaveTextContent("Agent-visible disposition: approve");
   });
 
   it.each(["stale", "offline"] as const)("denies manager dispositions while %s", async (state) => {
     const user = userEvent.setup();
-    render(
-      <OfficeShell state={state} attention={attentionItems} onDisposition={fixtureDisposition} />,
-    );
+    render(<OfficeShell state={state} onDisposition={fixtureDisposition} />);
     await user.click(screen.getByRole("button", { name: "Manager attention (2)" }));
     expect(screen.getAllByRole("button", { name: /^Submit / })).toSatisfy(
       (buttons: HTMLElement[]) => buttons.every((button) => button.hasAttribute("disabled")),
@@ -295,7 +273,7 @@ describe("OfficeShell manager attention", () => {
   });
 
   it("collapses an empty attention projection", () => {
-    render(<OfficeShell state="ready" attention={[]} />);
+    render(<OfficeShell state="empty" />);
     expect(screen.queryByRole("button", { name: /Manager attention/ })).toBeNull();
     expect(screen.queryByRole("complementary", { name: "Manager attention" })).toBeNull();
   });
@@ -318,6 +296,7 @@ const libraryProjection: BrowserLibraryProjection = {
       kind: "test",
       status: "complete",
       summary: "Tests complete; approval remains separate.",
+      version: 1,
       revision: 42,
       originatingEntityId: "agent_test_engineer",
       approved: false,
@@ -327,6 +306,7 @@ const libraryProjection: BrowserLibraryProjection = {
       kind: "visual",
       status: "approved",
       summary: "Graybox interaction composition approved.",
+      version: 1,
       revision: 42,
       originatingEntityId: "zone_review",
       approved: true,
@@ -336,6 +316,7 @@ const libraryProjection: BrowserLibraryProjection = {
       kind: "release",
       status: "pending",
       summary: "Release review has not started.",
+      version: 1,
       revision: 42,
       originatingEntityId: "zone_delivery",
       approved: false,
@@ -360,13 +341,17 @@ describe("OfficeShell spatial evidence surfaces", () => {
     expect(trigger).toHaveFocus();
   });
 
-  it("opens review and delivery evidence with a reachable stable office origin", async () => {
+  // Phase 7-O Task 8b-3 (P-4): the review station opens the Library unfocused; a focused record
+  // is chosen by its ID and version, never looked up by kind.
+  it("opens review evidence with a reachable stable office origin", async () => {
     const user = userEvent.setup();
     render(<OfficeShell state="ready" library={libraryProjection} />);
     await user.click(screen.getByRole("button", { name: "Locate Review station" }));
-    await user.click(screen.getByRole("button", { name: "Open Visual QA evidence" }));
+    await user.click(screen.getByRole("button", { name: "Open Project Library" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+    await user.click(screen.getByRole("button", { name: "View evidence_visual v1" }));
 
-    const focused = screen.getByRole("dialog", { name: "Evidence: Visual QA review" });
+    const focused = screen.getByRole("dialog", { name: "Evidence: evidence_visual v1" });
     expect(focused).toHaveTextContent("zone_review");
     await user.click(screen.getByRole("button", { name: "Locate origin in office" }));
     expect(screen.getByRole("region", { name: "Office scene" })).toHaveAttribute(

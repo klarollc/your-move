@@ -8,6 +8,7 @@ import {
   PHASE6_ROLE_WORK_AREAS,
   createPhase6ComparisonEvents,
   phase6ComparisonFixtureDigest,
+  phase6ComparisonFixtureDigestV1,
   projectPhase6ComparisonFrame,
 } from "./phase6-comparison-fixture.js";
 
@@ -89,8 +90,17 @@ describe("Phase 6 comparison fixture", () => {
     expect(createPhase6ComparisonEvents()).toEqual(createPhase6ComparisonEvents());
   });
 
-  it("matches the frozen digest, so drift in the frame fails loudly", () => {
-    expect(phase6ComparisonFixtureDigest()).toBe(frozen().digest);
+  it("matches the frozen digest once the Phase 7-O additions are removed, so drift fails loudly", () => {
+    // P-1, owner-approved 2026-09-25. Phase 7-O adds canonical fields to work truth; the frozen
+    // record is never edited. Removing exactly those fields must reproduce it, which proves nothing
+    // the owner accepted in Phase 6 moved. The full digest is pinned by the successor record.
+    expect(phase6ComparisonFixtureDigestV1()).toBe(frozen().digest);
+  });
+
+  it("differs from the frozen digest only because the Phase 7-O additions are present", () => {
+    // Without this, a strip function that removed nothing would pass the reduction proof while the
+    // additions had no effect on the digest at all.
+    expect(phase6ComparisonFixtureDigest()).not.toBe(frozen().digest);
   });
 
   it("declares exactly the three candidates the brief requires", () => {

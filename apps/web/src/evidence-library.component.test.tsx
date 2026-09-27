@@ -32,6 +32,7 @@ const projection = {
       kind: "test",
       status: "complete",
       summary: "Automated verification completed; approval remains separate.",
+      version: 1,
       revision: 42,
       originatingEntityId: "agent_test_engineer",
       approved: false,
@@ -41,6 +42,7 @@ const projection = {
       kind: "visual",
       status: "approved",
       summary: "Graybox composition approved for the interaction gate.",
+      version: 1,
       revision: 42,
       originatingEntityId: "zone_review",
       approved: true,
@@ -50,6 +52,7 @@ const projection = {
       kind: "release",
       status: "pending",
       summary: "Release review has not started.",
+      version: 1,
       revision: 42,
       originatingEntityId: "zone_delivery",
       approved: false,
@@ -93,10 +96,10 @@ describe("EvidenceLibrary", () => {
         onLocateOrigin={onLocateOrigin}
       />,
     );
-    const trigger = screen.getByRole("button", { name: "View Automated verification" });
+    const trigger = screen.getByRole("button", { name: "View evidence_test v1" });
 
     await user.click(trigger);
-    const focused = screen.getByRole("dialog", { name: "Evidence: Automated verification" });
+    const focused = screen.getByRole("dialog", { name: "Evidence: evidence_test v1" });
     expect(focused).toHaveTextContent("Originating office entity");
     expect(focused).toHaveTextContent("agent_test_engineer");
     expect(focused).toHaveTextContent("revision 42");

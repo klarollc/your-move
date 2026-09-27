@@ -4,6 +4,11 @@ Status: **Direction approved; numeric values and promotion remain unapproved**
 
 The project has an approved material and palette direction, but no approved numeric token values. Do not silently default to blue, Inter, rounded cards, glassmorphism, a dark neon interface, or a generic dashboard system.
 
+The owner-approved [A/B visual supplement](../docs/art-reference-approval-2026-09-27.md)
+(2026-09-27) governs composition and information hierarchy. Its raster colors, generated fonts,
+editorial green/red framing and incidental control colors are not numeric tokens. This supplement
+does not promote or replace token values; retain the existing token authority and approval gates.
+
 Approved direction:
 
 - neutral-dominant warm matte office;
@@ -30,4 +35,3 @@ Approved direction:
 - Motion must distinguish state change from ambient life.
 - Reduced-motion mode must preserve state comprehension without avatar travel animations.
 - Typography and contrast must support WCAG 2.2 AA at minimum; final perceptual contrast targets will be defined with the approved palette.
-

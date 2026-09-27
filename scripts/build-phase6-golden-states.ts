@@ -4,8 +4,12 @@ import { resolve } from "node:path";
 
 import { STATE_TREATMENTS } from "./phase6-accessibility.js";
 import { RECONCILIATION_B_CLARITY } from "./phase6-candidate-styles.js";
-import { renderComposition, type SceneState } from "./phase6-candidate-render.js";
-import { projectAllGoldenStates, type ProjectedGoldenState } from "./phase6-golden-states.js";
+import { renderComposition } from "./phase6-candidate-render.js";
+import {
+  GOLDEN_VIEWPORTS,
+  projectAllGoldenStates,
+  sceneStateFrom,
+} from "./phase6-golden-states.js";
 
 /**
  * Renders the golden states in the approved system and records each one's evidence.
@@ -18,10 +22,7 @@ import { projectAllGoldenStates, type ProjectedGoldenState } from "./phase6-gold
 const ROOT = resolve(process.cwd());
 const OUT = resolve(ROOT, "docs/evidence/phase-6/golden-states");
 const style = RECONCILIATION_B_CLARITY;
-const VIEWPORTS: Array<[string, number, number]> = [
-  ["1440x900", 1440, 900],
-  ["1280x800", 1280, 800],
-];
+const VIEWPORTS = GOLDEN_VIEWPORTS;
 
 const sha256 = (value: string): string => createHash("sha256").update(value).digest("hex");
 
@@ -37,27 +38,6 @@ const OWNER_APPROVAL = {
   scope:
     "The five golden states as rendered in reconciliation-b-clarity at both approved viewports. Does not promote the visual system to Active and does not authorize Phase 7.",
 };
-
-/** Turns canonical descriptors into the declared render state. Nothing is invented here. */
-function sceneStateFrom(projected: ProjectedGoldenState): SceneState {
-  const agentStates: Record<string, string> = {};
-  let work: { state: string } | undefined;
-  const collaborationParticipants: string[] = [];
-
-  for (const descriptor of projected.scene) {
-    if (descriptor.subjectType === "agent") agentStates[descriptor.subjectId] = descriptor.state;
-    if (descriptor.subjectType === "work") work = { state: descriptor.state };
-  }
-  for (const collaboration of Object.values(projected.snapshot.collaborations)) {
-    if (collaboration.active) collaborationParticipants.push(...collaboration.participantIds);
-  }
-  // `work` is omitted rather than set to `undefined`. `SceneState.work` is optional and the
-  // renderer tests it with `if (scene.work)`, so the two are identical at runtime — but under
-  // `exactOptionalPropertyTypes` an explicit `undefined` is not assignable to an optional property.
-  // Type-only; proven no-op against the five golden states at both viewports, digests unchanged.
-  // Owner ruling 2026-09-14, `docs/evidence/decision-record-2026-09-14-scripts-typecheck.md`.
-  return { agentStates, collaborationParticipants, ...(work ? { work } : {}) };
-}
 
 /** The pinned environment every capture was produced in. */
 const ENVIRONMENT = {
