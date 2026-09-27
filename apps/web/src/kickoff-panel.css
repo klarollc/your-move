@@ -2,7 +2,7 @@
    D4-V2-001 records what unscoped global rules in a surface stylesheet already cost. */
 .kickoff-panel {
   position: absolute;
-  inset-block: 56px 0;
+  inset-block: var(--office-bar-height, 56px) 0;
   inset-inline-end: 0;
   inline-size: 420px;
   overflow-y: auto;

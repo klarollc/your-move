@@ -38,7 +38,7 @@ describe("the inspector and the rail read one record", () => {
     expect(field(inspector, "Requested action")).toHaveTextContent(
       "Redirect the evidence request or decline the blocker.",
     );
-    expect(field(inspector, "Evidence")).toHaveTextContent("evidence_browser");
+    expect(field(inspector, "Evidence records")).toHaveTextContent("evidence_browser");
   });
 
   it("gives the rail the same reason and action the inspector shows", async () => {

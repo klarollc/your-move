@@ -40,7 +40,7 @@ describe("the Project Library reads the office log", () => {
     const inspector = screen.getByRole("complementary", { name: "Entity inspector" });
     await user.click(
       within(inspector).getByRole("button", {
-        name: `Open evidence_browser v${browserPayload.version}`,
+        name: `Open Browser evidence, version ${browserPayload.version}`,
       }),
     );
     expect(screen.queryByRole("dialog", { name: "Evidence link unavailable" })).toBeNull();

@@ -9,7 +9,7 @@ test("@e2e Phase 7-O an inspector Evidence link opens the log's record at its ve
   await page.goto("/");
   await page.getByRole("button", { name: "Inspect Test Engineer" }).click();
   const inspector = page.getByRole("complementary", { name: "Entity inspector" });
-  const link = inspector.getByRole("button", { name: "Open evidence_browser v1" });
+  const link = inspector.getByRole("button", { name: "Open Browser evidence, version 1" });
   await link.click();
 
   const library = page.getByRole("complementary", { name: "Project Library" });

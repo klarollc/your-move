@@ -669,3 +669,23 @@ describe("office read model: handoffs", () => {
     expect(m.current).toBe(false);
   });
 });
+
+/** Phase 7-O Task 9d (F-9-1, V1): work nobody holds must have somewhere to show. */
+describe("office read model: unassigned work", () => {
+  it("lists work no office person holds, and nothing that someone holds", () => {
+    const unheld = office().filter(
+      (event) => (event as { eventId: string }).eventId !== "event_bind_release",
+    );
+    const m = model(unheld);
+    expect(m.unassignedWork.map((view) => view.workItemId)).toEqual(["work_release"]);
+    expect(m.unassignedWork[0]).toMatchObject({ workItemId: "work_release", assignment: null });
+    const held = m.entities.flatMap((entity) =>
+      entity.kind === "person" ? entity.work.map((view) => view.workItemId) : [],
+    );
+    expect(held).not.toContain("work_release");
+  });
+
+  it("lists nothing when everyone's work is held", () => {
+    expect(model(office()).unassignedWork).toEqual([]);
+  });
+});

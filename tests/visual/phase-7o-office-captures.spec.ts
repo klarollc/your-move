@@ -39,7 +39,8 @@ const inspector = (page: Page): Locator =>
   page.getByRole("complementary", { name: "Entity inspector" });
 const field = (page: Page, term: string): Locator =>
   inspector(page)
-    .locator("dt", { hasText: new RegExp(`^${term}$`, "u") })
+    .getByText(term, { exact: true })
+    .and(page.locator("dt"))
     .locator("xpath=following-sibling::dd[1]");
 const inspect = (label: string) => async (page: Page) => {
   await page.getByRole("button", { name: `Inspect ${label}` }).click();
@@ -63,8 +64,10 @@ const JOURNEYS: readonly Journey[] = [
     path: "/",
     drive: inspect("Test Engineer"),
     verify: async (page) => {
-      await expect(field(page, "State")).toContainText("blocked");
-      await expect(field(page, "Cause")).toContainText("event_office_default_");
+      await expect(field(page, "What's happening")).toContainText(
+        "Blocked on Provide current browser evidence",
+      );
+      await expect(field(page, "Why")).toContainText("Reported by the system (verified)");
     },
   },
   {
@@ -83,9 +86,10 @@ const JOURNEYS: readonly Journey[] = [
     path: "/",
     drive: inspect("Implementation Engineer"),
     verify: async (page) => {
-      await expect(field(page, "State")).toContainText("waiting");
-      await expect(field(page, "Needs you")).toContainText("review requested");
-      await expect(field(page, "Blocker")).toContainText("waiting on manager");
+      await expect(field(page, "What's happening")).toContainText("Waiting for your review of");
+      await expect(field(page, "What needs you")).toContainText(
+        "Approve, decline, defer, cancel, or redirect the request.",
+      );
     },
   },
   {
@@ -94,7 +98,7 @@ const JOURNEYS: readonly Journey[] = [
     drive: inspect("Test Engineer"),
     verify: async (page) => {
       await expect(cause(page)).toContainText("freshness window");
-      await expect(field(page, "Freshness")).toContainText("delayed");
+      await expect(inspector(page).getByRole("note")).toContainText("may be out of date (delayed)");
     },
   },
   {
@@ -103,7 +107,7 @@ const JOURNEYS: readonly Journey[] = [
     drive: inspect("Test Engineer"),
     verify: async (page) => {
       await expect(cause(page)).toContainText("loopback runtime is unavailable");
-      await expect(field(page, "Freshness")).toContainText("workspace offline");
+      await expect(inspector(page).getByRole("note")).toContainText("The workspace is offline.");
     },
   },
   {
@@ -111,8 +115,8 @@ const JOURNEYS: readonly Journey[] = [
     path: "/",
     drive: inspect("Test Engineer"),
     verify: async (page) => {
-      await expect(field(page, "Approval")).toContainText("missing browser evidence");
-      await expect(field(page, "Evidence")).toContainText("evidence_browser v1 · browser · failed");
+      await expect(field(page, "Approval")).toContainText("Not approved: browser evidence missing");
+      await expect(field(page, "Evidence")).toContainText("Browser evidence, version 1: failed");
     },
   },
   {
@@ -120,9 +124,8 @@ const JOURNEYS: readonly Journey[] = [
     path: "/?fixture=completed-unapproved",
     drive: inspect("Implementation Engineer"),
     verify: async (page) => {
-      await expect(field(page, "Current work")).toContainText("(completed)");
-      await expect(field(page, "Approval")).toContainText("not approved");
-      await expect(field(page, "Approval")).not.toContainText(": approved");
+      await expect(field(page, "What's happening")).toContainText("(Completed)");
+      await expect(field(page, "Approval")).toContainText("Not approved");
     },
   },
   {
@@ -130,13 +133,12 @@ const JOURNEYS: readonly Journey[] = [
     path: "/?fixture=unassigned",
     verify: async (page) => {
       await expect(cause(page)).toContainText("is current");
-      // Recorded as it is: the unassigned item appears nowhere in the office.
-      await expect(page.locator("body")).not.toContainText("Write the release notes");
+      // F-9-1 (V1), fixed in Task 9d: unassigned work has its own group in the outline.
+      const group = page.getByRole("list", { name: "Unassigned work" });
+      await group.scrollIntoViewIfNeeded();
+      await expect(group).toContainText("Write the release notes");
+      await expect(group).toContainText("Ready");
     },
-    finding:
-      "Unassigned work is not visible in the office. work_release_notes is recorded as ready and " +
-      "held by nobody; the outline and inspector list work per person, and the rail shows work only " +
-      "when it needs attention. (Owner ruling 2026-09-26: capture it and file it; no UI in Task 9.)",
   },
   {
     id: "conflict",
@@ -144,7 +146,9 @@ const JOURNEYS: readonly Journey[] = [
     drive: inspect("Implementation Engineer"),
     verify: async (page) => {
       await expect(cause(page)).toContainText("out-of-order event conflict");
-      await expect(field(page, "Freshness")).toContainText("the office read model is not current");
+      await expect(inspector(page).getByRole("note")).toContainText(
+        "The office read model is not current.",
+      );
     },
   },
   {
@@ -152,7 +156,9 @@ const JOURNEYS: readonly Journey[] = [
     path: "/",
     drive: async (page) => {
       await inspect("Test Engineer")(page);
-      await inspector(page).getByRole("button", { name: "Open evidence_browser v1" }).click();
+      await inspector(page)
+        .getByRole("button", { name: "Open Browser evidence, version 1" })
+        .click();
     },
     verify: async (page) => {
       const focused = page.getByRole("dialog", { name: "Evidence: evidence_browser v1" });
@@ -223,7 +229,7 @@ test("@visual Phase 7-O office captures, with console, network, input, zoom and 
     await page.keyboard.press("Tab");
   }
   await page.keyboard.press("Enter");
-  await expect(field(page, "State")).toContainText("blocked");
+  await expect(field(page, "What's happening")).toContainText("Blocked on");
   await page.keyboard.press("Escape");
   await expect(inspector(page)).toHaveCount(0);
   await expect(target).toBeFocused();
@@ -241,12 +247,12 @@ test("@visual Phase 7-O office captures, with console, network, input, zoom and 
     "data-selected-entity-id",
     "agent_implementation_engineer",
   );
-  await expect(field(page, "State")).toContainText("waiting");
+  await expect(field(page, "What's happening")).toContainText("Waiting for your review of");
 
   // Focus return from an evidence dialog and the library.
   await page.goto(`${ORIGIN}/`);
   await inspect("Test Engineer")(page);
-  const link = inspector(page).getByRole("button", { name: "Open evidence_browser v1" });
+  const link = inspector(page).getByRole("button", { name: "Open Browser evidence, version 1" });
   await link.click();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("complementary", { name: "Project Library" })).toBeFocused();
@@ -283,7 +289,7 @@ test("@visual Phase 7-O office captures, with console, network, input, zoom and 
   }));
   expect(emulation.devicePixelRatio, "the zoom emulation did not take effect").toBe(2);
   expect(emulation.innerWidth, "the zoom emulation did not narrow the layout").toBe(halfWidth);
-  const blocker = field(page, "Blocker");
+  const blocker = field(page, "Why");
   await blocker.scrollIntoViewIfNeeded();
   await expect(blocker).toContainText("The Test Engineer needs current browser evidence");
   const overflow = await page.evaluate(

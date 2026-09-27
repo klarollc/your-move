@@ -477,7 +477,7 @@ revision K`. With no handoff there is no cue. The Phase 4 `delivery` transition 
       block Tasks 10 to 12.
   - Verify: the capture manifest; the owner's dispositions recorded.
 
-- [ ] Task 9d (**PROPOSED, awaiting owner approval**): revise the text surfaces toward the art
+- [x] Task 9d (**approved 2026-09-26 as recommended, with 9d-1 to 9d-3**): revise the text surfaces toward the art
       direction, and clear the V1 findings.
   - Why: F-9-4 (V1). The inspector leads with machine detail: event IDs, reason codes, trust
     words and the technical trail sit in the main view. Spec §6 says its first screenful answers
@@ -533,6 +533,67 @@ revision K`. With no handoff there is no cue. The Phase 4 `delivery` transition 
     - Each is followed by mutations.
   - Out of scope: scene art and high-fidelity visuals (Phase 7), rail redesign, Evidence Library
     layout.
+  - Result, 2026-09-27:
+    - **Inspector.** The first screen is five answers from the model: _What's happening_
+      ("Blocked on Provide current browser evidence"); _Why_ (the condition summary, "Reported by
+      the system (verified)", "Recorded 09:00:30 UTC" when the condition's event is the work's
+      cause); _What needs you_; _Evidence_ ("Browser evidence, version 1: failed", with an
+      `Open Browser evidence, version 1` button); _Approval_ ("Not approved: browser evidence
+      missing"). A note warns only when the record is not current: an agent that is not fresh, a
+      shell overlay, or a model that is not current. Every earlier field is kept, unchanged, under
+      a closed native `<details>` "Technical detail". Two fields are renamed there to avoid
+      clashing with the first screen: `Approval status` and `Evidence records`.
+    - **Outline.** Person cards show one state word ("Blocked", "Idle", "Unavailable"), "Needs
+      you" when a held item needs the manager, the relationship, and the button below the name.
+      The zone grid flows to fit instead of staying at three columns, and the Team area spans the
+      full width, so names are not cut off when narrow or zoomed.
+    - **Unassigned work (F-9-1).** `OfficeReadModel.unassignedWork` lists work no office person
+      holds. The outline shows an "Unassigned work" group only when there is some.
+    - **Project bar (F-9-2).** It wraps instead of spilling, with a 56 px minimum height. The
+      shell's first grid row is `auto`. The bar's measured height is published as
+      `--office-bar-height`, and the inspector, rail, library and kickoff panel start below it
+      instead of at a fixed 56 px.
+    - **RED:**
+      - Unit: 1 test, "1 failed | 464 passed (465)".
+      - Component: 7 tests in `office-plain-language.component.test.tsx`, "7 failed | 89 passed
+        (96)".
+      - e2e `phase-7o-layout.spec.ts`: first written too weak, since both checks passed against
+        the defect. The overlap check measured the heading's box, but the name's text overflows
+        that box. The zoom check tested ancestors that hide overflow, but the bar hides nothing;
+        the scene paints over what spills out. Rewritten to measure the rendered text and to
+        require controls inside the bar's own box, both then failed at both viewports.
+      - After the first GREEN, the 200% capture showed two more defects, and the checks were
+        extended to cover them: names cut off by their card (failed at 1280), and the open
+        inspector covering the wrapped bar. That second check was not observed failing before
+        the fix, because the earlier failure stopped the test first. It is established by
+        mutation below, and the centre-only hit test it began with was found too weak and
+        replaced by five points.
+    - **GREEN:** unit 465, component 96, e2e 58, a11y 46, visual 64, `typecheck`,
+      `typecheck:scripts`, `lint`.
+    - **Mutations, each confirmed applied:**
+      - Inspector pinned back at 56 px: killed only after the hit test was widened to five points.
+      - Zone grid back to three columns with the Team area spanning two: killed.
+      - Project bar at a fixed 56 px height: killed.
+      - Attribution dropped from _Why_: killed. A first attempt did not apply, because of shell
+        escaping, and was redone.
+      - Cause event ID on the first screen: killed.
+      - `unassignedWork` always empty: killed, in both unit and component tests.
+      - One change survived its mutation: the people grid flowing to fit (`auto-fill`) was not
+        needed once the Team area spans the full width, so it was reverted.
+    - **Moved assertions (P-4, ruling 9d-2):**
+      - The inspector's evidence button is renamed from `Open evidence_browser v1` to `Open
+Browser evidence, version 1`, in `evidence-link.component.test.tsx` (twice),
+        `office-library.component.test.tsx` and `tests/e2e/phase-7o-evidence-link.spec.ts`.
+      - `office-inspector.component.test.tsx` reads the ID from `Evidence records` instead of
+        `Evidence`.
+      - The Task 9 capture spec's journeys now assert the plain first screen: _What's happening_,
+        _Why_, _What needs you_, _Evidence_, _Approval_ and the freshness note, instead of State,
+        Cause, Needs you, Blocker and Freshness. The unassigned-work journey now asserts the new
+        group instead of the item's absence. Its field helper matches exact text, because
+        Playwright cannot serialize a regular expression containing the apostrophe in "What's
+        happening".
+    - **Owner-run step:** rerun the Task 9 captures, then record provenance; F-9-1 to F-9-4 are
+      re-checked against them.
 
 - [ ] Task 10: Comprehension preparation (spec §8.7).
   - Acceptance: the six task URLs, fixture logs and answer key are aligned to the accepted UI and

@@ -223,3 +223,110 @@ export function motionFrom(
     runtimePaused: plan.runtimePaused,
   };
 }
+
+// ---- Plain language (Phase 7-O Task 9d, spec §6): the inspector's and outline's first screen. ----
+
+const capitalise = (value: string) =>
+  value.length === 0 ? value : `${value.slice(0, 1).toUpperCase()}${value.slice(1)}`;
+
+/** A recorded state in words: `waiting_input` → "Waiting input". */
+export const stateWord = (value: string) => capitalise(value.replace(/_/gu, " "));
+
+const heldPhrase: Readonly<Record<string, string>> = {
+  blocked: "Blocked on",
+  waiting_input: "Waiting for input on",
+  review_requested: "Waiting for your review of",
+  failed: "Failed on",
+};
+
+/** One word for a person in the outline: their presence, or why it cannot be trusted. */
+export function personStateWord(person: OfficePersonView): string {
+  if (person.agent.status !== "recorded") return "Not recorded";
+  if (person.agent.health === "disconnected") return "Unavailable";
+  const word = stateWord(person.agent.presence);
+  return person.agent.health === "stale" ? `${word} (delayed)` : word;
+}
+
+export const needsManager = (person: OfficePersonView) => person.attention.length > 0;
+
+export function happeningText(person: OfficePersonView): string {
+  const held = person.work.find((work) => heldPhrase[work.state]);
+  if (held) return `${heldPhrase[held.state]} ${held.outcome}`;
+  const active = person.work[0];
+  if (active) return `${personStateWord(person)}: ${active.outcome} (${stateWord(active.state)})`;
+  return personStateWord(person);
+}
+
+const sourceWords: Readonly<Record<string, string>> = {
+  system: "the system",
+  adapter: "the agent's runtime",
+  manager: "you",
+  reviewer: "a reviewer",
+};
+
+export function whyText(person: OfficePersonView): string {
+  if (person.work.length === 0) return NOT_ASSIGNED;
+  const held = person.work.filter((work) => attentionStates.has(work.state));
+  if (held.length === 0) return "No held work is blocked or waiting.";
+  return held
+    .map((work) => {
+      const condition = work.condition;
+      if (!condition) return `${work.outcome}: ${NO_REASON}.`;
+      const recorded =
+        work.causeEventId === condition.eventId
+          ? ` Recorded ${work.updatedAt.slice(11, 19)} UTC.`
+          : "";
+      const who = sourceWords[condition.source] ?? condition.source;
+      return `${condition.summary} Reported by ${who} (${condition.trust}).${recorded}`;
+    })
+    .join(" ");
+}
+
+export function needsYouPlain(person: OfficePersonView): string {
+  if (person.attention.length === 0) return "Nothing needs you";
+  return person.attention
+    .map((item) => item.condition?.requestedAction.summary ?? NO_ACTION)
+    .join(" ");
+}
+
+export function evidencePlain(person: OfficePersonView): string {
+  if (person.work.length === 0) return NOT_ASSIGNED;
+  const evidence = person.work.flatMap((work) => work.evidence);
+  if (evidence.length === 0) return "No linked evidence recorded";
+  return evidence
+    .map((item) => `${capitalise(item.kind)} evidence, version ${item.version}: ${item.result}`)
+    .join("; ");
+}
+
+export function approvalPlain(person: OfficePersonView): string {
+  if (person.work.length === 0) return NOT_ASSIGNED;
+  const several = person.work.length > 1;
+  return person.work
+    .map((work) => {
+      const { approval } = work;
+      const text =
+        approval.status === "approved"
+          ? "Approved"
+          : approval.status === "unresolved"
+            ? "Approval unresolved: it cites evidence the log does not hold"
+            : approval.missingEvidenceKinds.length > 0
+              ? `Not approved: ${approval.missingEvidenceKinds.join(", ")} evidence missing`
+              : "Not approved";
+      return several ? `${work.outcome}: ${text}` : text;
+    })
+    .join(" / ");
+}
+
+/** The first-screen freshness warning, or null when the record is current. */
+export function freshnessWarning(
+  person: OfficePersonView,
+  model: OfficeReadModel,
+  overlay: string | null,
+): string | null {
+  const freshness = person.agent.status === "recorded" ? person.agent.freshness : "unavailable";
+  const parts: string[] = [];
+  if (freshness !== "current") parts.push(`This record may be out of date (${freshness}).`);
+  if (overlay) parts.push(`The workspace is ${overlay}.`);
+  if (!model.current) parts.push("The office read model is not current.");
+  return parts.length > 0 ? parts.join(" ") : null;
+}

@@ -19,7 +19,8 @@
   width: 100vw;
   height: 100vh;
   display: grid;
-  grid-template-rows: 56px minmax(0, 1fr) 280px;
+  /* The project bar row grows when its controls wrap (Task 9d, F-9-2: 200% zoom). */
+  grid-template-rows: auto minmax(0, 1fr) 280px;
   background: #dfe1de;
 }
 
@@ -39,10 +40,13 @@
 }
 
 .office-project-bar {
-  display: grid;
-  grid-template-columns: 1fr auto auto auto auto;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 20px;
+  column-gap: 20px;
+  row-gap: 6px;
+  min-height: 56px;
+  box-sizing: border-box;
   padding: 6px 16px;
   border-bottom: 1px solid #85888a;
   background: #f4f4f0;
@@ -50,8 +54,15 @@
 
 .office-project-bar div {
   display: flex;
-  gap: 16px;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  column-gap: 16px;
   align-items: baseline;
+}
+
+.office-project-bar button {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .office-project-bar span {
@@ -128,9 +139,11 @@
   padding: 0;
 }
 
+/* Columns flow to fit rather than stay at three, so names are not cut off when narrow or zoomed
+   (Task 9d, F-9-2). */
 .office-zone-list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 10px;
 }
 
@@ -146,7 +159,7 @@
 }
 
 .office-zone-list > li:nth-child(2) {
-  grid-column: span 2;
+  grid-column: 1 / -1;
 }
 
 .office-zone-list ol {
@@ -156,8 +169,46 @@
   gap: 8px;
 }
 
+/* Person cards: name, one state word, relationship, then the button below, so the button never
+   covers the name (Task 9d, F-9-3). */
 .office-zone-list ol > li {
+  grid-template-columns: minmax(0, 1fr);
   background: #f8f8f5;
+}
+
+.office-zone-list ol > li button {
+  justify-self: start;
+}
+
+.office-unassigned {
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px dashed #85888a;
+  background: #eeeeea;
+}
+
+.office-unassigned ol {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+}
+
+.office-inspector-warning {
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  border-left: 3px solid #6b5a2e;
+  background: #f3efe2;
+}
+
+.office-inspector-technical {
+  margin-top: 14px;
+  border-top: 1px solid #c4c6c3;
+  padding-top: 8px;
+}
+
+.office-inspector-technical summary {
+  cursor: pointer;
+  color: #55585a;
 }
 
 .office-shell[data-inspector-open="true"] .office-scene,
@@ -168,7 +219,7 @@
 .office-inspector {
   position: fixed;
   z-index: 3;
-  top: 56px;
+  top: var(--office-bar-height, 56px);
   right: 0;
   bottom: 0;
   width: 320px;
@@ -222,7 +273,7 @@
 
 @media (max-height: 820px) {
   .office-shell {
-    grid-template-rows: 56px minmax(0, 1fr) 240px;
+    grid-template-rows: auto minmax(0, 1fr) 240px;
   }
 }
 
@@ -234,7 +285,7 @@
 .office-attention {
   position: fixed;
   z-index: 3;
-  top: 56px;
+  top: var(--office-bar-height, 56px);
   bottom: 0;
   left: 0;
   width: 280px;

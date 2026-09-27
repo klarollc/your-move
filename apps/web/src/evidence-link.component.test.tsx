@@ -98,7 +98,9 @@ describe("the inspector's Evidence links", () => {
     const { user, inspector } = await inspectTestEngineer(
       library(record("evidence_browser", 1, "Browser capture failed on an earlier build.")),
     );
-    await user.click(within(inspector).getByRole("button", { name: "Open evidence_browser v1" }));
+    await user.click(
+      within(inspector).getByRole("button", { name: "Open Browser evidence, version 1" }),
+    );
     const focused = screen.getByRole("dialog", { name: "Evidence: evidence_browser v1" });
     expect(focused).toHaveTextContent("evidence_browser");
     expect(focused).toHaveTextContent("version 1");
@@ -108,7 +110,9 @@ describe("the inspector's Evidence links", () => {
     const { user, inspector } = await inspectTestEngineer(
       library(record("evidence_other", 1, "An unrelated capture.")),
     );
-    const link = within(inspector).getByRole("button", { name: "Open evidence_browser v1" });
+    const link = within(inspector).getByRole("button", {
+      name: "Open Browser evidence, version 1",
+    });
     await user.click(link);
     const unavailable = screen.getByRole("dialog", { name: "Evidence link unavailable" });
     expect(unavailable).toHaveTextContent("evidence_browser");

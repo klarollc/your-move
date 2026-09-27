@@ -167,6 +167,8 @@ export type OfficeReadModel = Readonly<{
   entities: ReadonlyArray<OfficePersonView | OfficeZoneView>;
   attention: readonly OfficeAttentionView[];
   handoffs: readonly OfficeHandoffView[];
+  /** Work no office person holds (Phase 7-O Task 9d, F-9-1), so the office can show it. */
+  unassignedWork: readonly OfficeWorkView[];
 }>;
 
 const REGISTRY_KEYS = {
@@ -396,6 +398,9 @@ export function projectOfficeReadModel(input: OfficeReadModelInput): OfficeReadM
     },
     observedAt: now,
     handoffs,
+    unassignedWork: [...workViews.values()]
+      .filter((view) => personForWork(view.workItemId) === null)
+      .sort((left, right) => left.workItemId.localeCompare(right.workItemId)),
     // Any unresolved record, not only a replay issue, means the office cannot claim to be current
     // (owner ruling on Task 6, 2026-09-26). REPLAY_ISSUE is among these issues.
     current: snapshot.replayIssues.length === 0 && issues.length === 0,
