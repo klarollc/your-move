@@ -56,8 +56,7 @@
       "id": "unassigned-work",
       "path": "/?fixture=unassigned",
       "capture": "phase-7-o/browser/chromium-1280/unassigned-work.png",
-      "verified": true,
-      "finding": "Unassigned work is not visible in the office. work_release_notes is recorded as ready and held by nobody; the outline and inspector list work per person, and the rail shows work only when it needs attention. (Owner ruling 2026-09-26: capture it and file it; no UI in Task 9.)"
+      "verified": true
     },
     {
       "id": "conflict",
