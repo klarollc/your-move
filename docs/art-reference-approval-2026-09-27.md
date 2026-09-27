@@ -50,3 +50,7 @@ If the local pack is missing or any approved hash differs, stop the affected vis
 - [ ] Application implementation under its separate approved specification, plan and tasks.
 - [ ] Current-build visual acceptance and any owner-run baseline promotion.
 
+
+## Amendment 2026-09-27 — the plates as the product target (P-0)
+
+Later the same day the owner ruled that these plates are what the software and rendering must meet, and approved P-0 in `docs/proposals/2026-09-27-plate-alignment.md`. AR-01 to AR-04 and the constitution are now the acceptance target for the product's interface and rendering, not guidance only. Phase 7-O meets them for structure, wording and interaction in the graybox (Task 9f); Phase 7 meets them for rendering. The qualifications above still apply: concept imagery is not a pixel specification, and concept approval is not application visual acceptance. The distribution boundary is unchanged.

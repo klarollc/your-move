@@ -1400,6 +1400,8 @@ Deliverables: a canonical snapshot-backed office read model; truthful entity ins
 
 Gate: RED–GREEN–REFACTOR evidence for behavioral changes; rendered and manually exercised evidence at the approved viewports; V0/V1 cleared; all six tasks marked performed with the operator's exact answers and scored under §20, with T3/T5/T6 expressly verified; explicit owner acceptance. An unperformed task is never scored as failure or success, and the run remains incomplete. Phase 7-O requires its own owner-approved specification, plan and tasks before implementation.
 
+**Amended 2026-09-27 by owner ruling P-0** in `docs/proposals/2026-09-27-plate-alignment.md`. AR-01 to AR-04 and the pack constitution recorded in `docs/art-reference-approval-2026-09-27.md` are the acceptance target for the product's interface and rendering. Phase 7-O meets them for structure, wording and interaction in the graybox; Phase 7 meets them for rendering. Concept imagery is still not a pixel specification: the pack README's qualifications on names, colours, geometry and props stand. The phase order and every existing gate are unchanged.
+
 ### Phase 7 — High-fidelity implementation
 
 Deliverables: approved materials, lighting, avatars, typography, props, motion, reduced-motion treatment, and visual regression baselines.

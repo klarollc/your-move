@@ -675,6 +675,22 @@ Browser evidence, version 1`, in `evidence-link.component.test.tsx` (twice),
       `lint`.
     - **Owner-run step:** re-capture the Task 9 evidence, then record provenance.
 
+- [ ] Task 9f (**approved 2026-09-27, P-0 to P-4 as recommended**): plate alignment in the
+      graybox.
+  - Proposal and decisions: `docs/proposals/2026-09-27-plate-alignment.md`. P-0 amends the MDD
+    (Phase 7-O section) and the art approval record: the plates are the product target.
+  - Governing plates: AR-01, AR-02 frames 4 and 6, AR-03, AR-04.
+  - Baseline: `be3cabd`, `verify` passed on a clean tree.
+  - Slices, each RED first:
+    - 9f-1: the bar reads `CuckCode / {project}` with counts by canonical reason (P-4); runtime
+      and revision move under `Technical detail`.
+    - 9f-2: one contextual surface at a time (P-2), with `Back to outline` and focus return.
+    - 9f-3: name and plain-state labels in the scene (P-3), amber only when the item needs the
+      manager.
+    - 9f-4: AR-03 wording on first screens; attention one item at a time behind `Respond`;
+      evidence takes the surface with `Back to office`; work motion suspended while not current.
+  - Owner-run step: re-capture the Task 9 evidence, then record provenance.
+
 - [ ] Task 10: Comprehension preparation (spec §8.7).
   - Acceptance: the six task URLs, fixture logs and answer key are aligned to the accepted UI and
     committed; the key's SHA-256 is written into the run preamble; the owner starts the three-day
