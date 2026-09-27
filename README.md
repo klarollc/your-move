@@ -60,6 +60,14 @@ Use the exact engine family declared in `package.json` before running project ve
 
 Run `npm run check:toolchain` first when starting work. `npm run verify` runs this preflight before the repository test gates so unsupported local Node/npm versions fail clearly instead of surfacing as lower-level test-runner or native-binding errors.
 
+## Approved art reference
+
+The owner approved the A/B office reference pack on 2026-09-27 as a visual supplement to the Active
+system. It governs office-first composition, progressive disclosure and avoidance of dashboard
+drift. See the [approval record and exact local artifact hashes](docs/art-reference-approval-2026-09-27.md).
+Artwork remains local under the owner-directed Git exclusion; a fresh checkout does not include it.
+This approval does not authorize implementation or visual-baseline promotion.
+
 ## Source of truth
 
 - [Master design document](docs/master-design-document-v0.1.md)

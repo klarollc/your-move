@@ -5,6 +5,16 @@ live state, the next action, and the things a fresh session pays for twice if no
 
 ---
 
+## Approved visual supplement — 2026-09-27
+
+The owner approved the completed A/B art reference pack (AR-01–AR-04 and its constitution) as a
+visual supplement to Active `reconciliation-b-clarity`. Read
+[the approval record](art-reference-approval-2026-09-27.md) before UI work. The pack remains local
+under the owner-directed `/output/` Git exclusion; missing or changed artifacts block affected
+visual work. Office-first hierarchy, progressive disclosure and the illustrated anti-dashboard
+rules now govern future visual proposals and reviews. No implementation or baseline promotion
+is authorized by this approval. Existing phase gates remain.
+
 ## Where the project is
 
 | Phase | State |

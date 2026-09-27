@@ -11,6 +11,22 @@ This document is the controlling product, experience, system, testing, and visua
 
 Changes to a confirmed requirement must be made here before implementation. A passing build cannot overrule this document.
 
+### Approved visual supplement — 2026-09-27
+
+The owner approved AR-01–AR-04 and the written constitution in the A/B reference pack as an
+authoritative visual supplement to Active `reconciliation-b-clarity`. The
+[approval record](art-reference-approval-2026-09-27.md) identifies the exact local artifacts and
+hashes. It requires office-first default composition, one focused contextual interaction at a time,
+plain management language, deliberate technical drill-down, and distinct treatment of dependency
+blocking, manager questions, review requests and unavailable information. The illustrated dashboard
+exclusions and named-plate review procedure govern future UI work. A deliberately opened evidence
+view may use the full surface with a clear return to the office.
+
+This supplements rather than replaces existing canonical-state, operability, accessibility,
+Phase 6 evidence and implementation gates. The artwork remains local by owner ruling. Missing or
+changed reference files require recovery or an explicitly approved successor before affected visual
+work. The approval is not application implementation, runtime verification or baseline promotion.
+
 ## 2. Confirmed intent
 
 ### Outcome
