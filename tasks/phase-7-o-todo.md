@@ -606,6 +606,11 @@ Browser evidence, version 1`, in `evidence-link.component.test.tsx` (twice),
       design amendment making the outline an on-demand surface (Task 9e, below), because the
       remaining part of F-9-4 cannot clear while the grid persists.
 
+- [ ] Task 9e (**PROPOSED, awaiting owner approval**): the Office outline on demand.
+  - Proposal and decisions A-1 to A-3: `docs/proposals/2026-09-27-on-demand-office-outline.md`.
+  - Why: F-9-4 (V1) cannot clear while a persistent card grid sits under the office (AR-04,
+    constitution rule 1).
+
 - [ ] Task 10: Comprehension preparation (spec §8.7).
   - Acceptance: the six task URLs, fixture logs and answer key are aligned to the accepted UI and
     committed; the key's SHA-256 is written into the run preamble; the owner starts the three-day
