@@ -117,7 +117,7 @@ signed-in session but never starts a turn.
     committed `surface-diff.md` predates that (three new non-ruling lines on rerun).
     `fu5-verify-01` at `6c552bf`: exit 0, not dirty, evidence unchanged.
 
-- [ ] **Task 6 — The probe (F1.5, F1.6).**
+- [x] **Task 6 — The probe (F1.5, F1.6).**
   - Files: `scripts/run-codex-probe-surface.ts`, its pure core and test, `package.json`
     (`codex:probe-surface`), the probe record under `docs/evidence/runtime/probe/`, its session log,
     `docs/evidence/dogfood-register.md` (DF-027), the decision record, this checklist.
@@ -129,6 +129,15 @@ signed-in session but never starts a turn.
     `Remove-Item Env:CUCKCODE_LIVE_PROBE`; then `npm run phase5:provenance:write`.
   - **Stop condition:** the policy session still shows `codex_apps`, or the control does not.
   - Verify: runner `verify`.
+  - Result (2026-09-27): code `8c71d2a`, `ceacadd`, `78873e1`; evidence `a3e8d33`; ledger `ef91171`
+    (7 records, each digest checked against the bytes). First owner run: `LINE_TOO_LARGE` at the
+    control's listing, kept as evidence; the probe's bound was raised to 64 MiB. Second run:
+    `PROBE_OK` — control `codex_apps` connected with 427 tools across 18 connectors, policy no
+    server, no turn. By owner ruling the committed record keeps counts only; the capture is held
+    in `.cuckcode/`. Not settled: a turn with `secret_auth_storage` off, left open until the next
+    real turn. `fu6-verify-02` failed on a version literal in a new fixture comment (pin guard),
+    fixed in `78873e1`; `fu6-prov-01` exit 0 with no stale digests; `fu6-verify-03` at `78873e1`:
+    exit 0, not dirty, evidence unchanged.
 
 - [ ] **Task 7 — On `main`, after the merge (F2.4).**
   - Convert the main copy's twelve files to LF in place, after checking each differs only by line
