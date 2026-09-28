@@ -1,3 +1,6 @@
+import { createHash } from "node:crypto";
+
+import { stableStringify } from "@cuckcode/domain";
 import { describe, expect, it } from "vitest";
 
 import { normalizeCodexEvent } from "./normalizer.js";
@@ -85,5 +88,19 @@ describe("Codex event normalization", () => {
 
     expect(first).toEqual(second);
     expect(first).toMatchObject({ ok: true, event: { kind: "runtime.error" } });
+  });
+});
+
+// Housekeeping 3b, C-1 finding F6: the evidence hash comes from the project's one canonicalizer,
+// so identical events cannot hash differently depending on which package computed them.
+describe("the evidence hash", () => {
+  it("is the SHA-256 of the event's stableStringify form", () => {
+    const result = normalizeCodexEvent(
+      { method: "turn/started", params: { threadId: "thread_1", turn: { id: "turn_1" } } },
+      context,
+    );
+    if (!result.ok) throw new Error("expected a normalized event");
+    const { evidenceHash, ...rest } = result.event;
+    expect(evidenceHash).toBe(createHash("sha256").update(stableStringify(rest)).digest("hex"));
   });
 });

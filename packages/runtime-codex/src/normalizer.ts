@@ -5,6 +5,7 @@ import {
   type NormalizationContext,
   type NormalizedRuntimeEvent,
 } from "@cuckcode/contracts";
+import { stableStringify } from "@cuckcode/domain";
 
 // The event vocabulary is the contract's, not this package's. A second adapter must be able to
 // produce these without depending on the Codex package (C-1 finding F2).
@@ -50,7 +51,8 @@ export function normalizeCodexEvent(
   };
   return {
     ok: true,
-    event: { ...base, evidenceHash: sha256(JSON.stringify(canonical(base))) },
+    // C-1 F6: the project's one canonicalizer, not a private copy.
+    event: { ...base, evidenceHash: sha256(stableStringify(base)) },
   };
 }
 
@@ -141,17 +143,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function text(value: unknown): string | undefined {
   return typeof value === "string" && value.length > 0 ? value : undefined;
-}
-
-function canonical(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(canonical);
-  if (isRecord(value))
-    return Object.fromEntries(
-      Object.entries(value)
-        .sort(([left], [right]) => left.localeCompare(right))
-        .map(([key, nested]) => [key, canonical(nested)]),
-    );
-  return value;
 }
 
 function sha256(value: string): string {
