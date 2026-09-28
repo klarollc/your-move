@@ -851,6 +851,14 @@
     "do_not_promote",
     "defer_until"
   ],
-  "disposition": null,
+  "disposition": {
+    "value": "reuse_concepts_only",
+    "recordedOn": "2026-09-27",
+    "decidedBy": "owner",
+    "reviewer": "owner, as recorded; an agent review was offered and declined",
+    "firstQuestion": "unruled deviation from D-24: no record authorized the fixture's code in production packages; reach is one re-export and two URL routes",
+    "decisionRecord": "docs/evidence/phase-5/decision-record-2026-09-27-d24-disposition.md",
+    "followOn": "remove the fixture from the production packages and bundle under its own specification, plan and tasks; not authorized by this disposition"
+  },
   "closureRule": "The Phase 5 fixture initiative cannot reach closed until a disposition is recorded here. defer_until is an open disposition, not completion."
 }

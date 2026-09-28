@@ -1254,6 +1254,18 @@ deprecated settings the policy turns off (a TUI transcript setting, the legacy L
 `web_search` forms). They will appear in every session log. Candidate: leave deprecated, off-by-default
 features out of the config. Unruled.
 
+**First turn under the policy, 2026-09-27** (smoke allowance raised to 6 by owner ruling,
+`docs/evidence/runtime/decision-record-2026-09-27-smoke-allowance.md`): `codex:smoke`,
+`docs/evidence/runtime/smoke/2026-09-27T22-59-48-129Z-release-reviewer.json`, `SMOKE_OK` in one
+attempt, `gpt-5.6-sol` at `medium`, 5.3 s. Its session log has no `mcpServer/startupStatus/updated`
+at all; the first smoke's showed `codex_apps` reaching `ready`. `secret_auth_storage` is settled:
+the turn authenticated with it off.
+
+Observed, not attributed: the same prompt on the same model reported 9,807 input tokens, against
+13,284 in the first smoke. Removing the tool surface is the likely reason, but the two runs also
+differ in cache state (7,808 cached tokens in the first, none in this one), so the difference is
+recorded, not explained.
+
 ### DF-028 — A zoom probe that checked the pixel ratio, not the layout
 
 Numbered DF-025 on `main` until the `codex-currency` merge on 2026-09-27, where it met that
