@@ -66,6 +66,13 @@ MDD §20 in its gate. The specification is not yet approved; no Phase 7-O implem
 work, or promotion is authorized. Phase 5 Task 10 remains owner-run and Phase 5 acceptance remains
 a Phase 8 precondition.
 
+**Amended 2026-09-28:** Phase 7-O Tasks 1–10 are done; Task 11 (the owner's cold comprehension
+run, not before 2026-10-01 14:50 Pacific) and Task 12 remain. Until the run, **no change under
+`apps/web/src/` or `packages/ui-system/src/`** (it restarts the MDD §20 interval), and never reveal
+the answer key's contents. The owner approved the Phase 7 specification v0.1 and the DF-029
+amendment, both as recommended; neither is authorized for implementation before Phase 7-O is
+accepted. See the MDD §24 amendment of the same date.
+
 **Amended 2026-09-25:** the owner approved review recommendations R-1 to R-3 in
 `docs/evidence/phase-7-o/decision-record-2026-09-25-spec-review.md`. The Phase 7-O specification is
 revised to `docs/phase-7-o-operability-spec-v0.2.md` (v0.1 superseded, never approved): additive

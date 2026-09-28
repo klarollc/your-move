@@ -552,7 +552,8 @@ Creative freedom is real but governed:
 - Identity briefs and revisions are versioned and auditable. The agent may propose later changes based on meaningful work history, but no profile mutates silently.
 - Unstructured model output cannot directly alter active assets, code, tokens, or UI state.
 
-Vertical-slice acceptance requires six distinguishable agent-authored briefs, at least one novel-detail proposal exercised through the full Candidate review path, and evidence that role/state comprehension remains intact with personalization enabled.
+_Amended 2026-09-28 (Phase 7 F-3): this acceptance applies to the later identity phase, not to
+the Phase 7 vertical slice._ Vertical-slice acceptance requires six distinguishable agent-authored briefs, at least one novel-detail proposal exercised through the full Candidate review path, and evidence that role/state comprehension remains intact with personalization enabled.
 
 #### Typography direction
 
@@ -1407,6 +1408,9 @@ Gate: RED–GREEN–REFACTOR evidence for behavioral changes; rendered and manua
 Deliverables: approved materials, lighting, avatars, typography, props, motion, reduced-motion treatment, and visual regression baselines.
 Gate: Phase 7-O accepted; rendered capture matrix, V0/V1 cleared, V2 disposition, and explicit owner visual approval. Phase 7 still requires its own specification, plan and owner approval.
 
+Specification: `docs/phase-7-high-fidelity-spec-v0.1.md`, **owner-approved 2026-09-28** (F-1 to F-8 as
+recommended). Plan, checklist and implementation remain unauthorized until Phase 7-O is accepted.
+
 ### Phase 8 — Production-suitability disposition
 
 Deliverables: D-24 review and recorded `promote_candidate`, `reuse_concepts_only`, `do_not_promote`, or approved deferral.
@@ -1496,5 +1500,15 @@ disposition is preserved as history. See
 `docs/evidence/phase-5/decision-record-2026-09-18-screen-reader-scope.md`.
 
 **Amended 2026-09-23:** the owner inserted Phase 7-O before Phase 7, classified the rail/inspector contradiction V1, authorized only a Phase 7-O specification for truthful detail and adversarial fixtures, and included actually performed T3/T5/T6 in that phase's gate. See the O-1 through O-4 decision record. No Phase 7-O or Phase 7 implementation is authorized.
+
+**Amended 2026-09-28:** the owner approved the Phase 7 specification v0.1
+(`docs/phase-7-high-fidelity-spec-v0.1.md`, F-1 to F-8 as recommended) and the DF-029 amendment
+(`docs/proposals/2026-09-28-df-029-blocked-not-on-you.md`, B-1 to B-5 as recommended). Phase 7
+renders the Active isometric system as SVG in the app, vector-first, with modular figures. Under F-3
+the **agent-authored identity briefs** of §9 move out of the Phase 7 vertical slice into a later
+phase: the §9 contract stands, and its acceptance sentence applies to that phase, not to Phase 7.
+Order after Phase 7-O acceptance: the DF-029 amendment, the Phase 5 fixture removal, then the Phase 7
+plan and checklist. No implementation of either is authorized before Phase 7-O is accepted, and each
+still needs its plan and checklist approved.
 
 This approval does not authorize production implementation. Dependency installation, project scaffolding, runtime connection, imported role material, or production code requires approval of the next implementation-plan gate.

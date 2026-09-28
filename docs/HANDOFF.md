@@ -63,19 +63,24 @@ skipped, contract 78, e2e 88, a11y 46, visual 64.
   Phase 7-O: contract, domain attention rule, spec §6 and §8.4, the P-4 bar count, fixtures.
 - 9g (plain rail controls, evidence heading) and 9h (disposition refused only where no decision
   can be recorded) were found and fixed after the plate review and during Task 10 preparation.
+- **Approved 2026-09-28, not authorized for implementation until Phase 7-O is accepted:** the DF-029
+  amendment (`docs/proposals/2026-09-28-df-029-blocked-not-on-you.md`, B-1 to B-5) and the Phase 7
+  specification (`docs/phase-7-high-fidelity-spec-v0.1.md`, F-1 to F-8; F-5's typeface shortlist
+  still to be presented). Order: DF-029, the Phase 5 fixture removal, then the Phase 7 plan.
+  `codex-currency` is merged (`41c4625`); the D-24 disposition is on this line now. Local `main`
+  still points at `5b436cc`: fast-forward it before pushing.
 
 **Phase 5 was accepted by the owner on 2026-09-25**
 (`docs/evidence/phase-5/decision-record-2026-09-25-task-10-owner-acceptance.md`). The D-24
 production-suitability review is recorded by hand in
 `docs/evidence/phase-5/d24-production-suitability-review.json`: **due 2026-10-09, escalation
 2026-10-02**, owner as Delivery Lead and reviewer. Nothing in the code enforces it.
-**Disposition recorded 2026-09-27 on branch `codex-currency` (`c3752cb`), not yet on `main`:**
+**Disposition recorded 2026-09-27 on branch `codex-currency` (`c3752cb`), merged 2026-09-28 (`41c4625`):**
 `reuse_concepts_only`, and the fixture's presence in production packages ruled an unruled
 deviation. Its removal (one re-export in `packages/domain`, two routes in `apps/web/src/main.tsx`,
 four Phase 5 browser suites) is unauthorized follow-on work under its own specification, and it
 touches `apps/web/src/`, so it waits until after the Phase 7-O cold run. Closing the Phase 5
-fixture initiative is a separate owner act. Until `codex-currency` merges, `main`'s record still
-reads as undisposed.
+fixture initiative is a separate owner act.
 
 **Current Phase 5 refresh attempt:** pass 9 (2026-09-22) spent one turn and stopped at
 `NOTIFICATION_TIMEOUT` without a verdict. It is recorded in the provenance ledger (2026-09-25) and

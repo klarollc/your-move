@@ -42,6 +42,10 @@ the Phase 7-O gate. The [decision record](docs/evidence/phase-7-o/decision-recor
 authorizes specification only; Phase 7-O implementation still awaits a separately approved spec,
 plan, and tasks.
 
+**2026-09-28:** Phase 7-O Tasks 1–10 are done and the owner's cold comprehension run (Task 11) is
+pending. The Phase 7 specification (`docs/phase-7-high-fidelity-spec-v0.1.md`) and the DF-029
+amendment are owner-approved; neither is authorized for implementation before Phase 7-O acceptance.
+
 ## Agent command runner
 
 `npm run agent:runner` (add `-- --allow-push` to permit pushing) lets an agent request allow-listed

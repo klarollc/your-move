@@ -1,6 +1,7 @@
 # Phase 7 specification v0.1: high-fidelity office
 
-**Status: DRAFT 2026-09-28, awaiting owner decisions F-1 to F-8.** Drafting authorized by the owner
+**Status: APPROVED 2026-09-28, F-1 to F-8 as recommended** (owner: "Approved"). F-5's typeface
+shortlist is still to be presented for the owner's pick. Drafting authorized by the owner
 2026-09-28. **Implementation is not authorized.** Phase 7 begins only after Phase 7-O is accepted
 (MDD §24), and needs this specification, a plan and a checklist, each owner-approved.
 

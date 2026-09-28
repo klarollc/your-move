@@ -1,6 +1,6 @@
 # DF-029 amendment: blocked, but not on you
 
-**Status: PROPOSED 2026-09-28, awaiting owner decisions B-1 to B-5.** Drafting authorized by the
+**Status: APPROVED 2026-09-28, B-1 to B-5 as recommended** (owner: "Approved"). Drafting authorized by the
 owner 2026-09-28. **Implementation is not authorized** and, by the owner's ruling on DF-029, follows
 Phase 7-O acceptance (Task 12): it changes what the office shows, so it cannot land during the
 Task 11 cold-run interval.
