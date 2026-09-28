@@ -1,6 +1,6 @@
 # Task 9g: plain rail controls and a plain evidence heading
 
-**Status: PROPOSED 2026-09-28, awaiting owner approval.**
+**Status: APPROVED 2026-09-28** (G-1 with the "Locate" alternative, G-2, as recommended).
 
 Author: agent. Owner instruction, 2026-09-28: "Small 9g, then Task 10", then "Record it, 9g stays
 small" for the rule 4 gap (DF-029).

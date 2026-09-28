@@ -157,25 +157,24 @@ export function EvidenceLibrary({
           aria-label={`Evidence: ${focusedEvidence.evidenceId} v${focusedEvidence.version}`}
         >
           <header>
-            <div>
-              <p>{capitalize(focusedEvidence.kind)} evidence</p>
-              <h3>
-                {focusedEvidence.evidenceId} v{focusedEvidence.version}
-              </h3>
-            </div>
+            {/* Task 9g, G-2 (AR-04; rule 10): the record leads with its finding; the identifier
+                is one step away, under Detailed evidence. */}
+            <h3 className="focused-evidence-plain">
+              {capitalize(focusedEvidence.kind)} evidence, version {focusedEvidence.version}:{" "}
+              {statusLabel(focusedEvidence).toLowerCase()}.{" "}
+              {focusedEvidence.summary ?? `${NO_SUMMARY}.`}
+            </h3>
             <button type="button" onClick={closeEvidence}>
               Close evidence
             </button>
           </header>
-          {/* Task 9f-4 (AR-02 frame 6; rule 10): the finding first, identifiers one step away. */}
-          <p className="focused-evidence-plain">
-            {capitalize(focusedEvidence.kind)} evidence, version {focusedEvidence.version}:{" "}
-            {statusLabel(focusedEvidence).toLowerCase()}.{" "}
-            {focusedEvidence.summary ?? `${NO_SUMMARY}.`}
-          </p>
           <details className="focused-evidence-detail">
             <summary>Detailed evidence</summary>
             <dl>
+              <dt>Record</dt>
+              <dd>
+                {focusedEvidence.evidenceId} v{focusedEvidence.version}
+              </dd>
               <dt>Status</dt>
               <dd>{statusLabel(focusedEvidence)}</dd>
               <dt>Evidence ID</dt>

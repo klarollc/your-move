@@ -108,11 +108,14 @@ export function AttentionRail({
               <dd>{item.causeEventId}</dd>
             </dl>
           </details>
-          <button type="button" onClick={() => onLocate(item)}>
-            Locate {item.label}
+          {/* Task 9g, G-1 (AR-03): one word on screen; the item stays in the accessible name,
+              which contains the visible word (WCAG 2.5.3). */}
+          <button type="button" aria-label={`Locate ${item.label}`} onClick={() => onLocate(item)}>
+            Locate
           </button>
           <button
             type="button"
+            aria-label={`Respond to ${item.label}`}
             aria-expanded={responding === item.attentionId}
             onClick={() =>
               setResponding((current) =>
@@ -120,7 +123,7 @@ export function AttentionRail({
               )
             }
           >
-            Respond to {item.label}
+            Respond
           </button>
           {responding === item.attentionId ? (
             <DispositionForm
@@ -140,9 +143,10 @@ export function AttentionRail({
           <button
             className="office-attention-dismiss"
             type="button"
+            aria-label={`Dismiss ${item.label}`}
             onClick={() => onDismiss(item)}
           >
-            Dismiss {item.label}
+            Dismiss
           </button>
         </article>
       ) : null}

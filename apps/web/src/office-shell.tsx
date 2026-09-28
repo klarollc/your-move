@@ -40,6 +40,14 @@ import {
 } from "./office-model.js";
 import "./office-shell.css";
 
+/**
+ * The name a control is remembered and found again by (Task 9f-2's back stack). Its accessible
+ * name, not its visible text: Task 9g (G-1) gave the rail's controls one visible word and kept
+ * the item in `aria-label`, so visible text no longer identifies a control.
+ */
+const accessibleNameOf = (button: HTMLElement): string | undefined =>
+  button.getAttribute("aria-label") ?? button.textContent?.trim();
+
 export type OfficeShellState =
   | "ready"
   | "loading"
@@ -312,7 +320,7 @@ export function OfficeShell({
     if (!label) return;
     pendingFocusRef.current = undefined;
     [...(shellRef.current?.querySelectorAll("button") ?? [])]
-      .find((button) => button.textContent?.trim() === label)
+      .find((button) => accessibleNameOf(button) === label)
       ?.focus();
   }, [surface, outlineOpen]);
   /** Move to another surface from the current one, remembering the way back. */
@@ -374,7 +382,7 @@ export function OfficeShell({
   }, [selectedEntityId]);
   const selectEntity = (entityId: string, trigger: HTMLButtonElement) => {
     selectionTriggerRef.current = trigger;
-    advance("inspector", trigger.textContent?.trim());
+    advance("inspector", accessibleNameOf(trigger));
     setInternalSelection(entityId);
     onSelectEntity?.(entityId);
     const entity = officeShellEntities.find((candidate) => candidate.entityId === entityId);
@@ -716,7 +724,7 @@ export function OfficeShell({
                   onOpenEvidence: (link: EvidenceLink, trigger: HTMLButtonElement) => {
                     libraryTriggerRef.current = trigger;
                     setInitialEvidence(link);
-                    advance("library", trigger.textContent?.trim());
+                    advance("library", accessibleNameOf(trigger));
                     setAnnouncement(`Evidence ${link.evidenceId} version ${link.version} opened`);
                   },
                 }
@@ -735,7 +743,7 @@ export function OfficeShell({
               type="button"
               onClick={(event) => {
                 setInitialEvidence(undefined);
-                advance("library", event.currentTarget.textContent?.trim());
+                advance("library", accessibleNameOf(event.currentTarget));
                 setAnnouncement(`${selectedEntity.label} evidence opened`);
               }}
             >
@@ -747,7 +755,7 @@ export function OfficeShell({
               ref={kickoffTriggerRef}
               type="button"
               onClick={(event) => {
-                advance("kickoff", event.currentTarget.textContent?.trim());
+                advance("kickoff", accessibleNameOf(event.currentTarget));
                 setAnnouncement(`Collaborative kickoff opened from ${selectedEntity.label}`);
               }}
             >
