@@ -745,9 +745,25 @@ Browser evidence, version 1`, in `evidence-link.component.test.tsx` (twice),
       load; it passed on rerun and in `verify`.
     - **GREEN, `verify` on a clean tree at `3c80695`:** unit 568, component 134, integration 79
       with 3 skipped, contract 78, e2e 66, a11y 46, visual 64.
-    - **Seen in current-build screenshots, not fixed:** the rail's Previous/Next labels wrap to
-      two lines at 280 px; an open evidence record's dialog covers the Library's header buttons
-      until it is closed; the disposition receipt still shows identifiers on its first screen.
+    - **Seen in current-build screenshots:** the rail's Previous/Next labels wrap to two lines at
+      280 px; an open evidence record's dialog covers the Library's header buttons until it is
+      closed; the disposition receipt still shows identifiers on its first screen. Fixed in 9f-5.
+  - **9f-5 (owner: "Yes", fix before the re-capture), commit `28bc41d`:**
+    - RED: component 2, e2e 4 (both new tests at both viewports). The first stepper check
+      measured button height, which the controls' minimum height makes meaningless; it was
+      rewritten to count rendered text lines, and its RED was taken by removing the new stepper
+      rule (both viewports failed "Previous item wraps").
+    - The stepper buttons are 14 px and do not wrap. An open record replaces the Library's lists
+      as one card in flow and is no longer `aria-modal`; closing it refocuses the record's View
+      button by name. The receipt reads "Approve recorded. The agent can see this decision.",
+      with identifiers under "Receipt details".
+    - Mutations, all killed: lists kept beside the record (1); the record as a fixed overlay again
+      (e2e, both viewports); receipt details open (1).
+    - Moved (P-4): the Library component test finds the View button again by name after closing.
+    - GREEN, `verify` on a clean tree at `28bc41d`: unit 568, component 136, integration 79 with
+      3 skipped, contract 78, e2e 70, a11y 46, visual 64.
+    - Seen, not fixed: the record's plain sentence renders smaller than its heading, because a
+      general Library paragraph rule wins over the new class.
   - Owner-run step: re-capture the Task 9 evidence, then record provenance.
 
 - [ ] Task 10: Comprehension preparation (spec §8.7).
