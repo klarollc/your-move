@@ -48,51 +48,81 @@ export function AttentionRail({
 }>) {
   const [receipt, setReceipt] = useState<OfficeDispositionReceipt | undefined>(undefined);
   const [failure, setFailure] = useState<string | undefined>(undefined);
+  // Task 9f-4 (AR-03 "Several requests", AR-02 frame 4): one item at a time, in canonical order.
+  // The position is clamped, so dismissing the current item shows the next one.
+  const [index, setIndex] = useState(0);
+  const [responding, setResponding] = useState<string | undefined>(undefined);
+  const position = Math.min(index, Math.max(items.length - 1, 0));
+  const item = items[position];
+  const go = (next: number) => {
+    setIndex(next);
+    setResponding(undefined);
+  };
 
   return (
     <aside className="office-attention" aria-label="Manager attention">
       <header>
-        <div>
-          <p>Canonical projection</p>
-          <h2>Manager attention</h2>
-        </div>
+        <h2>Manager attention</h2>
         <button type="button" onClick={onClose}>
           Close attention
         </button>
       </header>
-      <p className="office-attention-summary">
-        {items.length} current item{items.length === 1 ? "" : "s"}, in canonical order.
-      </p>
       {!available ? (
         <p className="office-attention-denial" role="alert">
           Refresh the current workspace before recording a disposition.
         </p>
       ) : null}
-      <ol>
-        {items.map((item) => (
-          <li key={item.attentionId} data-attention-id={item.attentionId}>
-            <p className="office-attention-kicker">
+      <div className="office-attention-stepper">
+        <button type="button" disabled={position === 0} onClick={() => go(position - 1)}>
+          Previous item
+        </button>
+        <p className="office-attention-position" aria-live="polite">
+          {position + 1} of {items.length}
+        </p>
+        <button
+          type="button"
+          disabled={position >= items.length - 1}
+          onClick={() => go(position + 1)}
+        >
+          Next item
+        </button>
+      </div>
+      {item ? (
+        <article key={item.attentionId} data-attention-id={item.attentionId}>
+          <h3>{item.label}</h3>
+          <p>{item.plainLanguage}</p>
+          <p>
+            <strong>Manager action:</strong> {item.requiredAction}
+          </p>
+          <details>
+            <summary>Technical scope</summary>
+            <p>
               Priority {item.priority} · {item.reason.replaceAll("_", " ")}
             </p>
-            <h3>{item.label}</h3>
-            <p>{item.plainLanguage}</p>
-            <p>
-              <strong>Manager action:</strong> {item.requiredAction}
-            </p>
-            <details>
-              <summary>Technical scope</summary>
-              <dl>
-                <dt>Attention</dt>
-                <dd>{item.attentionId}</dd>
-                <dt>Target</dt>
-                <dd>{item.entityId}</dd>
-                <dt>Cause</dt>
-                <dd>{item.causeEventId}</dd>
-              </dl>
-            </details>
-            <button type="button" onClick={() => onLocate(item)}>
-              Locate {item.label}
-            </button>
+            <dl>
+              <dt>Attention</dt>
+              <dd>{item.attentionId}</dd>
+              <dt>Target</dt>
+              <dd>{item.entityId}</dd>
+              <dt>Cause</dt>
+              <dd>{item.causeEventId}</dd>
+            </dl>
+          </details>
+          <button type="button" onClick={() => onLocate(item)}>
+            Locate {item.label}
+          </button>
+          <button
+            type="button"
+            aria-expanded={responding === item.attentionId}
+            onClick={() =>
+              setResponding((current) =>
+                current === item.attentionId ? undefined : item.attentionId,
+              )
+            }
+          >
+            Respond to {item.label}
+          </button>
+          {responding === item.attentionId ? (
             <DispositionForm
               item={item}
               available={available}
@@ -106,16 +136,16 @@ export function AttentionRail({
                   );
               }}
             />
-            <button
-              className="office-attention-dismiss"
-              type="button"
-              onClick={() => onDismiss(item)}
-            >
-              Dismiss {item.label}
-            </button>
-          </li>
-        ))}
-      </ol>
+          ) : null}
+          <button
+            className="office-attention-dismiss"
+            type="button"
+            onClick={() => onDismiss(item)}
+          >
+            Dismiss {item.label}
+          </button>
+        </article>
+      ) : null}
       {failure ? <p role="alert">{failure}</p> : null}
       {receipt ? (
         <section

@@ -436,7 +436,6 @@
   font-size: 15px;
 }
 
-.office-attention-summary,
 .office-attention-denial {
   margin-top: 10px !important;
   color: #55585a;
@@ -448,15 +447,22 @@
   border: 1px dashed #676b68;
 }
 
-.office-attention > ol {
-  display: grid;
-  gap: 12px;
+/* Task 9f-4: one item at a time, with its position between Previous and Next. */
+.office-attention-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   margin: 12px 0;
-  padding: 0;
-  list-style: none;
 }
 
-.office-attention > ol > li {
+.office-attention-position {
+  color: #3b3e40;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.office-attention > article {
   display: grid;
   gap: 8px;
   padding: 10px;
@@ -465,7 +471,6 @@
   background: #eeeeea;
 }
 
-.office-attention-kicker,
 .office-attention details,
 .office-attention label {
   color: #55585a;

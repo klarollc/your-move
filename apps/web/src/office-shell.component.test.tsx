@@ -260,6 +260,8 @@ describe("OfficeShell manager attention", () => {
     );
     expect(screen.queryByText(/receipt_command_attention/i)).toBeNull();
 
+    // Task 9f-4 (P-4): one item at a time; the disposition controls sit behind Respond.
+    await user.click(screen.getByRole("button", { name: `Respond to ${review}` }));
     await user.selectOptions(
       screen.getByRole("combobox", { name: `Disposition for ${review}` }),
       "approve",
@@ -281,9 +283,12 @@ describe("OfficeShell manager attention", () => {
     const user = userEvent.setup();
     render(<OfficeShell state={state} onDisposition={fixtureDisposition} />);
     await user.click(screen.getByRole("button", { name: "1 blocked · 1 review" }));
-    expect(screen.getAllByRole("button", { name: /^Submit / })).toSatisfy(
-      (buttons: HTMLElement[]) => buttons.every((button) => button.hasAttribute("disabled")),
-    );
+    // Task 9f-4 (P-4): one item at a time, each item's controls behind Respond.
+    for (const label of [blocked, review]) {
+      await user.click(screen.getByRole("button", { name: `Respond to ${label}` }));
+      expect(screen.getByRole("button", { name: `Submit ${label}` })).toBeDisabled();
+      if (label === blocked) await user.click(screen.getByRole("button", { name: "Next item" }));
+    }
     expect(screen.getByRole("complementary", { name: "Manager attention" })).toHaveTextContent(
       "Refresh the current workspace before recording a disposition.",
     );
@@ -291,7 +296,11 @@ describe("OfficeShell manager attention", () => {
 
   it("collapses an empty attention projection", () => {
     render(<OfficeShell state="empty" />);
-    expect(screen.queryByRole("button", { name: /Manager attention/ })).toBeNull();
+    // Task 9f-1 (P-4): the count is named by kind, so the bar is checked for any such button.
+    const bar = screen.getByRole("banner", { name: "Project bar" });
+    expect(
+      within(bar).queryByRole("button", { name: /blocked|question|review|other/u }),
+    ).toBeNull();
     expect(screen.queryByRole("complementary", { name: "Manager attention" })).toBeNull();
   });
 });

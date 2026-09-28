@@ -38,6 +38,13 @@ test("@e2e Phase 4 manager attention locates, dismisses, and records an exact di
     .click();
   await expect(page.getByRole("status").last()).toContainText("no disposition was recorded");
 
+  // Task 9f-4 (P-4): one item at a time, with the disposition controls behind Respond.
+  await expect(rail.getByText("1 of 1")).toBeVisible();
+  await page
+    .getByRole("button", {
+      name: "Respond to Deliver the approved graybox slice: review requested",
+    })
+    .click();
   await page
     .getByRole("textbox", {
       name: "Reason for Deliver the approved graybox slice: review requested",
@@ -68,5 +75,7 @@ test("@e2e Phase 4 manager attention fails closed on stale state", async ({ page
   await page.getByRole("button", { name: "1 blocked · 1 review" }).click();
   const rail = page.getByRole("complementary", { name: "Manager attention" });
   await expect(rail).toContainText("Refresh the current workspace before recording a disposition.");
-  await expect(rail.getByRole("button", { name: /^Submit / }).first()).toBeDisabled();
+  // Task 9f-4 (P-4): the disposition controls sit behind Respond.
+  await rail.getByRole("button", { name: /^Respond to / }).click();
+  await expect(rail.getByRole("button", { name: /^Submit / })).toBeDisabled();
 });
