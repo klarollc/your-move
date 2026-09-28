@@ -104,3 +104,39 @@ describe("the evidence hash", () => {
     expect(evidenceHash).toBe(createHash("sha256").update(stableStringify(rest)).digest("hex"));
   });
 });
+
+// Housekeeping 3c (C-1 F4, owner ruling 2026-09-28): Codex says whether it will retry an error
+// (`willRetry`, required in ErrorNotification since 0.157). The phase keeps that fact instead of
+// collapsing every error into one; the contract is unchanged.
+describe("a provider error", () => {
+  const error = (params: Record<string, unknown>) =>
+    normalizeCodexEvent(
+      { method: "error", params: { error: { message: "stream disconnected" }, ...params } },
+      context,
+    );
+
+  it("says when the provider will retry, and keeps the turn", () => {
+    expect(error({ threadId: "thread_1", turnId: "turn_1", willRetry: true })).toMatchObject({
+      ok: true,
+      event: {
+        kind: "runtime.error",
+        phase: "runtime.error.will_retry",
+        correlation: { threadId: "thread_1", turnId: "turn_1" },
+      },
+    });
+  });
+
+  it("says when the provider will not retry", () => {
+    expect(error({ threadId: "thread_1", turnId: "turn_1", willRetry: false })).toMatchObject({
+      ok: true,
+      event: { kind: "runtime.error", phase: "runtime.error.final" },
+    });
+  });
+
+  it("says the retry was not reported, rather than guessing, when willRetry is absent", () => {
+    expect(error({ threadId: "thread_1" })).toMatchObject({
+      ok: true,
+      event: { kind: "runtime.error", phase: "runtime.error.retry_unreported" },
+    });
+  });
+});

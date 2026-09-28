@@ -108,10 +108,19 @@ function mapMethod(
   }
   if (method === "error") {
     const threadId = text(params.threadId);
+    const turnId = text(params.turnId);
+    // C-1 F4: Codex reports whether it will retry. Keep that fact; never guess it.
+    const phase =
+      params.willRetry === true
+        ? "runtime.error.will_retry"
+        : params.willRetry === false
+          ? "runtime.error.final"
+          : "runtime.error.retry_unreported";
     return {
       kind: "runtime.error",
-      phase: "runtime.error",
+      phase,
       ...(threadId ? { threadId } : {}),
+      ...(turnId ? { turnId } : {}),
     };
   }
   return "unsupported";
