@@ -65,8 +65,8 @@ skipped, contract 78, e2e 88, a11y 46, visual 64.
   can be recorded) were found and fixed after the plate review and during Task 10 preparation.
 - **Approved 2026-09-28, not authorized for implementation until Phase 7-O is accepted:** the DF-029
   amendment (`docs/proposals/2026-09-28-df-029-blocked-not-on-you.md`, B-1 to B-5) and the Phase 7
-  specification (`docs/phase-7-high-fidelity-spec-v0.1.md`, F-1 to F-8; F-5's typeface shortlist
-  still to be presented). Order: DF-029, the Phase 5 fixture removal, then the Phase 7 plan.
+  specification (`docs/phase-7-high-fidelity-spec-v0.1.md`, F-1 to F-8; F-5 decided: Fira Sans + Fira
+  Mono, SIL OFL 1.1, Windows rendering check still to do). Order: DF-029, the Phase 5 fixture removal, then the Phase 7 plan.
   `codex-currency` is merged (`41c4625`); the D-24 disposition is on this line now. Local `main`
   still points at `5b436cc`: fast-forward it before pushing.
 
