@@ -776,7 +776,15 @@ Browser evidence, version 1`, in `evidence-link.component.test.tsx` (twice),
       no colour and none was ruled.
     - GREEN, `verify` on a clean tree at `2f67a32`: unit 568, component 136, integration 79 with
       3 skipped, contract 78, e2e 72, a11y 46, visual 64.
-  - Owner-run step: re-capture the Task 9 evidence, then record provenance.
+  - Owner-run step: re-capture the Task 9 evidence, then record provenance. **Done 2026-09-28**
+    (`0807363`, at `40c289d`): 12 journeys per viewport, console errors 0, 19 requests with none
+    failed or external, 200% zoom horizontal scroll 0 px; 30 ledger lines appended.
+  - **Owner comparison with the plates (criterion 6), 2026-09-28.** The owner found the captures
+    "nowhere near what is expected for the UI" and, asked which gap that is, answered "mainly
+    rendering". Disposition: the rendering gap to AR-01–AR-04 (figures, furniture, materials,
+    lighting, the isometric illustrated scene) is **deferred to Phase 7 under P-0**; it is not a
+    Phase 7-O finding, and these captures do not meet the plates. The owner chose a small Task 9g
+    for non-rendering plate gaps before Task 10, then Task 10.
 
 - [ ] Task 10: Comprehension preparation (spec §8.7).
   - Acceptance: the six task URLs, fixture logs and answer key are aligned to the accepted UI and
