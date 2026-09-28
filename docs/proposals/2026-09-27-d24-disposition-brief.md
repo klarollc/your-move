@@ -1,6 +1,7 @@
 # D-24 production-suitability review — disposition brief
 
-**Status: FOR OWNER RULING.** Nothing here is decided.
+**Status: RULED 2026-09-27** as recommended: unruled deviation; `reuse_concepts_only`; the owner
+as reviewer. Recorded in `docs/evidence/phase-5/decision-record-2026-09-27-d24-disposition.md`.
 
 Author: agent, 2026-09-27. Governing: MDD D-24 (§3 table, "Fixture isolation and guaranteed
 production review"), the review record `docs/evidence/phase-5/d24-production-suitability-review.json`
