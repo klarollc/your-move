@@ -96,7 +96,7 @@
       "performed": true,
       "method": "Tab to the skip link, Enter to the outline, Tab to Inspect Test Engineer, Enter",
       "observed": {
-        "tabPressesToTarget": 7
+        "tabPressesToTarget": 8
       }
     },
     "pointer": {
@@ -105,7 +105,7 @@
     },
     "focusReturn": {
       "performed": true,
-      "method": "Escape from the inspector; Escape from an evidence dialog, then Close Library"
+      "method": "Escape from the inspector; Escape from an evidence dialog, then Back to inspector"
     },
     "zoom200": {
       "performed": true,
