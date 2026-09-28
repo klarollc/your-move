@@ -46,7 +46,7 @@
     "codex:smoke": "tsx scripts/run-codex-smoke.ts",
     "codex:probe-surface": "tsx scripts/run-codex-probe-surface.ts",
     "test:protocol": "node --test scripts/protocol-codex.test.mjs scripts/codex-surface-diff.test.mjs scripts/codex-pin.test.mjs && npm run protocol:codex:check",
-    "test:scaffold": "node --test scripts/scaffold-contract.test.mjs",
+    "test:scaffold": "node --test scripts/scaffold-contract.test.mjs scripts/workspace-imports.test.mjs",
     "test:runner": "node --test scripts/agent-runner.test.mjs",
     "test:guard": "node --test scripts/office-literal-guard.test.mjs",
     "agent:runner": "node scripts/agent-runner.mjs",
