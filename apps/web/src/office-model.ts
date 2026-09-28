@@ -439,3 +439,25 @@ export function freshnessWarning(
   if (!model.current) parts.push("The office read model is not current.");
   return parts.length > 0 ? parts.join(" ") : null;
 }
+
+/**
+ * Why the manager cannot record a disposition in this shell state, or nothing when one can be
+ * recorded (Task 9h). The rail shows the reason and disables Submit.
+ */
+export function dispositionRefusal(state: OfficeFixtureState): string | undefined {
+  return DISPOSITION_REFUSALS[state];
+}
+
+/**
+ * The states that refuse, owner-approved 2026-09-28 (Task 9h): current state is unknown, or no
+ * decision can be recorded. Every other state is current, and the attention it shows asks for
+ * the manager's decision, so refusing it would contradict the item above the controls.
+ */
+const DISPOSITION_REFUSALS: Readonly<Partial<Record<OfficeFixtureState, string>>> = {
+  stale: "Refresh the current workspace before recording a disposition.",
+  offline: "The runtime is unavailable. Reconnect before recording a disposition.",
+  loading: "The workspace is still loading. Responses open once it is current.",
+  error: "The workspace could not be read. Retry it before recording a disposition.",
+  restart:
+    "The runtime restarted and its health is being checked. Restore current state before recording a disposition.",
+};

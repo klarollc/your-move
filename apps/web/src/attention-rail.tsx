@@ -29,14 +29,15 @@ export type OfficeDispositionResult =
 
 export function AttentionRail({
   items,
-  available,
+  refusal,
   onClose,
   onLocate,
   onDismiss,
   onDisposition,
 }: Readonly<{
   items: readonly OfficeAttentionItem[];
-  available: boolean;
+  /** Why no disposition can be recorded now; undefined when one can (Task 9h). */
+  refusal: string | undefined;
   onClose: () => void;
   onLocate: (item: OfficeAttentionItem) => void;
   onDismiss: (item: OfficeAttentionItem) => void;
@@ -67,9 +68,9 @@ export function AttentionRail({
           Close attention
         </button>
       </header>
-      {!available ? (
+      {refusal ? (
         <p className="office-attention-denial" role="alert">
-          Refresh the current workspace before recording a disposition.
+          {refusal}
         </p>
       ) : null}
       <div className="office-attention-stepper">
@@ -128,7 +129,7 @@ export function AttentionRail({
           {responding === item.attentionId ? (
             <DispositionForm
               item={item}
-              available={available}
+              available={refusal === undefined}
               onSubmit={async (intent, scope) => {
                 setFailure(undefined);
                 const result = await onDisposition(item, intent, scope);

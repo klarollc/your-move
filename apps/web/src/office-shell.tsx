@@ -22,6 +22,7 @@ import {
   evidenceText,
   approvalPlain,
   evidencePlain,
+  dispositionRefusal,
   freshnessWarning,
   happeningText,
   personStateLine,
@@ -371,7 +372,7 @@ export function OfficeShell({
   const visibleAttention = attention.filter(
     ({ attentionId }) => !dismissedAttentionIds.has(attentionId),
   );
-  const dispositionsAvailable = state === "ready" || state === "partial";
+  const refusal = dispositionRefusal(state);
 
   useEffect(() => {
     if (!selectedEntityId) return;
@@ -670,7 +671,7 @@ export function OfficeShell({
       {attentionOpen && visibleAttention.length > 0 ? (
         <AttentionRail
           items={visibleAttention}
-          available={dispositionsAvailable}
+          refusal={refusal}
           onClose={closeAttention}
           onLocate={(item) => {
             advance("inspector", `Locate ${item.label}`);

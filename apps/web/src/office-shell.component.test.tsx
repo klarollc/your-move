@@ -279,7 +279,11 @@ describe("OfficeShell manager attention", () => {
     expect(receipt).toHaveTextContent("Agent-visible disposition: approve");
   });
 
-  it.each(["stale", "offline"] as const)("denies manager dispositions while %s", async (state) => {
+  // Task 9h (P-4): offline now gives its own reason; stale's is unchanged.
+  it.each([
+    ["stale", "Refresh the current workspace before recording a disposition."],
+    ["offline", "The runtime is unavailable. Reconnect before recording a disposition."],
+  ] as const)("denies manager dispositions while %s", async (state, reason) => {
     const user = userEvent.setup();
     render(<OfficeShell state={state} onDisposition={fixtureDisposition} />);
     await user.click(screen.getByRole("button", { name: "1 blocked · 1 review" }));
@@ -290,8 +294,20 @@ describe("OfficeShell manager attention", () => {
       if (label === blocked) await user.click(screen.getByRole("button", { name: "Next item" }));
     }
     expect(screen.getByRole("complementary", { name: "Manager attention" })).toHaveTextContent(
-      "Refresh the current workspace before recording a disposition.",
+      reason,
     );
+  });
+
+  // Task 9h: a current canonical state that asks for a decision accepts one.
+  it("accepts a manager disposition in the permission-denied state", async () => {
+    const user = userEvent.setup();
+    render(<OfficeShell state="permission-denied" onDisposition={fixtureDisposition} />);
+    await user.click(screen.getByRole("button", { name: "1 blocked · 1 review" }));
+    const rail = screen.getByRole("complementary", { name: "Manager attention" });
+    expect(within(rail).queryByRole("alert")).toBeNull();
+    await user.click(screen.getByRole("button", { name: `Respond to ${blocked}` }));
+    await user.type(screen.getByRole("textbox", { name: `Reason for ${blocked}` }), "Reviewed.");
+    expect(screen.getByRole("button", { name: `Submit ${blocked}` })).toBeEnabled();
   });
 
   it("collapses an empty attention projection", () => {
