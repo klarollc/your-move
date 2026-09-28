@@ -1290,3 +1290,41 @@ Also observed in the same session, and not yet a pattern: one `verify` run faile
 kickoff e2e at 1280 with a blank page (the app never rendered in 30 s). The same URL rendered at
 1440 in that run, and two further `test:e2e` runs and a third `verify` were clean. Recorded here
 so a recurrence can be recognised.
+
+### DF-029 — A blocked agent cannot say it is not blocked on the manager
+
+Observed 2026-09-28, comparing the Phase 7-O Task 9f re-capture with AR-03 and constitution rule
+4 ("A blocker does not necessarily need manager action. Show the reason and who can resolve it.").
+
+The default office labels the Test Engineer amber "Blocked · Needs you", counts it in the bar,
+and its rail card asks the manager to "Redirect the evidence request or decline the blocker". The
+build is truthful: canonical state records that request. The gap is that **nothing else could be
+recorded**:
+
+- `projectManagerAttention` makes every `blocked` work item a manager attention item, whatever
+  its condition's `waitingOn` names.
+- The version-2 `WorkCondition` requires `requestedAction` on every condition, so every blocker
+  carries a request, and none can say whose action it is.
+
+AR-03's first column ("Waiting for the source document. Ari needs to provide the document.") is
+therefore not expressible. An agent blocked on another agent, a dependency or evidence can only
+report it as something the manager must act on.
+
+## What it cost
+
+Found before Task 10. Had it gone unseen, the cold comprehension run would have scored
+"distinguish waiting from blocked" against a build where both non-idle people read amber "Needs
+you", and the plate comparison would have kept pointing at wording that no wording change can fix.
+
+## The shape
+
+An agent-side problem, the kind this register exists for: the canonical vocabulary lets an agent
+say *that* it is stuck but not *who* can unstick it separately from what the manager is asked to do.
+`waitingOn` already names the resolver; the attention rule does not read it.
+
+## Product response
+
+Not fixed. Owner ruling 2026-09-28: recorded as a named Phase 7-O finding, fixed by its own
+amendment after Phase 7-O (contract, domain attention rule, spec §6 and §8.4 R-2, the P-4 bar
+count, and fixtures). Task 9g stays wording-only.
+
