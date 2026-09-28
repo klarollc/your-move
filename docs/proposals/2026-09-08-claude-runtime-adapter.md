@@ -3,6 +3,11 @@
 Status: **C-1 and C-2 complete 2026-09-08. C-3 onward UNAUTHORIZED and now blocked on a
 prerequisite that does not exist: there is no runtime boundary to write a second adapter against,
 by deliberate decision. Revisit when the first real consumer defines one.**
+
+**C-1 F3 closed 2026-09-28 (owner, housekeeping 3d), no code change.** `RuntimeCorrelation` keeps
+Codex's `threadId`, `turnId` and `itemId` as optional fields. The standing rule is unchanged: a
+future adapter omits any identifier its provider does not have and never synthesizes one. Nothing
+further is needed until a second adapter exists; if one does, F3 is reopened by that work.
 Author: Claude (Cowork), at owner request on 2026-09-08.
 Authority: MDD D-26 reciprocal usability; Phase 3 provider-neutral runtime contracts.
 Triggers the Phase 4 spec stop condition **"provider/tool/external-effect expansion"**, which is

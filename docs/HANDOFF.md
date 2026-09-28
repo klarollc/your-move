@@ -68,8 +68,9 @@ skipped, contract 78, e2e 88, a11y 46, visual 64.
   item 4 (the register's promotion path and status index, guarded by
   `scripts/dogfood-index.test.mjs`) is in place; 3f is ruled (kickoff emits open questions,
   option 2, after Phase 7-O); item 5 is done (`e5df37f`). 3c (F4) is fixed (`283e11d`): a
-  provider error's phase says whether Codex will retry it. Still open: 3d (F3), 3e (DF-006
-  prevention, declined).
+  provider error's phase says whether Codex will retry it. 3d (F3) is closed with no code
+  change (optional provider identifiers, never synthesized). 3e (DF-006 prevention) stays declined.
+  The housekeeping queue is otherwise empty.
 - **Approved 2026-09-28, not authorized for implementation until Phase 7-O is accepted:** the DF-029
   amendment (`docs/proposals/2026-09-28-df-029-blocked-not-on-you.md`, B-1 to B-5) and the Phase 7
   specification (`docs/phase-7-high-fidelity-spec-v0.1.md`, F-1 to F-8; F-5 decided: Fira Sans + Fira
