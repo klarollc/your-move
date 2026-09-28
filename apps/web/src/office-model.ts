@@ -283,11 +283,36 @@ export function personStateWord(person: OfficePersonView): string {
 
 export const needsManager = (person: OfficePersonView) => person.attention.length > 0;
 
-/** One state word, and "Needs you" when a held item needs the manager (Task 9d, F-9-3). */
-export function personStateLine(model: OfficeReadModel, entityId: string): string {
+/** Shell states in which current activity is unknown (constitution rule 6; AR-03). */
+export const UPDATES_UNAVAILABLE_STATES: ReadonlySet<string> = new Set(["stale", "offline"]);
+
+type Currency = Readonly<{ updatesUnavailable?: boolean }>;
+
+/**
+ * One state word, and "Needs you" when a held item needs the manager (Task 9d, F-9-3). While
+ * updates are unavailable the state is unknown, and the word is what was last confirmed (Task
+ * 9f-4; AR-03, constitution rule 6).
+ */
+export function personStateLine(
+  model: OfficeReadModel,
+  entityId: string,
+  options: Currency = {},
+): string {
   const entity = entityOf(model, entityId);
   if (entity?.kind !== "person") return "Not in the office read model";
-  return `${personStateWord(entity)}${needsManager(entity) ? " · Needs you" : ""}`;
+  const word = options.updatesUnavailable
+    ? `Status unknown · last confirmed: ${personStateWord(entity)}`
+    : personStateWord(entity);
+  return `${word}${needsManager(entity) ? " · Needs you" : ""}`;
+}
+
+/** The latest time any person's state was recorded, as "HH:MM UTC", or nothing when none was. */
+export function lastConfirmedAt(model: OfficeReadModel): string | undefined {
+  const times = model.entities.flatMap((entity) =>
+    entity.kind === "person" && entity.agent.status === "recorded" ? [entity.agent.updatedAt] : [],
+  );
+  const latest = times.sort().at(-1);
+  return latest ? `${latest.slice(11, 16)} UTC` : undefined;
 }
 
 export type SceneLabel = Readonly<{
@@ -304,7 +329,10 @@ export type SceneLabel = Readonly<{
  * person's name and plain state, and each zone's name. `needsYou` selects the amber treatment,
  * and is never set without "Needs you" in the words.
  */
-export function sceneLabelsFrom(model: OfficeReadModel): readonly SceneLabel[] {
+export function sceneLabelsFrom(
+  model: OfficeReadModel,
+  options: Currency = {},
+): readonly SceneLabel[] {
   return OFFICE_REGISTRY.map((entry) => {
     if (entry.kind !== "person") {
       return {
@@ -316,12 +344,16 @@ export function sceneLabelsFrom(model: OfficeReadModel): readonly SceneLabel[] {
       };
     }
     const person = personOf(model, entry.entityId);
+    const needsYou = person ? needsManager(person) : false;
     return {
       entityId: entry.entityId,
       kind: "person",
       name: entry.label,
-      state: personStateLine(model, entry.entityId),
-      needsYou: person ? needsManager(person) : false,
+      // AR-03, "Ren · Status unknown": in the scene, unknown is said without the history.
+      state: options.updatesUnavailable
+        ? `Status unknown${needsYou ? " · Needs you" : ""}`
+        : personStateLine(model, entry.entityId),
+      needsYou,
     };
   });
 }

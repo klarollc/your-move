@@ -50,4 +50,14 @@ describe("sceneLabelsFrom", () => {
       expect(label.state).toContain("Needs you");
     }
   });
+
+  // Task 9f-4 (AR-03 "Ren · Status unknown"; rule 6): while updates are unavailable the office
+  // does not claim anyone's current state.
+  it("says status unknown while updates are unavailable, keeping what needs the manager", () => {
+    const stale = sceneLabelsFrom(officeModelFor("stale").model, { updatesUnavailable: true });
+    const tester = stale.find(({ entityId }) => entityId === "agent_test_engineer");
+    expect(tester?.state).toBe("Status unknown · Needs you");
+    const lead = stale.find(({ entityId }) => entityId === "agent_delivery_lead");
+    expect(lead?.state).toBe("Status unknown");
+  });
 });

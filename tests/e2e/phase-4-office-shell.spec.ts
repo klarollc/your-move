@@ -47,9 +47,8 @@ test("@e2e Phase 4 office preserves causes, actions, and canvas-loss recovery", 
   page,
 }) => {
   await page.goto("/?state=offline");
-  await expect(page.getByTestId("workspace-cause")).toContainText(
-    "loopback runtime is unavailable",
-  );
+  // Task 9f-4 (P-4): AR-03 wording.
+  await expect(page.getByTestId("workspace-cause")).toContainText("The runtime is offline");
   await expect(page.getByRole("button", { name: "Reconnect runtime" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Reset view" })).toBeVisible();
   // Task 9e (P-4, A-4): the cause and recovery sit in the status notice; the outline is on demand.

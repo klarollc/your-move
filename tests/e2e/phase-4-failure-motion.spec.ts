@@ -9,8 +9,8 @@ const revision = events.length;
 const handoffRevision = events.findIndex((event) => event.kind === "handoff.recorded") + 1;
 
 const failureStates = [
-  ["offline", "loopback runtime is unavailable", "Reconnect runtime"],
-  ["stale", "freshness window", "Refresh workspace"],
+  ["offline", "The runtime is offline", "Reconnect runtime"],
+  ["stale", "Updates unavailable", "Refresh workspace"],
   ["rate-limit", "provider rate limit", "Retry after limit"],
   ["budget-limit", "budget ceiling is exhausted", "Request budget decision"],
   ["permission-denied", "permission request was denied", "Review permission boundary"],
@@ -30,11 +30,16 @@ test("@e2e Phase 4 failure and recovery projections never manufacture ordinary w
     await page.goto(`/?state=${state}`);
     await expect(page.getByTestId("workspace-cause")).toContainText(new RegExp(cause, "i"));
     await expect(page.getByRole("button", { name: recovery })).toBeEnabled();
-    // Task 9e (P-4): the outline is on demand; its header still names the state.
+    // Task 9e (P-4): the outline is on demand; its header still names the state. Task 9f-4
+    // (P-4): in the bar's plain words rather than the state's identifier.
     await openOfficeOutline(page);
+    const health = await page
+      .locator('header[aria-label="Project bar"] .office-health')
+      .innerText();
+    expect(health.length).toBeGreaterThan(0);
     await expect(
       page.getByRole("region", { name: "Office outline" }).locator("header > strong"),
-    ).toHaveText(state);
+    ).toHaveText(health);
   }
 });
 

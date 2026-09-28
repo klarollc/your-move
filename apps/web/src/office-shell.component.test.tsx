@@ -152,8 +152,9 @@ describe("OfficeShell", () => {
       recovery: "Retry missing records",
     },
     { state: "error", cause: /workspace stream was rejected/i, recovery: "Retry workspace" },
-    { state: "stale", cause: /freshness window/i, recovery: "Refresh workspace" },
-    { state: "offline", cause: /loopback runtime is unavailable/i, recovery: "Reconnect runtime" },
+    // Task 9f-4 (P-4): AR-03 wording for the two states in which activity is unknown.
+    { state: "stale", cause: /updates unavailable/i, recovery: "Refresh workspace" },
+    { state: "offline", cause: /runtime is offline/i, recovery: "Reconnect runtime" },
     { state: "canvas-loss", cause: /webgl context is unavailable/i, recovery: "Retry canvas" },
     { state: "rate-limit", cause: /provider rate limit/i, recovery: "Retry after limit" },
     {

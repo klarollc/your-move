@@ -94,7 +94,8 @@ describe("the workspace status (A-4)", () => {
     render(<OfficeShell state="stale" />);
     expect(outline()).toBeNull();
     const notice = screen.getByTestId("workspace-notice");
-    expect(within(notice).getByTestId("workspace-cause")).toHaveTextContent("freshness window");
+    // Task 9f-4 (P-4): AR-03 wording.
+    expect(within(notice).getByTestId("workspace-cause")).toHaveTextContent("Updates unavailable");
     expect(within(notice).getByRole("button", { name: "Refresh workspace" })).toBeVisible();
   });
 

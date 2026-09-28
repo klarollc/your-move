@@ -21,6 +21,7 @@ import {
   officeModelFor,
   revisionOf,
   sceneLabelsFrom,
+  UPDATES_UNAVAILABLE_STATES,
   type OfficeModel,
   type SceneLabel,
 } from "./office-model.js";
@@ -32,9 +33,6 @@ import {
   type SceneTransform,
 } from "./office-scene-adapter.js";
 import { createPixiSceneRenderer } from "./pixi-scene-renderer.js";
-
-/** Shell states in which current activity is unknown (constitution rule 6; AR-03). */
-const UPDATES_UNAVAILABLE: ReadonlySet<OfficeShellState> = new Set(["stale", "offline"]);
 
 const sceneDescriptors: readonly SceneDescriptor[] = Object.freeze([
   zone("zone_reception", -340, -20, 150, 130, 0),
@@ -145,12 +143,16 @@ export function OfficeWorkspace({
   // The canonical log for this state is replayed and projected once; every surface reads it.
   const office = useMemo(() => officeModelFor(state, fixtureId), [state, fixtureId]);
   const library = useMemo(() => officeLibraryFor(state, fixtureId), [state, fixtureId]);
-  const labels = useMemo(() => sceneLabelsFrom(office.model), [office]);
+  const labels = useMemo(
+    () =>
+      sceneLabelsFrom(office.model, { updatesUnavailable: UPDATES_UNAVAILABLE_STATES.has(state) }),
+    [office, state],
+  );
   const motion = motionEnabled
     ? motionFrom(office.model, {
         reducedMotion,
         checkpoint: motionCheckpoint,
-        updatesUnavailable: UPDATES_UNAVAILABLE.has(state),
+        updatesUnavailable: UPDATES_UNAVAILABLE_STATES.has(state),
       })
     : undefined;
   const showPersistedScene = !["loading", "empty", "error", "canvas-loss"].includes(state);

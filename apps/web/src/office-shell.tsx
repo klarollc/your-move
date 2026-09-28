@@ -25,6 +25,8 @@ import {
   freshnessWarning,
   happeningText,
   personStateLine,
+  lastConfirmedAt,
+  UPDATES_UNAVAILABLE_STATES,
   needsYouPlain,
   stateWord,
   whyText,
@@ -126,6 +128,13 @@ export const officeShellEntities: readonly OfficeEntity[] = Object.freeze(
     ...(entry.kind === "person" && entry.relationship ? { relationship: entry.relationship } : {}),
   })),
 );
+
+/** AR-03 "Information unavailable": what is shown is as last confirmed; now is unknown. */
+function unavailableCause(state: OfficeShellState, confirmed: string | undefined): string {
+  const opening = state === "offline" ? "The runtime is offline." : "Updates unavailable.";
+  const at = confirmed ? ` at ${confirmed}` : "";
+  return `${opening} What the office shows is as last confirmed${at}; current activity is unknown.`;
+}
 
 const presentations: Record<
   OfficeShellState,
@@ -342,7 +351,9 @@ export function OfficeShell({
             ? `Canonical workspace revision ${revision} is current.`
             : `Canonical workspace revision ${revision} is not current: ${notCurrentReasons(model)}.`,
         }
-      : presentations[state];
+      : UPDATES_UNAVAILABLE_STATES.has(state)
+        ? { ...presentations[state], cause: unavailableCause(state, lastConfirmedAt(model)) }
+        : presentations[state];
   // Task 9f-1, owner ruling 9f-1a: the MDD's runtime health stays in the bar, in plain words.
   const health = capitalise(presentation.runtime.replace(/^Runtime /u, ""));
   const selection = selectedEntityId ?? internalSelection;
@@ -440,7 +451,9 @@ export function OfficeShell({
     window.addEventListener("keydown", backOnEscape);
     return () => window.removeEventListener("keydown", backOnEscape);
   });
-  const personState = (entityId: string) => personStateLine(model, entityId);
+  const updatesUnavailable = UPDATES_UNAVAILABLE_STATES.has(state);
+  const personState = (entityId: string) =>
+    personStateLine(model, entityId, { updatesUnavailable });
   const zones = officeShellEntities.filter(({ kind }) => kind === "zone");
   const people = officeShellEntities.filter(({ kind }) => kind === "person");
 
@@ -516,7 +529,7 @@ export function OfficeShell({
       {state !== "ready" ? (
         // A-4: when the workspace is not current, its cause and recovery sit under the bar.
         <div className="office-status-notice" data-testid="workspace-notice" ref={noticeRef}>
-          <p data-testid="workspace-cause">Cause: {presentation.cause}</p>
+          <p data-testid="workspace-cause">{presentation.cause}</p>
           {presentation.recovery ? (
             <button
               type="button"
@@ -574,7 +587,7 @@ export function OfficeShell({
               <h2>Office outline</h2>
               <p>Equivalent people, zones, states, relationships, and actions.</p>
             </div>
-            <strong>{state === "ready" ? "Current" : state}</strong>
+            <strong>{state === "ready" ? "Current" : health}</strong>
             <button type="button" onClick={closeOutline}>
               Close outline
             </button>
@@ -587,18 +600,20 @@ export function OfficeShell({
               <dd>{presentation.runtime}</dd>
               <dt>Session</dt>
               <dd>Local session · revision {revision}</dd>
+              {state === "ready" ? (
+                <>
+                  <dt>Workspace</dt>
+                  <dd data-testid="workspace-cause">{presentation.cause}</dd>
+                </>
+              ) : null}
             </dl>
           </details>
-          {state === "ready" ? (
-            <p data-testid="workspace-cause">Cause: {presentation.cause}</p>
-          ) : null}
 
           <ol className="office-zone-list" aria-label="Office zones">
             {zones.map((zone) => (
               <li key={zone.entityId} data-canvas-twin-id={zone.entityId}>
                 <div>
                   <h3>{zone.label}</h3>
-                  <p>State: Layout only — no canonical state record</p>
                 </div>
                 <button
                   type="button"
@@ -799,7 +814,7 @@ function InspectorFields({
       <>
         <dl className="office-inspector-answers">
           <dt>What&apos;s happening</dt>
-          <dd>Layout only — no canonical state record</dd>
+          <dd>No activity is recorded here.</dd>
         </dl>
         <details className="office-inspector-technical">
           <summary>Technical detail</summary>

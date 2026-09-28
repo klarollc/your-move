@@ -114,7 +114,7 @@ const JOURNEYS: readonly Journey[] = [
     path: "/?state=stale",
     drive: inspect("Test Engineer"),
     verify: async (page) => {
-      await expect(cause(page)).toContainText("freshness window");
+      await expect(cause(page)).toContainText("Updates unavailable");
       await expect(inspector(page).getByRole("note")).toContainText("may be out of date (delayed)");
     },
   },
@@ -123,7 +123,7 @@ const JOURNEYS: readonly Journey[] = [
     path: "/?state=offline",
     drive: inspect("Test Engineer"),
     verify: async (page) => {
-      await expect(cause(page)).toContainText("loopback runtime is unavailable");
+      await expect(cause(page)).toContainText("The runtime is offline");
       await expect(inspector(page).getByRole("note")).toContainText("The workspace is offline.");
     },
   },

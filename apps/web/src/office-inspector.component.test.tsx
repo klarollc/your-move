@@ -77,7 +77,13 @@ describe("the inspector and the rail read one record", () => {
     const outline = screen.getByRole("region", { name: "Office outline" });
     expect(outline).not.toHaveTextContent("Candidate intake");
     expect(outline).not.toHaveTextContent("Reviewing deterministic tests");
-    expect(outline).toHaveTextContent("Layout only");
+    // Task 9f-4 (P-4): "Layout only" leaves the first screen and stays under Technical detail.
+    expect(outline).not.toHaveTextContent("Layout only");
+    await user.click(screen.getByRole("button", { name: "Locate Review station" }));
+    const inspector = screen.getByRole("complementary", { name: "Entity inspector" });
+    expect(inspector.querySelector("details")).toHaveTextContent(
+      "Layout only — no canonical state record",
+    );
   });
 
   it("states the canonical revision the log actually reached", async () => {
