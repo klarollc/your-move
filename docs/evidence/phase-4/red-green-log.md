@@ -1185,3 +1185,18 @@ regression check on the artifacts rather than a restatement of the record.
 
 Phase 6 is complete. Phase 7 requires its own specification, plan and owner approval; the three open
 provenance gaps carry forward and are not closed by this promotion.
+
+## What the Phase 4 browser suites establish about truthfulness — recorded 2026-09-28
+
+Housekeeping item 2 (approved 2026-09-08, done 2026-09-28). **The Phase 4 visual and e2e suites
+cannot falsify a truthfulness claim.** Every fixture they rendered, in `apps/web/src/office-canvas.tsx`
+at the time, was written honestly by the same author as the interface, so the suites establish that
+truthful input renders as intended, and nothing about what the office does with false input. Their
+passing counts are therefore weaker evidence for the V0 truthfulness invariants than the counts
+suggest, and those invariants also had no human verification (the standing waiver in MDD §19).
+
+This is a statement about the Phase 4 evidence, which stays as recorded. Since Phase 7-O the office
+states are canonical event logs replayed through the projector (spec §5), and the §7 adversarial
+fixtures assert that unsupported progress, placement, approval and freshness are refused or shown
+unresolved. Those tests can fail on a lie; the Phase 4 ones could not.
+

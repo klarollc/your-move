@@ -175,6 +175,10 @@ Register`, are the same concept in narrower form. Three options:
 Recommendation: **option 2**, and only after the base record exists and has earned its keep.
 Option 3 is correct in the long run and premature now.
 
+**Ruled 2026-09-28 (owner, housekeeping 3f): option 2, later.** Kickoff will emit open questions
+additively, scheduled after Phase 7-O acceptance. Recorded as ruled, not authorized for
+implementation; it needs its own plan and checklist.
+
 ## 5. Verification plan if approved
 
 RED–GREEN, sliced to at most five files per commit, matching the Task 13 shape:

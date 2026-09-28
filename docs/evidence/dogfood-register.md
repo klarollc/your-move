@@ -20,6 +20,57 @@ code; they are evidence about the agent-facing surface the product intends to sp
 Entries are evidence, not requirements. Promotion into the MDD requires owner approval like any
 other change.
 
+## Promotion path
+
+Owner-approved 2026-09-28 (housekeeping item 4). An entry is evidence; it becomes a requirement
+only by an owner ruling, like any other change. Each entry has exactly one status here, and
+`scripts/dogfood-index.test.mjs` fails if an entry is missing, indexed twice, or given a status
+outside this list:
+
+- **open**: observed; no ruling and no fix.
+- **ruled**: the owner has ruled on a direction; the work is pending or partial.
+- **fixed**: a change in the tree resolves it; the note cites the commit or mechanism.
+- **graduated**: it became an MDD requirement or an approved specification.
+- **closed**: ruled not a product signal, or declined.
+
+Moving an entry is part of the change that moves it: the commit that fixes or rules on an entry
+updates its row. An entry's own text is history and is not rewritten.
+
+## Status index
+
+| Entry | Status | Note |
+| --- | --- | --- |
+| DF-001 | open | Session start needs full context reconstruction. Mitigated by `docs/HANDOFF.md`; no product feature. |
+| DF-002 | open | Task completion is inferred from three artifacts. No canonical position record. |
+| DF-003 | open | Authority boundaries live in prose across documents. |
+| DF-004 | closed | Environmental tooling friction, recorded as not a product signal. |
+| DF-005 | graduated | The open-question record: `docs/proposals/2026-08-18-open-question-record.md`, implemented. |
+| DF-006 | fixed | Detected by `checkNativePlatform` (`check:toolchain`). Prevention declined by the owner, 2026-09-08. |
+| DF-007 | fixed | `raisedAt` on `OpenQuestion`; the review question is now executable (`record-times.integration.test.ts`, `3494b6d`). |
+| DF-008 | fixed | The binding report records effort as required and nullable (`96cbf74`). |
+| DF-009 | fixed | For runner runs only: every result carries `head` and `dirty` (DF-022). Open for anything else. |
+| DF-010 | fixed | Threads run in a controlled Codex home with the credential provisioned (`bcba1f2`). |
+| DF-011 | ruled | Composing from upstream role text withdrawn in favour of the authored overlay (Task 17c-2b). |
+| DF-012 | fixed | `promotion-status.mjs` joins against `roles/authored`. |
+| DF-013 | fixed | Playwright `testMatch`; `verify` completes. |
+| DF-014 | fixed | No shell between the runner and its tools. |
+| DF-015 | fixed | `phase5-evidence-inventory.ts` reads the tree; briefs state no evidence. |
+| DF-016 | fixed | Repaired and scanned. A BOM guard was proposed and is not authorized. |
+| DF-017 | fixed | Repaired, scanned, and the inventory derives its list. |
+| DF-018 | fixed | Ruled 2026-09-18: wall-clock time leaves the digested body. |
+| DF-019 | fixed | Ruled 2026-09-18: the announcement is keyed by a sequence number. |
+| DF-020 | fixed | Ruled 2026-09-19: supersession within a class, retractions by `unsupersede`. |
+| DF-021 | fixed | `protocol:codex:drift` asks the installed binary; live scripts refuse without it (`5ee941a`). |
+| DF-022 | fixed | The agent command runner. Housekeeping item 1 is closed by it (2026-09-28). |
+| DF-023 | ruled | Option A taken 2026-09-25; option B belongs to the D-24 review. |
+| DF-024 | fixed | One test's timeout raised (`5e3efe9`). A general rule is not ruled. |
+| DF-025 | fixed | Attempt records, an activity-aware turn runner and one bounded retry. |
+| DF-026 | fixed | Ruled 2026-09-26: evidence converted to LF and re-recorded. |
+| DF-027 | open | Residual tool surface beside a text-only role. Candidates recorded, none ruled. |
+| DF-028 | fixed | The zoom probe asserts the layout width. The blank-page failure it also records has recurred (below). |
+| DF-029 | ruled | Amendment approved 2026-09-28 (`docs/proposals/2026-09-28-df-029-blocked-not-on-you.md`); built after Phase 7-O acceptance. |
+| DF-030 | ruled | Question dispositions and kickoff records fixed (`3494b6d`); manifests, receipts and provider identities exempted, not fixed. |
+
 ## Entries
 
 ### DF-001 — Session start requires full context reconstruction from primary sources
@@ -1303,6 +1354,12 @@ kickoff e2e at 1280 with a blank page (the app never rendered in 30 s). The same
 1440 in that run, and two further `test:e2e` runs and a third `verify` were clean. Recorded here
 so a recurrence can be recognised.
 
+**Recurred 2026-09-28.** `verify` at `e0fc3a7` failed one test: the Phase 4 Library e2e at 1440
+waited 30 s for the office scene, which never rendered. The commit touched only
+`packages/runtime-codex`, which the web bundle does not import. `test:e2e` alone and a second
+`verify` at the same commit passed. Two occurrences in three days, at both viewports between them,
+is a pattern, not a flake: the cause is still unknown.
+
 ### DF-029 — A blocked agent cannot say it is not blocked on the manager
 
 Observed 2026-09-28, comparing the Phase 7-O Task 9f re-capture with AR-03 and constitution rule
@@ -1339,4 +1396,37 @@ say *that* it is stuck but not *who* can unstick it separately from what the man
 Not fixed. Owner ruling 2026-09-28: recorded as a named Phase 7-O finding, fixed by its own
 amendment after Phase 7-O (contract, domain attention rule, spec §6 and §8.4 R-2, the P-4 bar
 count, and fixtures). Task 9g stays wording-only.
+
+### DF-030 — Four kinds of stored record could not say when they were recorded
+
+Observed 2026-09-28, building housekeeping item 3a (the DF-007 follow-up: "every canonical record
+type carries a validated timestamp").
+
+The item assumed one gap, `QuestionDisposition`. Reading the SQLite schema found four stored
+record kinds with no time in the row or its JSON: `question_dispositions`, `kickoff_records`,
+`content_manifests` and `packet_receipts`, and a fifth, `provider_identities`, an identity mapping
+with none. Kickoff mattered most: the D-25 round records who contributed what, and there is no
+kickoff event kind, so when each role spoke was recorded nowhere. **No production code writes
+either store**: every caller of `storeKickoffRecord` and `storeQuestionDisposition` is a test. The
+gap was real in the schema and unexercised by the product.
+
+## What it cost
+
+Nothing yet, because nothing wrote these tables outside tests. It would have cost the first live
+kickoff persisted through the store an unrecoverable record of timing.
+
+## The shape
+
+DF-007 again, one level down: a record type fixed one at a time, with nothing that makes the next
+one fail. The DF-007 review question ("does every new canonical record carry a time?") had been
+proposed as a manual check.
+
+## Product response
+
+Owner ruling 2026-09-28: test every stored record kind; fix dispositions and kickoff records;
+exempt manifests and receipts with a reason. `3494b6d`: migration `005_record_times` adds a nullable
+`recorded_at` (older rows read as null, never a made-up time); both stores require a UTC time from
+the caller; `record-times.integration.test.ts` reads every table from `sqlite_master` and fails
+on any table without a time column or a stated exemption. Not fixed: `content_manifests`,
+`packet_receipts`, `provider_identities` (exempted, the last pending a ruling).
 
