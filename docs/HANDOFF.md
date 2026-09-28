@@ -1,6 +1,6 @@
 # Handoff — state, next action, and what would otherwise be relearned expensively
 
-Written 2026-09-18, last updated 2026-09-25 for the Phase 5 acceptance. Read `AGENTS.md` first for authority; this document is the
+Written 2026-09-18, last updated 2026-09-28 for Phase 7-O Tasks 9f–10. Read `AGENTS.md` first for authority; this document is the
 live state, the next action, and the things a fresh session pays for twice if nobody wrote them down.
 
 ---
@@ -23,7 +23,7 @@ is authorized by this approval. Existing phase gates remain.
 | 4 | **Complete.** Bounded live D-25 round ran the full thirteen turns; evidence packet delivered. Owner gate open. |
 | 6 | **Complete.** `reconciliation-b-clarity` is the **Active** visual system, promoted by owner execution. |
 | 5 | **Accepted by the owner 2026-09-25** on the NEEDS WORK pass 5 (C-17 out of scope, not met). **Not closed:** the hand-recorded D-24 review is due **2026-10-09**, owner as reviewer. |
-| 7-O | **Specification authorized 2026-09-23; not approved.** Owner inserted Operability before Phase 7, classified the rail/inspector contradiction V1, and put actually performed T3/T5/T6 in its gate. No implementation authorized. |
+| 7-O | **Tasks 1–10 done (2026-09-28).** Specification, plan and checklist owner-approved 2026-09-25. Next: **Task 11, the owner's cold comprehension run, not before 2026-10-01 14:50 Pacific**; then Task 12, owner acceptance. **No interface work until the run** (see below). |
 | 7, 8 | **Unauthorized.** Phase 7 follows accepted Phase 7-O and needs its own specification, plan and owner approval. |
 
 Phase 5 turn ledger: **19 of 60** including the verdictless pass 9 attempt. Acceptance criteria: **21 ready, 0 blocked** — all ten charter
@@ -38,23 +38,44 @@ finding and the need for an independent release-review refresh remain current.
 
 ## The immediate next action
 
-**2026-09-23 owner ruling O-1 through O-4:** Phase 7-O Operability is now the next UI gate before
-Phase 7. The owner authorized a specification for truthful inspector detail and adversarial
-fixtures, classified the default-office rail/inspector contradiction V1, and requires actually
-performed T3/T5/T6 under MDD §20 in the Phase 7-O gate. The ruling is
-`docs/evidence/phase-7-o/decision-record-2026-09-23-operability-scope.md`. The specification
-`docs/phase-7-o-operability-spec-v0.2.md` is **owner-approved (2026-09-25)**, along with W-1 to
-W-3 for the command runner (`docs/evidence/phase-7-o/decision-record-2026-09-25-spec-approval.md`).
-The agent command runner is built and proven (2026-09-25, DF-022); use it, per the operational
-section below. `tasks/phase-7-o-plan.md` is **owner-approved (2026-09-25) with P-1 to P-5 as recommended**. Next
-gate: owner approval of `tasks/phase-7-o-todo.md`. Do not change behavior until it is approved.
+**Phase 7-O, 2026-09-28.** Tasks 1–10 are done; `tasks/phase-7-o-todo.md` is the record. The last
+`verify` on a clean tree passed at `f1ca1be`: unit 586, component 139, integration 79 with 3
+skipped, contract 78, e2e 88, a11y 46, visual 64.
+
+- **The cold-run interval is running.** Task 10's commit `f1ca1be` (2026-09-28 21:49 UTC) starts
+  the MDD §20 three-day gap. **Any change under `apps/web/src/` or `packages/ui-system/src/`
+  before the run restarts it.** Docs, tests outside those paths, and backend packages do not.
+  Earliest run: **2026-10-01 14:50 Pacific** (Task 11, owner-run).
+- **Keep the key sealed.** The owner is the operator. Never quote, summarise or hint at the
+  contents of `docs/evidence/phase-7-o/comprehension/answer-key.md`,
+  `tests/e2e/phase-7o-comprehension-key.spec.ts` or `node_modules/.cache/handoff/task10-dump.json`
+  in chat, commit messages or the checklist. The owner may read only `protocol.md` in that folder.
+- **The key is guarded two ways inside `verify`:** the e2e spec asserts every fact the key quotes
+  at its task URL, and `scripts/comprehension-preamble.test.mjs` asserts the preamble's SHA-256.
+  If either fails, the interface or the key moved; both need a ruling, and a key change restarts
+  the interval.
+- **Rendering is Phase 7.** The owner compared the 9f captures with AR-01–AR-04 on 2026-09-28
+  ("nowhere near"; "mainly rendering") and deferred the rendering gap to Phase 7 under P-0. The
+  captures do not meet the plates and must not be cited as if they did.
+- **DF-029, open, owner ruling 2026-09-28:** a blocked agent cannot say it is not blocked on the
+  manager (every blocked item is manager attention; every v2 condition requires a requested
+  action). AR-03's "blocked, not on you" is not expressible. Fixed by its own amendment after
+  Phase 7-O: contract, domain attention rule, spec §6 and §8.4, the P-4 bar count, fixtures.
+- 9g (plain rail controls, evidence heading) and 9h (disposition refused only where no decision
+  can be recorded) were found and fixed after the plate review and during Task 10 preparation.
 
 **Phase 5 was accepted by the owner on 2026-09-25**
 (`docs/evidence/phase-5/decision-record-2026-09-25-task-10-owner-acceptance.md`). The D-24
 production-suitability review is recorded by hand in
 `docs/evidence/phase-5/d24-production-suitability-review.json`: **due 2026-10-09, escalation
-2026-10-02**, owner as Delivery Lead and reviewer. Nothing in the code enforces it; surface the date
-when it is near. Phase 5 cannot close without a disposition.
+2026-10-02**, owner as Delivery Lead and reviewer. Nothing in the code enforces it.
+**Disposition recorded 2026-09-27 on branch `codex-currency` (`c3752cb`), not yet on `main`:**
+`reuse_concepts_only`, and the fixture's presence in production packages ruled an unruled
+deviation. Its removal (one re-export in `packages/domain`, two routes in `apps/web/src/main.tsx`,
+four Phase 5 browser suites) is unauthorized follow-on work under its own specification, and it
+touches `apps/web/src/`, so it waits until after the Phase 7-O cold run. Closing the Phase 5
+fixture initiative is a separate owner act. Until `codex-currency` merges, `main`'s record still
+reads as undisposed.
 
 **Current Phase 5 refresh attempt:** pass 9 (2026-09-22) spent one turn and stopped at
 `NOTIFICATION_TIMEOUT` without a verdict. It is recorded in the provenance ledger (2026-09-25) and
@@ -160,7 +181,8 @@ exists any more — `scripts/phase5-evidence-inventory.ts` reads the tree and re
 ## Open debts, none of them closed
 
 - **MDD §20 remains unmet at the project level.** Comprehension tasks T3/T5/T6 were never
-  performed, and **Phase 8 inherits that.**
+  performed. Phase 7-O Task 11 is the run that can perform them (prepared 2026-09-28); until it
+  is scored, **Phase 8 inherits that.**
 - **MDD §19's walkthrough obligation was retired 2026-09-18**, owner ruling, screen readers out of
   scope for a single-user tool. **Phase 8 no longer inherits it.** C-17 is excluded by overlay, not
   satisfied: screen-reader behaviour has never been verified and no brief may claim otherwise. The
@@ -318,7 +340,7 @@ error and there is no inline env-var prefix — write `$env:X='1'; cmd` and clea
 | --- | --- |
 | `npm run kickoff:preflight` | Task 17 preconditions, no provider calls |
 | `npm run phase5:contract:build` | Rebuild the acceptance contract and traceability matrix |
-| `npm run verify` | The whole gate. 511 unit/component/integration + 50 e2e + 42 a11y + 62 visual |
+| `npm run verify` | The whole gate. At `f1ca1be`: unit 586, component 139, integration 79 (+3 skipped), contract 78, e2e 88, a11y 46, visual 64 |
 | `npm run phase5:capture` | Recapture the 40 browser cells and rebuild the manifest |
 | `npm run phase5:fidelity` | Contract names, as amended by the overlay, against the captured trees |
 | `npm run phase5:visualqa:run` | Visual QA Reviewer annotation (live, debits the ledger) |
