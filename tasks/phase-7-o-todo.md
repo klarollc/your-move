@@ -785,6 +785,31 @@ Browser evidence, version 1`, in `evidence-link.component.test.tsx` (twice),
     lighting, the isometric illustrated scene) is **deferred to Phase 7 under P-0**; it is not a
     Phase 7-O finding, and these captures do not meet the plates. The owner chose a small Task 9g
     for non-rendering plate gaps before Task 10, then Task 10.
+  - **Rule 4 finding, DF-029 (owner ruling 2026-09-28).** Blocked work reads amber "Needs you"
+    because every blocked item is manager attention and every v2 condition requires a requested
+    action; AR-03's "blocked, not on you" is not expressible. A named Phase 7-O finding, fixed by
+    its own amendment after Phase 7-O (`9b0724c`).
+
+- [x] Task 9g (**approved 2026-09-28, G-1 with "Locate", G-2, as recommended**): plain rail
+      controls and a plain evidence heading.
+  - Proposal: `docs/proposals/2026-09-28-task-9g-plain-rail-and-evidence.md`. Plates: AR-03
+    column 3, AR-04; rules 2 and 10.
+  - Result, commit `508173b`:
+    - RED: component 2 of 2 new tests (`office-9g.component.test.tsx`), on assertions: the Locate
+      control read "Locate Provide current browser evidence: blocked"; the record's first heading
+      was not the plain finding. Run `9g-red-*` at `9b0724c`.
+    - GREEN: the rail's controls show one word with the item in `aria-label`; the record's heading
+      is its plain finding, and `evidence_browser v1` sits under `Detailed evidence` as "Record".
+    - **Found in GREEN** by "replaces the rail when an item is located, and Escape returns to the
+      rail": focus was lost on going back, because the 9f-2 back stack remembered and found
+      controls by visible text. It now uses the accessible name (`accessibleNameOf`).
+    - Mutations, each confirmed applied, all killed. Applied in one run, each caught by a
+      different test: "Respond to {item}" visible again (G-1 test); the identifier heading
+      restored (G-2 test); lookup by visible text (the focus-return test).
+    - Moved assertions (P-4): none. Typecheck clean; e2e 72/72 unchanged.
+    - GREEN, `verify` on a clean tree at `508173b`: unit 568, component 138, integration 79 with
+      3 skipped, contract 78, e2e 72, a11y 46, visual 64.
+  - Owner-run step: re-capture the Task 9 evidence, then record provenance.
 
 - [ ] Task 10: Comprehension preparation (spec §8.7).
   - Acceptance: the six task URLs, fixture logs and answer key are aligned to the accepted UI and
