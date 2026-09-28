@@ -837,11 +837,35 @@ Browser evidence, version 1`, in `evidence-link.component.test.tsx` (twice),
   - Owner-run step: none needed for the captures. No capture journey shows a refused or accepted
     disposition in a changed state (the stale journey is unchanged).
 
-- [ ] Task 10: Comprehension preparation (spec §8.7).
+- [x] Task 10: Comprehension preparation (spec §8.7).
   - Acceptance: the six task URLs, fixture logs and answer key are aligned to the accepted UI and
     committed; the key's SHA-256 is written into the run preamble; the owner starts the three-day
     interval from that commit.
   - Verify: the preamble hash equals the committed key's digest, checked by script.
+  - **Design approved 2026-09-28**: Phase 4's six task wordings; URLs `/` (T1, T2, T4),
+    `/?state=stale`, `/?state=permission-denied`, `/?state=partial` (T3, the logs tagged T3),
+    `/?kickoff=revision` (T5), `/?kickoff=round` then `/` (T6); the production bundle
+    (`preview:web`).
+  - **One deviation, stated to the owner:** T1 no longer says "without clicking anything". The
+    work a person holds is one step away, in the inspector, so the restriction would make "identify
+    each agent's assignment" unanswerable by construction. The sheet records the paths opened.
+  - **Method.** The key was written from the rendered text at every task URL (a temporary dump
+    spec, never committed), not from the fixture source. That dump found the Task 9h defect.
+  - Result, commit `f1ca1be` (the interval start):
+    - `docs/evidence/phase-7-o/comprehension/protocol.md` (rules, setup, tasks, response sheet
+      with per-task performed marks and paths, scoring) and `answer-key.md`. Provenance recorded
+      by the owner.
+    - `tests/e2e/phase-7o-comprehension-key.spec.ts`: every fact the key quotes, asserted at its
+      task URL, 8 tests × 2 viewports. A guard over the existing interface, not a behavior
+      change, so not claimed as RED. Mutation, confirmed applied, killed: one fixture condition's
+      requested action shortened (the T3 test failed at both viewports).
+    - `scripts/comprehension-preamble.test.mjs`, in `test:ui-contract`: RED against a
+      placeholder digest, on the assertion; the real digest was then written programmatically.
+      Mutation, confirmed applied, killed: one byte appended to the key.
+    - GREEN, `verify` on a clean tree at `f1ca1be`: unit 586, component 139, integration 79 with
+      3 skipped, contract 78, e2e 88, a11y 46, visual 64.
+  - **Interval:** no substantive interface work after `f1ca1be`. Earliest cold run
+    2026-10-01 21:50 UTC (14:50 Pacific).
 
 - [ ] Task 11: **Owner-run** cold comprehension run.
   - Acceptance: all six tasks, with performed marks recorded at the time, exact answers written
