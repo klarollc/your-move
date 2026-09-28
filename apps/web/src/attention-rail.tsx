@@ -154,15 +154,20 @@ export function AttentionRail({
           aria-label="Disposition receipt"
         >
           <h3>Disposition recorded</h3>
-          <p>{receipt.receiptId}</p>
+          {/* Task 9f-5 (AR-04; rule 10): the decision in words, identifiers one step away. */}
           <p>
-            revision {receipt.acceptedRevision} → {receipt.resultingRevision}
+            {receipt.disposition.slice(0, 1).toUpperCase()}
+            {receipt.disposition.slice(1)} recorded. The agent can see this decision.
           </p>
-          <p>Target: {receipt.targetEntityId}</p>
-          <p>Agent-visible disposition: {receipt.disposition}</p>
           <details>
-            <summary>Receipt correlation</summary>
-            <p>{receipt.correlationId}</p>
+            <summary>Receipt details</summary>
+            <p>{receipt.receiptId}</p>
+            <p>
+              revision {receipt.acceptedRevision} → {receipt.resultingRevision}
+            </p>
+            <p>Target: {receipt.targetEntityId}</p>
+            <p>Agent-visible disposition: {receipt.disposition}</p>
+            <p>Correlation: {receipt.correlationId}</p>
           </details>
         </section>
       ) : null}

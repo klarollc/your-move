@@ -41,12 +41,25 @@ export function EvidenceLibrary({
   );
   const focusTriggerRef = useRef<HTMLButtonElement | undefined>(undefined);
 
+  // The lists are rebuilt when a record closes, so the trigger is found again by its name.
+  const returnFocusRef = useRef<string | undefined>(undefined);
   const closeEvidence = () => {
+    returnFocusRef.current = focusTriggerRef.current?.textContent?.trim() ?? "";
     setFocusedEvidence(undefined);
     setUnresolvedLink(undefined);
-    if (focusTriggerRef.current) focusTriggerRef.current.focus();
-    else libraryRef.current?.focus();
   };
+  useEffect(() => {
+    const label = returnFocusRef.current;
+    if (label === undefined || focusedEvidence || unresolvedLink) return;
+    returnFocusRef.current = undefined;
+    const trigger = [...(libraryRef.current?.querySelectorAll("button") ?? [])].find(
+      (button) => button.textContent?.trim() === label,
+    );
+    if (trigger) {
+      focusTriggerRef.current = trigger;
+      trigger.focus();
+    } else libraryRef.current?.focus();
+  }, [focusedEvidence, unresolvedLink]);
 
   useEffect(() => {
     const closeTopmost = (event: KeyboardEvent) => {
@@ -77,66 +90,70 @@ export function EvidenceLibrary({
         </div>
       </header>
 
-      <section aria-labelledby="library-knowledge-heading">
-        <h3 id="library-knowledge-heading">Knowledge lifecycle</h3>
-        <p>Statuses remain explicit; non-current records stay inspectable.</p>
-        <ol className="evidence-library-knowledge">
-          {projection.knowledge.map((record) => (
-            <li key={record.knowledgeId} data-knowledge-id={record.knowledgeId}>
-              <span data-testid="knowledge-status" data-status={record.status}>
-                {record.status}
-              </span>
-              <strong>{record.title}</strong>
-              <p>{record.snippet}</p>
-              <small>
-                revision {record.revision} · origin {record.originatingEntityId}
-              </small>
-            </li>
-          ))}
-        </ol>
-      </section>
+      {/* Task 9f-5 (AR-02 frame 6): an open record replaces the lists, one focused card. */}
+      {focusedEvidence || unresolvedLink ? null : (
+        <>
+          <section aria-labelledby="library-knowledge-heading">
+            <h3 id="library-knowledge-heading">Knowledge lifecycle</h3>
+            <p>Statuses remain explicit; non-current records stay inspectable.</p>
+            <ol className="evidence-library-knowledge">
+              {projection.knowledge.map((record) => (
+                <li key={record.knowledgeId} data-knowledge-id={record.knowledgeId}>
+                  <span data-testid="knowledge-status" data-status={record.status}>
+                    {record.status}
+                  </span>
+                  <strong>{record.title}</strong>
+                  <p>{record.snippet}</p>
+                  <small>
+                    revision {record.revision} · origin {record.originatingEntityId}
+                  </small>
+                </li>
+              ))}
+            </ol>
+          </section>
 
-      <section aria-labelledby="library-evidence-heading">
-        <h3 id="library-evidence-heading">Evidence lanes</h3>
-        <p>One lane per recorded evidence kind; each is evaluated independently.</p>
-        {projection.evidence.length === 0 ? <p>No evidence recorded.</p> : null}
-        <div className="evidence-library-lanes">
-          {lanesOf(projection.evidence).map(([kind, records]) => (
-            <section key={kind} aria-label={`${capitalize(kind)} evidence`}>
-              <h4>{capitalize(kind)} evidence</h4>
-              <ol>
-                {records.map((record) => (
-                  <li
-                    key={`${record.evidenceId}@${record.version}`}
-                    data-evidence-id={record.evidenceId}
-                  >
-                    <p>
-                      {record.evidenceId} · version {record.version}
-                    </p>
-                    <strong>{statusLabel(record)}</strong>
-                    <p>{record.summary ?? NO_SUMMARY}</p>
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        focusTriggerRef.current = event.currentTarget;
-                        setFocusedEvidence(record);
-                      }}
-                    >
-                      View {record.evidenceId} v{record.version}
-                    </button>
-                  </li>
-                ))}
-              </ol>
-            </section>
-          ))}
-        </div>
-      </section>
+          <section aria-labelledby="library-evidence-heading">
+            <h3 id="library-evidence-heading">Evidence lanes</h3>
+            <p>One lane per recorded evidence kind; each is evaluated independently.</p>
+            {projection.evidence.length === 0 ? <p>No evidence recorded.</p> : null}
+            <div className="evidence-library-lanes">
+              {lanesOf(projection.evidence).map(([kind, records]) => (
+                <section key={kind} aria-label={`${capitalize(kind)} evidence`}>
+                  <h4>{capitalize(kind)} evidence</h4>
+                  <ol>
+                    {records.map((record) => (
+                      <li
+                        key={`${record.evidenceId}@${record.version}`}
+                        data-evidence-id={record.evidenceId}
+                      >
+                        <p>
+                          {record.evidenceId} · version {record.version}
+                        </p>
+                        <strong>{statusLabel(record)}</strong>
+                        <p>{record.summary ?? NO_SUMMARY}</p>
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            focusTriggerRef.current = event.currentTarget;
+                            setFocusedEvidence(record);
+                          }}
+                        >
+                          View {record.evidenceId} v{record.version}
+                        </button>
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+              ))}
+            </div>
+          </section>
+        </>
+      )}
 
       {focusedEvidence ? (
         <section
           className="focused-evidence"
           role="dialog"
-          aria-modal="true"
           aria-label={`Evidence: ${focusedEvidence.evidenceId} v${focusedEvidence.version}`}
         >
           <header>
@@ -203,12 +220,7 @@ export function EvidenceLibrary({
         </section>
       ) : null}
       {unresolvedLink ? (
-        <section
-          className="focused-evidence"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Evidence link unavailable"
-        >
+        <section className="focused-evidence" role="dialog" aria-label="Evidence link unavailable">
           <header>
             <div>
               <p>Evidence link</p>

@@ -456,6 +456,13 @@
   margin: 12px 0;
 }
 
+.office-attention-stepper button {
+  flex: 0 0 auto;
+  padding-inline: 8px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
 .office-attention-position {
   color: #3b3e40;
   font-size: 13px;

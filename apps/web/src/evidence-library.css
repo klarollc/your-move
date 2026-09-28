@@ -109,19 +109,14 @@
   grid-column: 1 / -1;
 }
 
+/* Task 9f-5 (AR-02 frame 6): the open record is one card in the Library's flow, not an overlay
+   drawn over its way back. */
 .focused-evidence {
-  position: fixed;
-  z-index: 6;
-  top: 96px;
-  left: 50%;
-  width: min(520px, calc(100vw - 64px));
-  max-height: calc(100vh - 152px);
-  overflow: auto;
+  max-width: 640px;
+  margin-top: 18px;
   padding: 18px;
   border: 2px solid #4f5350;
   background: #fff;
-  box-shadow: 0 10px 30px rgb(41 43 45 / 18%);
-  transform: translateX(-50%);
 }
 
 .focused-evidence dl {

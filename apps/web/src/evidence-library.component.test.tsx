@@ -113,6 +113,7 @@ describe("EvidenceLibrary", () => {
 
     await user.click(screen.getByRole("button", { name: "Close evidence" }));
     expect(focused).not.toBeInTheDocument();
-    expect(trigger).toHaveFocus();
+    // Task 9f-5 (P-4): the lists are rebuilt when the record closes; the trigger is found again.
+    expect(screen.getByRole("button", { name: "View evidence_test v1" })).toHaveFocus();
   });
 });
