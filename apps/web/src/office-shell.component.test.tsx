@@ -363,7 +363,7 @@ describe("OfficeShell spatial evidence surfaces", () => {
     expect(library).toHaveTextContent("Approved Phase 4 scope");
     expect(library).toHaveTextContent("Complete — not approved");
 
-    await user.click(screen.getByRole("button", { name: "Close Library" }));
+    await user.click(screen.getByRole("button", { name: "Back to inspector" }));
     expect(library).not.toBeInTheDocument();
     // Task 9f-2 (P-2): the surface is rebuilt on return, so the control is found again by name.
     expect(screen.getByRole("button", { name: "Open Project Library" })).toHaveFocus();

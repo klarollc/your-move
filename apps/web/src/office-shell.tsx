@@ -773,10 +773,16 @@ export function OfficeShell({
           }
           projection={library}
           {...(initialEvidence ? { initialEvidence } : {})}
-          onClose={() => {
-            back();
-            setAnnouncement("Project Library closed");
-          }}
+          {...(backStack.length > 0
+            ? {
+                backLabel: `Back to ${surfaceNames[backStack.at(-1)!.surface]}`,
+                onBack: () => {
+                  back();
+                  setAnnouncement("Project Library closed");
+                },
+              }
+            : {})}
+          onClose={() => closeToOffice("Project Library closed")}
           onLocateOrigin={(entityId, evidence) => {
             // Back from the inspector returns to the Library, on the record that was open.
             advance("inspector", `View ${evidence.evidenceId} v${evidence.version}`);

@@ -529,10 +529,6 @@
   overflow-wrap: anywhere;
 }
 
-.office-shell[data-library-open="true"] .office-scene {
-  margin-right: 420px;
-}
-
 .office-motion-cue {
   position: absolute;
   z-index: 2;

@@ -85,7 +85,7 @@ describe("one contextual surface at a time", () => {
     expect(library()).toBeVisible();
     expect(inspector()).toBeNull();
     expect(openSurfaces()).toBe(1);
-    await user.click(screen.getByRole("button", { name: "Close Library" }));
+    await user.click(screen.getByRole("button", { name: "Back to inspector" }));
     expect(inspector()).toBeVisible();
     expect(screen.getByRole("button", { name: "Open Project Library" })).toHaveFocus();
   });
@@ -104,7 +104,7 @@ describe("one contextual surface at a time", () => {
     await user.click(screen.getByRole("button", { name: "Back to Library" }));
     expect(library()).toBeVisible();
     expect(screen.getByRole("button", { name: "View evidence_browser v1" })).toHaveFocus();
-    await user.click(screen.getByRole("button", { name: "Close Library" }));
+    await user.click(screen.getByRole("button", { name: "Back to inspector" }));
     expect(inspector()).toHaveAttribute("data-selected-entity-id", "zone_library");
     expect(screen.getByRole("button", { name: "Open Project Library" })).toHaveFocus();
   });

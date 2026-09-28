@@ -25,6 +25,23 @@ test("@e2e Phase 7-O an inspector Evidence link opens the log's record at its ve
   await page.keyboard.press("Escape");
   await expect(focused).toHaveCount(0);
   await expect(library).toBeFocused();
-  await page.getByRole("button", { name: "Close Library" }).click();
+  await page.getByRole("button", { name: "Back to inspector" }).click();
   await expect(link).toBeFocused();
+});
+
+// Phase 7-O Task 9f-4 (AR-02 frame 6; constitution rule 3): opened evidence takes the surface
+// below the project bar, rather than squeezing the office into a strip beside it.
+test("@e2e Phase 7-O opened evidence takes the whole surface below the bar", async ({ page }) => {
+  await page.goto("/");
+  const scene = page.getByRole("region", { name: "Office scene" });
+  const sceneBox = await scene.boundingBox();
+  await openOfficeOutline(page);
+  await page.getByRole("button", { name: "Inspect Test Engineer" }).click();
+  await page.getByRole("button", { name: "Open Browser evidence, version 1" }).click();
+  const library = page.getByRole("complementary", { name: "Project Library" });
+  await expect(library).toBeVisible();
+  const libraryBox = await library.boundingBox();
+  expect(Math.abs(libraryBox!.x - sceneBox!.x)).toBeLessThanOrEqual(1);
+  expect(Math.abs(libraryBox!.width - sceneBox!.width)).toBeLessThanOrEqual(1);
+  await expect(page.getByRole("button", { name: "Back to office" })).toBeVisible();
 });

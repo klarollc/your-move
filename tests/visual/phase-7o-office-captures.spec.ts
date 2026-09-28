@@ -275,7 +275,7 @@ test("@visual Phase 7-O office captures, with console, network, input, zoom and 
   await link.click();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("complementary", { name: "Project Library" })).toBeFocused();
-  await page.getByRole("button", { name: "Close Library" }).click();
+  await page.getByRole("button", { name: "Back to inspector" }).click();
   await expect(link).toBeFocused();
 
   // Reduced motion: the recorded handoff keeps its meaning as a label, with nothing animated.
@@ -345,7 +345,7 @@ test("@visual Phase 7-O office captures, with console, network, input, zoom and 
     },
     focusReturn: {
       performed: true,
-      method: "Escape from the inspector; Escape from an evidence dialog, then Close Library",
+      method: "Escape from the inspector; Escape from an evidence dialog, then Back to inspector",
     },
     zoom200: {
       performed: true,

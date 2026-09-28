@@ -4,11 +4,27 @@
   top: var(--office-bar-height, 56px);
   right: 0;
   bottom: 0;
-  width: 420px;
+  /* Task 9f-4 (AR-02 frame 6): deliberately opened evidence takes the surface below the bar. */
+  left: 0;
   overflow: auto;
-  padding: 16px;
-  border-left: 1px solid #676b68;
+  padding: 16px max(16px, calc((100% - 960px) / 2));
   background: #f4f4f0;
+}
+
+.evidence-library-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: end;
+  gap: 8px;
+}
+
+.focused-evidence-plain {
+  margin: 10px 0 !important;
+  font-size: 15px;
+}
+
+.focused-evidence-detail summary {
+  cursor: pointer;
 }
 
 .evidence-library > header,

@@ -9,12 +9,20 @@ export type EvidenceLink = Readonly<{ evidenceId: string; version: number }>;
 export function EvidenceLibrary({
   projection,
   initialEvidence,
+  backLabel,
+  onBack,
   onClose,
   onLocateOrigin,
 }: Readonly<{
   projection: BrowserLibraryProjection;
   /** Open at this record and version (spec §6). Never falls back to another record. */
   initialEvidence?: EvidenceLink;
+  /**
+   * Task 9f-4 (AR-02 frame 6): the Library takes the surface, with a way back to where it was
+   * opened from, named for it, and a way back to the office.
+   */
+  backLabel?: string;
+  onBack?: () => void;
   onClose: () => void;
   /** The evidence is passed so a caller can come back to it (Task 9f-2). */
   onLocateOrigin: (entityId: string, evidence: EvidenceLink) => void;
@@ -44,7 +52,7 @@ export function EvidenceLibrary({
     const closeTopmost = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
       if (focusedEvidence || unresolvedLink) closeEvidence();
-      else onClose();
+      else (onBack ?? onClose)();
     };
     window.addEventListener("keydown", closeTopmost);
     return () => window.removeEventListener("keydown", closeTopmost);
@@ -57,9 +65,16 @@ export function EvidenceLibrary({
           <p>Shared project knowledge</p>
           <h2>Project Library</h2>
         </div>
-        <button type="button" onClick={onClose}>
-          Close Library
-        </button>
+        <div className="evidence-library-actions">
+          {backLabel && onBack ? (
+            <button type="button" onClick={onBack}>
+              {backLabel}
+            </button>
+          ) : null}
+          <button type="button" onClick={onClose}>
+            Back to office
+          </button>
+        </div>
       </header>
 
       <section aria-labelledby="library-knowledge-heading">
@@ -135,32 +150,41 @@ export function EvidenceLibrary({
               Close evidence
             </button>
           </header>
-          <p>{statusLabel(focusedEvidence)}</p>
-          <p>{focusedEvidence.summary ?? NO_SUMMARY}</p>
-          <dl>
-            <dt>Evidence ID</dt>
-            <dd>{focusedEvidence.evidenceId}</dd>
-            <dt>Version</dt>
-            <dd>version {focusedEvidence.version}</dd>
-            <dt>Kind</dt>
-            <dd>{focusedEvidence.kind}</dd>
-            {focusedEvidence.workItemId ? (
-              <>
-                <dt>Work item</dt>
-                <dd>{focusedEvidence.workItemId}</dd>
-              </>
-            ) : null}
-            {focusedEvidence.causeEventId ? (
-              <>
-                <dt>Recorded by event</dt>
-                <dd>{focusedEvidence.causeEventId}</dd>
-              </>
-            ) : null}
-            <dt>Revision</dt>
-            <dd>revision {focusedEvidence.revision}</dd>
-            <dt>Originating office entity</dt>
-            <dd>{focusedEvidence.originatingEntityId ?? "No office entity holds this work"}</dd>
-          </dl>
+          {/* Task 9f-4 (AR-02 frame 6; rule 10): the finding first, identifiers one step away. */}
+          <p className="focused-evidence-plain">
+            {capitalize(focusedEvidence.kind)} evidence, version {focusedEvidence.version}:{" "}
+            {statusLabel(focusedEvidence).toLowerCase()}.{" "}
+            {focusedEvidence.summary ?? `${NO_SUMMARY}.`}
+          </p>
+          <details className="focused-evidence-detail">
+            <summary>Detailed evidence</summary>
+            <dl>
+              <dt>Status</dt>
+              <dd>{statusLabel(focusedEvidence)}</dd>
+              <dt>Evidence ID</dt>
+              <dd>{focusedEvidence.evidenceId}</dd>
+              <dt>Version</dt>
+              <dd>version {focusedEvidence.version}</dd>
+              <dt>Kind</dt>
+              <dd>{focusedEvidence.kind}</dd>
+              {focusedEvidence.workItemId ? (
+                <>
+                  <dt>Work item</dt>
+                  <dd>{focusedEvidence.workItemId}</dd>
+                </>
+              ) : null}
+              {focusedEvidence.causeEventId ? (
+                <>
+                  <dt>Recorded by event</dt>
+                  <dd>{focusedEvidence.causeEventId}</dd>
+                </>
+              ) : null}
+              <dt>Revision</dt>
+              <dd>revision {focusedEvidence.revision}</dd>
+              <dt>Originating office entity</dt>
+              <dd>{focusedEvidence.originatingEntityId ?? "No office entity holds this work"}</dd>
+            </dl>
+          </details>
           {focusedEvidence.originatingEntityId ? (
             <button
               type="button"

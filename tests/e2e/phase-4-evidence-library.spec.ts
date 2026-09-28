@@ -20,8 +20,7 @@ test("@e2e Phase 4 Library preserves lifecycle, evidence lanes, and spatial orig
 }, testInfo) => {
   await page.goto("/");
   const scene = page.getByRole("region", { name: "Office scene" });
-  // Task 9f-2 (P-4): one surface at a time, so the library's 420 px is measured from the office
-  // with nothing open.
+  // Measured from the office with nothing open (Task 9f-2, P-4).
   const initialScene = await scene.boundingBox();
   await openOfficeOutline(page);
 
@@ -31,7 +30,11 @@ test("@e2e Phase 4 Library preserves lifecycle, evidence lanes, and spatial orig
 
   const library = page.getByRole("complementary", { name: "Project Library" });
   await expect(library).toBeVisible();
-  expect((initialScene?.width ?? 0) - ((await scene.boundingBox())?.width ?? 0)).toBe(420);
+  // Task 9f-4 (P-4; AR-02 frame 6): the Library takes the surface below the bar rather than
+  // taking 420 px off the office.
+  const libraryBox = await library.boundingBox();
+  expect(Math.abs((libraryBox?.x ?? 0) - (initialScene?.x ?? 0))).toBeLessThanOrEqual(1);
+  expect(Math.abs((libraryBox?.width ?? 0) - (initialScene?.width ?? 0))).toBeLessThanOrEqual(1);
   await expect(library.getByTestId("knowledge-status")).toHaveText([
     "authoritative",
     "approved",
@@ -68,7 +71,7 @@ test("@e2e Phase 4 Library preserves lifecycle, evidence lanes, and spatial orig
   await page.getByRole("button", { name: "Back to Library" }).click();
   await expect(viewEvidence).toBeFocused();
 
-  await page.getByRole("button", { name: "Close Library" }).click();
+  await page.getByRole("button", { name: "Back to inspector" }).click();
   await expect(page.getByRole("button", { name: "Open Project Library" })).toBeFocused();
 });
 
