@@ -59,3 +59,22 @@ test("@e2e Phase 7-O an open evidence record leaves the way back uncovered", asy
   await expectUncovered(page, "Back to inspector");
   await expectUncovered(page, "Back to office");
 });
+
+test("@e2e Phase 7-O an open record's plain sentence is not smaller than its heading", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await openOfficeOutline(page);
+  await page.getByRole("button", { name: "Inspect Test Engineer" }).click();
+  await page.getByRole("button", { name: "Open Browser evidence, version 1" }).click();
+  const record = page.getByRole("dialog", { name: "Evidence: evidence_browser v1" });
+  await expect(record).toBeVisible();
+  const size = (selector: string) =>
+    record
+      .locator(selector)
+      .first()
+      .evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize));
+  // AR-02 frame 6, rule 10: the finding is read first, so it may not be demoted below the
+  // identifier heading by a general Library paragraph rule.
+  expect(await size(".focused-evidence-plain")).toBeGreaterThanOrEqual(await size("h3"));
+});

@@ -18,8 +18,10 @@
   gap: 8px;
 }
 
-.focused-evidence-plain {
-  margin: 10px 0 !important;
+/* Task 9f-6: scoped under the Library so it outranks `.evidence-library > section > p`, which
+   otherwise set the finding to 12 px, below its own heading. */
+.evidence-library .focused-evidence-plain {
+  margin: 10px 0;
   font-size: 15px;
 }
 
