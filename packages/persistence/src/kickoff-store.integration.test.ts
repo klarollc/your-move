@@ -4,7 +4,12 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { openProjectStore, type ProjectStore } from "./project-store.js";
-import { listKickoffRecords, storeKickoffRecord } from "./kickoff-store.js";
+import { listKickoffRecords, storeKickoffRecord as storeAt } from "./kickoff-store.js";
+
+// DF-030 (P-4): storing now requires a recorded time; these tests are about content, so every
+// write uses one fixed time.
+const storeKickoffRecord = (target: ProjectStore, record: Parameters<typeof storeAt>[1]) =>
+  storeAt(target, record, { recordedAt: "2026-09-28T22:00:00.000Z" });
 
 let store: ProjectStore | undefined;
 afterEach(() => store?.close());

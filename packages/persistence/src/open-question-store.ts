@@ -2,6 +2,7 @@ import type { OpenQuestion, QuestionDisposition } from "@cuckcode/contracts";
 import { stableStringify } from "@cuckcode/domain";
 
 import type { ProjectStore } from "./project-store.js";
+import { validRecordTime, type RecordTime } from "./record-time.js";
 
 /**
  * Canonical serialization, not raw JSON.stringify. Two records with identical values but
@@ -42,7 +43,9 @@ export function storeQuestionDisposition(
   store: ProjectStore,
   projectId: string,
   disposition: QuestionDisposition,
+  time: RecordTime,
 ): void {
+  const recordedAt = validRecordTime(time);
   const canonicalJson = canonical(disposition);
   const existing = store.database
     .prepare("SELECT canonical_json FROM question_dispositions WHERE disposition_id=?")
@@ -56,8 +59,17 @@ export function storeQuestionDisposition(
     )
     .get(disposition.questionId) as { next: number };
   store.database
-    .prepare("INSERT INTO question_dispositions VALUES(?,?,?,?,?)")
-    .run(disposition.dispositionId, disposition.questionId, projectId, next.next, canonicalJson);
+    .prepare(
+      "INSERT INTO question_dispositions(disposition_id,question_id,project_id,sequence,canonical_json,recorded_at) VALUES(?,?,?,?,?,?)",
+    )
+    .run(
+      disposition.dispositionId,
+      disposition.questionId,
+      projectId,
+      next.next,
+      canonicalJson,
+      recordedAt,
+    );
 }
 
 export function listOpenQuestions(store: ProjectStore, projectId: string): OpenQuestion[] {
@@ -80,4 +92,27 @@ export function listQuestionDispositions(
       )
       .all(projectId, questionId) as Array<{ canonical_json: string }>
   ).map((row) => JSON.parse(row.canonical_json) as QuestionDisposition);
+}
+
+export type QuestionDispositionRecord = Readonly<{
+  disposition: QuestionDisposition;
+  recordedAt: string | null;
+}>;
+
+/** Dispositions in order, each with when it was recorded (null before DF-030). */
+export function listQuestionDispositionRecords(
+  store: ProjectStore,
+  projectId: string,
+  questionId: string,
+): QuestionDispositionRecord[] {
+  return (
+    store.database
+      .prepare(
+        "SELECT canonical_json,recorded_at FROM question_dispositions WHERE project_id=? AND question_id=? ORDER BY sequence",
+      )
+      .all(projectId, questionId) as Array<{ canonical_json: string; recorded_at: string | null }>
+  ).map((row) => ({
+    disposition: JSON.parse(row.canonical_json) as QuestionDisposition,
+    recordedAt: row.recorded_at,
+  }));
 }

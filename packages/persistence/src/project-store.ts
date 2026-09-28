@@ -32,6 +32,12 @@ CREATE INDEX IF NOT EXISTS open_questions_project_subject ON open_questions(proj
 CREATE TABLE IF NOT EXISTS question_dispositions(disposition_id TEXT PRIMARY KEY, question_id TEXT NOT NULL REFERENCES open_questions(question_id), project_id TEXT NOT NULL, sequence INTEGER NOT NULL, canonical_json TEXT NOT NULL, UNIQUE(question_id,sequence));
 CREATE INDEX IF NOT EXISTS question_dispositions_project_question ON question_dispositions(project_id,question_id,sequence);
 `;
+// DF-030 (owner ruling 2026-09-28): records written from here on say when they were recorded.
+// Nullable, because rows written before this migration have no truthful time to backfill.
+const RECORD_TIMES_SQL = `
+ALTER TABLE kickoff_records ADD COLUMN recorded_at TEXT;
+ALTER TABLE question_dispositions ADD COLUMN recorded_at TEXT;
+`;
 const checksum = (text: string) => createHash("sha256").update(text).digest("hex");
 function applyMigration(db: Database.Database, id: string, sql: string, appliedAt: string): void {
   if (id === "001_initial") db.exec(sql);
@@ -100,7 +106,8 @@ export function openProjectStore(
       applyMigration(db, "002_runtime_trust", RUNTIME_TRUST_SQL, "2026-08-13T18:00:00.000Z");
       applyMigration(db, "003_kickoff", KICKOFF_SQL, "2026-08-13T23:00:00.000Z");
       applyMigration(db, "004_open_question", OPEN_QUESTION_SQL, "2026-08-18T20:00:00.000Z");
-      db.pragma("user_version = 4");
+      applyMigration(db, "005_record_times", RECORD_TIMES_SQL, "2026-09-28T22:00:00.000Z");
+      db.pragma("user_version = 5");
     })();
     if (options.testMigrationSql) db.transaction(() => db.exec(options.testMigrationSql!))();
   } catch (error) {

@@ -8,8 +8,16 @@ import {
   listOpenQuestions,
   listQuestionDispositions,
   storeOpenQuestion,
-  storeQuestionDisposition,
+  storeQuestionDisposition as storeDispositionAt,
 } from "./open-question-store.js";
+
+// DF-030 (P-4): storing now requires a recorded time; these tests are about content, so every
+// write uses one fixed time.
+const storeQuestionDisposition = (
+  target: ProjectStore,
+  projectId: string,
+  disposition: Parameters<typeof storeDispositionAt>[2],
+) => storeDispositionAt(target, projectId, disposition, { recordedAt: "2026-09-28T22:00:00.000Z" });
 
 let store: ProjectStore | undefined;
 afterEach(() => {
