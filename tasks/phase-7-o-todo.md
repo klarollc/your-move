@@ -675,8 +675,8 @@ Browser evidence, version 1`, in `evidence-link.component.test.tsx` (twice),
       `lint`.
     - **Owner-run step:** re-capture the Task 9 evidence, then record provenance.
 
-- [ ] Task 9f (**approved 2026-09-27, P-0 to P-4 as recommended**): plate alignment in the
-      graybox.
+- [x] Task 9f (**approved 2026-09-27, P-0 to P-4 as recommended; 9f-1a ruled in
+      implementation**): plate alignment in the graybox.
   - Proposal and decisions: `docs/proposals/2026-09-27-plate-alignment.md`. P-0 amends the MDD
     (Phase 7-O section) and the art approval record: the plates are the product target.
   - Governing plates: AR-01, AR-02 frames 4 and 6, AR-03, AR-04.
@@ -689,6 +689,65 @@ Browser evidence, version 1`, in `evidence-link.component.test.tsx` (twice),
       manager.
     - 9f-4: AR-03 wording on first screens; attention one item at a time behind `Respond`;
       evidence takes the surface with `Back to office`; work motion suspended while not current.
+  - **Ruling 9f-1a (owner, during implementation).** MDD §14 item 1 requires project identity,
+    current outcome and runtime health in the bar. Kept, in plain words: "CuckCode / truthful
+    graybox office", a health word ("Connected", "Updates unavailable", "Offline"), then the split
+    count. The revision moves under the outline's Technical detail. The canonical logs record no
+    project name, so none is shown.
+  - Result, 2026-09-27 (commits `79a1acf` to `3c80695`):
+    - **9f-1.** RED: component 5 of 5 new tests, unit 4 of 4 (`attentionSummary` missing). The
+      bar reads "1 blocked · 1 review"; unknown reasons count as "other" rather than being dropped.
+    - **9f-2.** RED: component 5 of 6. "Goes back to the outline on Escape" could not fail: the
+      old A-2 layout already returned focus with the outline open. A back stack holds the surface
+      left, the name of the control used and, for the inspector, its selection. The kickoff is
+      one of the exclusive surfaces too, under constitution rule 3, though P-2 did not name it.
+      - Found in GREEN by the Phase 4 Library e2e: going back through two inspectors returned to
+        an empty inspector. A component test was written and failed first, then fixed by keeping
+        the selection on the stack.
+      - Found in 9f-1 GREEN: the 200% zoom e2e at 1280 found the attention button off-screen with
+        the outline and inspector both open. It did not recur once 9f-2 removed that layout; the
+        cause was not isolated further.
+      - `onLocateOrigin` now also passes the evidence, so going back returns to the record.
+    - **9f-3.** RED: unit (function missing), e2e at both viewports. Labels sit over or under
+      alternate desks, 12 px, amber with "Needs you" in the words, `pointer-events: none`, read as
+      a list. Not measured: labels at 200% zoom, where the scene is below its approved minimum and
+      no camera is drawn, so no labels are shown.
+    - **9f-4, rule 6.** RED: unit 2, e2e 2 (stale showed `travel`). The motion plan is paused in
+      the stale and offline states.
+    - **9f-4, wording.** RED: component 6, unit 1. One new test first used a `banner` role inside
+      a section, which cannot resolve; it was corrected before any implementation and RED rerun.
+      Notices drop "Cause:"; stale and offline say what is shown is as last confirmed (with the
+      latest recorded time) and current activity is unknown; people read "Status unknown" in the
+      scene and "Status unknown · last confirmed: …" in the outline.
+    - **9f-4, rail.** RED: component 4. One item at a time with "1 of N", Previous and Next; the
+      disposition controls behind "Respond to …", all five options kept. A clamp test was added
+      before the clamp mutation, because no test exercised dismissing the last item.
+    - **9f-4, evidence.** RED: component 3, e2e 2. The Library covers the surface below the bar
+      with "Back to inspector" and "Back to office"; a record says what it found first, with
+      identifiers under "Detailed evidence".
+    - **Mutations, each confirmed applied, all killed:** total count (unit 4, component 10); raw
+      runtime text (2); outline kept open behind the inspector (4); no back (11); no amber (unit
+      1); labels in one row (e2e, both viewports); labels taking the pointer (e2e, both); "Cause:"
+      restored (3); known state while stale (1); raw state in the outline header (1); no Respond
+      gate (1); no clamp (1); Library as a side panel (e2e 4); plain evidence line hidden (1);
+      "Back to office" going back instead (1). The rule-6 and back-stack-selection REDs stand as
+      the revert mutations.
+    - **Moved assertions (P-4).** "Manager attention (2)" and "(1)" become the split counts
+      (dismissing the blocked item leaves "1 review"). Tests holding a detached element across a
+      surface change find it again by name. A-2 assertions become "the inspector replaces the
+      outline". Scene widths: the inspector's 320 px and the Library's full surface are measured
+      from the office with nothing open. The kickoff tests assert the outline is one action away
+      in the bar. `Close Library` becomes `Back to inspector`. Rail tests click `Respond to …` and
+      `Next item`. Stale and offline cause patterns, the outline header's state word (now the
+      bar's health word), and "Layout only" (now under Technical detail) move. "Collapses an empty
+      attention projection" had become vacuous after 9f-1 and now checks the bar for any count.
+    - **Flake:** once, the Phase 5 decision-notice `overdue` visual at 1280 found no element on
+      load; it passed on rerun and in `verify`.
+    - **GREEN, `verify` on a clean tree at `3c80695`:** unit 568, component 134, integration 79
+      with 3 skipped, contract 78, e2e 66, a11y 46, visual 64.
+    - **Seen in current-build screenshots, not fixed:** the rail's Previous/Next labels wrap to
+      two lines at 280 px; an open evidence record's dialog covers the Library's header buttons
+      until it is closed; the disposition receipt still shows identifiers on its first screen.
   - Owner-run step: re-capture the Task 9 evidence, then record provenance.
 
 - [ ] Task 10: Comprehension preparation (spec §8.7).
