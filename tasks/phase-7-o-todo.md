@@ -763,7 +763,19 @@ Browser evidence, version 1`, in `evidence-link.component.test.tsx` (twice),
     - GREEN, `verify` on a clean tree at `28bc41d`: unit 568, component 136, integration 79 with
       3 skipped, contract 78, e2e 70, a11y 46, visual 64.
     - Seen, not fixed: the record's plain sentence renders smaller than its heading, because a
-      general Library paragraph rule wins over the new class.
+      general Library paragraph rule wins over the new class. Fixed in 9f-6.
+  - **9f-6 (owner: fix before the re-capture, 2026-09-28), commit `2f67a32`:**
+    - Cause: since 9f-5 the record is a direct section child of the Library, so
+      `.evidence-library > section > p` (12 px, grey) outranked `.focused-evidence-plain` (15 px).
+    - RED: e2e 2 (the new test at both viewports), "Expected: >= 15, Received: 12"; the other 70
+      passed. Run `9f6-red-1790627035` at `5b436cc`, test uncommitted.
+    - GREEN: the rule is scoped as `.evidence-library .focused-evidence-plain`, and its margin no
+      longer needs `!important`. e2e 72/72.
+    - Mutation, confirmed applied, killed: the unscoped selector restored (e2e 2, both viewports).
+    - Not changed: the sentence stays grey (`#55585a`, from the same Library rule); the class sets
+      no colour and none was ruled.
+    - GREEN, `verify` on a clean tree at `2f67a32`: unit 568, component 136, integration 79 with
+      3 skipped, contract 78, e2e 72, a11y 46, visual 64.
   - Owner-run step: re-capture the Task 9 evidence, then record provenance.
 
 - [ ] Task 10: Comprehension preparation (spec §8.7).
