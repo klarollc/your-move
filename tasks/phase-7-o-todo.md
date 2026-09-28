@@ -809,7 +809,33 @@ Browser evidence, version 1`, in `evidence-link.component.test.tsx` (twice),
     - Moved assertions (P-4): none. Typecheck clean; e2e 72/72 unchanged.
     - GREEN, `verify` on a clean tree at `508173b`: unit 568, component 138, integration 79 with
       3 skipped, contract 78, e2e 72, a11y 46, visual 64.
-  - Owner-run step: re-capture the Task 9 evidence, then record provenance.
+  - Owner-run step: re-capture the Task 9 evidence, then record provenance. **Done 2026-09-28**
+    (`02b6658`): only the blocked-item and evidence-link captures changed at each viewport.
+
+- [x] Task 9h (**approved 2026-09-28 as proposed in chat**): a disposition is refused only where
+      no decision can be recorded.
+  - **Found while preparing Task 10**, from the rendered text at the task URLs: the rail accepted
+    dispositions only in `ready` and `partial`, and elsewhere said "Refresh the current workspace
+    before recording a disposition", including current canonical states whose attention item asks
+    for that decision (`permission-denied`, `missing-artifact`, `test-failure`,
+    `reviewer-disagreement`, `conflict`, `cancelled`). Proposed V1: the item and its controls
+    contradicted each other. One of these states is a T3 task URL.
+  - Owner ruling: refuse in `stale`, `offline`, `loading`, `error`, `restart`, each with its own
+    reason; accept in the other twelve.
+  - Result, commit `f504185`:
+    - `dispositionRefusal(state)` in `office-model.ts`; the rail takes `refusal` instead of
+      `available`. The stub extracted today's rule unchanged.
+    - RED: unit 14 (the table over all seventeen states, on assertions); component 1
+      ("accepts a manager disposition in the permission-denied state"). Not RED: `ready`,
+      `partial` and `stale`, which the stub already matched, and the coverage test.
+    - Mutation, confirmed applied, killed: `permission-denied` refusing again (unit 1,
+      component 1).
+    - Moved (P-4): "denies manager dispositions while offline" now expects offline's own reason;
+      stale's is unchanged.
+    - GREEN, `verify` on a clean tree at `f504185`: unit 586, component 139, integration 79 with
+      3 skipped, contract 78, e2e 72, a11y 46, visual 64.
+  - Owner-run step: none needed for the captures. No capture journey shows a refused or accepted
+    disposition in a changed state (the stale journey is unchanged).
 
 - [ ] Task 10: Comprehension preparation (spec §8.7).
   - Acceptance: the six task URLs, fixture logs and answer key are aligned to the accepted UI and
