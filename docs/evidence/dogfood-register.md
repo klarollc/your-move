@@ -67,7 +67,7 @@ updates its row. An entry's own text is history and is not rewritten.
 | DF-025 | fixed | Attempt records, an activity-aware turn runner and one bounded retry. |
 | DF-026 | fixed | Ruled 2026-09-26: evidence converted to LF and re-recorded. |
 | DF-027 | fixed | Ruled 2026-09-26; built and proved 2026-09-27: `FEATURE_POLICY` per session, `TOOL_SURFACE_PRESENT` refuses a binding, probe `PROBE_OK`, first turn under the policy `SMOKE_OK`. Misfiled as open on 2026-09-28 and corrected 2026-09-29. |
-| DF-028 | fixed | The zoom probe asserts the layout width. The blank-page failure it also records has recurred (below). |
+| DF-028 | ruled | The zoom probe is fixed. The blank-page failure it records has occurred three times, cause unknown; failed runs now keep their traces (owner-approved 2026-09-29). |
 | DF-029 | ruled | Amendment approved 2026-09-28 (`docs/proposals/2026-09-28-df-029-blocked-not-on-you.md`); built after Phase 7-O acceptance. |
 | DF-030 | ruled | Question dispositions and kickoff records fixed (`3494b6d`); provider identities fixed by owner ruling 2026-09-29 (migration `006`); content manifests and packet receipts exempted, not fixed. |
 
@@ -1359,6 +1359,14 @@ waited 30 s for the office scene, which never rendered. The commit touched only
 `packages/runtime-codex`, which the web bundle does not import. `test:e2e` alone and a second
 `verify` at the same commit passed. Two occurrences in three days, at both viewports between them,
 is a pattern, not a flake: the cause is still unknown.
+
+**Recurred again 2026-09-29.** `verify` at `1ad7cf3` failed `phase-7o-layout.spec.ts` at 1440: the
+page's own "Office outline" button never appeared in 30 s. The commit touched no web code; the next
+`verify` passed. Three occurrences, three different tests, both viewports. **Why nothing explains
+them:** the Playwright config already keeps a trace, screenshot and video for a failed test, but the
+next Playwright run wipes `test-results/`, and each time a rerun came within minutes. The runner
+now archives a failed run's Playwright output under `node_modules/.cache/agent-runner/failures/`
+(owner-approved 2026-09-29), so the next occurrence keeps its trace.
 
 ### DF-029 — A blocked agent cannot say it is not blocked on the manager
 
