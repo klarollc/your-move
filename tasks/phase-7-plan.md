@@ -1,6 +1,6 @@
 # Implementation plan: Phase 7, the rendered office
 
-Status: **DRAFT 2026-09-28, for owner approval.** Specification:
+Status: **OWNER-APPROVED 2026-09-28, Q-1 to Q-5 as recommended.** Specification:
 `docs/phase-7-high-fidelity-spec-v0.1.md`, **owner-approved 2026-09-28** (F-1 to F-8; F-5 decided,
 Fira Sans + Fira Mono). **Not authorized before Phase 7-O is accepted**, and runs after the DF-029
 amendment and the Phase 5 fixture removal (spec §7). Checklist: `tasks/phase-7-todo.md`, approved

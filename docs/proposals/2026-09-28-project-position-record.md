@@ -1,7 +1,7 @@
 # Specification: a canonical project position record (DF-001 to DF-003)
 
-**Status: DRAFT 2026-09-28, for owner decisions S-1 to S-5.** Drafting authorized by the owner
-2026-09-28. Implementation not authorized.
+**Status: APPROVED 2026-09-28, S-1 to S-5 as recommended; the repository record is authorized
+and built the same day** (owner: "recommendations approved … go on next step").
 
 Author: agent. Sources: DF-001, DF-002, DF-003 in `docs/evidence/dogfood-register.md` (all
 **open**); MDD D-26 (reciprocal usability) and §15 (deterministic context assembly).

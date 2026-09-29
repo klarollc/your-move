@@ -1,6 +1,6 @@
 # Implementation plan: DF-029, blocked but not on you
 
-Status: **DRAFT 2026-09-28, for owner approval.** Written under the approved amendment
+Status: **OWNER-APPROVED 2026-09-28, D-1 to D-3 as recommended.** Written under the approved amendment
 `docs/proposals/2026-09-28-df-029-blocked-not-on-you.md` (B-1 to B-5 as recommended). **Not
 authorized to start before Phase 7-O is accepted** (Task 12): it changes what the office shows.
 Checklist: `tasks/df-029-todo.md`, approved separately.

@@ -40,9 +40,9 @@ updates its row. An entry's own text is history and is not rewritten.
 
 | Entry | Status | Note |
 | --- | --- | --- |
-| DF-001 | open | Session start needs full context reconstruction. Mitigated by `docs/HANDOFF.md`; no product feature. |
-| DF-002 | open | Task completion is inferred from three artifacts. No canonical position record. |
-| DF-003 | open | Authority boundaries live in prose across documents. |
+| DF-001 | ruled | Spec approved 2026-09-28 (`docs/proposals/2026-09-28-project-position-record.md`); the repository prototype, `position.json`, is built. The product-side record follows Phase 7-O. |
+| DF-002 | ruled | `position.json` carries task states a checkbox cannot (authorized, pending owner, blocked with a resolver); building it found two stale checkboxes. Product side later. |
+| DF-003 | ruled | Authority and freezes are fields in `position.json`; the cold-run freeze is a test. Product side later. |
 | DF-004 | closed | Environmental tooling friction, recorded as not a product signal. |
 | DF-005 | graduated | The open-question record: `docs/proposals/2026-08-18-open-question-record.md`, implemented. |
 | DF-006 | fixed | Detected by `checkNativePlatform` (`check:toolchain`). Prevention declined by the owner, 2026-09-08. |

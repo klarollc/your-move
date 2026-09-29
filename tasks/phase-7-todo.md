@@ -1,6 +1,6 @@
 # Phase 7 checklist: the rendered office
 
-Status: **DRAFT 2026-09-28, for owner approval.** Plan: `tasks/phase-7-plan.md`. Not authorized
+Status: **OWNER-APPROVED 2026-09-28.** Tasks start only after Phase 7-O acceptance, DF-029 and the fixture removal. Plan: `tasks/phase-7-plan.md`. Not authorized
 before Phase 7-O acceptance, the DF-029 amendment and the Phase 5 fixture removal.
 
 ## Rules for every task

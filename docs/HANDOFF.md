@@ -17,14 +17,13 @@ is authorized by this approval. Existing phase gates remain.
 
 ## Where the project is
 
-| Phase | State |
-| --- | --- |
-| 0–3 | Accepted 2026-08-13 |
-| 4 | **Complete.** Bounded live D-25 round ran the full thirteen turns; evidence packet delivered. Owner gate open. |
-| 6 | **Complete.** `reconciliation-b-clarity` is the **Active** visual system, promoted by owner execution. |
-| 5 | **Accepted by the owner 2026-09-25** on the NEEDS WORK pass 5 (C-17 out of scope, not met). **Not closed:** the hand-recorded D-24 review is due **2026-10-09**, owner as reviewer. |
-| 7-O | **Tasks 1–10 done (2026-09-28).** Specification, plan and checklist owner-approved 2026-09-25. Next: **Task 11, the owner's cold comprehension run, not before 2026-10-01 14:50 Pacific**; then Task 12, owner acceptance. **No interface work until the run** (see below). |
-| 7, 8 | **Unauthorized.** Phase 7 follows accepted Phase 7-O and needs its own specification, plan and owner approval. |
+**Read `position.json` at the repository root.** Since 2026-09-28 it is the one record of where
+every workstream stands, what is authorized, what is frozen (the Phase 7-O cold-run interval is a
+freeze there, enforced by a test), what waits on the owner, and the dates that matter.
+`scripts/position-record.test.mjs`, inside `verify`, fails if it disagrees with a checklist, cites a
+commit that does not exist, is older than a checklist it summarizes, or if a frozen path changes.
+This document keeps the narrative: why things are the way they are, and what is expensive to
+relearn.
 
 Phase 5 turn ledger: **19 of 60** including the verdictless pass 9 attempt. Acceptance criteria: **21 ready, 0 blocked** — all ten charter
 gaps are closed. Ready means assessable. It does not mean met.

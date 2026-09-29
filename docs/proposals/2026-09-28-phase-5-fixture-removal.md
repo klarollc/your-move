@@ -1,6 +1,6 @@
 # Specification: the Phase 5 Decision Notice fixture leaves the production bundle
 
-**Status: DRAFT 2026-09-28, for owner decisions R-1 to R-4.** Follow-on to the D-24 disposition
+**Status: APPROVED 2026-09-28, R-1 to R-4 as recommended.** A plan and checklist follow before implementation. Follow-on to the D-24 disposition
 (`docs/evidence/phase-5/decision-record-2026-09-27-d24-disposition.md`: `reuse_concepts_only`, and
 the fixture's presence in production packages ruled an unruled deviation). **Not authorized before
 Phase 7-O is accepted**: it touches `apps/web/src`. Needs its own plan and checklist after approval.

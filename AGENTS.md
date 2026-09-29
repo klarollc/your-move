@@ -66,6 +66,11 @@ MDD §20 in its gate. The specification is not yet approved; no Phase 7-O implem
 work, or promotion is authorized. Phase 5 Task 10 remains owner-run and Phase 5 acceptance remains
 a Phase 8 precondition.
 
+**Position (2026-09-28):** read `position.json` first. It states every workstream's position,
+what is authorized, the active freezes and what waits on the owner, and a test inside `verify`
+keeps it consistent with the checklists and git. Where it and a prose status line disagree, the
+test has failed or the prose is stale; fix the prose.
+
 **Amended 2026-09-28:** Phase 7-O Tasks 1–10 are done; Task 11 (the owner's cold comprehension
 run, not before 2026-10-01 14:50 Pacific) and Task 12 remain. Until the run, **no change under
 `apps/web/src/` or `packages/ui-system/src/`** (it restarts the MDD §20 interval), and never reveal

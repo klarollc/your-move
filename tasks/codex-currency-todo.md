@@ -258,7 +258,7 @@ fallback`, chromium-1280) never saw its canvas within 5 s; the commit touches no
     qualification 16, scaffold 2, runner 26, unit 461, component 73, integration 76 + 3 skipped,
     contract 77, e2e 50, a11y 46, visual 62; no stale digests.
 
-- [ ] **Task 14 — Owner-run smoke turn, then merge** (spec §4.4).
+- [x] **Task 14 — Owner-run smoke turn, then merge** (spec §4.4).
   - Owner, in the worktree: `$env:CUCKCODE_LIVE_SMOKE='1'; npm run codex:smoke`, then
     `Remove-Item Env:CUCKCODE_LIVE_SMOKE`.
   - Acceptance: one text-only turn at 0.157.1, recorded with the R6 fields and its session log,
@@ -282,3 +282,7 @@ Four decisions left open after Task 14 were ruled as recommended —
 prove the default-on tool surface (DF-027); LF bytes, re-record and a CR guard (DF-026); redact,
 then commit, session logs; add six read-only checks to the runner allowlist. None is authorized for
 implementation until a specification, plan and task list are approved.
+
+- Result, recorded 2026-09-28 (the box was left unchecked): the owner-run smoke turn passed under
+  the feature policy, `SMOKE_OK` (`4467fec`, 2026-09-27), and the branch merged into the main line
+  (`41c4625`, 2026-09-28).

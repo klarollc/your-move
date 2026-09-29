@@ -1,6 +1,6 @@
 # DF-029 checklist: blocked but not on you
 
-Status: **DRAFT 2026-09-28, for owner approval.** Plan: `tasks/df-029-plan.md`. Not authorized
+Status: **OWNER-APPROVED 2026-09-28.** Tasks start only after Phase 7-O acceptance. Plan: `tasks/df-029-plan.md`. Not authorized
 before Phase 7-O acceptance.
 
 ## Rules for every task
