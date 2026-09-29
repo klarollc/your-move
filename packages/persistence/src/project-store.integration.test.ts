@@ -33,7 +33,7 @@ describe("project store migrations", () => {
     // so unintended schema drift fails here.
     expect(schema).toMatchObject({
       applicationId: 1129661259,
-      userVersion: 5,
+      userVersion: 6,
       migrations: [
         { id: "001_initial", checksum: expect.stringMatching(/^[a-f0-9]{64}$/) },
         { id: "002_runtime_trust", checksum: expect.stringMatching(/^[a-f0-9]{64}$/) },
@@ -41,6 +41,11 @@ describe("project store migrations", () => {
         { id: "004_open_question", checksum: expect.stringMatching(/^[a-f0-9]{64}$/) },
         // DF-030 (P-4): recorded times for kickoff records and question dispositions.
         { id: "005_record_times", checksum: expect.stringMatching(/^[a-f0-9]{64}$/) },
+        // DF-030 (P-4): provider identities record when they were bound.
+        {
+          id: "006_provider_identity_times",
+          checksum: expect.stringMatching(/^[a-f0-9]{64}$/),
+        },
       ],
     });
     // Structural invariant: the pragma and the applied migration list cannot drift apart, even

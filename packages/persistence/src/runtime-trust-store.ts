@@ -1,6 +1,7 @@
 import { runtimeBindingReportSchema, type RuntimeBindingReport } from "@cuckcode/contracts";
 
 import type { ProjectStore } from "./project-store.js";
+import { validRecordTime } from "./record-time.js";
 
 export function createRuntimeTrustStore(project: ProjectStore) {
   const db = project.database;
@@ -19,6 +20,8 @@ export function createRuntimeTrustStore(project: ProjectStore) {
       createdAt: string;
     }) {
       rejectCredentials(input);
+      // DF-030: this time is also the provider identities' bind time, so it must be a real one.
+      const recordedAt = validRecordTime({ recordedAt: input.createdAt });
       const report = runtimeBindingReportSchema.parse(input.report);
       db.transaction(() => {
         for (const [kind, providerId] of Object.entries(input.providerIds)) {
@@ -30,11 +33,9 @@ export function createRuntimeTrustStore(project: ProjectStore) {
           if (existing && existing.agent_id !== report.agentId)
             throw new Error("PROVIDER_ID_IMPERSONATION");
           if (!existing)
-            db.prepare("INSERT INTO provider_identities VALUES(?,?,?)").run(
-              kind,
-              providerId,
-              report.agentId,
-            );
+            db.prepare(
+              "INSERT INTO provider_identities(provider_kind,provider_id,agent_id,recorded_at) VALUES(?,?,?,?)",
+            ).run(kind, providerId, report.agentId, recordedAt);
         }
         const version = Number(
           (

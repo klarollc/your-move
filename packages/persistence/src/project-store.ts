@@ -38,6 +38,11 @@ const RECORD_TIMES_SQL = `
 ALTER TABLE kickoff_records ADD COLUMN recorded_at TEXT;
 ALTER TABLE question_dispositions ADD COLUMN recorded_at TEXT;
 `;
+// DF-030, owner ruling 2026-09-29: a provider identity says when it was bound. Nullable for rows
+// bound before this migration.
+const PROVIDER_IDENTITY_TIMES_SQL = `
+ALTER TABLE provider_identities ADD COLUMN recorded_at TEXT;
+`;
 const checksum = (text: string) => createHash("sha256").update(text).digest("hex");
 function applyMigration(db: Database.Database, id: string, sql: string, appliedAt: string): void {
   if (id === "001_initial") db.exec(sql);
@@ -107,7 +112,13 @@ export function openProjectStore(
       applyMigration(db, "003_kickoff", KICKOFF_SQL, "2026-08-13T23:00:00.000Z");
       applyMigration(db, "004_open_question", OPEN_QUESTION_SQL, "2026-08-18T20:00:00.000Z");
       applyMigration(db, "005_record_times", RECORD_TIMES_SQL, "2026-09-28T22:00:00.000Z");
-      db.pragma("user_version = 5");
+      applyMigration(
+        db,
+        "006_provider_identity_times",
+        PROVIDER_IDENTITY_TIMES_SQL,
+        "2026-09-29T20:00:00.000Z",
+      );
+      db.pragma("user_version = 6");
     })();
     if (options.testMigrationSql) db.transaction(() => db.exec(options.testMigrationSql!))();
   } catch (error) {

@@ -10,6 +10,7 @@ import {
   storeQuestionDisposition,
 } from "./open-question-store.js";
 import { openProjectStore, type ProjectStore } from "./project-store.js";
+import { createRuntimeTrustStore } from "./runtime-trust-store.js";
 
 /**
  * DF-007 follow-up and DF-030 (owner ruling 2026-09-28). Every stored record kind says when it was
@@ -25,8 +26,6 @@ const EXEMPT: Readonly<Record<string, string>> = {
     "A projection of knowledge.recorded and knowledge.status_changed events, which carry occurred_at.",
   content_manifests: "DF-030: no recorded time; exempted by owner ruling 2026-09-28, not fixed.",
   packet_receipts: "DF-030: no recorded time; exempted by owner ruling 2026-09-28, not fixed.",
-  provider_identities:
-    "DF-030: an identity mapping with no recorded time; exempted pending an owner ruling.",
 };
 
 let store: ProjectStore | undefined;
@@ -168,5 +167,62 @@ describe("kickoff records and question dispositions carry their recorded time", 
       .prepare("SELECT canonical_json FROM open_questions WHERE question_id=?")
       .get("question_1") as { canonical_json: string };
     expect(JSON.parse(row.canonical_json).raisedAt).toBe(question.raisedAt);
+  });
+});
+
+// DF-030, owner ruling 2026-09-29: a provider identity says when it was bound to its agent. It is
+// written by appendBinding, so it takes that call's time.
+describe("provider identities carry the time they were bound", () => {
+  const binding = {
+    bindingId: "binding_1",
+    agentId: "agent_1",
+    adapterId: "codex",
+    adapterVersion: "0.146.0",
+    protocolVersion: "0.146.0",
+    authMode: "chatgpt" as const,
+    model: "configured-model",
+    reasoningEffort: "medium",
+    capabilityIds: [],
+    toolIds: [],
+    observedMcpServers: [],
+    permissionCeiling: ["project.read"],
+    sandboxPosture: {
+      type: "readOnly",
+      networkAccess: false,
+      approvalPolicy: "never",
+      multiAgentMode: "explicitRequestOnly",
+    },
+    materialFingerprint: "a".repeat(64),
+    status: "candidate" as const,
+  };
+
+  function trust() {
+    store = openProjectStore(mkdtempSync(join(tmpdir(), "cuckcode-times-")));
+    const created = createRuntimeTrustStore(store);
+    created.registerAgent({ agentId: "agent_1", displayName: "Aster", createdAt: RECORDED_AT });
+    return created;
+  }
+
+  it("stores the binding's time on the provider identity", () => {
+    trust().appendBinding({
+      report: binding,
+      providerIds: { account: "provider_account_1" },
+      createdAt: RECORDED_AT,
+    });
+    const row = store!.database
+      .prepare("SELECT * FROM provider_identities WHERE provider_id=?")
+      .get("provider_account_1") as { recorded_at: string | null } | undefined;
+    expect(row?.recorded_at).toBe(RECORDED_AT);
+  });
+
+  it("refuses a binding whose time is not a UTC timestamp", () => {
+    const created = trust();
+    expect(() =>
+      created.appendBinding({
+        report: binding,
+        providerIds: { account: "provider_account_1" },
+        createdAt: "later",
+      }),
+    ).toThrow("RECORD_TIME_INVALID");
   });
 });
