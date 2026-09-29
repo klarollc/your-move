@@ -13,7 +13,7 @@
  */
 import { spawn } from "node:child_process";
 import { createWriteStream, existsSync } from "node:fs";
-import { mkdir, readdir, readFile, rename, stat, writeFile } from "node:fs/promises";
+import { cp, mkdir, readdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { clearTimeout, setTimeout } from "node:timers";
 import { setTimeout as delay } from "node:timers/promises";
@@ -42,6 +42,9 @@ export function createRunner({
   logPathFor,
   git,
   spawnLogged,
+  // DF-028: keeps a failed run's Playwright traces before the next run wipes them. Optional so a
+  // runner without it still runs.
+  archiveFailure = async () => null,
 }) {
   let queue = Promise.resolve();
 
@@ -76,6 +79,16 @@ export function createRunner({
     });
     const evidenceAfter = await gitText(EVIDENCE_STATUS);
 
+    // DF-028: keep a failed run's traces, screenshots and videos before the next run wipes them.
+    let failure = {};
+    if (exitCode !== 0) {
+      try {
+        failure = { failureArtifacts: await archiveFailure(request.id) };
+      } catch (error) {
+        failure = { failureArtifacts: null, archiveError: String(error?.message ?? error) };
+      }
+    }
+
     return {
       ...base,
       status: "completed",
@@ -87,6 +100,7 @@ export function createRunner({
       dirty: porcelain.trim().length > 0,
       evidenceChanged: evidenceBefore !== evidenceAfter,
       logPath,
+      ...failure,
     };
   }
 
@@ -112,6 +126,22 @@ const DIRS = {
   logs: path.join(BASE, "logs"),
   done: path.join(BASE, "done"),
 };
+
+/**
+ * Copies Playwright's output of a failed run into failures/<id>/ (DF-028). Returns the folder, or
+ * null when the run left no Playwright output to keep.
+ */
+async function realArchiveFailure(id) {
+  const target = path.join(BASE, "failures", id);
+  let kept = false;
+  for (const name of ["test-results", "playwright-report"]) {
+    const source = path.join(ROOT, name);
+    if (!existsSync(source)) continue;
+    await cp(source, path.join(target, name), { recursive: true });
+    kept = true;
+  }
+  return kept ? target : null;
+}
 const MAX_RUN_MS = 60 * 60 * 1000;
 
 function realGit(args) {
@@ -190,6 +220,7 @@ async function main() {
     logPathFor: (id) => path.join(DIRS.logs, `${id}.log`),
     git: realGit,
     spawnLogged: realSpawnLogged,
+    archiveFailure: realArchiveFailure,
   });
   console.log(
     `[agent-runner] watching ${DIRS.inbox}${allowPush ? " (git-push enabled)" : ""}. Ctrl+C to stop.`,

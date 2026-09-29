@@ -233,13 +233,16 @@ function fakeWorld({
   branch = "hermes/work",
   env = {},
   allowPush = false,
+  archive = async (id) => `failures/${id}`,
 } = {}) {
   const spawns = [];
+  const archived = [];
   const gitCalls = [];
   const pending = [];
   let evidenceReads = 0;
   const world = {
     spawns,
+    archived,
     gitCalls,
     pending,
     runner: createRunner({
@@ -274,6 +277,10 @@ function fakeWorld({
       spawnLogged: (file, args, options) => {
         spawns.push({ file, args, options });
         return new Promise((resolve) => pending.push(resolve));
+      },
+      archiveFailure: async (id) => {
+        archived.push(id);
+        return archive(id);
       },
     }),
   };
@@ -453,4 +460,43 @@ test("through the runner, an enabled push spawns git with the resolved branch", 
   assert.equal(world.spawns[0].options.shell, false);
   world.pending[0](0);
   assert.equal((await done).status, "completed");
+});
+
+// DF-028 (owner-approved 2026-09-29): a failed run keeps its Playwright output. Three blank-page
+// failures went unexplained because the next run wiped test-results/.
+test("a failed command archives its test output and says where", async () => {
+  const world = fakeWorld();
+  const done = world.runner.submit({ id: "req-00000010", command: "verify" });
+  await settle();
+  world.pending[0](1);
+  const result = await done;
+  assert.deepEqual(world.archived, ["req-00000010"]);
+  assert.equal(result.exitCode, 1);
+  assert.equal(result.failureArtifacts, "failures/req-00000010");
+});
+
+test("a passing command archives nothing", async () => {
+  const world = fakeWorld();
+  const done = world.runner.submit({ id: "req-00000011", command: "verify" });
+  await settle();
+  world.pending[0](0);
+  const result = await done;
+  assert.deepEqual(world.archived, []);
+  assert.equal("failureArtifacts" in result, false);
+});
+
+test("an archive that fails is reported and does not change the result", async () => {
+  const world = fakeWorld({
+    archive: async () => {
+      throw new Error("disk full");
+    },
+  });
+  const done = world.runner.submit({ id: "req-00000012", command: "verify" });
+  await settle();
+  world.pending[0](1);
+  const result = await done;
+  assert.equal(result.status, "completed");
+  assert.equal(result.exitCode, 1);
+  assert.equal(result.failureArtifacts, null);
+  assert.equal(result.archiveError, "disk full");
 });
