@@ -66,10 +66,10 @@ updates its row. An entry's own text is history and is not rewritten.
 | DF-024 | fixed | One test's timeout raised (`5e3efe9`). A general rule is not ruled. |
 | DF-025 | fixed | Attempt records, an activity-aware turn runner and one bounded retry. |
 | DF-026 | fixed | Ruled 2026-09-26: evidence converted to LF and re-recorded. |
-| DF-027 | open | Residual tool surface beside a text-only role. Candidates recorded, none ruled. |
+| DF-027 | fixed | Ruled 2026-09-26; built and proved 2026-09-27: `FEATURE_POLICY` per session, `TOOL_SURFACE_PRESENT` refuses a binding, probe `PROBE_OK`, first turn under the policy `SMOKE_OK`. Misfiled as open on 2026-09-28 and corrected 2026-09-29. |
 | DF-028 | fixed | The zoom probe asserts the layout width. The blank-page failure it also records has recurred (below). |
 | DF-029 | ruled | Amendment approved 2026-09-28 (`docs/proposals/2026-09-28-df-029-blocked-not-on-you.md`); built after Phase 7-O acceptance. |
-| DF-030 | ruled | Question dispositions and kickoff records fixed (`3494b6d`); manifests, receipts and provider identities exempted, not fixed. |
+| DF-030 | ruled | Question dispositions and kickoff records fixed (`3494b6d`); provider identities fixed by owner ruling 2026-09-29 (migration `006`); content manifests and packet receipts exempted, not fixed. |
 
 ## Entries
 

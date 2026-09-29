@@ -143,9 +143,12 @@
         },
         {
           "id": "9",
-          "state": "pending_owner",
-          "runBy": "owner",
-          "note": "Captures and dispositions are recorded through 9h (last re-capture 02b6658, clean verify at 862b17f for the first capture). The box was never checked; whether the task is complete is the owner's call."
+          "state": "done",
+          "gate": {
+            "verify": "f504185",
+            "runner": "9h-verify-1790630350"
+          },
+          "note": "Closed by owner ruling 2026-09-29."
         },
         {
           "id": "9d",
@@ -318,6 +321,20 @@
       "state": "in_progress",
       "spec": "docs/proposals/2026-09-28-project-position-record.md",
       "next": "the product-side position record, specified after Phase 7-O (S-1)"
+    },
+    {
+      "id": "df-027",
+      "title": "DF-027, residual tool surface beside a text-only role",
+      "state": "closed",
+      "authorizedBy": "owner 2026-09-29",
+      "note": "Already ruled (2026-09-26) and built and proved (2026-09-27) on codex-currency; the investigation the owner approved 2026-09-29 was not needed. The index had misfiled it as open."
+    },
+    {
+      "id": "df-030-provider-identities",
+      "title": "DF-030: provider identities record a time",
+      "state": "complete",
+      "authorizedBy": "owner 2026-09-29, taking the agent's recommendation",
+      "note": "Migration 006_provider_identity_times; appendBinding validates its time and stamps the identity. Verified by the next clean verify."
     }
   ],
   "authority": {
@@ -348,24 +365,7 @@
       "node_modules/.cache/handoff/task10-dump.json"
     ]
   },
-  "pendingRulings": [
-    {
-      "id": "DF-030:provider_identities",
-      "question": "Record a time on provider identities, or keep the exemption?"
-    },
-    {
-      "id": "7-O:9",
-      "question": "Is Phase 7-O Task 9 complete? Its box was never checked."
-    },
-    {
-      "id": "DF-027",
-      "question": "Residual tool surface beside a text-only role: investigate and propose?"
-    },
-    {
-      "id": "provenance-unknown-producers",
-      "question": "Do the ledger's unknown producers satisfy C-18?"
-    }
-  ],
+  "pendingRulings": [],
   "dates": [
     {
       "what": "Earliest cold comprehension run (7-O Task 11)",
@@ -375,6 +375,19 @@
       "what": "Phase 5 D-24 production-suitability review",
       "due": "2026-10-09",
       "state": "disposed 2026-09-27 (reuse_concepts_only)"
+    }
+  ],
+  "rulings": [
+    {
+      "id": "7-O:9",
+      "ruled": "2026-09-29",
+      "ruling": "complete"
+    },
+    {
+      "id": "C-18:unknown-producers",
+      "ruled": "2026-09-29",
+      "ruling": "satisfies C-18",
+      "record": "docs/evidence/phase-5/decision-record-2026-09-29-c18-unknown-producers.md"
     }
   ]
 }

@@ -389,7 +389,7 @@ Specification: `docs/phase-7-o-operability-spec-v0.2.md`, **owner-approved 2026-
       `typecheck`, `typecheck:scripts`, `test:guard` clean on the dirty tree; `verify` at the
       commit.
 
-- [ ] Task 9: Browser evidence at 1440×900 and 1280×800 (spec §8.6). **Captures owner-run.**
+- [x] Task 9: Browser evidence at 1440×900 and 1280×800 (spec §8.6). **Captures owner-run.**
   - Acceptance: every state the spec lists is captured; console, network, keyboard, pointer, focus
     return, zoom, reduced motion and non-colour meaning are each marked performed or not performed;
     changed baselines are captured under `CUCKCODE_REGENERATE_EVIDENCE=1` by the owner, with before,
@@ -476,6 +476,9 @@ revision K`. With no handoff there is no cue. The Phase 4 `delivery` transition 
       **V1** the same day and chose the revision scope below (Task 9d). The Phase 7-O gate needs V0/V1 cleared, so F-9-1, F-9-2 and the ruling on F-9-4
       block Tasks 10 to 12.
   - Verify: the capture manifest; the owner's dispositions recorded.
+  - **Closed by owner ruling 2026-09-29: complete.** Captures and dispositions are recorded through
+    9h; the last re-capture is `02b6658`, and the first clean `verify` after it is `f504185`
+    (the 9h gate). The box had been left unchecked; the position record surfaced it.
 
 - [x] Task 9d (**approved 2026-09-26 as recommended, with 9d-1 to 9d-3**): revise the text surfaces toward the art
       direction, and clear the V1 findings.

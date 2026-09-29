@@ -48,6 +48,14 @@ const PRODUCERS: Array<{
   producedBy: string;
   authorizedBy: string | null;
 }> = [
+  // Owner ruling 2026-09-29: the Phase 7-O captures name their producer instead of "unknown".
+  {
+    prefix: "phase-7-o/browser/",
+    kind: "suite",
+    producedBy:
+      "tests/visual/phase-7o-office-captures.spec.ts, owner-run with CUCKCODE_REGENERATE_EVIDENCE=1",
+    authorizedBy: "phase-7-o/decision-record-2026-09-25-spec-approval.md",
+  },
   {
     prefix: "phase-5/browser/",
     kind: "suite",
