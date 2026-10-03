@@ -230,7 +230,8 @@
         },
         {
           "id": "2",
-          "state": "in_progress"
+          "state": "in_progress",
+          "note": "Built at 4f585e8, container-GREEN; closes on the owner's verify"
         },
         {
           "id": "3",
