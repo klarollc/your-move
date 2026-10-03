@@ -95,6 +95,21 @@ writes owner-run; moved assertions listed (P-4).
   - Acceptance: component tests for each D-6 sentence (spec §10.1); the label is
     neutral and has no "Needs you"; the bar count excludes the item; the comprehension key spec and
     the Task 9 captures of existing journeys are unchanged (D-3).
+  - **Built 2026-10-02, container-GREEN; closes on `verify`, whose e2e and visual suites carry D-3.**
+    `needsYouPlain`: a held `blocked` or `waiting_input` item whose condition has no request adds
+    its D-6 sentence after one "Nothing needs you."; beside the manager's requests it adds the
+    sentence without that phrase. Labels, the bar and the rail needed no change: they follow
+    attention (Task 3). The technical "Requested action" still reads "No requested action recorded"
+    for such an item, which is true.
+    - RED, on the assertion: 4 of 4 sentence tests (the inspector said only "Nothing needs you").
+      The label, bar, rail and today's-wording tests passed at RED: the first three were made true
+      by Task 3, the last pins today's behaviour.
+    - Two unit tests for paths the default office cannot reach (two such items; one beside a
+      request) were written after GREEN and proved by mutation.
+    - GREEN: contract + unit + component 832 of 832; `tsc -b`, `typecheck:scripts`, ESLint,
+      Prettier, `test:guard`, `test:scaffold` clean.
+    - Mutations, each confirmed applied and killed: dropping the request filter; evidence worded as
+      "can resolve it"; dropping the sentences beside a request.
 - [ ] Task 6: The `blocked-elsewhere` log, e2e and capture.
   - Acceptance: e2e at both viewports; a new journey in the Task 9 capture spec; owner re-capture
     and provenance.

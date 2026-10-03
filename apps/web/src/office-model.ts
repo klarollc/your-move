@@ -388,11 +388,34 @@ export function whyText(person: OfficePersonView): string {
     .join(" ");
 }
 
+/** Who can resolve a held item that asks nothing of the manager (spec §10.1, owner ruling D-6). */
+function resolverSentence(resolver: OfficeWorkView["resolver"]): string {
+  if (resolver?.status === "resolved") {
+    if (resolver.kind === "agent") return `${resolver.text} can resolve it.`;
+    if (resolver.kind === "evidence") return `Waiting for ${resolver.text}.`;
+    if (resolver.kind === "external") return "Waiting on an external dependency.";
+  }
+  return "Who can resolve it: not recorded.";
+}
+
 export function needsYouPlain(person: OfficePersonView): string {
-  if (person.attention.length === 0) return "Nothing needs you";
-  return person.attention
-    .map((item) => item.condition?.requestedAction?.summary ?? NO_ACTION)
-    .join(" ");
+  // A held blocker or wait whose recorded condition carries no request is not on the manager
+  // (DF-029): it says who can resolve it, and never offers a manager action.
+  const notOnYou = person.work
+    .filter(
+      (work) =>
+        (work.state === "blocked" || work.state === "waiting_input") &&
+        work.condition !== null &&
+        work.condition.requestedAction === undefined,
+    )
+    .map((work) => resolverSentence(work.resolver));
+  if (person.attention.length === 0) {
+    return notOnYou.length > 0 ? `Nothing needs you. ${notOnYou.join(" ")}` : "Nothing needs you";
+  }
+  return [
+    ...person.attention.map((item) => item.condition?.requestedAction?.summary ?? NO_ACTION),
+    ...notOnYou,
+  ].join(" ");
 }
 
 export function evidencePlain(person: OfficePersonView): string {

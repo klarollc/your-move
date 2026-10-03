@@ -255,7 +255,8 @@
         },
         {
           "id": "5",
-          "state": "in_progress"
+          "state": "in_progress",
+          "note": "Built, container-GREEN; closes on verify (D-3 via e2e and visual)"
         },
         {
           "id": "6",
