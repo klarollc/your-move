@@ -18,7 +18,7 @@ the default office, reads exactly as before.
 | ----------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Contract    | `packages/contracts/src/work-payloads.ts`                                                | `payloadVersion: 3`: `requestedAction` optional; `waitingOn: manager` without a request refused. Versions 1 and 2 unchanged.                                                                                                                     |
 | Domain      | `packages/domain/src/work-truth.ts`                                                      | Retains a version-3 condition (the truth type's `requestedAction` becomes optional).                                                                                                                                                             |
-| Domain      | `packages/domain/src/attention.ts`                                                       | `blocked`, `failed` and `waiting_input` raise attention only when the condition carries a request, or when no condition is recorded (versions 1 and 2, unchanged).                                                                               |
+| Domain      | `packages/domain/src/attention.ts`                                                       | `blocked` and `waiting_input` raise attention only when the condition carries a request, or when no condition is recorded (versions 1 and 2, unchanged).                                                                                         |
 | Application | `packages/application/src/office-read-model.ts`                                          | Each held item's condition gains a derived `resolver`: an agent id through staffing to its role name; an evidence id to kind and version; `external` as "an external dependency"; anything unresolved as not recorded (B-2).                     |
 | Web         | `apps/web/src/office-model.ts`                                                           | Inspector "What needs you" reads "Nothing needs you. {resolver} can resolve it." when a blocker has no request; `requestedActionText` and `whyText` handle the absent request. Labels and the bar need no change: both already follow attention. |
 | Fixtures    | `apps/web/src/office-fixtures/index.ts`                                                  | New named log `blocked-elsewhere` (B-4): the Test Engineer blocked, waiting on the Implementation Engineer, no request. The default log does not change.                                                                                         |
@@ -39,6 +39,12 @@ the default office, reads exactly as before.
 - **D-3, the comprehension key.** The default office does not change, so
   `tests/e2e/phase-7o-comprehension-key.spec.ts` must stay green untouched. If it moves, work stops:
   it would mean the default office changed.
+
+- **D-4, `failed` (owner ruling 2026-10-02).** The contract attaches a condition only to
+  `blocked`, `waiting_input` and `review_requested`, so `failed` has no request to read. **Ruled:
+  `failed` is left out of version 3.** A `failed` item has no condition and keeps today's
+  treatment (attention, "No requested action recorded"). D-1 is narrowed to `blocked` and
+  `waiting_input`; spec §10.1 states it.
 
 ## Risks
 

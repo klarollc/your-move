@@ -216,14 +216,14 @@
     {
       "id": "df-029",
       "title": "DF-029, blocked but not on you",
-      "state": "approved",
+      "state": "in_progress",
       "checklist": "tasks/df-029-todo.md",
       "spec": "docs/proposals/2026-09-28-df-029-blocked-not-on-you.md",
       "authorizedAfter": ["7-O:12"],
       "tasks": [
         {
           "id": "1",
-          "state": "approved"
+          "state": "in_progress"
         },
         {
           "id": "2",
@@ -401,6 +401,18 @@
       "ruled": "2026-10-02",
       "ruling": "accepted by owner waiver; §20 comprehension not met (1 of 6)",
       "record": "docs/evidence/phase-7-o/comprehension/run-2026-10-02.md"
+    },
+    {
+      "id": "df-029:D-4",
+      "ruled": "2026-10-02",
+      "ruling": "failed is left out of version 3; D-1 narrowed to blocked and waiting_input",
+      "record": "tasks/df-029-plan.md"
+    },
+    {
+      "id": "df-029:1",
+      "ruled": "2026-10-02",
+      "ruling": "spec §10 approved",
+      "record": "docs/phase-7-o-operability-spec-v0.2.md"
     }
   ]
 }

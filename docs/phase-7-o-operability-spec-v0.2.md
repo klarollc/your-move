@@ -260,3 +260,76 @@ gate.
 
 Phase 5 release review and owner Task 10 may proceed independently. Deployment, external effects,
 final visual promotion and production reuse remain outside this specification.
+
+## 10. Successor section: DF-029, blocked but not on you (2026-10-02)
+
+**Status: OWNER-APPROVED 2026-10-02** (DF-029 Task 1; D-4 ruled the same day). Authority: the approved amendment
+`docs/proposals/2026-09-28-df-029-blocked-not-on-you.md` (B-1 to B-5) and plan
+`tasks/df-029-plan.md` (D-1 to D-3). Written after Phase 7-O acceptance (Task 12, 2026-10-02).
+Where this section and §§3.2, 6, 7 or 8.4 disagree, this section governs for logs recorded at
+`payloadVersion: 3`. Logs recorded at versions 1 and 2 read exactly as §§3.2–8 state.
+
+**Governing plate:** AR-03 column 1. Constitution rule 4: a blocker does not necessarily need
+manager action; show the reason and who can resolve it.
+
+### 10.1 Successor to §3.2: version 3, attention follows the request
+
+A condition says who can resolve it (`waitingOn`) and, separately, whether the manager is asked to
+act (`requestedAction`). At `payloadVersion: 3`:
+
+- `requestedAction` is **optional** on a condition whose transition target is `blocked` or
+  `waiting_input`.
+- `requestedAction` stays **required** when the target is `review_requested`: a review is always
+  a request to the manager.
+- `waitingOn: { kind: "manager" }` without `requestedAction` is a **validation failure**. The
+  manager cannot be the resolver of something nobody asked them to do.
+- Every other §3.2 rule (closed reason set, summary bounds, `waitingOn.id` rules, attribution)
+  is unchanged. Versions 1 and 2 keep their exact recorded meaning.
+
+| Condition                                                       | Attention item | Scene and outline                        | Inspector "What needs you"                        |
+| --------------------------------------------------------------- | -------------- | ---------------------------------------- | ------------------------------------------------- |
+| `requestedAction` present (any `waitingOn`)                     | yes            | "{state} · Needs you", amber             | the request                                       |
+| `requestedAction` absent; `waitingOn` agent, evidence, external | **no**         | "{state}", neutral, plus who can resolve | "Nothing needs you. {resolver} can resolve it."   |
+| No condition recorded (version-1 payloads; `failed`)            | yes, as today  | as today                                 | "No requested action recorded"                    |
+
+Absence of a condition is unknown, not "not on you", so the last row keeps today's conservative
+behaviour.
+
+**Resolver text (B-2)** is derived, never free text: an agent id through staffing to its role name
+("Implementation Engineer can resolve it"); an evidence id to its kind and version ("Waiting for
+Browser evidence, version 2"); `external` as "an external dependency". An id that does not resolve
+reads "Who can resolve it: not recorded". No name is guessed.
+
+**Bar count (B-3).** The bar counts attention items only, so a blocker that is not on the manager
+leaves the count by construction. The P-4 groups are unchanged.
+
+### 10.2 Successor to §6: the inspector for a blocker without a request
+
+§6 is unchanged for attention items. In addition: when the selected entity holds a `blocked` or
+`waiting_input` item whose condition has no request, the inspector shows the state, the condition
+summary with its attribution, the resolver, and "Nothing needs you. {resolver} can resolve it." It
+never shows a manager action for that item, and the item is not in the rail.
+
+### 10.3 Successor to §7: a ninth adversarial class
+
+| Fixture contradiction                                | Required result                                                                                         |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| A blocker without a request, waiting on an agent     | Never "Needs you", never counted in the bar, never in the rail; the inspector names the resolver.       |
+| `waitingOn: manager` without a request (version 3)   | Validation failure; never rendered as a blocker that is not on the manager.                              |
+
+§8 criterion 3 reads "all classes in §7 and §10.3".
+
+### 10.4 Successor to §8.4: decision sufficiency for blockers not on you
+
+§8.4 is unchanged for attention items. In addition: for every `blocked` or `waiting_input` item
+that is not an attention item, the inspector **resolves** the reason and the resolver, or shows
+"Who can resolve it: not recorded" when the id does not resolve. A test enforces this on the
+`blocked-elsewhere` log (B-4). The default fixture log does not change, so the Phase 7-O
+comprehension key spec and the Task 9 captures of existing journeys must stay unchanged; if either
+moves, work stops for a ruling (D-3).
+
+### 10.5 Not in this section
+
+Runtime emission of version 3 by the Codex normalizer or role briefs (B-5, a follow-on); rendering
+of the resolver beyond the text label (Phase 7); "See dependency" navigation; question answer
+choices.
