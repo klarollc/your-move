@@ -1,6 +1,6 @@
 # DF-029 checklist: blocked but not on you
 
-Status: **OWNER-APPROVED 2026-09-28.** Tasks start only after Phase 7-O acceptance. Plan: `tasks/df-029-plan.md`. Not authorized
+Status: **COMPLETE 2026-10-03** (owner-approved 2026-09-28). Tasks start only after Phase 7-O acceptance. Plan: `tasks/df-029-plan.md`. Not authorized
 before Phase 7-O acceptance.
 
 ## Rules for every task
@@ -146,7 +146,9 @@ writes owner-run; moved assertions listed (P-4).
       `test:guard`, `test:scaffold` clean.
     - Two `verify` runs at `073884a` stopped at e2e start: ports 4173 and 4174 were held by
       another project's agent on the owner's machine, not by CuckCode.
-- [ ] Task 7: Register. DF-029 moves to **fixed** in the status index, citing the commits.
-  - **Written 2026-10-03; closes on `verify`.** Owner ruling: fixed, with the caveat that no
+- [x] Task 7: Register. DF-029 moves to **fixed** in the status index, citing the commits.
+  - **Written 2026-10-03 at `23841ce`. `verify` GREEN through the runner
+    (`df029-t7-verify-1791012655`) on a clean tree at `23841ce`: unit 603, component 146,
+    integration 90 with 3 skipped, contract 85, e2e 90, a11y 46, visual 64.** Owner ruling: fixed, with the caveat that no
     runtime producer emits version 3 yet (B-5, not authorized). Index row and a "Fixed" paragraph
     in the entry, citing each layer's commit. Provenance recorded by the owner.

@@ -216,7 +216,7 @@
     {
       "id": "df-029",
       "title": "DF-029, blocked but not on you",
-      "state": "in_progress",
+      "state": "complete",
       "checklist": "tasks/df-029-todo.md",
       "spec": "docs/proposals/2026-09-28-df-029-blocked-not-on-you.md",
       "authorizedAfter": ["7-O:12"],
@@ -271,10 +271,14 @@
         },
         {
           "id": "7",
-          "state": "in_progress",
-          "note": "Register written; closes on verify"
+          "state": "done",
+          "gate": {
+            "verify": "23841ce",
+            "runner": "df029-t7-verify-1791012655"
+          }
         }
-      ]
+      ],
+      "note": "Fixed 2026-10-03, with the caveat that no runtime producer emits version 3 (B-5, not authorized)"
     },
     {
       "id": "phase-5-fixture-removal",

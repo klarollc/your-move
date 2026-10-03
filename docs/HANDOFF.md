@@ -55,10 +55,11 @@ skipped, contract 78, e2e 88, a11y 46, visual 64.
 - **Rendering is Phase 7.** The owner compared the 9f captures with AR-01–AR-04 on 2026-09-28
   ("nowhere near"; "mainly rendering") and deferred the rendering gap to Phase 7 under P-0. The
   captures do not meet the plates and must not be cited as if they did.
-- **DF-029, open, owner ruling 2026-09-28:** a blocked agent cannot say it is not blocked on the
-  manager (every blocked item is manager attention; every v2 condition requires a requested
-  action). AR-03's "blocked, not on you" is not expressible. Fixed by its own amendment after
-  Phase 7-O: contract, domain attention rule, spec §6 and §8.4, the P-4 bar count, fixtures.
+- **DF-029, fixed 2026-10-03 (`tasks/df-029-todo.md`, spec §10):** payload version 3 lets a
+  blocked or waiting condition omit the request; manager attention follows the request; the
+  inspector says "Nothing needs you." and who can resolve it; `?fixture=blocked-elsewhere` shows
+  AR-03 column 1 (owner: "it matches"). **Caveat:** no runtime producer emits version 3 yet, so a
+  real agent cannot say it. That is B-5, not authorized.
 - 9g (plain rail controls, evidence heading) and 9h (disposition refused only where no decision
   can be recorded) were found and fixed after the plate review and during Task 10 preparation.
 - **Housekeeping, 2026-09-28:** item 1 (the test relay) is closed by the command runner (DF-022);
