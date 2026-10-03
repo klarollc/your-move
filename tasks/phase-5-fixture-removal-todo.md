@@ -29,7 +29,7 @@ owner-run; moved assertions listed (P-4). No file under `docs/evidence/phase-5` 
       no failures.
     - **Moving tests**, same run: `decision-notice.unit.test.ts` 32;
       `decision-notice-capture.unit.test.ts` 2; `decision-notice.component.test.tsx` 31.
-- [ ] Task 2: Production-isolation guard (R-3).
+- [x] Task 2: Production-isolation guard (R-3).
   - Acceptance: `scripts/fixture-isolation.test.mjs` inside `verify`; RED today on the assertion
     (production reaches `decision-notice` modules); a mutation that re-adds one import is caught.
   - **Built 2026-10-03; lands with Tasks 3-5 in `0eda082` (owner ruling: one change, one `verify`,
@@ -42,7 +42,7 @@ owner-run; moved assertions listed (P-4). No file under `docs/evidence/phase-5` 
     - Mutations, after the move, each confirmed applied and killed: a relative import of the
       component from `main.tsx`; the fixture exported by package name from the domain index
       (caught from both entries, so the package name is followed, not treated as external).
-- [ ] Task 3: Move the model and component into `fixtures/decision-notice` (R-1a, D-4).
+- [x] Task 3: Move the model and component into `fixtures/decision-notice` (R-1a, D-4).
   - Acceptance: `@cuckcode/domain` exports nothing Decision-Notice; `main.tsx` has no
     `decision-notice` route; the fixture builds and previews on its own; Task 2's guard GREEN; the
     moved unit and component tests pass unchanged; `tsc -b`, ESLint and Prettier cover the moved
@@ -58,7 +58,7 @@ owner-run; moved assertions listed (P-4). No file under `docs/evidence/phase-5` 
       added to a moved stylesheet is caught.
     - The office bundle shrank from 504 kB to 483 kB and contains no Decision Notice text.
 
-- [ ] Task 4: The four browser suites against the fixture's own build (R-2, D-2).
+- [x] Task 4: The four browser suites against the fixture's own build (R-2, D-2).
   - Acceptance: a third `webServer` on 4175; the suites' assertions unchanged (P-4 lists only the
     `ORIGIN` line in each); pass counts equal Task 1's at both viewports.
   - **Built 2026-10-03 in `0eda082`.** `npm run preview:decision-notice`, a third `webServer`.
@@ -69,7 +69,7 @@ owner-run; moved assertions listed (P-4). No file under `docs/evidence/phase-5` 
       did not recur; cause not established, and this `verify` decides.
     - P-4: the `ORIGIN` line in each suite; in the isolation spec also the three file paths its run
       record hashes, and its `servedFrom` wording. No assertion changed.
-- [ ] Task 5: C-11 after the move (R-3, R-4 as corrected, D-1).
+- [x] Task 5: C-11 after the move (R-3, R-4 as corrected, D-1).
   - Acceptance: the accepted review is untouched and leaves the freshness check (the ledger guards
     its digest); the successor review at `docs/evidence/phase-5-fixture-removal/` is checked inside
     `verify`; a test shows its modules are a subset of the accepted modules under the declared
@@ -83,6 +83,8 @@ owner-run; moved assertions listed (P-4). No file under `docs/evidence/phase-5` 
       mutation, each confirmed applied and killed by its own case: a workspace import (new
       external package); a new local module (outside the accepted set); a `fetch` in the model
       (a finding).
+- **Tasks 2-5 closed together, 2026-10-03.** `verify` GREEN through the runner (`p5fr-t5-verify-1791041885`) on a clean tree at `0ad5e3d`: unit 608, component 146, integration 90 with 3 skipped, contract 85, e2e 90, a11y 46, visual 64; the four Phase 5 suites 13 / 1 / 2 / 20 at each viewport, equal to Task 1; `phase5:sideeffects` CURRENT, 3 modules, no findings.
+
 - [ ] Task 6: Phase 5 tool scripts (D-3).
   - Acceptance: their paths updated and a guard that every repository
     path they name exists, RED first against a deliberately wrong path.

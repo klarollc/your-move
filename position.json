@@ -299,23 +299,35 @@
         },
         {
           "id": "2",
-          "state": "in_progress",
-          "note": "Landed with Tasks 2-5 in 0eda082; closes on verify"
+          "state": "done",
+          "gate": {
+            "verify": "0ad5e3d",
+            "runner": "p5fr-t5-verify-1791041885"
+          }
         },
         {
           "id": "3",
-          "state": "in_progress",
-          "note": "Landed with Tasks 2-5 in 0eda082; closes on verify"
+          "state": "done",
+          "gate": {
+            "verify": "0ad5e3d",
+            "runner": "p5fr-t5-verify-1791041885"
+          }
         },
         {
           "id": "4",
-          "state": "in_progress",
-          "note": "Landed with Tasks 2-5 in 0eda082; closes on verify"
+          "state": "done",
+          "gate": {
+            "verify": "0ad5e3d",
+            "runner": "p5fr-t5-verify-1791041885"
+          }
         },
         {
           "id": "5",
-          "state": "in_progress",
-          "note": "Landed with Tasks 2-5 in 0eda082; closes on verify"
+          "state": "done",
+          "gate": {
+            "verify": "0ad5e3d",
+            "runner": "p5fr-t5-verify-1791041885"
+          }
         },
         {
           "id": "6",
