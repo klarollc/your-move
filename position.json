@@ -255,13 +255,16 @@
         },
         {
           "id": "5",
-          "state": "in_progress",
-          "note": "Built, container-GREEN; closes on verify (D-3 via e2e and visual)"
+          "state": "done",
+          "gate": {
+            "verify": "f2d6cfa",
+            "runner": "df029-t6-verify-1791011534"
+          }
         },
         {
           "id": "6",
           "state": "in_progress",
-          "note": "Built, container-GREEN; closes on verify plus owner re-capture and provenance"
+          "note": "Code GREEN at f2d6cfa; open: owner re-capture and provenance"
         },
         {
           "id": "7",

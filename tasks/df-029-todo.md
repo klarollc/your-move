@@ -91,11 +91,14 @@ writes owner-run; moved assertions listed (P-4).
       whose agent is not in staffing) and proved by mutation.
     - Mutations, each confirmed applied and killed: dropping the staffing check; guessing the first
       recorded evidence for an unknown id; naming an external dependency from its id.
-- [ ] Task 5: Web, the inspector and labels.
+- [x] Task 5: Web, the inspector and labels.
   - Acceptance: component tests for each D-6 sentence (spec §10.1); the label is
     neutral and has no "Needs you"; the bar count excludes the item; the comprehension key spec and
     the Task 9 captures of existing journeys are unchanged (D-3).
-  - **Built 2026-10-02, container-GREEN; closes on `verify`, whose e2e and visual suites carry D-3.**
+  - **Built 2026-10-02 at `073884a`. `verify` GREEN through the runner (`df029-t6-verify-1791011534`) on a clean tree at `f2d6cfa`:
+    unit 603, component 146, integration 90 with 3 skipped, contract 85, e2e 90, a11y 46,
+    visual 64. D-3 held: the comprehension-key e2e and the
+    existing capture journeys passed unchanged.**
     `needsYouPlain`: a held `blocked` or `waiting_input` item whose condition has no request adds
     its D-6 sentence after one "Nothing needs you."; beside the manager's requests it adds the
     sentence without that phrase. Labels, the bar and the rail needed no change: they follow
@@ -113,8 +116,10 @@ writes owner-run; moved assertions listed (P-4).
 - [ ] Task 6: The `blocked-elsewhere` log, e2e and capture.
   - Acceptance: e2e at both viewports; a new journey in the Task 9 capture spec; owner re-capture
     and provenance.
-  - **Built 2026-10-02, container-GREEN; the code half closes on `verify`, the evidence half on
-    the owner's re-capture and provenance.** `OFFICE_FIXTURES["blocked-elsewhere"]`
+  - **Built 2026-10-02 at `f2d6cfa`; code half GREEN on the same run, `verify` GREEN through the runner (`df029-t6-verify-1791011534`) on a clean tree at `f2d6cfa`:
+    unit 603, component 146, integration 90 with 3 skipped, contract 85, e2e 90, a11y 46,
+    visual 64. Open: the
+    owner's re-capture and provenance.** `OFFICE_FIXTURES["blocked-elsewhere"]`
     (`?fixture=blocked-elsewhere`): the default office with the Test Engineer's blocker recorded
     at version 3, waiting on the Implementation Engineer, with no request. The default log is
     unchanged.
