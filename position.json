@@ -359,7 +359,7 @@
         {
           "id": "1",
           "state": "in_progress",
-          "note": "Font sheet built; awaiting owner install, verify, capture and confirmation, then tokens"
+          "note": "Font sheet verified at b485534 and owner-confirmed 2026-10-03 (Q-4); tokens next"
         },
         {
           "id": "2",
