@@ -351,14 +351,15 @@
     {
       "id": "7",
       "title": "Phase 7, the rendered office",
-      "state": "approved",
+      "state": "in_progress",
       "checklist": "tasks/phase-7-todo.md",
       "spec": "docs/phase-7-high-fidelity-spec-v0.1.md",
       "authorizedAfter": ["7-O:12", "df-029", "phase-5-fixture-removal"],
       "tasks": [
         {
           "id": "1",
-          "state": "approved"
+          "state": "in_progress",
+          "note": "Font sheet built; awaiting owner install, verify, capture and confirmation, then tokens"
         },
         {
           "id": "2",

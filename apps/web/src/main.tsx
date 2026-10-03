@@ -3,6 +3,7 @@ import "./global.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
+import { FontSheet } from "./font-sheet.js";
 import { LayoutTrial } from "./layout-trial.js";
 import { OfficeWorkspace, type KickoffFixtureId } from "./office-canvas.js";
 import type { OfficeShellState } from "./office-shell.js";
@@ -28,6 +29,8 @@ createRoot(container).render(
       <PixiSceneProbe />
     ) : surface === "layout-trial" ? (
       <LayoutTrial />
+    ) : surface === "font-sheet" ? (
+      <FontSheet />
     ) : (
       <OfficeWorkspace
         initialState={initialState}

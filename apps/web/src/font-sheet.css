@@ -1,0 +1,50 @@
+.font-sheet {
+  box-sizing: border-box;
+  height: 100vh;
+  overflow: auto;
+  padding: 20px 28px;
+  color: #292b2d;
+  background: #f4f4f0;
+}
+
+.font-sheet h1 {
+  margin: 0 0 4px;
+  font-size: 19px;
+}
+
+.font-sheet-readout {
+  margin: 0 0 20px;
+  color: #55585a;
+}
+
+.font-sheet-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0 32px;
+}
+
+.font-sheet section {
+  padding: 8px 0;
+  border-top: 1px solid #b5b6b4;
+}
+
+.font-sheet h2 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 400;
+  color: #55585a;
+}
+
+.font-sheet p {
+  margin: 2px 0;
+  line-height: 1.35;
+}
+
+.font-sheet-size {
+  display: inline-block;
+  width: 44px;
+  color: #6f7274;
+  font:
+    11px system-ui,
+    sans-serif;
+}

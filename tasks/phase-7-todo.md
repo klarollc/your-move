@@ -13,6 +13,25 @@ beside its named plate, and the owner's comparison is recorded before the next s
 - [ ] Task 1: Fonts (F-5, Q-4). Vendor `@fontsource/fira-sans` and `@fontsource/fira-mono` at exact
       versions with their OFL texts; a font sheet the owner captures in Windows Chromium; tokens set
       only after the owner confirms.
+  - **Built 2026-10-03; open: the owner's install, `verify`, capture and confirmation, then tokens.**
+    `@fontsource/fira-sans` and `@fontsource/fira-mono` 5.3.0, exact pins in `apps/web`; Latin
+    files only (Fira Sans 400/500/600/700, Fira Mono 400/500/700, all Mono ships); bundled from the
+    app's origin. Licence texts copied verbatim to `licenses/fonts/`, with versions and lockfile
+    integrity in its README; both texts open "Google Inc.", which differs from the upstream Fira
+    credits as far as is known, and is recorded rather than edited.
+    - `?surface=font-sheet`: every face at 12, 13, 16 and 19 px in the office's own words, Mono
+      with a glyph-confusion line; one screen at 1280×800; a readout counts loaded faces. The
+      office itself does not load the fonts yet.
+    - `tests/visual/phase-7-font-sheet.spec.ts`, both viewports: RED on the assertion (no sheet),
+      then GREEN in the container. It requires all seven faces loaded from this origin, each sample
+      computed in the face it names, no external request, and nothing cut off; the capture goes
+      through `evidenceOutputPath` to `phase-7/fonts/<project>/font-sheet.png`.
+    - `scripts/font-licences.unit.test.ts`: exact pin, installed version equal to it, OFL-1.1, and
+      vendored text byte-identical to the installed `LICENSE`.
+    - Mutations, each confirmed applied and killed: one face's import removed ("Fira Mono 500 did
+      not load"); one byte added to a vendored licence; a range pin (`^5.3.0`).
+    - The container's first capture cut the Mono column off below the fold (the office's global
+      `overflow: hidden`); the sheet was relaid to fit one screen, and the spec now asserts it does.
 - [ ] Task 2: Move the Phase 6 primitives into `packages/ui-system`. Acceptance: the golden states
       and the frozen frame re-render byte for byte from the new module; the scripts import it.
 - [ ] Task 3: The SVG renderer behind the scene adapter. Acceptance: every existing scene, camera,
