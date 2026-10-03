@@ -12,6 +12,7 @@ import {
   type AgentPlacement,
   type Prop,
 } from "./geometry.js";
+import { WALLS, WINDOWS, WINDOW_WALL_Y, daylightPatches, type WallBox } from "./architecture.js";
 import type { CandidateStyle } from "./styles.js";
 
 type Piece = { key: number; svg: string };
@@ -394,12 +395,69 @@ function workCardPiece(style: CandidateStyle, state: string): Piece | null {
   return { key: depth(at.x, at.y) + 0.3, svg: parts.join("") };
 }
 
+/** A wall: plaster faces, a defining edge; a front stub shows its cut top in charcoal (Task 5). */
+function wallSvg(style: CandidateStyle, wall: WallBox): string {
+  const p = style.palette;
+  const faces = box(
+    style,
+    wall.x,
+    wall.y,
+    wall.w,
+    wall.d,
+    wall.h,
+    p.plaster,
+    shade(p.plaster, -0.35),
+  );
+  if (wall.kind === "back") return faces;
+  const cut = [
+    iso(wall.x, wall.y, wall.h),
+    iso(wall.x + wall.w, wall.y, wall.h),
+    iso(wall.x + wall.w, wall.y + wall.d, wall.h),
+    iso(wall.x, wall.y + wall.d, wall.h),
+  ];
+  return `${faces}<polygon points="${pts(cut)}" fill="${shade(p.metal, -0.2)}"/>`;
+}
+
+/** The window wall's panes: glass, a charcoal frame and one mullion, on the wall's inner face. */
+function windowsSvg(style: CandidateStyle): string {
+  const p = style.palette;
+  const frame = shade(p.metal, -0.4);
+  return WINDOWS.map((pane) => {
+    const y = WINDOW_WALL_Y;
+    const quad = [
+      iso(pane.x0, y, pane.z1),
+      iso(pane.x1, y, pane.z1),
+      iso(pane.x1, y, pane.z0),
+      iso(pane.x0, y, pane.z0),
+    ];
+    const mid = (pane.x0 + pane.x1) / 2;
+    const top = iso(mid, y, pane.z1);
+    const bottom = iso(mid, y, pane.z0);
+    return [
+      `<polygon points="${pts(quad)}" fill="${p.glass}" stroke="${frame}" stroke-width="1.6" stroke-linejoin="round"/>`,
+      `<line x1="${top.x.toFixed(2)}" y1="${top.y.toFixed(2)}" x2="${bottom.x.toFixed(2)}" y2="${bottom.y.toFixed(2)}" stroke="${frame}" stroke-width="1.2"/>`,
+    ].join("");
+  }).join("");
+}
+
+/** Baked daylight: each window's light on the floor, soft and fixed (F-6). */
+function daylightSvg(style: CandidateStyle): string {
+  return daylightPatches()
+    .map(
+      (patch) =>
+        `<polygon points="${pts(patch.map(({ x, y }) => iso(x, y)))}" fill="${style.palette.plaster}" opacity="0.38"/>`,
+    )
+    .join("");
+}
+
 /** Options for the scene layer the app draws (Phase 7 Task 3b). */
 export type SceneLayerOptions = {
   /** Phase 6 baked zone and person labels. The app labels in the DOM instead (ruling G-3). */
   labels: boolean;
   /** Phase 6's fixed figures. The app draws none until the behaviour map drives them (G-2). */
   figures: boolean;
+  /** Phase 7 Task 5: walls, the window wall and baked daylight. Off for the frozen frame. */
+  architecture?: boolean;
   scene?: SceneState;
 };
 
@@ -441,10 +499,23 @@ export function renderSceneLayer(style: CandidateStyle, options: SceneLayerOptio
     if (piece) pieces.push(piece);
   }
   pieces.sort((left, right) => left.key - right.key);
+  const backWalls = WALLS.filter(({ kind }) => kind === "back")
+    .map((wall) => wallSvg(style, wall))
+    .join("");
+  const frontWalls = WALLS.filter(({ kind }) => kind === "front")
+    .map((wall) => wallSvg(style, wall))
+    .join("");
   return [
     floorPlane(style),
+    ...(options.architecture
+      ? [
+          `<g data-arch="back">${backWalls}${windowsSvg(style)}</g>`,
+          `<g data-arch="daylight">${daylightSvg(style)}</g>`,
+        ]
+      : []),
     ...(options.labels ? [zoneLabels(style)] : []),
     pieces.map((piece) => piece.svg).join("\n    "),
+    ...(options.architecture ? [`<g data-arch="front">${frontWalls}</g>`] : []),
   ].join("\n    ");
 }
 

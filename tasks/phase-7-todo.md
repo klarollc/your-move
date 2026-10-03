@@ -222,6 +222,45 @@ render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`
       new); format, lint, both typechecks, guard, scaffold and CSS scope clean.
 - [ ] Task 5: Architecture and light (AR-01). Walls with a deterministic cutaway rule, the window
       wall, baked daylight (F-6). Plate review.
+  - **Plan approved 2026-10-03 as recommended (W-1 to W-4).** W-1: the windows are in the
+    upper-right back wall, behind Reception and the Manager desk, because the approved renderer
+    already shades right-facing sides lighter (light from that side). W-2: walls 2 tiles high, which
+    fits the camera's existing headroom. W-3: the scene ground is the Active palette's `#efe7d9`.
+    W-4: perimeter walls only; partitions, if wanted, with Task 6.
+  - **Built 2026-10-03; `verify` pending.** `scene/architecture.ts`: two back walls on the floor's
+    back edges, 2 tiles high; the front edges cut to 0.3-tile stubs with a charcoal cut top; four
+    window bays on the upper-right wall; one fixed sun (`SUN`) carrying each pane's light onto the
+    floor. Wall thickness is taken inward, on the floor's edge strip: built outward, the walls
+    would have stood about 7 px outside the frame the camera fits and dropped the 1280 zoom from
+    1.125 to 1.0, which W-2 was chosen to avoid. The scene layer's `architecture` option (off for
+    the frozen frame) draws back walls and windows, then daylight, beneath every object, and front
+    stubs above them. The office turns it on; the scene ground is `#efe7d9`. The capture spec
+    serves every slice through `SLICE` (now `architecture`), so Task 3's captures stay where they
+    are.
+    - RED: the architecture unit tests 10 of 10 on assertions (after tightening three that passed
+      vacuously on an empty stub and one that failed as a TypeError); the e2e tests 2 of 2 at both
+      viewports. GREEN: all of them.
+    - Tests: walls on the back edges, inside the floor, at full height; front stubs lower than a
+      desk top; `resolveCutaways` returns nothing for the stubs at the highest zoom, so architecture
+      never needs the reveal rule; every wall inside the camera's office bounds at both viewports;
+      the windows within the window wall; one floor patch per window, where the sun carries it;
+      the architecture adds only its own groups, back walls and daylight beneath every object and
+      stubs above; no text; the frozen frame unchanged. E2e: the drawn room is identical in ready,
+      stale, offline, partial, conflict and `blocked-elsewhere` (F-6: light never stands for
+      state); the ground colour.
+    - Mutations, each confirmed applied and killed: a front stub at full height; the sun turned
+      toward the dark side; the windows off the wall's inner face; a back wall built outward; back
+      walls drawn after the objects; the room drawn differently in one state; the grey ground
+      restored. (A mutation aimed at the wall order hit the baked-label order instead; the
+      byte-for-byte frozen-frame test killed it.)
+    - Container run (not the gate): unit and component 794 of 795, the miss the known
+      container-only `phase5-script-paths` gap; Playwright 202 of 202 (e2e 92, a11y 42, visual 68);
+      format, lint, both typechecks, guard, scaffold and CSS scope clean. The label, hit-region and
+      overlap tests pass unchanged.
+    - Seen in the container preview, for the owner's plate review rather than tuned unasked: the
+      window wall's inner face is grey (the existing face shading on a side turned from the light),
+      darker than AR-01's plaster; the Reception and Manager desk zone labels, anchored at the zone's
+      back corner, now sit over the wall and a window; the stubs' charcoal cut tops read heavy.
 - [ ] Task 6: Furniture per zone. Each zone's props say what it is for; nothing hides a label or a
       target. Plate review.
 - [ ] Task 7: Figures (F-3). Modular adult figures; poses only from the semantic behavior map;

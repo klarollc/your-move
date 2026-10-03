@@ -43,11 +43,16 @@ import { createSvgSceneRenderer } from "./svg-scene-renderer.js";
 /**
  * Phase 7 Task 3b (rulings G-1 to G-3). The Active visual system's own office, drawn once, with no
  * baked labels or fixed figures; every entity's hit region, label anchor and the camera come from
- * the same Phase 6 geometry.
+ * the same Phase 6 geometry. Task 5 (W-1 to W-4) adds the room: back walls, the window wall and its
+ * fixed daylight, and front walls cut to low stubs.
  */
 const sceneArt = Object.freeze({
   defs: renderSceneDefs(RECONCILIATION_B_CLARITY),
-  layer: renderSceneLayer(RECONCILIATION_B_CLARITY, { labels: false, figures: false }),
+  layer: renderSceneLayer(RECONCILIATION_B_CLARITY, {
+    labels: false,
+    figures: false,
+    architecture: true,
+  }),
 });
 const entities = sceneEntities();
 const sceneDescriptors: readonly SceneDescriptor[] = Object.freeze(

@@ -116,7 +116,9 @@
   min-height: 0;
   position: relative;
   overflow: hidden;
-  background: #d7dad6;
+  /* Phase 7 Task 5 (W-3): the Active system's scene ground (reconciliation-b-clarity), so the field
+     around the room belongs to the office rather than reading as empty chrome. */
+  background: #efe7d9;
 }
 
 .office-canvas-host,

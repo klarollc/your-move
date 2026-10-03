@@ -8,3 +8,4 @@ export * from "./geometry.js";
 export * from "./render.js";
 export * from "./styles.js";
 export * from "./entities.js";
+export * from "./architecture.js";

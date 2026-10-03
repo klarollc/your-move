@@ -392,7 +392,8 @@
         },
         {
           "id": "5",
-          "state": "approved"
+          "state": "in_progress",
+          "note": "Plan approved 2026-10-03 (W-1 to W-4). Built; verify pending."
         },
         {
           "id": "6",
