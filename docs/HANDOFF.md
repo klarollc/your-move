@@ -1,6 +1,6 @@
 # Handoff — state, next action, and what would otherwise be relearned expensively
 
-Written 2026-09-18, last updated 2026-09-28 for Phase 7-O Tasks 9f–10. Read `AGENTS.md` first for authority; this document is the
+Written 2026-09-18, last updated 2026-10-03 for Phase 7 Tasks 1–5. Read `AGENTS.md` first for authority; this document is the
 live state, the next action, and the things a fresh session pays for twice if nobody wrote them down.
 
 ---
@@ -37,6 +37,124 @@ finding and the need for an independent release-review refresh remain current.
 
 ## The immediate next action
 
+**Phase 7, the rendered office — in progress, 2026-10-03.** Spec
+`docs/phase-7-high-fidelity-spec-v0.1.md` (F-1 to F-8), plan `tasks/phase-7-plan.md` (Q-1 to Q-5),
+checklist `tasks/phase-7-todo.md` (the full record of every task: RED, GREEN, mutations, moved
+assertions, owner rulings). `position.json` carries each task's state and gate. Latest `verify` on a
+clean tree: **`0637b27`, runner `p7t5-verify-1791056159`: unit 643, component 154, integration 90
+(+3 skipped), contract 85, e2e 92, a11y 42, visual 68.**
+
+**Do next:** the owner has not yet answered the **Task 5b** proposal (below). Ask once; do not start
+5b or Task 6 without the answer. After 5b: `verify`, owner captures, owner review, then plan Task 6.
+
+### Why Phase 7 exists
+
+The owner compared the Phase 7-O app captures with the approved art pack (AR-01 to AR-04) on
+2026-09-28: "nowhere near", "mainly rendering". The app drew flat grey rectangles in Pixi; the
+approved Active visual system (`reconciliation-b-clarity`, Phase 6) existed only as SVG evidence
+built by script. Phase 7 puts that system into the app and raises it toward AR-01 in slices, each
+captured by the owner beside the plate before the next starts (Q-3), so drift is caught per slice
+rather than at the end.
+
+### Done, in order, with the reason for each choice
+
+- **Task 1, fonts (gate `edd91fe`).** Fira Sans and Fira Mono 5.3.0 (`@fontsource`, exact pins,
+  Latin only), SIL OFL texts in `licenses/fonts/` with a test. A `?surface=font-sheet` page was
+  captured by the owner in Windows Chromium first (Q-4: F-5 required the faces confirmed on his
+  machine before becoming tokens); owner: "Looks good." Then `--font-ui`/`--font-mono` on `:root`,
+  loaded once from `global.css` (T-1), Mono only for Technical detail values (T-2).
+- **Task 2, move before changing (gate `d7c98dd`).** `scripts/phase6-candidate-{geometry,render,
+  styles}.ts` moved by `git mv` to `packages/ui-system/src/scene/`, exported as
+  `@cuckcode/ui-system/scene`. No output change: the frozen Phase 6 frame and every approved capture
+  re-render byte for byte (`scripts/phase7o-digest-successors.unit.test.ts`), which is what makes
+  every later change provably additive. The provenance test resolves old paths through a declared
+  move map; the register keeps approval-time paths.
+- **Task 3, split by owner ruling into 3a and 3b** because the app's flat rectangles, the layout
+  policy's 64×32 tile and Phase 6's 34 px tile were three geometries, and one change could not show
+  which a failing test was about.
+  - **3a (gate `6cc9475`):** `svg-scene-renderer.ts` behind the unchanged `SceneRendererPort`, at
+    parity with Pixi. `render-error` replaced `canvas-loss` (Q-1): SVG has no context to lose, so the
+    state became a general "The office could not be drawn" with the outline as the fallback. Limit:
+    e2e reaches `render-error` by URL; no test forces a real mount failure.
+  - **3b (gate `52cafbb`), rulings G-1 to G-3.** G-1: one geometry. `office-layout.ts` (camera
+    bounds, zones, role anchors, hit regions) now derives from the Phase 6 geometry via
+    `scene/entities.ts`; the camera's rules (fixed rotation, zoom stops, fit, pan clamp, 44 px
+    minimum target, Reset view) are unchanged, only measurements moved (D-02 calls them graybox
+    measurements; F-4 said keep Phase 6 geometry). Bounds snap outward to whole pixels because the
+    isometric edges are irrational and Reset view must stay byte-exact. G-2: **no figures until Task
+    7**, because a figure at a desk claims presence and F-3 says poses come only from the behaviour
+    map; Phase 6's fixed figures would have shown offline agents as present. G-3: DOM labels stay,
+    Phase 6's baked labels are left out. Person labels sit on their own desk; zone labels above the
+    zone's back corner (Phase 6's own rule). The scene is art drawn once plus one invisible hit
+    polygon per entity.
+  - **Closed at `6cb0dea`** with owner captures `docs/evidence/phase-7/active-office/`. Owner:
+    "the basic structure is approaching ab-reference-v1, but clearly falls short of the quality when
+    compared directly." That gap is what Tasks 5–8 exist for.
+- **Task 4, Pixi removed (gate `2b97c73`), rulings R-1 to R-3.** R-1: the probe and its three specs
+  went; **the only browser tests of pan, zoom limits and pointer–keyboard camera parity went with
+  them** (they ran on the probe). Camera rules stay unit-tested in `office-camera.unit.test.ts`;
+  in-office pan and zoom were never built, so that D-02 item is open, not lost. R-2: the owner ran
+  `npm.cmd uninstall pixi.js --workspace @cuckcode/web` on Windows (a lock produced on Linux risks the
+  cross-platform hazard); the lock dropped exactly pixi.js and eleven packages only it used. R-3:
+  `SceneDescriptor` carries a required outline and no rectangle. Guards:
+  `scripts/no-pixi.unit.test.ts`, `tests/e2e/phase-7-no-pixi.spec.ts`. Bundle: 880,765 bytes in 13
+  files to 398,467 in 2; the >500 kB chunk warning is gone.
+- **Task 5, the room (gate `0637b27`), rulings W-1 to W-4.** `scene/architecture.ts`: two back
+  walls, front walls cut to 0.3-tile stubs (one fixed cutaway rule: stubs are lower than a desk top,
+  so `resolveCutaways` never fires and nothing is hidden), four windows, and floor daylight from one
+  fixed `SUN`. W-1: windows on the **upper-right** wall, not AR-01's left, because the approved
+  renderer already shades right-facing sides lighter, so light from that side agrees with every
+  existing shadow without editing the Active style. W-2: walls 2 tiles high, which fits the camera's
+  existing headroom; 2.6 tiles would have dropped the 1280 zoom from 1.125 to 1.0 and squeezed two
+  labels to 177 px against a 180 px maximum. Wall thickness is taken **inward** for the same reason
+  (outward stood 7 px outside the frame). W-3: scene ground `#efe7d9` (Active palette) instead of
+  grey, so the field belongs to the office. W-4: perimeter only; partitions wait for Task 6 if
+  wanted. F-6 is enforced: `tests/e2e/phase-7-architecture.spec.ts` asserts the drawn room is
+  byte-identical across ready, stale, offline, partial, conflict and `blocked-elsewhere`.
+  Owner captures `docs/evidence/phase-7/architecture/` (`732fb5e`). Owner: "new captures are a
+  definite improvement and i agree with the items you noted."
+
+### Waiting on the owner: Task 5b (proposed 2026-10-03, not approved)
+
+The three items the owner agreed with: (1) the window wall's inner face reads grey (the furniture
+face shading, −22% on sides turned from the light, applied to plaster); (2) the stubs' charcoal cut
+tops read heavy; (3) the Reception, Manager desk and Project Library labels, anchored at their back
+corner, now sit over the wall and a window. Proposed: (1) a lighter wall-only face rule, same light
+direction (about −8% / −4%), ordering held by a test, furniture unchanged; (2) mid-grey cut tops;
+(3) **recommended: fold into Task 8**, where labels are restyled toward AR-01's small plates, so
+placement and style are decided once; alternative, move now (inside the plate ~1 tile from the
+corner), likely moved again. Also open: whether 5b captures supersede `phase-7/architecture/` in the
+ledger (proposed) or go to a new `architecture-b` folder.
+
+### Remaining Phase 7 (each needs its own owner-approved plan before building)
+
+Task 5b (above) · Task 6 furniture per zone (plate review) · Task 7 figures, F-3, poses only from
+the behaviour map, paused when blocked, still when unknown, adversarial fixtures still refused
+(plate review) · Task 8 in-scene cues, F-7 (one amber marker per manager request; "Status unknown"
+without motion; AR-03 review) **plus zone-label placement and label styling** · Task 9 capture
+matrix and evidence, F-8, measured contrast, frame time (Q-5) · Task 10 owner visual acceptance
+against AR-01–AR-04 · Task 11 optional second cold run (needs a new key and interval).
+
+**Recorded for later tasks, not fixed:** at zoom 0.875 (inspector open) the Product Designer and
+Implementation Engineer desks are ~155 px apart, so two long labels can touch; the overlap test
+covers the default view only (Task 7/8). The capture spec `tests/visual/phase-7-active-office.spec.ts`
+serves every slice through its `SLICE` constant (now `architecture`); change it per slice so earlier
+captures are never overwritten.
+
+### Not authorized or not drafted
+
+- **DF-028 fix** — proposal `docs/proposals/2026-10-03-df-028-e2e-on-the-production-bundle.md`,
+  option (a), not ruled. Cause traced: the dev server's `/@react-refresh` request fails with
+  `net::ERR_NO_BUFFER_SPACE` on Windows, leaving a blank page; four occurrences, last at `d7c98dd`.
+  A rerun is green. If a `verify` fails with a blank page, read the kept trace before calling it a
+  regression.
+- **B-5** (a runtime producer for DF-029's version-3 conditions) — not authorized; no real agent can
+  yet say "blocked, not on you".
+- **Kickoff open questions** (housekeeping 3f, ruled option 2 after Phase 7-O) — plan not drafted.
+- A durable `gh` credential fix (below) — optional, not done.
+
+### Earlier, still true
+
 **Phase 7-O, 2026-09-28.** Tasks 1–10 are done; `tasks/phase-7-o-todo.md` is the record. The last
 `verify` on a clean tree passed at `f1ca1be`: unit 586, component 139, integration 79 with 3
 skipped, contract 78, e2e 88, a11y 46, visual 64.
@@ -70,12 +188,9 @@ skipped, contract 78, e2e 88, a11y 46, visual 64.
   provider error's phase says whether Codex will retry it. 3d (F3) is closed with no code
   change (optional provider identifiers, never synthesized). 3e (DF-006 prevention) stays declined.
   The housekeeping queue is otherwise empty.
-- **Approved 2026-09-28, not authorized for implementation until Phase 7-O is accepted:** the DF-029
-  amendment (`docs/proposals/2026-09-28-df-029-blocked-not-on-you.md`, B-1 to B-5) and the Phase 7
-  specification (`docs/phase-7-high-fidelity-spec-v0.1.md`, F-1 to F-8; F-5 decided: Fira Sans + Fira
-  Mono, SIL OFL 1.1, Windows rendering check still to do). Order: DF-029, the Phase 5 fixture removal, then the Phase 7 plan.
-  `codex-currency` is merged (`41c4625`); the D-24 disposition is on this line now. Local `main`
-  still points at `5b436cc`: fast-forward it before pushing.
+- **Order since acceptance, all done:** DF-029 (2026-10-03), the Phase 5 fixture removal
+  (2026-10-03, gate `f30481b`), then Phase 7 (above). `codex-currency` is merged (`41c4625`). Work
+  is on `main` directly now.
 
 **Phase 5 was accepted by the owner on 2026-09-25**
 (`docs/evidence/phase-5/decision-record-2026-09-25-task-10-owner-acceptance.md`). The D-24
@@ -350,12 +465,22 @@ leaves a log under `docs/evidence/runtime/sessions/`. Why passes 6–9 failed st
 
 Everything runs from `C:\Users\nater\CuckCode`. The owner uses **PowerShell**, so `&&` is a parse
 error and there is no inline env-var prefix — write `$env:X='1'; cmd` and clear it afterwards.
+**Script execution is disabled on his PowerShell, so `npx`/`npm` fail; give `npx.cmd`/`npm.cmd`.**
+On 2026-10-03 a failed `npx` followed by `Remove-Item Env:...` meant the retry ran without the
+regenerate flag and wrote nothing to `docs/evidence`; give the whole block with `.cmd` forms.
+
+**Owner capture recipe (every Phase 7 slice):**
+`$env:CUCKCODE_REGENERATE_EVIDENCE = "1"`, `npx.cmd playwright test
+tests/visual/phase-7-active-office.spec.ts`, `Remove-Item Env:CUCKCODE_REGENERATE_EVIDENCE`,
+`npm.cmd run phase5:provenance:write` (expect `"appended": 2`), `git status --short`. The agent then
+checks each PNG's sha256 against its ledger line, records the owner's words verbatim in the
+checklist, commits the evidence, runs `verify`, and only then marks the task done.
 
 | Command | Purpose |
 | --- | --- |
 | `npm run kickoff:preflight` | Task 17 preconditions, no provider calls |
 | `npm run phase5:contract:build` | Rebuild the acceptance contract and traceability matrix |
-| `npm run verify` | The whole gate. At `f1ca1be`: unit 586, component 139, integration 79 (+3 skipped), contract 78, e2e 88, a11y 46, visual 64 |
+| `npm run verify` | The whole gate. At `0637b27`: unit 643, component 154, integration 90 (+3 skipped), contract 85, e2e 92, a11y 42, visual 68 |
 | `npm run phase5:capture` | Recapture the 40 browser cells and rebuild the manifest |
 | `npm run phase5:fidelity` | Contract names, as amended by the overlay, against the captured trees |
 | `npm run phase5:visualqa:run` | Visual QA Reviewer annotation (live, debits the ledger) |
@@ -371,9 +496,12 @@ Live runs need an explicit opt-in env var — `CUCKCODE_LIVE_PHASE5`, `CUCKCODE_
 `CUCKCODE_LIVE_ROLE_EXERCISE` — and every one of them debits `docs/evidence/phase-5/turn-ledger.json`
 where applicable. **A budget nobody debits is discovered rather than set.**
 
-Git: work happens on `hermes/phase-4-task-15-evidence`; fast-forward `main` at the **end** of a
-session, not the start, or it silently falls behind. Remote is `klarollc/CuckCode`, private, over
-HTTPS — SSH has no key registered and `ssh -T git@github.com` fails.
+Git: work happens on `main` (since the 2026-09-28 merge). Remote is `klarollc/CuckCode`, private,
+over HTTPS — SSH has no key registered and `ssh -T git@github.com` fails. **Pushes are owner-run.**
+The active `gh` account is `nateriera`, which cannot push; the owner runs `gh auth switch --user
+klarollc`, `git push origin main`, `gh auth switch --user nateriera`. `gh` 2.100.0 does not pick the
+account from the URL's username; a repo-local credential fix was never made. **Unpushed at this
+writing:** `0637b27`, `9986ec2`, `732fb5e` and the commit carrying this update.
 
 Each verification pass writes its own file — `verification.json` is pass 1, then `pass-N.json`. The
 runner used to overwrite one path, which would have replaced the Task 6 assessment with a later one
@@ -388,8 +516,20 @@ an ordinary test run twice before (D4-P-001, D4-P-003). Do not add a second capt
 caught one being added during Task 7.
 
 Playwright and Vitest share `tests/`. `.spec.ts` is Playwright, `.test.ts` is Vitest, and
-`playwright.config.ts` now enforces it. Port 4173 is the preview server; a leftover one from an
-earlier session will fail `test:e2e` with "already used".
+`playwright.config.ts` now enforces it. Ports: **4173** dev server, **4174** production preview of
+the office (captures use it), **4175** the Decision Notice fixture's own build. All three must be
+free; the owner runs another project whose agent sometimes holds 4173/4174, which stops a run at
+e2e start — that is not an orphan to kill.
+
+**Agent session practice (Cowork, 2026-10-02/03).** The agent edits and tests in a cloud container
+mirror of the repo (full install, Node 22, Playwright via a local config pointing at the container's
+Chromium), never `npm install`s against the owner's folder, copies changed files to the owner's
+machine, and confirms each transfer by comparing sha256 lists on both sides before committing there.
+Known container-only failures, not regressions: a `/favicon.ico` console 404 from the full Chromium
+build (scaffold e2e, Decision Notice visual), `scripts/phase5-script-paths.unit.test.ts` (the
+successor review JSON is not mirrored), `position-record` (no `.git`). The commit's gate is always the
+owner's runner `verify` on a clean tree, never the container run. After any commit check for a stray
+`.git/index.lock` and that `position.json` actually changed with its checklist.
 
 Owner rulings that amend an authored artifact are recorded as an **overlay**, never edited into it —
 `surface-contract/amendments.json` carries decision 7-B's two name changes with their reasons, and
