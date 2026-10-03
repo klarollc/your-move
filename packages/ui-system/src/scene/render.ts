@@ -75,6 +75,11 @@ const escapeText = (value: string): string =>
   value.replace(/&/gu, "&amp;").replace(/</gu, "&lt;").replace(/>/gu, "&gt;");
 
 /** One isometric box: top, left, right. The only volume primitive candidates get. */
+type FaceShading = Readonly<{ left: number; right: number }>;
+
+const DEFAULT_FACE_SHADING: FaceShading = { left: -0.22, right: -0.1 };
+const WALL_FACE_SHADING: FaceShading = { left: -0.08, right: -0.04 };
+
 function box(
   style: CandidateStyle,
   x: number,
@@ -84,6 +89,7 @@ function box(
   h: number,
   base: string,
   edge: string,
+  faceShading: FaceShading = DEFAULT_FACE_SHADING,
 ): string {
   const top = [iso(x, y, h), iso(x + w, y, h), iso(x + w, y + d, h), iso(x, y + d, h)];
   const left = [iso(x, y + d, h), iso(x + w, y + d, h), iso(x + w, y + d, 0), iso(x, y + d, 0)];
@@ -93,8 +99,8 @@ function box(
       ? ` stroke="${edge}" stroke-width="${style.edgeWidth}" stroke-linejoin="round"`
       : "";
   return [
-    `<polygon points="${pts(left)}" fill="${shade(base, -0.22)}"${stroke}/>`,
-    `<polygon points="${pts(right)}" fill="${shade(base, -0.1)}"${stroke}/>`,
+    `<polygon points="${pts(left)}" fill="${shade(base, faceShading.left)}"${stroke}/>`,
+    `<polygon points="${pts(right)}" fill="${shade(base, faceShading.right)}"${stroke}/>`,
     `<polygon points="${pts(top)}" fill="${shade(base, style.lift)}"${stroke}/>`,
   ].join("");
 }
@@ -407,6 +413,7 @@ function wallSvg(style: CandidateStyle, wall: WallBox): string {
     wall.h,
     p.plaster,
     shade(p.plaster, -0.35),
+    WALL_FACE_SHADING,
   );
   if (wall.kind === "back") return faces;
   const cut = [
@@ -415,7 +422,7 @@ function wallSvg(style: CandidateStyle, wall: WallBox): string {
     iso(wall.x + wall.w, wall.y + wall.d, wall.h),
     iso(wall.x, wall.y + wall.d, wall.h),
   ];
-  return `${faces}<polygon points="${pts(cut)}" fill="${shade(p.metal, -0.2)}"/>`;
+  return `${faces}<polygon data-wall-cut-cap="true" points="${pts(cut)}" fill="${p.metal}"/>`;
 }
 
 /** The window wall's panes: glass, a charcoal frame and one mullion, on the wall's inner face. */
@@ -442,12 +449,15 @@ function windowsSvg(style: CandidateStyle): string {
 
 /** Baked daylight: each window's light on the floor, soft and fixed (F-6). */
 function daylightSvg(style: CandidateStyle): string {
-  return daylightPatches()
+  const gradientId = `daylight-${style.candidateId}`;
+  const gradient = `<defs><radialGradient id="${gradientId}" cx="50%" cy="50%" r="50%" gradientUnits="objectBoundingBox"><stop offset="0%" stop-color="${style.palette.plaster}" stop-opacity="0.28"/><stop offset="65%" stop-color="${style.palette.plaster}" stop-opacity="0.12"/><stop offset="100%" stop-color="${style.palette.plaster}" stop-opacity="0"/></radialGradient></defs>`;
+  const patches = daylightPatches()
     .map(
       (patch) =>
-        `<polygon points="${pts(patch.map(({ x, y }) => iso(x, y)))}" fill="${style.palette.plaster}" opacity="0.38"/>`,
+        `<polygon points="${pts(patch.map(({ x, y }) => iso(x, y)))}" fill="url(#${gradientId})"/>`,
     )
     .join("");
+  return `${gradient}${patches}`;
 }
 
 /** Options for the scene layer the app draws (Phase 7 Task 3b). */

@@ -1,6 +1,6 @@
 # Handoff — state, next action, and what would otherwise be relearned expensively
 
-Written 2026-09-18, last updated 2026-10-03 for Phase 7 Tasks 1–5. Read `AGENTS.md` first for authority; this document is the
+Written 2026-09-18, last updated 2026-10-03 for Phase 7 Tasks 1–5b. Read `AGENTS.md` first for authority; this document is the
 live state, the next action, and the things a fresh session pays for twice if nobody wrote them down.
 
 ---
@@ -44,8 +44,21 @@ assertions, owner rulings). `position.json` carries each task's state and gate. 
 clean tree: **`0637b27`, runner `p7t5-verify-1791056159`: unit 643, component 154, integration 90
 (+3 skipped), contract 85, e2e 92, a11y 42, visual 68.**
 
-**Do next:** the owner has not yet answered the **Task 5b** proposal (below). Ask once; do not start
-5b or Task 6 without the answer. After 5b: `verify`, owner captures, owner review, then plan Task 6.
+**Task 5b ruling and current state, 2026-10-03.** The owner approved
+`tasks/phase-7-art-gap-plan-draft.md` as written, for Task 5b only: wall-only −8%/−4% face shades,
+mid-grey front cut tops, fixed soft daylight, and a new `architecture-b` capture slice. Labels stay
+deferred to Task 8; furniture shading and the Active palette stay unchanged. The renderer and RED
+assertions are in the working tree. Focused architecture plus frozen-frame tests pass (17/17).
+Formatting, lint, typechecks, unit (646), component (154), integration (90; 3 skipped), contract
+(85), provenance, side-effect, knowledge, and production build checks passed. The 92 e2e and 42
+a11y cases all reported passing, but both Playwright processes hung after their last case and were
+interrupted; there is no clean browser-command exit or complete `verify` gate. The owner has now
+captured both approved viewports under `docs/evidence/phase-7/architecture-b/`; both hashes match
+provenance entries 631–632, and the read-only provenance check is clean. The owner's exact AR-01
+review is: "slice meets expectations".
+
+**Do next:** obtain a clean owner-run `verify` through the visible agent runner, then mark Task 5
+done. Task 6 planning may follow; implementation waits for its separate plan approval.
 
 ### Why Phase 7 exists
 
@@ -114,17 +127,15 @@ rather than at the end.
   Owner captures `docs/evidence/phase-7/architecture/` (`732fb5e`). Owner: "new captures are a
   definite improvement and i agree with the items you noted."
 
-### Waiting on the owner: Task 5b (proposed 2026-10-03, not approved)
+### Task 5b: approved shell refinement, owner capture pending
 
-The three items the owner agreed with: (1) the window wall's inner face reads grey (the furniture
-face shading, −22% on sides turned from the light, applied to plaster); (2) the stubs' charcoal cut
-tops read heavy; (3) the Reception, Manager desk and Project Library labels, anchored at their back
-corner, now sit over the wall and a window. Proposed: (1) a lighter wall-only face rule, same light
-direction (about −8% / −4%), ordering held by a test, furniture unchanged; (2) mid-grey cut tops;
-(3) **recommended: fold into Task 8**, where labels are restyled toward AR-01's small plates, so
-placement and style are decided once; alternative, move now (inside the plate ~1 tile from the
-corner), likely moved again. Also open: whether 5b captures supersede `phase-7/architecture/` in the
-ledger (proposed) or go to a new `architecture-b` folder.
+The owner approved the proposal as written on 2026-10-03. The approved wall-only shading and cap
+changes, plus a fixed radial-gradient treatment for daylight, are implemented; new tests first
+failed on those three visual contracts and now pass. Furniture face shading and the frozen Phase 6
+composition remain unchanged. The visual capture spec targets `architecture-b`, preserving the
+reviewed `architecture/` evidence. The owner captures match provenance, and the owner's AR-01
+review is "slice meets expectations". Remaining: a clean owner-run verification exit. Zone-label
+position and style stay together for Task 8. Task 6 implementation waits for separate plan approval.
 
 ### Remaining Phase 7 (each needs its own owner-approved plan before building)
 
@@ -138,7 +149,7 @@ against AR-01–AR-04 · Task 11 optional second cold run (needs a new key and i
 **Recorded for later tasks, not fixed:** at zoom 0.875 (inspector open) the Product Designer and
 Implementation Engineer desks are ~155 px apart, so two long labels can touch; the overlap test
 covers the default view only (Task 7/8). The capture spec `tests/visual/phase-7-active-office.spec.ts`
-serves every slice through its `SLICE` constant (now `architecture`); change it per slice so earlier
+serves every slice through its `SLICE` constant (now `architecture-b`); change it per slice so earlier
 captures are never overwritten.
 
 ### Not authorized or not drafted

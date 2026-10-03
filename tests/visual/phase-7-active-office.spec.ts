@@ -15,9 +15,9 @@ import { evidenceOutputPath } from "../support/evidence-output.js";
  *
  * One spec serves every slice (plan Q-3): `SLICE` names the evidence folder of the slice under
  * review, so each slice's captures sit beside the last ones instead of overwriting them. Task 3
- * captured `active-office`; Task 5 adds the room (W-1 to W-4).
+ * captured `active-office`; Task 5b uses `architecture-b` to preserve the reviewed Task 5 plates.
  */
-const SLICE = "architecture";
+const SLICE = "architecture-b";
 const ORIGIN = "http://127.0.0.1:4174";
 
 test("@visual Phase 7 the Active office, default state", async ({ page }, testInfo) => {
@@ -30,7 +30,7 @@ test("@visual Phase 7 the Active office, default state", async ({ page }, testIn
   expect(await art.locator("polygon").count()).toBeGreaterThan(0);
   // G-3 and G-2: no text and no figure drawn into the art.
   await expect(art.locator("text")).toHaveCount(0);
-  // Task 5: the room is drawn, back walls with the window wall, daylight and front stubs.
+  // Task 5b: the room shell stays present, with back walls, daylight and front stubs.
   for (const group of ["back", "daylight", "front"]) {
     await expect(art.locator(`[data-arch="${group}"]`)).toHaveCount(1);
   }

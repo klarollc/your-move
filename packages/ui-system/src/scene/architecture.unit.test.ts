@@ -22,8 +22,18 @@ import { RECONCILIATION_B_CLARITY } from "./styles.js";
  * to low stubs by one fixed rule, so architecture never hides a desk, a label or a target.
  */
 const style = RECONCILIATION_B_CLARITY;
+const appScene = renderSceneLayer(style, { labels: false, figures: false, architecture: true });
 const back = WALLS.filter(({ kind }) => kind === "back");
 const front = WALLS.filter(({ kind }) => kind === "front");
+const shadeBy = (hex: string, amount: number): string => {
+  const channels = [0, 2, 4].map((index) => Number.parseInt(hex.slice(index + 1, index + 3), 16));
+  return `#${channels
+    .map((channel) =>
+      Math.round(amount >= 0 ? channel + (255 - channel) * amount : channel * (1 + amount)),
+    )
+    .map((channel) => channel.toString(16).padStart(2, "0"))
+    .join("")}`;
+};
 const corners = (wall: WallBox) =>
   [0, wall.h].flatMap((z) => [
     iso(wall.x, wall.y, z),
@@ -63,6 +73,23 @@ describe("the walls", () => {
     const right = front.find(({ id }) => id === "wall_front_right")!;
     expect(left.y + left.d).toBe(FLOOR.d);
     expect(right.x + right.w).toBe(FLOOR.w);
+  });
+
+  it("uses the owner-approved light wall-only face shades", () => {
+    const backLayer = appScene.match(/<g data-arch="back">([^]*?)<\/g>/u)?.[1] ?? "";
+    const litFace = shadeBy(style.palette.plaster, -0.08);
+    const shadedFace = shadeBy(style.palette.plaster, -0.04);
+    expect([...backLayer.matchAll(new RegExp(`fill="${litFace}"`, "gu"))]).toHaveLength(2);
+    expect([...backLayer.matchAll(new RegExp(`fill="${shadedFace}"`, "gu"))]).toHaveLength(2);
+  });
+
+  it("uses a mid-grey material fill for the two front cut tops", () => {
+    const frontLayer = appScene.match(/<g data-arch="front">([^]*?)<\/g>/u)?.[1] ?? "";
+    const cutTops = [
+      ...frontLayer.matchAll(/<polygon\b[^>]*data-wall-cut-cap="true"[^>]*fill="([^"]+)"/gu),
+    ];
+    expect(cutTops).toHaveLength(front.length);
+    expect(cutTops.map((match) => match[1])).toStrictEqual(front.map(() => style.palette.metal));
   });
 
   it("never needs the reveal rule: no wall in front of anything is tall enough to hide it", () => {
@@ -134,6 +161,19 @@ describe("the window wall and its daylight (W-1, F-6)", () => {
         expect(point.y).toBeLessThanOrEqual(FLOOR.d);
       }
     }
+  });
+
+  it("softens each fixed daylight patch to transparent at its edge", () => {
+    const daylight = appScene.match(/<g data-arch="daylight">([^]*?)<\/g>/u)?.[1] ?? "";
+    const gradientId = `daylight-${style.candidateId}`;
+    expect(daylight).toContain(`<radialGradient id="${gradientId}"`);
+    expect(daylight).toContain('gradientUnits="objectBoundingBox"');
+    expect(daylight).toContain('stop offset="100%"');
+    expect(daylight).toContain('stop-opacity="0"');
+    expect([...daylight.matchAll(new RegExp(`fill="url\\(#${gradientId}\\)"`, "gu"))]).toHaveLength(
+      WINDOWS.length,
+    );
+    expect(daylight).not.toContain('opacity="0.38"');
   });
 });
 

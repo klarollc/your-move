@@ -268,6 +268,17 @@ render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`
     AR-01 (Q-3): "new captures are a definite improvement and i agree with the items you noted."**
     The three noted items are therefore open: the window wall's grey inner face, the zone labels
     over the wall and a window, and the heavy stub cut tops.
+  - **Task 5b approved as written 2026-10-03.** The approved plan is
+    `tasks/phase-7-art-gap-plan-draft.md`; its scope is wall-only face shades (−8%/−4%), neutral
+    mid-grey cut tops, and fixed soft daylight, with labels deferred to Task 8 and no furniture or
+    palette changes. Implementation and RED assertions are in the working tree; focused architecture
+    tests are GREEN (17/17 including frozen-frame regression). The visual capture spec targets
+    `phase-7/architecture-b/`, preserving the reviewed Task 5 evidence. **Owner captures and review,
+    2026-10-03:** the 1440×900 and 1280×800 PNG digests match provenance entries 632 and 631;
+    `phase5:provenance` reports no stale digests. Owner review beside AR-01: "slice meets
+    expectations". Broad checks passed through build; the 92 e2e and 42 a11y cases reported passing,
+    but Playwright did not exit cleanly, so no complete verify gate is claimed. Task 5 remains open
+    pending clean owner-run `verify`. Task 6 stays gated on that gate and its own plan approval.
 - [ ] Task 6: Furniture per zone. Each zone's props say what it is for; nothing hides a label or a
       target. Plate review.
 - [ ] Task 7: Figures (F-3). Modular adult figures; poses only from the semantic behavior map;

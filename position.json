@@ -393,7 +393,7 @@
         {
           "id": "5",
           "state": "in_progress",
-          "note": "Plan approved 2026-10-03 (W-1 to W-4). Built: verify 0637b27, runner p7t5-verify-1791056159. Owner plate review 2026-10-03: improvement; the three noted items open."
+          "note": "Plan approved 2026-10-03 (W-1 to W-4); Task 5b approved as written 2026-10-03 for wall-only face shades, mid-grey cut tops, and fixed soft daylight. Built Task 5 gate: verify 0637b27, runner p7t5-verify-1791056159. Task 5b implementation in working tree; focused architecture and frozen-frame tests GREEN 17/17. Owner captures at both viewports match provenance entries 631-632; owner AR-01 review 2026-10-03: \"slice meets expectations\". Broad checks passed through build; all 92 e2e and 42 a11y cases reported passing, but Playwright did not exit cleanly and no complete verify gate is claimed. Clean owner-run verify pending. Task 5 remains in progress."
         },
         {
           "id": "6",
