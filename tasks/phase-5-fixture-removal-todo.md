@@ -1,6 +1,6 @@
 # Phase 5 fixture removal checklist
 
-Status: **OWNER-APPROVED 2026-10-03.** Plan: `tasks/phase-5-fixture-removal-plan.md`.
+Status: **COMPLETE 2026-10-03** (owner-approved the same day). Plan: `tasks/phase-5-fixture-removal-plan.md`.
 Spec: `docs/proposals/2026-09-28-phase-5-fixture-removal.md`.
 
 ## Rules for every task
@@ -101,10 +101,12 @@ owner-run; moved assertions listed (P-4). No file under `docs/evidence/phase-5` 
       that does not exist. (A first attempt did not apply after Prettier reflowed the line, and was
       discarded, not counted.)
     - The test inventory walks the repository, so it found the moved test files with no change.
-- [ ] Task 7: Decision record and position record.
+- [x] Task 7: Decision record and position record.
   - Acceptance: a new dated decision record marks the D-24 "what follows" item done, citing the
     commits; no accepted record edited; `position.json` moves the workstream to complete.
-  - **Written 2026-10-03; closes on `verify`.**
+  - **Written 2026-10-03 at `f30481b`. `verify` GREEN through the runner
+    (`p5fr-t7-verify-1791042985`) on a clean tree at `f30481b`: unit 610, component 146,
+    integration 90 with 3 skipped, contract 85, e2e 90, a11y 46, visual 64.**
     `docs/evidence/phase-5/decision-record-2026-10-03-fixture-removed.md`, beside the D-24 record,
     which is not edited. A new file in that folder leaves the accepted 195-artifact set unchanged:
     its digest is a fixed list in `d24-production-suitability-review.json`, recomputed by no script.

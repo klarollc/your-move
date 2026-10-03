@@ -84,10 +84,13 @@ production-suitability review is recorded by hand in
 2026-10-02**, owner as Delivery Lead and reviewer. Nothing in the code enforces it.
 **Disposition recorded 2026-09-27 on branch `codex-currency` (`c3752cb`), merged 2026-09-28 (`41c4625`):**
 `reuse_concepts_only`, and the fixture's presence in production packages ruled an unruled
-deviation. Its removal (one re-export in `packages/domain`, two routes in `apps/web/src/main.tsx`,
-four Phase 5 browser suites) is unauthorized follow-on work under its own specification, and it
-touches `apps/web/src/`, so it waits until after the Phase 7-O cold run. Closing the Phase 5
-fixture initiative is a separate owner act.
+deviation. **Removed 2026-10-03** (`tasks/phase-5-fixture-removal-todo.md`;
+`docs/evidence/phase-5/decision-record-2026-10-03-fixture-removed.md`): the fixture lives in
+`fixtures/decision-notice` with its own production build on port 4175, which the four Phase 5
+suites load; `scripts/fixture-isolation.unit.test.ts` fails if production reaches it again; C-11
+is checked through a successor review in `docs/evidence/phase-5-fixture-removal/`. `verify` now
+needs ports 4173, 4174 and 4175 free. Closing the Phase 5 fixture initiative is a separate owner
+act.
 
 **Current Phase 5 refresh attempt:** pass 9 (2026-09-22) spent one turn and stopped at
 `NOTIFICATION_TIMEOUT` without a verdict. It is recorded in the provenance ledger (2026-09-25) and

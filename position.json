@@ -283,7 +283,7 @@
     {
       "id": "phase-5-fixture-removal",
       "title": "The Phase 5 fixture leaves the production bundle (D-24 follow-on)",
-      "state": "in_progress",
+      "state": "complete",
       "spec": "docs/proposals/2026-09-28-phase-5-fixture-removal.md",
       "authorizedAfter": ["7-O:12"],
       "checklist": "tasks/phase-5-fixture-removal-todo.md",
@@ -339,10 +339,14 @@
         },
         {
           "id": "7",
-          "state": "in_progress",
-          "note": "Record written; closes on verify"
+          "state": "done",
+          "gate": {
+            "verify": "f30481b",
+            "runner": "p5fr-t7-verify-1791042985"
+          }
         }
-      ]
+      ],
+      "note": "Closing the Phase 5 fixture initiative remains a separate owner act"
     },
     {
       "id": "7",
