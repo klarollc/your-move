@@ -10,6 +10,10 @@
  * - `work.transitioned` gains `payloadVersion: 2`. A version-2 transition into an attention-raising
  *   state must say why, on whom it waits, and what the manager is asked to do. Version-1 payloads,
  *   which carry no version field, keep exactly their old meaning so every recorded log still replays.
+ * - `payloadVersion: 3` (DF-029, spec §10.1) makes the request optional for `blocked` and
+ *   `waiting_input`: a condition says who can resolve it, and separately whether the manager is
+ *   asked to act. Waiting on the manager, and a review, still require a request. Version 2 keeps its
+ *   exact meaning: there, every condition asks the manager.
  */
 
 export const workConditionReasonCodes = [
@@ -48,6 +52,14 @@ export type WorkCondition = {
   requestedAction: { kind: RequestedActionKind; summary: string };
 };
 
+/** A version-3 condition: the request is optional where someone other than the manager resolves it. */
+export type WorkConditionV3 = Omit<WorkCondition, "requestedAction"> & {
+  requestedAction?: WorkCondition["requestedAction"];
+};
+
+/** Version-3 targets whose condition may omit the request (spec §10.1). */
+const REQUEST_OPTIONAL_STATES: readonly string[] = ["blocked", "waiting_input"];
+
 export type WorkTransitionPayload =
   | { workItemId: string; fromRevision: number; toState: string; payloadVersion: 1 }
   | {
@@ -56,6 +68,13 @@ export type WorkTransitionPayload =
       toState: string;
       payloadVersion: 2;
       condition?: WorkCondition;
+    }
+  | {
+      workItemId: string;
+      fromRevision: number;
+      toState: string;
+      payloadVersion: 3;
+      condition?: WorkConditionV3;
     };
 
 export type WorkAssignmentPayload = { workItemId: string; roleAssignmentId: string };
@@ -104,21 +123,23 @@ export function validateWorkTransitionPayload(
   if (typeof toState !== "string" || toState.length === 0) issues.push("toState is missing");
 
   const version = payload.payloadVersion ?? 1;
-  if (version !== 1 && version !== 2) issues.push(`unsupported payloadVersion ${String(version)}`);
+  if (version !== 1 && version !== 2 && version !== 3) {
+    issues.push(`unsupported payloadVersion ${String(version)}`);
+  }
 
   if (version === 1 && "condition" in payload) {
     issues.push("condition requires payloadVersion 2");
   }
 
-  let condition: WorkCondition | undefined;
-  if (version === 2) {
+  let condition: WorkConditionV3 | undefined;
+  if (version === 2 || version === 3) {
     const raises = (attentionRaisingStates as readonly unknown[]).includes(toState);
     if (raises && !("condition" in payload)) {
-      issues.push(`a version-2 transition to ${String(toState)} requires a condition`);
+      issues.push(`a version-${version} transition to ${String(toState)} requires a condition`);
     } else if (!raises && "condition" in payload) {
       issues.push(`a transition to ${String(toState)} raises no attention and takes no condition`);
     } else if (raises) {
-      const checked = validateCondition(payload.condition);
+      const checked = validateCondition(payload.condition, version, String(toState));
       if (checked.ok) condition = checked.value;
       else issues.push(...checked.issues);
     }
@@ -130,17 +151,26 @@ export function validateWorkTransitionPayload(
     fromRevision: fromRevision as number,
     toState: toState as string,
   };
-  return version === 1
-    ? { ok: true, value: { ...core, payloadVersion: 1 } }
-    : {
-        ok: true,
-        value: condition
-          ? { ...core, payloadVersion: 2, condition }
-          : { ...core, payloadVersion: 2 },
-      };
+  if (version === 1) return { ok: true, value: { ...core, payloadVersion: 1 } };
+  if (version === 3) {
+    return {
+      ok: true,
+      value: condition ? { ...core, payloadVersion: 3, condition } : { ...core, payloadVersion: 3 },
+    };
+  }
+  return {
+    ok: true,
+    value: condition
+      ? { ...core, payloadVersion: 2, condition: condition as WorkCondition }
+      : { ...core, payloadVersion: 2 },
+  };
 }
 
-function validateCondition(value: unknown): WorkPayloadResult<WorkCondition> {
+function validateCondition(
+  value: unknown,
+  version: 2 | 3,
+  toState: string,
+): WorkPayloadResult<WorkConditionV3> {
   if (!isRecord(value)) return { ok: false, issues: ["condition must be an object"] };
   const issues: string[] = [];
   const allowed = ["reasonCode", "summary", "waitingOn", "requestedAction"];
@@ -173,7 +203,15 @@ function validateCondition(value: unknown): WorkPayloadResult<WorkCondition> {
   }
 
   const action = value.requestedAction;
-  if (!isRecord(action) || !includes(requestedActionKinds, action.kind)) {
+  if (action === undefined && version === 3) {
+    // Version 3 only: an absent request is allowed unless the manager is the one waited on, or the
+    // target is a review. Version 2 falls through to its unchanged check below.
+    if (isRecord(waitingOn) && waitingOn.kind === "manager") {
+      issues.push("waiting on the manager requires a requested action");
+    } else if (!REQUEST_OPTIONAL_STATES.includes(toState)) {
+      issues.push(`${toState} requires a requested action`);
+    }
+  } else if (!isRecord(action) || !includes(requestedActionKinds, action.kind)) {
     issues.push("condition.requestedAction.kind is not a known action");
   } else {
     if (Object.keys(action).some((key) => key !== "kind" && key !== "summary")) {
@@ -186,16 +224,18 @@ function validateCondition(value: unknown): WorkPayloadResult<WorkCondition> {
 
   if (issues.length > 0) return { ok: false, issues };
   const waiting = waitingOn as { kind: WaitingOnKind; id?: string };
-  const requested = action as { kind: RequestedActionKind; summary: string };
+  const requested = action as { kind: RequestedActionKind; summary: string } | undefined;
+  const core = {
+    reasonCode: value.reasonCode as WorkConditionReasonCode,
+    summary: value.summary as string,
+    waitingOn:
+      waiting.id === undefined ? { kind: waiting.kind } : { kind: waiting.kind, id: waiting.id },
+  };
   return {
     ok: true,
-    value: {
-      reasonCode: value.reasonCode as WorkConditionReasonCode,
-      summary: value.summary as string,
-      waitingOn:
-        waiting.id === undefined ? { kind: waiting.kind } : { kind: waiting.kind, id: waiting.id },
-      requestedAction: { kind: requested.kind, summary: requested.summary },
-    },
+    value: requested
+      ? { ...core, requestedAction: { kind: requested.kind, summary: requested.summary } }
+      : core,
   };
 }
 

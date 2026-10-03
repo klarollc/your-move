@@ -183,11 +183,103 @@ describe("validateWorkTransitionPayload", () => {
   });
 
   it("refuses an unknown payload version and a malformed core", () => {
-    refused(validateWorkTransitionPayload(v2("blocked", { condition, payloadVersion: 3 })));
+    refused(validateWorkTransitionPayload(v2("blocked", { condition, payloadVersion: 4 })));
     refused(validateWorkTransitionPayload({ fromRevision: 0, toState: "ready" }));
     refused(
       validateWorkTransitionPayload({ workItemId: "work_x", fromRevision: -1, toState: "ready" }),
     );
     refused(validateWorkTransitionPayload({ workItemId: "work_x", fromRevision: 0 }));
+  });
+});
+
+describe("validateWorkTransitionPayload, version 3 (DF-029, spec §10.1)", () => {
+  const v3 = (toState: string, extra: Record<string, unknown> = {}) => ({
+    ...v2(toState, extra),
+    payloadVersion: 3,
+  });
+  const unrequested = {
+    reasonCode: condition.reasonCode,
+    summary: condition.summary,
+    waitingOn: condition.waitingOn,
+  };
+  const onAgent = { ...unrequested, waitingOn: { kind: "agent", id: "agent_implementation" } };
+  const issuesOf = (result: { ok: true } | { ok: false; issues: string[] }) =>
+    result.ok ? [] : result.issues;
+
+  it("accepts a blocker or a wait without a request when someone else can resolve it", () => {
+    for (const toState of ["blocked", "waiting_input"]) {
+      for (const waitingOn of [
+        { kind: "agent", id: "agent_implementation" },
+        { kind: "evidence", id: "evidence_browser" },
+        { kind: "external" },
+      ]) {
+        const result = validateWorkTransitionPayload(
+          v3(toState, { condition: { ...unrequested, waitingOn } }),
+        );
+        expect(result).toEqual({
+          ok: true,
+          value: {
+            workItemId: "work_graybox",
+            fromRevision: 3,
+            toState,
+            payloadVersion: 3,
+            condition: { ...unrequested, waitingOn },
+          },
+        });
+      }
+    }
+  });
+
+  it("keeps a request when one is recorded", () => {
+    expect(validateWorkTransitionPayload(v3("blocked", { condition }))).toEqual({
+      ok: true,
+      value: {
+        workItemId: "work_graybox",
+        fromRevision: 3,
+        toState: "blocked",
+        payloadVersion: 3,
+        condition,
+      },
+    });
+  });
+
+  it("refuses waiting on the manager without a request", () => {
+    const result = validateWorkTransitionPayload(
+      v3("blocked", { condition: { ...unrequested, waitingOn: { kind: "manager" } } }),
+    );
+    refused(result);
+    expect(issuesOf(result)).toContainEqual(
+      expect.stringMatching(/waiting on the manager requires a requested action/),
+    );
+  });
+
+  it("refuses a review request without a request", () => {
+    const result = validateWorkTransitionPayload(v3("review_requested", { condition: onAgent }));
+    refused(result);
+    expect(issuesOf(result)).toContainEqual(
+      expect.stringMatching(/review_requested requires a requested action/),
+    );
+  });
+
+  it("still requires a condition, and still refuses one where no attention is raised", () => {
+    for (const toState of ["blocked", "waiting_input", "review_requested"]) {
+      expect(issuesOf(validateWorkTransitionPayload(v3(toState)))).toContainEqual(
+        expect.stringMatching(/requires a condition/),
+      );
+    }
+    refused(validateWorkTransitionPayload(v3("failed", { condition: onAgent })));
+    refused(validateWorkTransitionPayload(v3("active", { condition: onAgent })));
+  });
+
+  it("validates a recorded request as strictly as version 2", () => {
+    refused(
+      validateWorkTransitionPayload(
+        v3("blocked", { condition: { ...onAgent, requestedAction: { kind: "approve" } } }),
+      ),
+    );
+  });
+
+  it("leaves version 2 requiring a request", () => {
+    refused(validateWorkTransitionPayload(v2("blocked", { condition: onAgent })));
   });
 });

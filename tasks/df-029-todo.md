@@ -22,6 +22,20 @@ writes owner-run; moved assertions listed (P-4).
     `waiting_input` (D-1 as narrowed by D-4); refuses `waitingOn: manager` without a request; refuses a
     `review_requested` condition without a request; versions 1 and 2 unchanged; the fixture sweep
     replays every recorded event with no new failure.
+  - **Built 2026-10-02, container-GREEN; closes on the owner's `verify`.** `WorkConditionV3` and a
+    version-3 payload variant; version 2's checks and messages are unchanged. Consumers still read
+    only version 2, so a version-3 condition reaches the domain as no condition (attention, as
+    today) until Task 3.
+    - RED, on the assertion: 5 of 7 new tests failed against "unsupported payloadVersion 3". Two
+      passed vacuously at RED (strict request validation; version 2 still requiring a request).
+    - GREEN: contract file 19 of 19; contract + unit + component 814 of 814; `tsc -b` clean; ESLint
+      and Prettier clean; the fixture sweep 2 of 2 (container, Node 22).
+    - Mutations, each confirmed applied and killed: the manager-without-request refusal; the
+      review-without-request refusal; validation of a recorded version-3 request (this one also
+      gives meaning to the test that passed vacuously at RED). A first attempt at the last
+      mutation did not parse and was discarded, not counted.
+    - Moved assertion (P-4): the unknown-version test now uses `payloadVersion: 4`, since 3 is
+      valid.
 - [ ] Task 3: Domain, attention follows the request.
   - Acceptance: a version-3 blocker without a request raises no attention item; with a request it
     does; a version-1 or version-2 blocker, and one with no condition, behave exactly as today.
