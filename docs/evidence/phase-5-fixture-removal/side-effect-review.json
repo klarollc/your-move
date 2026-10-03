@@ -1,0 +1,78 @@
+{
+  "schema": "cuckcode.phase5-side-effect-review.v1",
+  "criterion": "C-11",
+  "evidenceClass": "static",
+  "status": "The static half of C-11, ruled by the owner on 2026-09-14 after release review pass 4. It does not replace the behavioral isolation records; those show the defined journeys are clean, and this says the effect is absent from code no journey reached.",
+  "decisionRecord": "docs/evidence/phase-5/decision-record-2026-09-14-c-09-c-11.md",
+  "entryPoints": [
+    "fixtures/decision-notice/src/web/decision-notice.tsx",
+    "fixtures/decision-notice/src/web/decision-notice-capture.tsx",
+    "fixtures/decision-notice/src/model/decision-notice.ts"
+  ],
+  "entryPointsWhy": "The component as the browser loads it, the capture surface the evidence is taken through, and the pure core beneath both, at their paths in the fixture workspace since the Phase 5 fixture removal. 'All reachable code' means nothing without saying reachable from where, and a reader can disagree with a list they can see.",
+  "categories": {
+    "network": [
+      "fetch",
+      "XMLHttpRequest",
+      "WebSocket",
+      "EventSource",
+      "sendBeacon",
+      "node http client",
+      "dynamic import of a URL",
+      "form posting to a remote action"
+    ],
+    "credential": [
+      "cookie access",
+      "environment secrets",
+      "authorization header",
+      "named secret",
+      "key export"
+    ],
+    "deployment": [
+      "child process",
+      "package publish",
+      "git write"
+    ],
+    "destructive": [
+      "filesystem removal",
+      "filesystem write",
+      "storage clear",
+      "database deletion"
+    ],
+    "paid": [
+      "payment provider",
+      "charge or billing call",
+      "payment request API"
+    ]
+  },
+  "modulesScanned": 3,
+  "modules": [
+    "fixtures/decision-notice/src/model/decision-notice.ts",
+    "fixtures/decision-notice/src/web/decision-notice-capture.tsx",
+    "fixtures/decision-notice/src/web/decision-notice.tsx"
+  ],
+  "externalPackagesImported": [
+    "react"
+  ],
+  "nonCodeImports": [
+    "./decision-notice-fixture.css",
+    "./decision-notice.css"
+  ],
+  "unreadableModules": [],
+  "findings": {
+    "network": [],
+    "credential": [],
+    "deployment": [],
+    "destructive": [],
+    "paid": []
+  },
+  "findingDetail": [],
+  "passCondition": "No module reachable from the declared entry points contains a network, credential, deployment, destructive, or paid surface, and every reachable module was readable.",
+  "ok": true,
+  "whatThisCannotEstablish": [
+    "Anything reached through dynamic dispatch, computed member access, or eval. The scan reads source text; a call assembled at runtime from strings is invisible to it.",
+    "The internals of the external packages listed in externalPackagesImported. Their source is not walked, so this review speaks only for first-party code.",
+    "Anything about code not reachable from the declared entry points. Widening the entry list widens the claim, and neither is done silently.",
+    "That the behavioral result and this agree by more than coincidence. They are independent evidence of the same criterion and are both required; neither is a substitute for the other."
+  ]
+}

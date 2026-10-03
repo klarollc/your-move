@@ -299,19 +299,23 @@
         },
         {
           "id": "2",
-          "state": "approved"
+          "state": "in_progress",
+          "note": "Landed with Tasks 2-5 in 0eda082; closes on verify"
         },
         {
           "id": "3",
-          "state": "approved"
+          "state": "in_progress",
+          "note": "Landed with Tasks 2-5 in 0eda082; closes on verify"
         },
         {
           "id": "4",
-          "state": "approved"
+          "state": "in_progress",
+          "note": "Landed with Tasks 2-5 in 0eda082; closes on verify"
         },
         {
           "id": "5",
-          "state": "approved"
+          "state": "in_progress",
+          "note": "Landed with Tasks 2-5 in 0eda082; closes on verify"
         },
         {
           "id": "6",
