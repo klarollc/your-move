@@ -1,7 +1,7 @@
 /* Phase 7 Task 1 (spec F-5): Fira Sans and Fira Mono, vendored at exact versions (licences in
    licenses/fonts/). Latin files only: the interface is English, and the other subsets would add
-   bundled files nothing uses. Not imported by the office until the owner confirms the font sheet
-   (plan Q-4). */
+   bundled files nothing uses. Imported by global.css since the owner confirmed the font sheet
+   (2026-10-03, plan Q-4). */
 @import "@fontsource/fira-sans/latin-400.css";
 @import "@fontsource/fira-sans/latin-500.css";
 @import "@fontsource/fira-sans/latin-600.css";

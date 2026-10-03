@@ -38,6 +38,25 @@ beside its named plate, and the owner's comparison is recorded before the next s
     - **Owner capture and provenance, 2026-10-03:** `phase-7/fonts/chromium-1440/font-sheet.png`
       and `chromium-1280/font-sheet.png`. **Owner confirmation (Q-4): "Looks good."** Tokens may
       now be set.
+  - **Tokens, built 2026-10-03; closes on `verify`.** Owner rulings T-1 (load the faces from the
+    one global stylesheet, so every surface sharing it has them) and T-2 (Mono applied now to the
+    values in the two Technical detail disclosures). `.ui-craft/tokens.md` records the approved
+    families first (families only; the scale stays unapproved). `--font-ui` and `--font-mono` on
+    `:root` in `global.css`, which imports `fonts.css`.
+    - `tests/e2e/phase-7-typography.spec.ts`, both viewports: RED on the assertion (`system-ui`),
+      then GREEN. Office first screen and controls compute to Fira Sans; a Technical detail cause
+      ID to Fira Mono; both faces loaded. On the fixture page the interface face is declared and
+      loadable from that origin, and the Decision Notice card keeps its own "Segoe UI Variable"
+      stack.
+    - The fixture test first checked only the computed family, which a mutation showed passes with
+      no font loaded; then it required a loaded face, which failed on the unchanged code because
+      nothing visible there uses the face. It now forces a load, which proves the face is declared
+      and served without depending on page text.
+    - Mutations, each confirmed applied and killed: the Mono rule removed; the font import removed
+      (both tests fail).
+    - Container: e2e 92 of 94 at both viewports, the two failures the isolation spec's console
+      404 for `/favicon.ico`, which the container's full Chromium requests and the owner's
+      headless build does not (traced to the console message's own URL); a11y 46 of 46.
 - [ ] Task 2: Move the Phase 6 primitives into `packages/ui-system`. Acceptance: the golden states
       and the frozen frame re-render byte for byte from the new module; the scripts import it.
 - [ ] Task 3: The SVG renderer behind the scene adapter. Acceptance: every existing scene, camera,

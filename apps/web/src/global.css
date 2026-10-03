@@ -3,11 +3,17 @@
    Defect D4-V2-001: office-shell.css, layout-trial.css and pixi-scene-probe.css each declared
    :root, *, body and a reduced-motion reset. Bundlers merge every imported sheet into one
    cascade, so the winner was an accident of module order. The values below are exactly the ones
-   that already won in the production bundle, so consolidating changes no rendered output. */
+   that already won in the production bundle, so consolidating changes no rendered output.
+   Phase 7 Task 1: the two type families (.ui-craft/tokens.md), loaded here for every surface that
+   shares this sheet (owner ruling T-1). */
+
+@import "./fonts.css";
 
 :root {
   color-scheme: light;
-  font-family: system-ui, sans-serif;
+  --font-ui: "Fira Sans", system-ui, sans-serif;
+  --font-mono: "Fira Mono", ui-monospace, monospace;
+  font-family: var(--font-ui);
   color: #292b2d;
   background: #e3e3df;
 }

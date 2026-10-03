@@ -87,6 +87,8 @@
 }
 
 .office-outline-technical dd {
+  /* Owner ruling T-2: identifiers and timestamps in the technical face. */
+  font-family: var(--font-mono);
   margin: 0;
 }
 
@@ -313,6 +315,11 @@
   padding: 8px 10px;
   border-left: 3px solid #6b5a2e;
   background: #f3efe2;
+}
+
+.office-inspector-technical dd {
+  /* Owner ruling T-2: identifiers and timestamps in the technical face. */
+  font-family: var(--font-mono);
 }
 
 .office-inspector-technical {

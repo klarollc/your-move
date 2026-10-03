@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 
-import "./fonts.css";
 import "./font-sheet.css";
 
 /**

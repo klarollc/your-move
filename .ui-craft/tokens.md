@@ -21,6 +21,21 @@ Approved direction:
 - calm non-bouncy scene easing, faster exits, deterministic clocks, and no travel/parallax/ambient loops in reduced-motion mode;
 - fixed soft-daylight scene lighting, subordinate warm practicals, restrained contact shadows, and no status-dependent global lighting.
 
+## Approved type families (Phase 7 Task 1)
+
+Chosen by the owner 2026-09-28 (Phase 7 spec F-5) and confirmed in Windows Chromium 2026-10-03
+(`docs/evidence/phase-7/fonts/`). Families only: the type **scale** is not yet approved.
+
+| Token | Family | Use (MDD §9) |
+| --- | --- | --- |
+| `--font-ui` | Fira Sans 5.3.0, then `system-ui, sans-serif` | navigation, instructions, dialogue, summaries, decisions, ordinary UI copy |
+| `--font-mono` | Fira Mono 5.3.0, then `ui-monospace, monospace` | identifiers, hashes, timestamps, paths, code and logs only |
+
+Vendored as exact-pinned `@fontsource` packages, Latin files only, licences in
+`licenses/fonts/`. Declared once in `apps/web/src/global.css`, which also loads the faces for
+every surface that shares it (owner ruling T-1). Monospace is applied where the office shows
+technical values: the Technical detail disclosures (owner ruling T-2).
+
 ## Required token layers after art-direction approval
 
 1. **Primitive:** neutral ramp, one primary accent, semantic colors, type families and scale, spacing, radii, shadows, motion durations, easing curves, z-depth.
