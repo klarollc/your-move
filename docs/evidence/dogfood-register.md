@@ -67,7 +67,7 @@ updates its row. An entry's own text is history and is not rewritten.
 | DF-025 | fixed | Attempt records, an activity-aware turn runner and one bounded retry. |
 | DF-026 | fixed | Ruled 2026-09-26: evidence converted to LF and re-recorded. |
 | DF-027 | fixed | Ruled 2026-09-26; built and proved 2026-09-27: `FEATURE_POLICY` per session, `TOOL_SURFACE_PRESENT` refuses a binding, probe `PROBE_OK`, first turn under the policy `SMOKE_OK`. Misfiled as open on 2026-09-28 and corrected 2026-09-29. |
-| DF-028 | ruled | The zoom probe is fixed. The blank-page failure it records has occurred three times, cause unknown; failed runs now keep their traces (owner-approved 2026-09-29). |
+| DF-028 | ruled | The zoom probe is fixed. The blank-page failure recurred a fourth time on 2026-10-03 and its kept trace names the cause: a dev-server module request failing with `net::ERR_NO_BUFFER_SPACE`. A fix is proposed, not ruled (`docs/proposals/2026-10-03-df-028-e2e-on-the-production-bundle.md`). |
 | DF-029 | fixed | Version 3 conditions; attention follows the request; the inspector names the resolver; `blocked-elsewhere` log (`4f585e8`, `e6149b1`, `f065782`, `deb6389`, `073884a`, `f2d6cfa`, `fc2016d`). No runtime producer emits version 3 yet (B-5). |
 | DF-030 | ruled | Question dispositions and kickoff records fixed (`3494b6d`); provider identities fixed by owner ruling 2026-09-29 (migration `006`); content manifests and packet receipts exempted, not fixed. |
 
@@ -1367,6 +1367,26 @@ them:** the Playwright config already keeps a trace, screenshot and video for a 
 next Playwright run wipes `test-results/`, and each time a rerun came within minutes. The runner
 now archives a failed run's Playwright output under `node_modules/.cache/agent-runner/failures/`
 (owner-approved 2026-09-29), so the next occurrence keeps its trace.
+
+**Recurred a fourth time 2026-10-03, and the trace was kept.** `verify` at `d7c98dd` (Phase 7
+Task 2, which the web bundle does not import) failed `phase-4-failure-motion.spec.ts` at 1440:
+`workspace-cause` was never found. The archived screenshot is an entirely blank page, without even
+the office backdrop. The archived trace shows the page's own requests to the dev server on 4173:
+`/@react-refresh` failed (no status) and the console recorded
+`Failed to load resource: net::ERR_NO_BUFFER_SPACE`. Every other module request returned 200.
+`/@react-refresh` is the React plugin's development preamble; without it no `.tsx` module runs, so
+nothing renders. `ERR_NO_BUFFER_SPACE` is Chromium's name for the Windows socket error WSAENOBUFS:
+the machine briefly had no socket buffer space or local port to give the request. The rerun at the
+same commit passed.
+
+That explains the shape of all four occurrences: a different test each time, either viewport, no
+code in common, and a clean rerun. A dev-server page issues about ninety-five module requests
+(decision 9-E), and the e2e and a11y suites load hundreds of pages, so any moment of socket
+pressure on the machine (other local servers count) can drop one request. Inferred, not shown: the
+four occurrences share this cause; only the fourth has a trace.
+
+Proposed, not ruled: run the browser suites that do not produce Phase 4 evidence against the
+production bundle (`docs/proposals/2026-10-03-df-028-e2e-on-the-production-bundle.md`).
 
 ### DF-029 — A blocked agent cannot say it is not blocked on the manager
 

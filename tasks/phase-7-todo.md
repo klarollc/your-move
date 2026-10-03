@@ -90,6 +90,14 @@ render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`
 - [ ] Task 3: The SVG renderer behind the scene adapter. Acceptance: every existing scene, camera,
       label and zoom test passes against it; `render-error` replaces `canvas-loss` (Q-1) with
       moved assertions listed; captures show the Active office in the app.
+  - **Split by owner ruling, 2026-10-03.** **3a**, the renderer swap at parity: an SVG renderer
+    draws exactly what Pixi draws, behind the same adapter; `render-error` replaces `canvas-loss`
+    (Q-1); every existing scene, camera, label and zoom test passes, with moved assertions listed.
+    **3b**, the Active office: the scene layer draws the Phase 6 composition; label anchors and hit
+    regions come from the same geometry; the camera frames the composition; tests that pin the
+    graybox rectangles move and are listed; owner captures beside AR-01. Reason: the app's flat
+    rectangles, the layout policy's 64×32 isometric tile and Phase 6's 34 px tile are three
+    geometries, and a single change could not show which one a failing test was about.
 - [ ] Task 4: Remove Pixi (Q-2). Acceptance: no import remains; the dependency is gone; `verify`.
 - [ ] Task 5: Architecture and light (AR-01). Walls with a deterministic cutaway rule, the window
       wall, baked daylight (F-6). Plate review.

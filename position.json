@@ -374,7 +374,8 @@
         },
         {
           "id": "3",
-          "state": "approved"
+          "state": "in_progress",
+          "note": "Split 3a (parity swap) / 3b (Active office), owner ruling 2026-10-03"
         },
         {
           "id": "4",
@@ -534,6 +535,12 @@
       "ruled": "2026-10-03",
       "ruling": "plan and checklist approved; D-1 (a) kept lean, R-4 corrected to a subset; D-2 to D-4 as recommended",
       "record": "tasks/phase-5-fixture-removal-plan.md"
+    },
+    {
+      "id": "7:3-split",
+      "ruled": "2026-10-03",
+      "ruling": "Task 3 split into 3a (renderer swap at parity) and 3b (the Active office)",
+      "record": "tasks/phase-7-todo.md"
     }
   ]
 }
