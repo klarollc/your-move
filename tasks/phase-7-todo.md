@@ -133,7 +133,8 @@ render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`
     `@cuckcode/ui-system/scene`. G-2: no figures until Task 7 drives them from the behaviour map, so
     no offline or unknown agent is drawn as present. G-3: the DOM labels stay; the names Phase 6
     bakes into its drawing are left out.
-  - **3b built 2026-10-03; `verify` pending.** `renderSceneLayer` and `renderSceneDefs` split the
+  - **3b built 2026-10-03 at `52cafbb`; `verify` (`p7t3b-verify-1791052003`) GREEN on a clean tree:**
+    unit 630, component 155, integration 90 with 3 skipped, contract 85, e2e 94, a11y 46, visual 66. `renderSceneLayer` and `renderSceneDefs` split the
     Phase 6 renderer into layers; `renderComposition` is built from them and still renders every
     approved capture byte for byte. `scene/entities.ts` gives each zone (its floor plate) and each
     person (the hull of desk and monitor) one outline, anchor and depth. `office-layout.ts` builds
