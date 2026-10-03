@@ -155,16 +155,14 @@
   pointer-events: none;
 }
 
-.office-scene-label[data-placement="above"] {
-  transform: translate(-50%, calc(-100% - 6px));
+/* Task 3b (G-3): on the person's own desk. */
+.office-scene-label[data-placement="desk"] {
+  transform: translate(-50%, -50%);
 }
 
-.office-scene-label[data-placement="below"] {
-  transform: translate(-50%, 6px);
-}
-
+/* Above the zone's back corner, as Phase 6 named zones. */
 .office-scene-label[data-placement="zone"] {
-  transform: translate(6px, calc(-100% - 6px));
+  transform: translate(-50%, calc(-100% - 4px));
   border-color: transparent;
   background: transparent;
   color: #3b3e40;

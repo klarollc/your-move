@@ -7,6 +7,12 @@ import {
   type KickoffState,
 } from "@cuckcode/domain";
 import { createOfficeCamera, createOfficeLayout, officeLayoutPolicy } from "@cuckcode/ui-system";
+import {
+  RECONCILIATION_B_CLARITY,
+  renderSceneDefs,
+  renderSceneLayer,
+  sceneEntities,
+} from "@cuckcode/ui-system/scene";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type {
@@ -34,21 +40,36 @@ import {
 } from "./office-scene-adapter.js";
 import { createSvgSceneRenderer } from "./svg-scene-renderer.js";
 
-const sceneDescriptors: readonly SceneDescriptor[] = Object.freeze([
-  zone("zone_reception", -340, -20, 150, 130, 0),
-  zone("zone_team", -150, -40, 650, 190, 0),
-  agent("agent_delivery_lead", -110, 0, 1),
-  agent("agent_product_designer", -15, 0, 2),
-  agent("agent_implementation_engineer", 80, 0, 3),
-  agent("agent_test_engineer", 175, 0, 4),
-  agent("agent_visual_qa_reviewer", 270, 0, 5),
-  agent("agent_release_reviewer", 365, 0, 6),
-  zone("zone_library", -280, 210, 180, 110, 7),
-  zone("zone_collaboration", -40, 210, 210, 110, 8),
-  zone("zone_review", 230, 210, 180, 110, 9),
-  zone("zone_manager", -230, 370, 240, 100, 10),
-  zone("zone_delivery", 260, 370, 180, 100, 11),
-]);
+/**
+ * Phase 7 Task 3b (rulings G-1 to G-3). The Active visual system's own office, drawn once, with no
+ * baked labels or fixed figures; every entity's hit region, label anchor and the camera come from
+ * the same Phase 6 geometry.
+ */
+const sceneArt = Object.freeze({
+  defs: renderSceneDefs(RECONCILIATION_B_CLARITY),
+  layer: renderSceneLayer(RECONCILIATION_B_CLARITY, { labels: false, figures: false }),
+});
+const entities = sceneEntities();
+const sceneDescriptors: readonly SceneDescriptor[] = Object.freeze(
+  entities.map((entity) => {
+    const xs = entity.polygon.map(({ x }) => x);
+    const ys = entity.polygon.map(({ y }) => y);
+    const x = Math.min(...xs);
+    const y = Math.min(...ys);
+    return {
+      entityId: entity.entityId,
+      entityType: entity.entityType,
+      x,
+      y,
+      width: Math.max(...xs) - x,
+      height: Math.max(...ys) - y,
+      depth: entity.depth,
+      visible: true,
+      points: entity.polygon,
+    };
+  }),
+);
+const anchorsById = new Map(entities.map((entity) => [entity.entityId, entity.anchor]));
 
 // Deterministic kickoff fixtures. These are graybox records, not a live kickoff: no role is
 // promoted, no provider is called, and no charter is approved.
@@ -273,7 +294,9 @@ function OfficeCanvas({
     if (!host) return;
     let cancelled = false;
     let observer: ResizeObserver | undefined;
-    const renderer = createSvgSceneRenderer(({ entityId }) => onSelectEntity(entityId));
+    const renderer = createSvgSceneRenderer(({ entityId }) => onSelectEntity(entityId), {
+      art: sceneArt,
+    });
     const adapter = createOfficeSceneAdapter(renderer, onCanvasUnavailable);
 
     void adapter
@@ -310,18 +333,10 @@ function OfficeCanvas({
   );
 }
 
-const descriptorsById = new Map(
-  sceneDescriptors.map((descriptor) => [descriptor.entityId, descriptor]),
-);
-const deskOrder = sceneDescriptors
-  .filter(({ entityType }) => entityType === "agent")
-  .map(({ entityId }) => entityId);
-
 /**
  * Task 9f-3 (P-3; AR-01, constitution rules 2 and 9): horizontal screen-space labels over the
- * scene. People are labelled over or under their desk, alternately, so neighbours never collide;
- * zones are named at their lower left. Labels do not take the pointer, so the desk beneath stays
- * selectable, and they are read as a list by assistive technology.
+ * scene, as a list for assistive technology, never taking the pointer. Task 3b (G-3): a person's
+ * label sits on their own desk; a zone's sits above its back corner, where Phase 6 named it.
  */
 function SceneLabels({
   labels,
@@ -331,29 +346,19 @@ function SceneLabels({
   return (
     <ol className="office-scene-labels" aria-label="People and places in the office">
       {labels.map((label) => {
-        const descriptor = descriptorsById.get(label.entityId);
-        if (!descriptor) return null;
-        let left: number;
-        let top: number;
-        let placement: "above" | "below" | "zone";
-        if (label.kind === "person") {
-          const above = deskOrder.indexOf(label.entityId) % 2 === 0;
-          placement = above ? "above" : "below";
-          left = (descriptor.x + descriptor.width / 2) * zoom + translation.x;
-          top = (above ? descriptor.y : descriptor.y + descriptor.height) * zoom + translation.y;
-        } else {
-          placement = "zone";
-          left = descriptor.x * zoom + translation.x;
-          top = (descriptor.y + descriptor.height) * zoom + translation.y;
-        }
+        const anchor = anchorsById.get(label.entityId);
+        if (!anchor) return null;
         return (
           <li
             key={label.entityId}
             className="office-scene-label"
             data-scene-label={label.entityId}
-            data-placement={placement}
+            data-placement={label.kind === "person" ? "desk" : "zone"}
             data-needs-you={label.needsYou}
-            style={{ left: `${left}px`, top: `${top}px` }}
+            style={{
+              left: `${anchor.x * zoom + translation.x}px`,
+              top: `${anchor.y * zoom + translation.y}px`,
+            }}
           >
             {label.state ? `${label.name} · ${label.state}` : label.name}
           </li>
@@ -396,34 +401,12 @@ function resizeScene(
     },
   };
   adapter.setCamera(drawn);
+  const implementation = anchorsById.get("agent_implementation_engineer");
+  if (!implementation) throw new Error("OFFICE_SCENE_ANCHOR_MISSING");
   const implementationCenter = {
-    x: (80 + 34) * camera.zoom + camera.translation.x,
-    y: 34 * camera.zoom + camera.translation.y - officeLayoutPolicy.projectBarHeight,
+    x: implementation.x * drawn.zoom + drawn.translation.x,
+    y: implementation.y * drawn.zoom + drawn.translation.y,
   };
   host.dataset.agentImplementationScreen = `${implementationCenter.x},${implementationCenter.y}`;
   return drawn;
-}
-
-function zone(
-  entityId: string,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  depth: number,
-): SceneDescriptor {
-  return { entityId, entityType: "zone", x, y, width, height, depth, visible: true };
-}
-
-function agent(entityId: string, x: number, y: number, depth: number): SceneDescriptor {
-  return {
-    entityId,
-    entityType: "agent",
-    x,
-    y,
-    width: 68,
-    height: 68,
-    depth,
-    visible: true,
-  };
 }

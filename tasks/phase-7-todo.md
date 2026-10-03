@@ -127,6 +127,44 @@ render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`
       browser.
     - Untouched: the Pixi probe and its specs (`phase-4-camera`, `phase-4-pixi-scene`,
       `phase-4-camera-a11y`), which Task 4 removes with Pixi.
+  - **3b plan approved 2026-10-03 as recommended (rulings G-1 to G-3).** G-1: the camera frames the
+    Phase 6 scene's own geometry; its rules (fixed rotation, zoom stops, fit with padding, pan
+    clamp, 44 px minimum target, Reset view) are unchanged, its measurements now come from
+    `@cuckcode/ui-system/scene`. G-2: no figures until Task 7 drives them from the behaviour map, so
+    no offline or unknown agent is drawn as present. G-3: the DOM labels stay; the names Phase 6
+    bakes into its drawing are left out.
+  - **3b built 2026-10-03; `verify` pending.** `renderSceneLayer` and `renderSceneDefs` split the
+    Phase 6 renderer into layers; `renderComposition` is built from them and still renders every
+    approved capture byte for byte. `scene/entities.ts` gives each zone (its floor plate) and each
+    person (the hull of desk and monitor) one outline, anchor and depth. `office-layout.ts` builds
+    zones, role anchors, hit regions (the whole desk, at least 44 px square) and office bounds from
+    them; the bounds snap outward to whole pixels so Reset view stays byte-exact. The office draws
+    the Active system's scene once as art (`reconciliation-b-clarity`, no labels, no figures), with
+    an invisible hit polygon per entity over it; the published Implementation Engineer point comes
+    from its anchor. Labels: a person's sits on their own desk; a zone's sits above its back corner,
+    where Phase 6 named it.
+    - RED: the scene-layer and entity tests 7 of 7, the layout tests 11 of 16, the renderer tests 2
+      of 9, each on an assertion. GREEN: all of them.
+    - Mutations, each confirmed applied and killed: baked labels drawn anyway; figures drawn anyway;
+      the monitor dropped from the desk outline; the hit region shrunk to a 44 px square at the
+      anchor; the hit polygon's `pointer-events` removed; the art drawn outside the camera layer;
+      person labels shifted 60 world px off their anchor (e2e).
+    - Container run (not the gate): unit and component 784 of 785, the miss the known container-only
+      `phase5-script-paths` gap; e2e and a11y 138 of 140, the misses the known container-only
+      `/favicon.ico` 404 in `scaffold.spec.ts` at both viewports (traced); visual: the office captures
+      pass, the Decision Notice fixture states fail only on the same favicon 404; format, lint, both
+      typechecks, guard, scaffold, toolchain and CSS scope clean.
+    - Moved assertions (P-4): `office-layout.unit.test.ts`'s projection policy (64×32 to the Phase 6
+      scene's 34 px tile); `phase-7o-scene-labels.spec.ts`'s "desks run left to right" (the Active
+      office groups four desks in the team area and two at review), replaced by "each label's
+      centre is over its own person's hit region"; the label placements `above`/`below` became
+      `desk`; zone labels moved from the lower-left corner to above the back corner.
+    - Measured, not assumed: at 1280×800 the closest level pair (Product Designer, Implementation
+      Engineer) is 198 px apart against the 180 px label maximum. With the inspector open (zoom
+      0.875) that gap is about 155 px, so two long labels there can touch; the overlap test covers the
+      default view only. Recorded for Task 7, when figures change where labels belong.
+    - Still open for Task 3: the owner's captures of the Active office beside AR-01 at both
+      viewports.
 - [ ] Task 4: Remove Pixi (Q-2). Acceptance: no import remains; the dependency is gone; `verify`.
 - [ ] Task 5: Architecture and light (AR-01). Walls with a deterministic cutaway rule, the window
       wall, baked daylight (F-6). Plate review.

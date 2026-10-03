@@ -65,13 +65,22 @@ test("@e2e Phase 7-O the office labels people and zones where they are", async (
     }
   }
 
-  // The desks run left to right in the team area, and the labels follow them.
+  // Moved (P-4, Phase 7 Task 3b, G-3): the graybox ran the desks left to right; the Active office
+  // groups four in the team area and two at review. Each label now sits on the desk it names: the
+  // scene's own hit region under the label's centre is that person's.
   const centres = [];
   for (const person of people) {
-    const box = await boxOf(labels.getByRole("listitem").filter({ hasText: person }).first());
+    const label = labels.getByRole("listitem").filter({ hasText: person }).first();
+    const box = await boxOf(label);
     centres.push(box.x + box.width / 2);
+    const under = await page.evaluate(
+      ([x, y]) => document.elementFromPoint(x!, y!)?.getAttribute("data-entity-id") ?? null,
+      [box.x + box.width / 2, box.y + box.height / 2],
+    );
+    expect(under, `${person}'s label is not on their desk`).toBe(
+      `agent_${person.toLowerCase().replaceAll(" ", "_")}`,
+    );
   }
-  expect([...centres].sort((a, b) => a - b)).toStrictEqual(centres);
 
   // Independently of the labels: the scene publishes the Implementation Engineer's desk centre.
   const anchor = await page

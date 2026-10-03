@@ -7,6 +7,8 @@ export type SceneDescriptor = Readonly<{
   height: number;
   depth: number;
   visible: boolean;
+  /** Phase 7 Task 3b: the projected outline to hit-test, in world coordinates. */
+  points?: readonly Readonly<{ x: number; y: number }>[];
 }>;
 
 export type SceneTransform = Readonly<{

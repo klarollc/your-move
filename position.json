@@ -375,7 +375,7 @@
         {
           "id": "3",
           "state": "in_progress",
-          "note": "Split 3a (parity swap) / 3b (Active office), owner ruling 2026-10-03. 3a done: verify 6cc9475, runner p7t3a-verify-1791049916. 3b open."
+          "note": "Split 3a (parity swap) / 3b (Active office), owner ruling 2026-10-03. 3a done: verify 6cc9475, runner p7t3a-verify-1791049916. 3b built (G-1 to G-3 approved), verify pending; owner captures beside AR-01 open."
         },
         {
           "id": "4",

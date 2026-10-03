@@ -394,22 +394,31 @@ function workCardPiece(style: CandidateStyle, state: string): Piece | null {
   return { key: depth(at.x, at.y) + 0.3, svg: parts.join("") };
 }
 
-export function renderComposition(
-  style: CandidateStyle,
-  width: number,
-  height: number,
-  scene: SceneState = DEFAULT_SCENE_STATE,
-): string {
-  const extent = floorExtent();
-  const sceneWidth = extent.maxX - extent.minX;
-  const sceneHeight = extent.maxY - extent.minY + style.plinth;
-  const scale = Math.min((width - 96) / sceneWidth, (height - 150) / sceneHeight);
-  const offsetX = width / 2 - (extent.minX + sceneWidth / 2) * scale;
-  const offsetY = 96 - extent.minY * scale;
+/** Options for the scene layer the app draws (Phase 7 Task 3b). */
+export type SceneLayerOptions = {
+  /** Phase 6 baked zone and person labels. The app labels in the DOM instead (ruling G-3). */
+  labels: boolean;
+  /** Phase 6's fixed figures. The app draws none until the behaviour map drives them (G-2). */
+  figures: boolean;
+  scene?: SceneState;
+};
 
+/** The shared filters the scene layer references, as the frozen frame declares them. */
+export function renderSceneDefs(style: CandidateStyle): string {
+  return `<filter id="soft-${style.candidateId}" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="${style.shadow.blur}"/></filter>
+    <filter id="glow-${style.candidateId}" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="12"/></filter>`;
+}
+
+/**
+ * The scene in world coordinates (`iso` pixels), unframed. With labels and figures it is exactly
+ * the body of the frozen comparison frame; the app asks for neither (rulings G-2, G-3).
+ */
+export function renderSceneLayer(style: CandidateStyle, options: SceneLayerOptions): string {
+  const scene = options.scene ?? DEFAULT_SCENE_STATE;
   const pieces: Piece[] = [];
   for (const agent of AGENTS) {
-    pieces.push(deskPiece(style, agent), figurePiece(style, agent, scene));
+    pieces.push(deskPiece(style, agent));
+    if (options.figures) pieces.push(figurePiece(style, agent, scene));
   }
   if (scene.work) {
     const card = workCardPiece(style, scene.work.state);
@@ -432,17 +441,33 @@ export function renderComposition(
     if (piece) pieces.push(piece);
   }
   pieces.sort((left, right) => left.key - right.key);
+  return [
+    floorPlane(style),
+    ...(options.labels ? [zoneLabels(style)] : []),
+    pieces.map((piece) => piece.svg).join("\n    "),
+  ].join("\n    ");
+}
+
+export function renderComposition(
+  style: CandidateStyle,
+  width: number,
+  height: number,
+  scene: SceneState = DEFAULT_SCENE_STATE,
+): string {
+  const extent = floorExtent();
+  const sceneWidth = extent.maxX - extent.minX;
+  const sceneHeight = extent.maxY - extent.minY + style.plinth;
+  const scale = Math.min((width - 96) / sceneWidth, (height - 150) / sceneHeight);
+  const offsetX = width / 2 - (extent.minX + sceneWidth / 2) * scale;
+  const offsetY = 96 - extent.minY * scale;
 
   return `<svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="${escapeText(style.name)} candidate: the frozen Phase 6 default-office comparison frame">
   <defs>
-    <filter id="soft-${style.candidateId}" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="${style.shadow.blur}"/></filter>
-    <filter id="glow-${style.candidateId}" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="12"/></filter>
+    ${renderSceneDefs(style)}
   </defs>
   <rect width="${width}" height="${height}" fill="${style.palette.sceneGround}"/>
   <g transform="translate(${offsetX.toFixed(2)} ${offsetY.toFixed(2)}) scale(${scale.toFixed(4)})">
-    ${floorPlane(style)}
-    ${zoneLabels(style)}
-    ${pieces.map((piece) => piece.svg).join("\n    ")}
+    ${renderSceneLayer(style, { labels: true, figures: true, scene })}
   </g>
 </svg>`;
 }

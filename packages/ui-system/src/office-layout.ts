@@ -1,3 +1,6 @@
+import { sceneEntities, type SceneEntity } from "./scene/entities.js";
+import { FLOOR, TILE, floorExtent } from "./scene/geometry.js";
+
 export type OfficeViewport = {
   width: number;
   height: number;
@@ -12,8 +15,10 @@ type ZoneId =
 
 export const officeLayoutPolicy = {
   status: "graybox-candidate",
-  projection: { tileWidth: 64, tileHeight: 32, elevation: 24 },
-  officeGrid: { width: 18, height: 12, objectHeadroom: 128 },
+  // Phase 7 Task 3b, ruling G-1: the camera frames the Phase 6 scene's own geometry, so what is
+  // drawn, where labels sit and what a click hits share one projection.
+  projection: { source: "phase-6-scene", tile: TILE },
+  officeGrid: { width: FLOOR.w, height: FLOOR.d, objectHeadroom: 2 * TILE },
   projectBarHeight: 56,
   attentionWidth: 280,
   inspectorWidth: 320,
@@ -28,30 +33,32 @@ export const officeLayoutPolicy = {
   },
 } as const;
 
-const zones: ReadonlyArray<{
-  zoneId: ZoneId;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}> = [
-  { zoneId: "reception", x: 0.5, y: 1, width: 3, height: 3 },
-  { zoneId: "team", x: 4, y: 1, width: 13.5, height: 4 },
-  { zoneId: "library", x: 1, y: 6, width: 4, height: 3 },
-  { zoneId: "collaboration", x: 6, y: 6, width: 5, height: 3 },
-  { zoneId: "review", x: 12, y: 6, width: 4.5, height: 3 },
-  { zoneId: "manager", x: 1, y: 10, width: 6, height: 2 },
-  { zoneId: "delivery", x: 13, y: 10, width: 4, height: 2 },
+const zoneEntityIds: ReadonlyArray<{ zoneId: ZoneId; entityId: string }> = [
+  { zoneId: "reception", entityId: "zone_reception" },
+  { zoneId: "team", entityId: "zone_team" },
+  { zoneId: "library", entityId: "zone_library" },
+  { zoneId: "collaboration", entityId: "zone_collaboration" },
+  { zoneId: "review", entityId: "zone_review" },
+  { zoneId: "manager", entityId: "zone_manager" },
+  { zoneId: "delivery", entityId: "zone_delivery" },
 ];
 
-const roleAnchors = [
-  { roleId: "delivery-lead", x: 4.75, y: 2.5 },
-  { roleId: "product-designer", x: 7.25, y: 2.5 },
-  { roleId: "implementation-engineer", x: 9.75, y: 2.5 },
-  { roleId: "test-engineer", x: 12.25, y: 2.5 },
-  { roleId: "visual-qa-reviewer", x: 14.75, y: 2.5 },
-  { roleId: "release-reviewer", x: 17.25, y: 2.5 },
+const roleIds = [
+  "delivery-lead",
+  "product-designer",
+  "implementation-engineer",
+  "test-engineer",
+  "visual-qa-reviewer",
+  "release-reviewer",
 ] as const;
+
+const entitiesById = new Map(sceneEntities().map((entity) => [entity.entityId, entity]));
+const entity = (entityId: string): SceneEntity => {
+  const found = entitiesById.get(entityId);
+  if (!found) throw new Error(`OFFICE_LAYOUT_ENTITY_MISSING:${entityId}`);
+  return found;
+};
+const roleEntity = (roleId: string): SceneEntity => entity(`agent_${roleId.replaceAll("-", "_")}`);
 
 export type OfficeLayout = {
   schemaVersion: 1;
@@ -66,7 +73,7 @@ export type OfficeLayout = {
   projectedOfficeBounds: Rectangle;
   zones: Array<{ zoneId: ZoneId; polygon: Point[]; visible: boolean }>;
   roleAnchors: Array<{
-    roleId: (typeof roleAnchors)[number]["roleId"];
+    roleId: (typeof roleIds)[number];
     point: Point;
     hitRegion: Rectangle;
     visible: boolean;
@@ -100,19 +107,21 @@ export function createOfficeLayout(viewport: OfficeViewport): OfficeLayout {
       panClamp: createPanClamp(sceneViewport, rawBounds, zoom),
     },
     projectedOfficeBounds,
-    zones: zones.map((zone) => {
-      const polygon = zonePolygon(zone, zoom, translation);
-      return { zoneId: zone.zoneId, polygon, visible: contains(sceneBounds, boundsOf(polygon)) };
+    zones: zoneEntityIds.map(({ zoneId, entityId }) => {
+      const polygon = entity(entityId).polygon.map((point) =>
+        transformPoint(point, zoom, translation),
+      );
+      return { zoneId, polygon, visible: contains(sceneBounds, boundsOf(polygon)) };
     }),
-    roleAnchors: roleAnchors.map((anchor) => {
-      const point = transformPoint(project(anchor.x, anchor.y), zoom, translation);
-      const hitRegion = centeredRectangle(point, officeLayoutPolicy.minimumHitSize);
-      return {
-        roleId: anchor.roleId,
-        point,
-        hitRegion,
-        visible: contains(sceneBounds, hitRegion),
-      };
+    roleAnchors: roleIds.map((roleId) => {
+      const desk = roleEntity(roleId);
+      const point = transformPoint(desk.anchor, zoom, translation);
+      // The whole desk takes the pointer, and never less than the minimum target.
+      const hitRegion = atLeast(
+        boundsOf(desk.polygon.map((corner) => transformPoint(corner, zoom, translation))),
+        officeLayoutPolicy.minimumHitSize,
+      );
+      return { roleId, point, hitRegion, visible: contains(sceneBounds, hitRegion) };
     }),
   };
 }
@@ -136,14 +145,17 @@ function createSceneViewport(viewport: OfficeViewport): Rectangle {
 }
 
 function rawOfficeBounds(): Rectangle {
-  const { width, height, objectHeadroom } = officeLayoutPolicy.officeGrid;
-  const corners = [project(0, 0), project(width, 0), project(0, height), project(width, height)];
-  const floorBounds = boundsOf(corners);
+  // Snapped outward to whole pixels: the isometric floor's edges are irrational, and the camera
+  // recovers these bounds from the rounded frame, so a fractional edge would not survive reset.
+  const extent = floorExtent();
+  const { objectHeadroom } = officeLayoutPolicy.officeGrid;
+  const minX = Math.floor(extent.minX);
+  const minY = Math.floor(extent.minY - objectHeadroom);
   return {
-    x: floorBounds.x,
-    y: floorBounds.y - objectHeadroom,
-    width: floorBounds.width,
-    height: floorBounds.height + objectHeadroom,
+    x: minX,
+    y: minY,
+    width: Math.ceil(extent.maxX) - minX,
+    height: Math.ceil(extent.maxY) - minY,
   };
 }
 
@@ -171,24 +183,6 @@ function createPanClamp(
     minY: round(sceneViewport.y + edge - (officeBounds.y + officeBounds.height) * zoom),
     maxY: round(sceneViewport.y + sceneViewport.height - edge - officeBounds.y * zoom),
   };
-}
-
-function project(x: number, y: number, elevation = 0): Point {
-  return {
-    x: (x - y) * (officeLayoutPolicy.projection.tileWidth / 2),
-    y:
-      (x + y) * (officeLayoutPolicy.projection.tileHeight / 2) -
-      elevation * officeLayoutPolicy.projection.elevation,
-  };
-}
-
-function zonePolygon(zone: (typeof zones)[number], zoom: number, translation: Point): Point[] {
-  return [
-    project(zone.x, zone.y),
-    project(zone.x + zone.width, zone.y),
-    project(zone.x + zone.width, zone.y + zone.height),
-    project(zone.x, zone.y + zone.height),
-  ].map((point) => transformPoint(point, zoom, translation));
 }
 
 function transformPoint(point: Point, zoom: number, translation: Point): Point {
@@ -223,8 +217,16 @@ function insetRectangle(rectangle: Rectangle, inset: number): Rectangle {
   };
 }
 
-function centeredRectangle(point: Point, size: number): Rectangle {
-  return { x: round(point.x - size / 2), y: round(point.y - size / 2), width: size, height: size };
+/** Grows a rectangle about its centre until each side is at least `size`. */
+function atLeast(rectangle: Rectangle, size: number): Rectangle {
+  const width = Math.max(rectangle.width, size);
+  const height = Math.max(rectangle.height, size);
+  return {
+    x: round(rectangle.x - (width - rectangle.width) / 2),
+    y: round(rectangle.y - (height - rectangle.height) / 2),
+    width: round(width),
+    height: round(height),
+  };
 }
 
 function contains(outer: Rectangle, inner: Rectangle): boolean {

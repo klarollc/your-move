@@ -30,10 +30,13 @@ const desk: SceneDescriptor = {
 };
 
 let host: HTMLElement;
-const mounted = async (onIntent = vi.fn()) => {
+const mounted = async (
+  onIntent = vi.fn(),
+  options?: Parameters<typeof createSvgSceneRenderer>[1],
+) => {
   host = document.createElement("div");
   document.body.append(host);
-  const renderer = createSvgSceneRenderer(onIntent);
+  const renderer = createSvgSceneRenderer(onIntent, options);
   await renderer.mount(host);
   return { renderer, onIntent };
 };
@@ -122,5 +125,53 @@ describe("the SVG scene renderer", () => {
     must(svg());
     renderer.destroy();
     expect(svg()).toBeNull();
+  });
+
+  // Phase 7 Task 3b (rulings G-1 to G-3): the Active office drawn once as art, with each entity's
+  // hit region over it from the same geometry.
+  const art = {
+    defs: '<filter id="soft-test"><feGaussianBlur stdDeviation="2"/></filter>',
+    layer: '<polygon data-art="floor" points="0,0 10,0 10,10" filter="url(#soft-test)"/>',
+  };
+  const outlined: SceneDescriptor = {
+    ...desk,
+    points: [
+      { x: 0, y: 0 },
+      { x: 10.5, y: 0 },
+      { x: 10.5, y: 8 },
+    ],
+  };
+
+  it("draws the art once, as SVG, inside the camera layer and beneath every hit region", async () => {
+    const { renderer } = await mounted(vi.fn(), { art });
+    renderer.upsert(outlined);
+    renderer.sort(["agent_test_engineer"]);
+    const filter = must(host.querySelector("svg > defs > filter#soft-test"));
+    expect(filter.namespaceURI).toBe("http://www.w3.org/2000/svg");
+    const floor = must(host.querySelector('[data-scene-layer] [data-art="floor"]'));
+    expect(floor.namespaceURI).toBe("http://www.w3.org/2000/svg");
+    expect(host.querySelectorAll('[data-art="floor"]')).toHaveLength(1);
+    const hit = must(node("agent_test_engineer"));
+    expect(floor.compareDocumentPosition(hit) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    renderer.clear();
+    expect(host.querySelectorAll('[data-art="floor"]')).toHaveLength(1);
+  });
+
+  it("outlines a descriptor that carries points as an invisible hit polygon", async () => {
+    const { renderer, onIntent } = await mounted(vi.fn(), { art });
+    renderer.upsert(desk);
+    renderer.upsert(outlined);
+    expect(host.querySelectorAll('[data-entity-id="agent_test_engineer"]')).toHaveLength(1);
+    const hit = must(node("agent_test_engineer"));
+    expect(hit.tagName.toLowerCase()).toBe("polygon");
+    expect(hit.getAttribute("points")).toBe("0,0 10.5,0 10.5,8");
+    expect(hit.getAttribute("fill-opacity")).toBe("0");
+    expect(hit.getAttribute("stroke")).toBe("none");
+    expect(hit.getAttribute("pointer-events")).toBe("visible");
+    hit.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(onIntent).toHaveBeenCalledWith({
+      type: "scene.entity.select",
+      entityId: "agent_test_engineer",
+    });
   });
 });
