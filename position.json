@@ -223,11 +223,14 @@
       "tasks": [
         {
           "id": "1",
-          "state": "in_progress"
+          "state": "done",
+          "gate": {
+            "verify": "941ebfe"
+          }
         },
         {
           "id": "2",
-          "state": "approved"
+          "state": "in_progress"
         },
         {
           "id": "3",

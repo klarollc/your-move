@@ -11,12 +11,12 @@ writes owner-run; moved assertions listed (P-4).
 
 ## Tasks
 
-- [ ] Task 1: Spec successor section (docs only).
+- [x] Task 1: Spec successor section (docs only).
   - Acceptance: §3.2 version 3; §6 resolver wording; §7 ninth class ("a blocker without a request,
     waiting on an agent: never Needs you, never counted, never in the rail; the inspector names the
     resolver"); §8.4 addition. Owner-approved before Task 2.
-  - **Owner-approved 2026-10-02**: spec §10 (successor section). Closes when `verify` passes on
-    the commit that lands it.
+  - **Owner-approved 2026-10-02**: spec §10 (successor section), commit `941ebfe`. `verify`
+    passed on `941ebfe` (owner-run, reported 2026-10-02).
 - [ ] Task 2: Contract, version 3.
   - Acceptance: version 3 accepts a condition without `requestedAction` for `blocked` and
     `waiting_input` (D-1 as narrowed by D-4); refuses `waitingOn: manager` without a request; refuses a
