@@ -263,6 +263,11 @@ render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`
       window wall's inner face is grey (the existing face shading on a side turned from the light),
       darker than AR-01's plaster; the Reception and Manager desk zone labels, anchored at the zone's
       back corner, now sit over the wall and a window; the stubs' charcoal cut tops read heavy.
+  - **Owner capture and provenance, 2026-10-03:** `phase-7/architecture/chromium-1440/default-office.png`
+    and `chromium-1280/default-office.png`, both digests matching the ledger. **Owner review beside
+    AR-01 (Q-3): "new captures are a definite improvement and i agree with the items you noted."**
+    The three noted items are therefore open: the window wall's grey inner face, the zone labels
+    over the wall and a window, and the heavy stub cut tops.
 - [ ] Task 6: Furniture per zone. Each zone's props say what it is for; nothing hides a label or a
       target. Plate review.
 - [ ] Task 7: Figures (F-3). Modular adult figures; poses only from the semantic behavior map;
