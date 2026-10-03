@@ -172,6 +172,16 @@ render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`
       system's art is in the scene; no text and no figure-coloured shape is in the art (G-2, G-3);
       13 DOM labels; Fira Sans loaded; no request leaves the origin. Mutations, each confirmed
       applied and killed: figures drawn into the art; baked labels drawn into the art.
+  - **Owner capture and provenance, 2026-10-03:** `phase-7/active-office/chromium-1440/default-office.png`
+    and `chromium-1280/default-office.png`, both digests matching the ledger. **Owner review beside
+    AR-01 (Q-3): "the basic structure is approaching ab-reference-v1, but clearly falls short of the
+    quality when compared directly."** Task 3's acceptance (the Active office in the app, captured)
+    is met; the quality gap is what Tasks 5 to 8 exist to close. Gaps visible in the owner's
+    side-by-side, for those tasks to answer: no walls, window wall or daylight, so the office floats
+    as a diamond in an empty grey field rather than filling the frame as a room (Task 5); sparse,
+    blocky furniture with no chairs, rugs at scale, shelving detail or material (Task 6); no figures
+    (Task 7, by G-2); labels as large pills rather than AR-01's small plates over the person (Tasks
+    7 and 8).
 - [ ] Task 4: Remove Pixi (Q-2). Acceptance: no import remains; the dependency is gone; `verify`.
 - [ ] Task 5: Architecture and light (AR-01). Walls with a deterministic cutaway rule, the window
       wall, baked daylight (F-6). Plate review.
