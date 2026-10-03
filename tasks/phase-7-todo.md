@@ -10,7 +10,7 @@ beside its named plate, and the owner's comparison is recorded before the next s
 
 ## Tasks
 
-- [ ] Task 1: Fonts (F-5, Q-4). Vendor `@fontsource/fira-sans` and `@fontsource/fira-mono` at exact
+- [x] Task 1: Fonts (F-5, Q-4). Vendor `@fontsource/fira-sans` and `@fontsource/fira-mono` at exact
       versions with their OFL texts; a font sheet the owner captures in Windows Chromium; tokens set
       only after the owner confirms.
   - **Built 2026-10-03; open: the owner's install, `verify`, capture and confirmation, then tokens.**
@@ -38,7 +38,9 @@ beside its named plate, and the owner's comparison is recorded before the next s
     - **Owner capture and provenance, 2026-10-03:** `phase-7/fonts/chromium-1440/font-sheet.png`
       and `chromium-1280/font-sheet.png`. **Owner confirmation (Q-4): "Looks good."** Tokens may
       now be set.
-  - **Tokens, built 2026-10-03; closes on `verify`.** Owner rulings T-1 (load the faces from the
+  - **Tokens, built 2026-10-03 at `edd91fe`. `verify` GREEN through the runner
+    (`p7tok-verify-1791046370`) on a clean tree at `edd91fe`: unit 612, component 146, integration
+    90 with 3 skipped, contract 85, e2e 94, a11y 46, visual 66.** Owner rulings T-1 (load the faces from the
     one global stylesheet, so every surface sharing it has them) and T-2 (Mono applied now to the
     values in the two Technical detail disclosures). `.ui-craft/tokens.md` records the approved
     families first (families only; the scale stays unapproved). `--font-ui` and `--font-mono` on

@@ -358,8 +358,11 @@
       "tasks": [
         {
           "id": "1",
-          "state": "in_progress",
-          "note": "Tokens built (T-1, T-2); closes on verify"
+          "state": "done",
+          "gate": {
+            "verify": "edd91fe",
+            "runner": "p7tok-verify-1791046370"
+          }
         },
         {
           "id": "2",
