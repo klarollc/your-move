@@ -78,8 +78,8 @@ const hasUnitTest = criteriaWithATest(inventory);
  * later reader ask whether this assessment still describes anything.
  */
 const assessedFiles = [
-  "packages/domain/src/decision-notice.ts",
-  "apps/web/src/decision-notice.tsx",
+  "fixtures/decision-notice/src/model/decision-notice.ts",
+  "fixtures/decision-notice/src/web/decision-notice.tsx",
   ...inventory.map((entry) => entry.file),
 ];
 const assessedVersions = Object.fromEntries(

@@ -285,8 +285,8 @@ export async function buildReleaseBrief(): Promise<string> {
   const versions = Object.fromEntries(
     await Promise.all(
       [
-        "packages/domain/src/decision-notice.ts",
-        "apps/web/src/decision-notice.tsx",
+        "fixtures/decision-notice/src/model/decision-notice.ts",
+        "fixtures/decision-notice/src/web/decision-notice.tsx",
         "docs/evidence/phase-5/acceptance-contract.json",
         "docs/evidence/phase-5/acceptance-contract-waivers.json",
         "docs/evidence/phase-5/surface-contract/surface-contract.json",

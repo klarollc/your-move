@@ -88,6 +88,19 @@ owner-run; moved assertions listed (P-4). No file under `docs/evidence/phase-5` 
 - [ ] Task 6: Phase 5 tool scripts (D-3).
   - Acceptance: their paths updated and a guard that every repository
     path they name exists, RED first against a deliberately wrong path.
+  - **Built 2026-10-03; closes on `verify`.** `scripts/phase5-script-paths.unit.test.ts`: every
+    repository path a Phase 5 script (`scripts/*phase5*`, tests excluded) names as a plain string
+    literal must exist; template literals are not checked, and empty or thin sweeps fail.
+    - RED on the assertion against the scripts as they stood: five stale paths in
+      `build-phase5-red-evidence.ts` (the unit test it runs), `phase5-release-brief.ts` and
+      `run-phase5-verification.ts` (files they hash), and `phase5-verification-brief.ts` (the model
+      it reads). Rather than a deliberately wrong path, the move itself supplied the RED.
+    - GREEN after the five paths were updated, with the verification brief's prose label. A smoke
+      call of `buildVerificationBrief()` read the moved model and listed its exports.
+    - Mutation, confirmed applied and killed: one path in the verification brief pointed at a file
+      that does not exist. (A first attempt did not apply after Prettier reflowed the line, and was
+      discarded, not counted.)
+    - The test inventory walks the repository, so it found the moved test files with no change.
 - [ ] Task 7: Decision record and position record.
   - Acceptance: a new dated decision record marks the D-24 "what follows" item done, citing the
     commits; no accepted record edited; `position.json` moves the workstream to complete.

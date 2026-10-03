@@ -55,7 +55,7 @@ if (existsSync(OUTPUT) && process.env.CUCKCODE_OVERWRITE_RED !== "1") {
         "run",
         "--project",
         "unit",
-        "packages/domain/src/decision-notice.unit.test.ts",
+        "fixtures/decision-notice/src/model/decision-notice.unit.test.ts",
         "--reporter=json",
       ],
       // shell:true is needed to resolve npx on Windows. Every argument below is a fixed literal;

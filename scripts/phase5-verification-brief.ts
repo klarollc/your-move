@@ -38,7 +38,10 @@ export async function buildVerificationBrief(): Promise<string> {
     "utf8",
   );
 
-  const core = await readFile(resolve(ROOT, "packages/domain/src/decision-notice.ts"), "utf8");
+  const core = await readFile(
+    resolve(ROOT, "fixtures/decision-notice/src/model/decision-notice.ts"),
+    "utf8",
+  );
   const exported = core
     .split("\n")
     .filter((line) => line.startsWith("export function") || line.startsWith("export type"))
@@ -63,7 +66,7 @@ THE SURFACE CONTRACT authored by the Product Designer
 
 ${surface}
 
-THE IMPLEMENTATION — public surface of the pure core, packages/domain/src/decision-notice.ts
+THE IMPLEMENTATION — public surface of the pure core, fixtures/decision-notice/src/model/decision-notice.ts
 
 ${exported}
 
