@@ -283,10 +283,40 @@
     {
       "id": "phase-5-fixture-removal",
       "title": "The Phase 5 fixture leaves the production bundle (D-24 follow-on)",
-      "state": "specified",
+      "state": "approved",
       "spec": "docs/proposals/2026-09-28-phase-5-fixture-removal.md",
       "authorizedAfter": ["7-O:12"],
-      "next": "a plan and checklist for owner approval"
+      "checklist": "tasks/phase-5-fixture-removal-todo.md",
+      "tasks": [
+        {
+          "id": "1",
+          "state": "approved"
+        },
+        {
+          "id": "2",
+          "state": "approved"
+        },
+        {
+          "id": "3",
+          "state": "approved"
+        },
+        {
+          "id": "4",
+          "state": "approved"
+        },
+        {
+          "id": "5",
+          "state": "approved"
+        },
+        {
+          "id": "6",
+          "state": "approved"
+        },
+        {
+          "id": "7",
+          "state": "approved"
+        }
+      ]
     },
     {
       "id": "7",
@@ -460,6 +490,12 @@
       "ruled": "2026-10-03",
       "ruling": "fixed, with the caveat that no runtime producer emits version 3 (B-5)",
       "record": "docs/evidence/dogfood-register.md"
+    },
+    {
+      "id": "phase-5-fixture-removal:plan",
+      "ruled": "2026-10-03",
+      "ruling": "plan and checklist approved; D-1 (a) kept lean, R-4 corrected to a subset; D-2 to D-4 as recommended",
+      "record": "tasks/phase-5-fixture-removal-plan.md"
     }
   ]
 }
