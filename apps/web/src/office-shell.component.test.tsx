@@ -155,7 +155,9 @@ describe("OfficeShell", () => {
     // Task 9f-4 (P-4): AR-03 wording for the two states in which activity is unknown.
     { state: "stale", cause: /updates unavailable/i, recovery: "Refresh workspace" },
     { state: "offline", cause: /runtime is offline/i, recovery: "Reconnect runtime" },
-    { state: "canvas-loss", cause: /webgl context is unavailable/i, recovery: "Retry canvas" },
+    // Phase 7 Task 3a (Q-1, P-4): SVG has no context to lose; a scene that cannot be drawn is a
+    // render error.
+    { state: "render-error", cause: /could not be drawn/i, recovery: "Redraw the office" },
     { state: "rate-limit", cause: /provider rate limit/i, recovery: "Retry after limit" },
     {
       state: "budget-limit",

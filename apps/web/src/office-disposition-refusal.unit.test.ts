@@ -30,7 +30,7 @@ describe("dispositionRefusal", () => {
       "reviewer-disagreement",
       "conflict",
       "cancelled",
-      "canvas-loss",
+      "render-error",
       "rate-limit",
       "budget-limit",
     ]);

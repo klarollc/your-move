@@ -33,7 +33,7 @@ test("@e2e Phase 4 outline selection resizes the scene and restores trigger focu
 test("@e2e Phase 4 canvas selection opens the same stable entity inspector", async ({ page }) => {
   await page.goto("/");
   const scene = page.getByRole("region", { name: "Office scene" });
-  const canvas = scene.locator('canvas[data-scene-renderer="pixi"]');
+  const canvas = scene.locator('svg[data-scene-renderer="svg"]');
   const host = page.locator("[data-office-canvas-host]");
   await expect(canvas).toHaveCount(1);
   const center = await host.getAttribute("data-agent-implementation-screen");

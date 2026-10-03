@@ -32,7 +32,7 @@ import {
   type SceneDescriptor,
   type SceneTransform,
 } from "./office-scene-adapter.js";
-import { createPixiSceneRenderer } from "./pixi-scene-renderer.js";
+import { createSvgSceneRenderer } from "./svg-scene-renderer.js";
 
 const sceneDescriptors: readonly SceneDescriptor[] = Object.freeze([
   zone("zone_reception", -340, -20, 150, 130, 0),
@@ -155,10 +155,10 @@ export function OfficeWorkspace({
         updatesUnavailable: UPDATES_UNAVAILABLE_STATES.has(state),
       })
     : undefined;
-  const showPersistedScene = !["loading", "empty", "error", "canvas-loss"].includes(state);
+  const showPersistedScene = !["loading", "empty", "error", "render-error"].includes(state);
 
   const handleCanvasUnavailable = useCallback((unavailable: boolean) => {
-    if (unavailable) setState("canvas-loss");
+    if (unavailable) setState("render-error");
   }, []);
   const recover = () => {
     setCanvasKey((value) => value + 1);
@@ -273,13 +273,8 @@ function OfficeCanvas({
     if (!host) return;
     let cancelled = false;
     let observer: ResizeObserver | undefined;
-    const adapterCell: { current?: OfficeSceneAdapter } = {};
-    const renderer = createPixiSceneRenderer(
-      () => adapterCell.current?.contextLost(),
-      ({ entityId }) => onSelectEntity(entityId),
-    );
+    const renderer = createSvgSceneRenderer(({ entityId }) => onSelectEntity(entityId));
     const adapter = createOfficeSceneAdapter(renderer, onCanvasUnavailable);
-    adapterCell.current = adapter;
 
     void adapter
       .mount(host)

@@ -51,7 +51,7 @@ function isOfficeShellState(value: string | null): value is OfficeShellState {
     "error",
     "stale",
     "offline",
-    "canvas-loss",
+    "render-error",
     "rate-limit",
     "budget-limit",
     "permission-denied",

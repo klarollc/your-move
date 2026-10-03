@@ -57,7 +57,7 @@ export type OfficeShellState =
   | "error"
   | "stale"
   | "offline"
-  | "canvas-loss"
+  | "render-error"
   | "rate-limit"
   | "budget-limit"
   | "permission-denied"
@@ -126,7 +126,7 @@ const SCENE_UNAVAILABLE: ReadonlySet<string> = new Set([
   "loading",
   "empty",
   "error",
-  "canvas-loss",
+  "render-error",
 ]);
 
 export const officeShellEntities: readonly OfficeEntity[] = Object.freeze(
@@ -183,10 +183,11 @@ const presentations: Record<
     recovery: "Reconnect runtime",
     runtime: "Runtime offline",
   },
-  "canvas-loss": {
-    cause: "The WebGL context is unavailable; the Office outline is the primary interface.",
-    recovery: "Retry canvas",
-    runtime: "Runtime connected; canvas unavailable",
+  // Phase 7 Task 3a (plan Q-1): the SVG scene has no context to lose; it can still fail to draw.
+  "render-error": {
+    cause: "The office could not be drawn; the Office outline is the primary interface.",
+    recovery: "Redraw the office",
+    runtime: "Runtime connected; scene unavailable",
   },
   "rate-limit": {
     cause: "The provider rate limit denied the current request; no work is inferred.",

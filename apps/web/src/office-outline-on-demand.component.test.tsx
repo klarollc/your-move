@@ -73,7 +73,7 @@ describe("the office is the default surface", () => {
     expect(outline()).toBeVisible();
   });
 
-  it.each(["loading", "empty", "error", "canvas-loss"] as const)(
+  it.each(["loading", "empty", "error", "render-error"] as const)(
     "shows the outline without being asked when the scene is unavailable (%s)",
     (state) => {
       render(<OfficeShell state={state} />);

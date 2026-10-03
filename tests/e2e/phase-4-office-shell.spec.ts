@@ -27,7 +27,7 @@ test("@e2e Phase 4 default office keeps Pixi secondary to the keyboard-first out
   // Task 9e (P-4): two persistent structures, the bar and the office. The first Tab reaches the
   // skip link, which opens the outline with focus inside.
   await expect(page.getByTestId("persistent-structure")).toHaveCount(2);
-  await expect(page.locator('canvas[data-scene-renderer="pixi"]')).toHaveCount(1);
+  await expect(page.locator('svg[data-scene-renderer="svg"]')).toHaveCount(1);
   await expect(page.getByRole("region", { name: "Office outline" })).toHaveCount(0);
 
   await page.keyboard.press("Tab");
@@ -43,7 +43,7 @@ test("@e2e Phase 4 default office keeps Pixi secondary to the keyboard-first out
   await page.screenshot({ path: testInfo.outputPath("office-shell-ready.png") });
 });
 
-test("@e2e Phase 4 office preserves causes, actions, and canvas-loss recovery", async ({
+test("@e2e Phase 4 office preserves causes, actions, and render-error recovery", async ({
   page,
 }) => {
   await page.goto("/?state=offline");
@@ -56,16 +56,17 @@ test("@e2e Phase 4 office preserves causes, actions, and canvas-loss recovery", 
   await openOfficeOutline(page);
   await expect(page.getByRole("region", { name: "Office outline" })).toBeVisible();
 
-  await page.goto("/");
-  const canvas = page.locator('canvas[data-scene-renderer="pixi"]');
-  await expect(canvas).toHaveCount(1);
-  await canvas.dispatchEvent("webglcontextlost");
-  await expect(page.getByTestId("workspace-cause")).toContainText("WebGL context is unavailable");
-  await expect(page.getByRole("button", { name: "Retry canvas" })).toBeVisible();
-  await expect(canvas).toHaveCount(0);
+  // Phase 7 Task 3a (Q-1, P-4): SVG has no WebGL context to lose. A scene that fails to mount
+  // becomes render-error through the adapter; here the state is entered by URL, and recovery is
+  // what is exercised.
+  await page.goto("/?state=render-error");
+  const scene = page.locator('svg[data-scene-renderer="svg"]');
+  await expect(page.getByTestId("workspace-cause")).toContainText("could not be drawn");
+  await expect(page.getByRole("button", { name: "Redraw the office" })).toBeVisible();
+  await expect(scene).toHaveCount(0);
 
-  await page.getByRole("button", { name: "Retry canvas" }).click();
-  await expect(canvas).toHaveCount(1);
+  await page.getByRole("button", { name: "Redraw the office" }).click();
+  await expect(scene).toHaveCount(1);
   await expect(page.getByRole("status")).toContainText("Workspace current");
 });
 

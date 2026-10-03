@@ -3,7 +3,7 @@
  *
  * Every state the office can show about work and people is a log replayed through `replayProject`
  * and projected by `projectOfficeReadModel`. Nothing here is projection output. States that describe
- * the runtime or the renderer rather than the project (loading, error, offline, canvas loss, rate and
+ * the runtime or the renderer rather than the project (loading, error, offline, a render error, rate and
  * budget limits, restart) have no canonical expression: they are shell overlays drawn over the
  * default log, which supplies the entity facts underneath them.
  *
@@ -21,7 +21,7 @@ export const OFFICE_SHELL_STATES = [
   "error",
   "stale",
   "offline",
-  "canvas-loss",
+  "render-error",
   "rate-limit",
   "budget-limit",
   "permission-denied",

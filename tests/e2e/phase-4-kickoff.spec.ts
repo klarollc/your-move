@@ -39,7 +39,7 @@ test("@e2e Phase 4 kickoff opens from its spatial anchors and never authorises w
       .locator('header[aria-label="Project bar"]')
       .getByRole("button", { name: "Office outline" }),
   ).toBeVisible();
-  await expect(page.locator('canvas[data-scene-renderer="pixi"]')).toHaveCount(1);
+  await expect(page.locator('svg[data-scene-renderer="svg"]')).toHaveCount(1);
   await expect(page.locator("main")).toHaveAttribute("data-kickoff-open", "true");
 
   expect(consoleErrors).toEqual([]);

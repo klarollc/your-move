@@ -267,7 +267,7 @@ test("@visual Phase 7-O office captures, with console, network, input, zoom and 
 
   // Pointer: the canvas selects the same person, and the inspector reads the same record.
   await page.goto(`${ORIGIN}/`);
-  const canvas = page.locator('canvas[data-scene-renderer="pixi"]');
+  const canvas = page.locator('svg[data-scene-renderer="svg"]');
   await expect(canvas).toHaveCount(1);
   const center = await page
     .locator("[data-office-canvas-host]")
@@ -353,7 +353,7 @@ test("@visual Phase 7-O office captures, with console, network, input, zoom and 
     },
     pointer: {
       performed: true,
-      method: "click the Implementation Engineer on the Pixi canvas; the inspector reads waiting",
+      method: "click the Implementation Engineer in the SVG scene; the inspector reads waiting",
     },
     focusReturn: {
       performed: true,

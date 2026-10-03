@@ -37,6 +37,6 @@ test("@e2e Phase 4 office remains semantically stable with reduced motion", asyn
 
   // Task 9e (P-4): the page heading is the product name; the outline is on demand.
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("CuckCode");
-  await expect(page.locator('canvas[data-scene-renderer="pixi"]')).toHaveCount(1);
+  await expect(page.locator('svg[data-scene-renderer="svg"]')).toHaveCount(1);
   expect(await page.locator("html").evaluate((element) => element.getAnimations().length)).toBe(0);
 });

@@ -98,6 +98,34 @@ render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`
     graybox rectangles move and are listed; owner captures beside AR-01. Reason: the app's flat
     rectangles, the layout policy's 64×32 isometric tile and Phase 6's 34 px tile are three
     geometries, and a single change could not show which one a failing test was about.
+  - **3a built 2026-10-03; `verify` pending.** `apps/web/src/svg-scene-renderer.ts` implements
+    `SceneRendererPort`: one `<svg data-scene-renderer="svg" aria-hidden="true">` with a scene
+    layer, one rectangle per descriptor at the same position, size, fill, opacity and stroke Pixi
+    used, a click on a rectangle emitting `scene.entity.select`, sort by re-appending, camera as the
+    layer's `translate`/`scale`. `office-canvas.tsx` mounts it in place of the Pixi renderer; the
+    adapter, the camera and the outline are unchanged.
+    - RED: the 7 renderer component tests failed on assertions against a stub (null results
+      reported through a `must()` helper, not dereferenced). The state-list tests failed 3 of 3
+      with `render-error` absent (one as a copy lookup on an unknown state). GREEN: 7 of 7 and 3 of 3.
+    - Mutation, confirmed applied and killed: removing the rectangle's click listener failed
+      "selects an entity on click".
+    - Container run (not the gate): unit, component and contract 850 of 851, the miss the known
+      container-only `phase5-script-paths` gap; e2e and a11y 140 of 140 at both viewports;
+      format, lint, both typechecks, guard, scaffold and CSS scope clean.
+    - `render-error` replaces `canvas-loss` (Q-1). Cause: "The office could not be drawn; the
+      Office outline is the primary interface." Recovery: "Redraw the office". Runtime line:
+      "Runtime connected; scene unavailable". A failed mount now sets `render-error`.
+    - Moved assertions (P-4): the state row in `office-shell.component.test.tsx`; the state lists
+      in `office-outline-on-demand.component.test.tsx` and `office-disposition-refusal.unit.test.ts`;
+      `tests/e2e/phase-4-office-shell.spec.ts` now enters `/?state=render-error`, checks the new
+      cause and button, and the SVG absent then present after recovery; the scene selector
+      `canvas[data-scene-renderer="pixi"]` became the SVG selector in `phase-4-harness`,
+      `scaffold-a11y`, `scaffold`, `phase-4-kickoff`, `phase-4-selection-inspector` and
+      `phase-7o-office-captures` (whose method text now says "in the SVG scene").
+    - Limitation: e2e reaches `render-error` by URL; no test forces a real mount failure in the
+      browser.
+    - Untouched: the Pixi probe and its specs (`phase-4-camera`, `phase-4-pixi-scene`,
+      `phase-4-camera-a11y`), which Task 4 removes with Pixi.
 - [ ] Task 4: Remove Pixi (Q-2). Acceptance: no import remains; the dependency is gone; `verify`.
 - [ ] Task 5: Architecture and light (AR-01). Walls with a deterministic cutaway rule, the window
       wall, baked daylight (F-6). Plate review.
