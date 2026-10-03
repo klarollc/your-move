@@ -331,12 +331,16 @@
         },
         {
           "id": "6",
-          "state": "in_progress",
-          "note": "Built; closes on verify"
+          "state": "done",
+          "gate": {
+            "verify": "0716eb8",
+            "runner": "p5fr-t6-verify-1791042597"
+          }
         },
         {
           "id": "7",
-          "state": "approved"
+          "state": "in_progress",
+          "note": "Record written; closes on verify"
         }
       ]
     },

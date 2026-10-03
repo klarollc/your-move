@@ -85,10 +85,10 @@ owner-run; moved assertions listed (P-4). No file under `docs/evidence/phase-5` 
       (a finding).
 - **Tasks 2-5 closed together, 2026-10-03.** `verify` GREEN through the runner (`p5fr-t5-verify-1791041885`) on a clean tree at `0ad5e3d`: unit 608, component 146, integration 90 with 3 skipped, contract 85, e2e 90, a11y 46, visual 64; the four Phase 5 suites 13 / 1 / 2 / 20 at each viewport, equal to Task 1; `phase5:sideeffects` CURRENT, 3 modules, no findings.
 
-- [ ] Task 6: Phase 5 tool scripts (D-3).
+- [x] Task 6: Phase 5 tool scripts (D-3).
   - Acceptance: their paths updated and a guard that every repository
     path they name exists, RED first against a deliberately wrong path.
-  - **Built 2026-10-03; closes on `verify`.** `scripts/phase5-script-paths.unit.test.ts`: every
+  - **Built 2026-10-03 at `0716eb8`. `verify` GREEN through the runner (`p5fr-t6-verify-1791042597`) on a clean tree at `0716eb8`: unit 610, component 146, integration 90 with 3 skipped, contract 85, e2e 90, a11y 46, visual 64.** `scripts/phase5-script-paths.unit.test.ts`: every
     repository path a Phase 5 script (`scripts/*phase5*`, tests excluded) names as a plain string
     literal must exist; template literals are not checked, and empty or thin sweeps fail.
     - RED on the assertion against the scripts as they stood: five stale paths in
@@ -104,3 +104,9 @@ owner-run; moved assertions listed (P-4). No file under `docs/evidence/phase-5` 
 - [ ] Task 7: Decision record and position record.
   - Acceptance: a new dated decision record marks the D-24 "what follows" item done, citing the
     commits; no accepted record edited; `position.json` moves the workstream to complete.
+  - **Written 2026-10-03; closes on `verify`.**
+    `docs/evidence/phase-5/decision-record-2026-10-03-fixture-removed.md`, beside the D-24 record,
+    which is not edited. A new file in that folder leaves the accepted 195-artifact set unchanged:
+    its digest is a fixed list in `d24-production-suitability-review.json`, recomputed by no script.
+    Provenance recorded by the owner; the runner's `phase5:provenance` showed the record as the
+    only artifact missing from the ledger before that.
