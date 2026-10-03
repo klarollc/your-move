@@ -98,7 +98,8 @@ render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`
     graybox rectangles move and are listed; owner captures beside AR-01. Reason: the app's flat
     rectangles, the layout policy's 64×32 isometric tile and Phase 6's 34 px tile are three
     geometries, and a single change could not show which one a failing test was about.
-  - **3a built 2026-10-03; `verify` pending.** `apps/web/src/svg-scene-renderer.ts` implements
+  - **3a built 2026-10-03 at `6cc9475`; `verify` (`p7t3a-verify-1791049916`) GREEN on a clean tree:**
+    unit 613, component 153, integration 90 with 3 skipped, contract 85, e2e 94, a11y 46, visual 66. `apps/web/src/svg-scene-renderer.ts` implements
     `SceneRendererPort`: one `<svg data-scene-renderer="svg" aria-hidden="true">` with a scene
     layer, one rectangle per descriptor at the same position, size, fill, opacity and stroke Pixi
     used, a click on a rectangle emitting `scene.entity.select`, sort by re-appending, camera as the
