@@ -166,6 +166,12 @@ render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`
       default view only. Recorded for Task 7, when figures change where labels belong.
     - Still open for Task 3: the owner's captures of the Active office beside AR-01 at both
       viewports.
+    - **Capture spec, 2026-10-03:** `tests/visual/phase-7-active-office.spec.ts`, both viewports,
+      from the production build, through `evidenceOutputPath` to
+      `phase-7/active-office/<project>/default-office.png`. Before capturing it checks: the Active
+      system's art is in the scene; no text and no figure-coloured shape is in the art (G-2, G-3);
+      13 DOM labels; Fira Sans loaded; no request leaves the origin. Mutations, each confirmed
+      applied and killed: figures drawn into the art; baked labels drawn into the art.
 - [ ] Task 4: Remove Pixi (Q-2). Acceptance: no import remains; the dependency is gone; `verify`.
 - [ ] Task 5: Architecture and light (AR-01). Walls with a deterministic cutaway rule, the window
       wall, baked daylight (F-6). Plate review.
