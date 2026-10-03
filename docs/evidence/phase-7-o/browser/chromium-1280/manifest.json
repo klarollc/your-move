@@ -59,6 +59,12 @@
       "verified": true
     },
     {
+      "id": "blocked-elsewhere",
+      "path": "/?fixture=blocked-elsewhere",
+      "capture": "phase-7-o/browser/chromium-1280/blocked-elsewhere.png",
+      "verified": true
+    },
+    {
       "id": "unassigned-work",
       "path": "/?fixture=unassigned",
       "capture": "phase-7-o/browser/chromium-1280/unassigned-work.png",
@@ -87,7 +93,7 @@
       "performed": true,
       "method": "every request URL and every failed request, across every journey and probe",
       "observed": {
-        "requestCount": 19,
+        "requestCount": 20,
         "external": [],
         "failed": []
       }
