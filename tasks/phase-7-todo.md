@@ -227,7 +227,9 @@ render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`
     already shades right-facing sides lighter (light from that side). W-2: walls 2 tiles high, which
     fits the camera's existing headroom. W-3: the scene ground is the Active palette's `#efe7d9`.
     W-4: perimeter walls only; partitions, if wanted, with Task 6.
-  - **Built 2026-10-03; `verify` pending.** `scene/architecture.ts`: two back walls on the floor's
+  - **Built 2026-10-03 at `0637b27`; `verify` (`p7t5-verify-1791056159`) GREEN on a clean tree:**
+    unit 643, component 154, integration 90 with 3 skipped, contract 85, e2e 92, a11y 42, visual 68.
+    `scene/architecture.ts`: two back walls on the floor's
     back edges, 2 tiles high; the front edges cut to 0.3-tile stubs with a charcoal cut top; four
     window bays on the upper-right wall; one fixed sun (`SUN`) carrying each pane's light onto the
     floor. Wall thickness is taken inward, on the floor's edge strip: built outward, the walls
