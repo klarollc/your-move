@@ -37,9 +37,10 @@ function expectDecisionSufficient(id: string) {
     expect(work!.condition, `${label}: no recorded condition`).not.toBeNull();
     expect(work!.condition!.summary.length, `${label}: empty reason`).toBeGreaterThan(0);
     expect(work!.condition!.waitingOn.kind, `${label}: no waiting-on`).toBeTruthy();
-    expect(work!.condition!.requestedAction.summary.length, `${label}: no action`).toBeGreaterThan(
-      0,
-    );
+    expect(
+      work!.condition!.requestedAction?.summary.length ?? 0,
+      `${label}: no action`,
+    ).toBeGreaterThan(0);
     expect(work!.evidence.length, `${label}: no evidence link`).toBeGreaterThan(0);
   }
 }

@@ -151,3 +151,62 @@ describe("projectManagerAttention with open questions", () => {
     );
   });
 });
+
+describe("projectManagerAttention, attention follows the request (DF-029, spec §10.1)", () => {
+  const truth = { eventId: "event_09", source: "adapter" as const, trust: "reported" as const };
+  const request = { kind: "redirect" as const, summary: "Redirect the request or decline it." };
+  const onAgent = {
+    reasonCode: "dependency_blocked" as const,
+    summary: "Needs the Implementation Engineer's build.",
+    waitingOn: { kind: "agent" as const, id: "agent_implementation" },
+    ...truth,
+  };
+  const withItems = (
+    conditions: Record<string, CanonicalProjectSnapshot["work"]["workItems"][string]["condition"]>,
+    state: CanonicalProjectSnapshot["work"]["workItems"][string]["state"],
+  ): CanonicalProjectSnapshot => ({
+    ...snapshot,
+    work: {
+      ...snapshot.work,
+      workItems: Object.fromEntries(
+        Object.entries(conditions).map(([workItemId, condition]) => [
+          workItemId,
+          {
+            workItemId,
+            outcome: workItemId,
+            state,
+            revision: 1,
+            requiredEvidenceKinds: [],
+            updatedByEventId: "event_09",
+            updatedAt: "2026-08-13T23:00:09.000Z",
+            assignment: null,
+            condition,
+          },
+        ]),
+      ),
+    },
+  });
+  const subjects = (value: CanonicalProjectSnapshot) =>
+    projectManagerAttention(value).map((item) => item.subjectId);
+
+  it("raises no attention for a blocker or a wait that nobody asked the manager about", () => {
+    for (const state of ["blocked", "waiting_input"] as const) {
+      expect(subjects(withItems({ work_elsewhere: onAgent }, state)), state).toEqual([]);
+    }
+  });
+
+  it("raises attention when the condition carries a request, whoever resolves it", () => {
+    for (const state of ["blocked", "waiting_input"] as const) {
+      expect(
+        subjects(withItems({ work_asked: { ...onAgent, requestedAction: request } }, state)),
+        state,
+      ).toEqual(["work_asked"]);
+    }
+  });
+
+  it("keeps today's attention when no condition is recorded", () => {
+    for (const state of ["blocked", "waiting_input", "failed"] as const) {
+      expect(subjects(withItems({ work_unknown: null }, state)), state).toEqual(["work_unknown"]);
+    }
+  });
+});

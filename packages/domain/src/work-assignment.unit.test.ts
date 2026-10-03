@@ -218,6 +218,38 @@ describe("the retained transition condition", () => {
     expect(v1.workItems.work_evidence?.condition).toBeNull();
   });
 
+  it("keeps a version-3 condition that carries no request (DF-029)", () => {
+    const unrequested = {
+      reasonCode: "dependency_blocked",
+      summary: "The Test Engineer needs the Implementation Engineer's build.",
+      waitingOn: { kind: "agent", id: "agent_implementation" },
+    };
+    const result = reduceWorkTruth([
+      ...work(),
+      ...toActive(),
+      event(
+        "event_block",
+        "work.transitioned",
+        {
+          workItemId: "work_evidence",
+          fromRevision: 3,
+          toState: "blocked",
+          payloadVersion: 3,
+          condition: unrequested,
+        },
+        "adapter",
+        "reported",
+      ),
+    ]);
+    expect(result.workItems.work_evidence?.state).toBe("blocked");
+    expect(result.workItems.work_evidence?.condition).toEqual({
+      ...unrequested,
+      eventId: "event_block",
+      source: "adapter",
+      trust: "reported",
+    });
+  });
+
   it("refuses a version-2 attention-raising transition without a condition and leaves state alone", () => {
     const result = reduceWorkTruth([
       ...work(),

@@ -47,6 +47,23 @@ writes owner-run; moved assertions listed (P-4).
   - Acceptance: a version-3 blocker without a request raises no attention item; with a request it
     does; a version-1 or version-2 blocker, and one with no condition, behave exactly as today.
     The Phase 6 reduction proof still holds (D-2).
+  - **Built 2026-10-02, container-GREEN; closes on `verify`.** The domain keeps a version-3
+    condition; `blocked` and `waiting_input` raise attention only when the condition carries a
+    request or no condition is recorded. `failed` is unchanged (D-4).
+    - Stub first: `WorkConditionTruth` widened to `WorkConditionV3`. `tsc` then named four sites in
+      `apps/web` that assumed a request; each got the narrowest type-safe change, with output
+      unchanged for every version-1 and version-2 log (814 of 814 still green). Inspector wording
+      for an absent request is Task 5's.
+    - RED, on the assertion: the version-3 condition read as `null`; a request-less blocker raised
+      attention. Two preservation tests (a request still raises; no condition still raises) passed
+      at RED, as characterisation.
+    - GREEN: contract + unit + component 818 of 818; `tsc -b`, ESLint, Prettier clean.
+    - D-2: the reduction proof, Phase 6 comparison, golden overlap and fixture sweep 18 of 18,
+      unchanged.
+    - Mutations, each confirmed applied and killed: the `blocked` request guard; the
+      `waiting_input` request guard; the no-condition fallback (six tests failed).
+    - Moved assertion (P-4): the office-fixtures sufficiency check reads an optional request
+      (`?.summary.length ?? 0`), still failing when no request is recorded.
 - [ ] Task 4: Application, the resolver.
   - Acceptance: agent, evidence and external resolve to words; an id that resolves to nothing reads
     "not recorded"; no name is guessed.

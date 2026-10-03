@@ -44,9 +44,12 @@ export function projectManagerAttention(
   const items: ManagerAttentionItem[] = [];
   for (const work of Object.values(snapshot.work.workItems)) {
     let reason: ManagerAttentionItem["reason"] | undefined;
-    if (work.state === "blocked") reason = "blocked";
+    // Attention follows the request (DF-029, spec §10.1): a recorded condition without one names
+    // someone other than the manager. No condition at all is unknown, and keeps today's attention.
+    const asksManager = work.condition === null || work.condition.requestedAction !== undefined;
+    if (work.state === "blocked" && asksManager) reason = "blocked";
     if (work.state === "failed") reason = "failed";
-    if (work.state === "waiting_input") reason = "waiting_input";
+    if (work.state === "waiting_input" && asksManager) reason = "waiting_input";
     if (work.state === "review_requested") reason = "review_requested";
     if (
       work.state === "completed" &&

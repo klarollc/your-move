@@ -108,7 +108,7 @@ export function attentionItemsFrom(model: OfficeReadModel): readonly OfficeAtten
       priority: item.priority,
       causeEventId: item.causeEventId,
       plainLanguage: item.condition?.summary ?? NO_REASON,
-      requiredAction: item.condition?.requestedAction.summary ?? NO_ACTION,
+      requiredAction: item.condition?.requestedAction?.summary ?? NO_ACTION,
     };
   });
 }
@@ -140,11 +140,8 @@ export function conditionText(work: OfficeWorkView): string {
 export function requestedActionText(person: OfficePersonView): string {
   if (person.work.length === 0) return NOT_ASSIGNED;
   const actions = person.work
-    .filter((work) => work.condition)
-    .map(
-      (work) =>
-        `${work.condition!.requestedAction.summary} (${work.condition!.requestedAction.kind})`,
-    );
+    .flatMap((work) => (work.condition?.requestedAction ? [work.condition.requestedAction] : []))
+    .map((action) => `${action.summary} (${action.kind})`);
   return actions.length > 0 ? actions.join(" / ") : NO_ACTION;
 }
 
@@ -394,7 +391,7 @@ export function whyText(person: OfficePersonView): string {
 export function needsYouPlain(person: OfficePersonView): string {
   if (person.attention.length === 0) return "Nothing needs you";
   return person.attention
-    .map((item) => item.condition?.requestedAction.summary ?? NO_ACTION)
+    .map((item) => item.condition?.requestedAction?.summary ?? NO_ACTION)
     .join(" ");
 }
 

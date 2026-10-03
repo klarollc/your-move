@@ -3,7 +3,7 @@ import {
   validateWorkAssignmentPayload,
   validateWorkTransitionPayload,
   type ProjectEvent,
-  type WorkCondition,
+  type WorkConditionV3,
 } from "@cuckcode/contracts";
 
 import { applyStaffingEvent, createStaffingTruth, type StaffingTruth } from "./staffing-truth.js";
@@ -26,11 +26,12 @@ export type WorkState =
 export type WorkAssignmentTruth = { roleAssignmentId: string; eventId: string };
 
 /**
- * Why a work item is blocked, waiting or under review, as asserted by a version-2 transition
- * (spec §3.2). `source` and `trust` come from that event's envelope: the summary is a recorded claim
+ * Why a work item is blocked, waiting or under review, as asserted by a version-2 or version-3
+ * transition (spec §3.2, §10.1). A version-3 condition may carry no request: someone other than the
+ * manager resolves it. `source` and `trust` come from that event's envelope: the summary is a recorded claim
  * by whoever emitted it, never system truth.
  */
-export type WorkConditionTruth = WorkCondition & {
+export type WorkConditionTruth = WorkConditionV3 & {
   eventId: string;
   source: ProjectEvent["source"];
   trust: ProjectEvent["trust"];
@@ -196,7 +197,7 @@ function transitionWorkItem(state: WorkTruthState, event: ProjectEvent): void {
     return;
   }
   const condition =
-    contract.ok && contract.value.payloadVersion === 2 && contract.value.condition
+    contract.ok && contract.value.payloadVersion !== 1 && contract.value.condition
       ? {
           ...contract.value.condition,
           eventId: event.eventId,
