@@ -374,12 +374,17 @@
         },
         {
           "id": "3",
-          "state": "in_progress",
-          "note": "Split 3a (parity swap) / 3b (Active office), owner ruling 2026-10-03. 3a done: verify 6cc9475, runner p7t3a-verify-1791049916. 3b built (G-1 to G-3 approved): verify 52cafbb, runner p7t3b-verify-1791052003. Owner captures beside AR-01 recorded 2026-10-03 (structure approaching, quality short); closing verify pending."
+          "state": "done",
+          "gate": {
+            "verify": "6cb0dea",
+            "runner": "p7t3-verify-1791053386"
+          },
+          "note": "Split 3a (verify 6cc9475) / 3b (verify 52cafbb), owner ruling 2026-10-03; owner captures beside AR-01 reviewed: structure approaching, quality short (Tasks 5-8)."
         },
         {
           "id": "4",
-          "state": "approved"
+          "state": "in_progress",
+          "note": "Plan approved 2026-10-03 as recommended (R-1 to R-3)"
         },
         {
           "id": "5",

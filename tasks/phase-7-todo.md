@@ -87,7 +87,7 @@ render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`
       `net::ERR_NO_BUFFER_SPACE` (the Windows socket-buffer error), after which no `.tsx` module
       can run and nothing renders. Unrelated to this task: the office does not import the moved
       module. Not yet in the register; proposed to the owner.
-- [ ] Task 3: The SVG renderer behind the scene adapter. Acceptance: every existing scene, camera,
+- [x] Task 3: The SVG renderer behind the scene adapter. Acceptance: every existing scene, camera,
       label and zoom test passes against it; `render-error` replaces `canvas-loss` (Q-1) with
       moved assertions listed; captures show the Active office in the app.
   - **Split by owner ruling, 2026-10-03.** **3a**, the renderer swap at parity: an SVG renderer
@@ -182,6 +182,13 @@ render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`
     blocky furniture with no chairs, rugs at scale, shelving detail or material (Task 6); no figures
     (Task 7, by G-2); labels as large pills rather than AR-01's small plates over the person (Tasks
     7 and 8).
+  - **Closed 2026-10-03 at `6cb0dea`: `verify` (`p7t3-verify-1791053386`) GREEN on a clean tree:**
+    unit 630, component 155, integration 90 with 3 skipped, contract 85, e2e 94, a11y 46, visual 68.
+  - **Task 4 plan approved 2026-10-03 as recommended (R-1 to R-3).** R-1: remove the probe and its
+    three specs; the camera rules stay proven by the `office-camera` unit tests, and in-office pan
+    and zoom (never built) is recorded as an open D-02 item. R-2: the owner runs the uninstall on
+    Windows; the lock diff is checked. R-3: the SVG renderer's rectangle path goes and outlines
+    become required, with moved assertions listed.
 - [ ] Task 4: Remove Pixi (Q-2). Acceptance: no import remains; the dependency is gone; `verify`.
 - [ ] Task 5: Architecture and light (AR-01). Walls with a deterministic cutaway rule, the window
       wall, baked daylight (F-6). Plate review.
