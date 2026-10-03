@@ -239,12 +239,15 @@
         },
         {
           "id": "3",
-          "state": "in_progress",
-          "note": "Built; first verify failed in test:guard (Omit), fixed; closes on verify"
+          "state": "done",
+          "gate": {
+            "verify": "f065782",
+            "runner": "df029-t3-verify2-1791007535"
+          }
         },
         {
           "id": "4",
-          "state": "approved"
+          "state": "in_progress"
         },
         {
           "id": "5",

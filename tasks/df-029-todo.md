@@ -43,11 +43,13 @@ writes owner-run; moved assertions listed (P-4).
       mutation did not parse and was discarded, not counted.
     - Moved assertion (P-4): the unknown-version test now uses `payloadVersion: 4`, since 3 is
       valid.
-- [ ] Task 3: Domain, attention follows the request.
+- [x] Task 3: Domain, attention follows the request.
   - Acceptance: a version-3 blocker without a request raises no attention item; with a request it
     does; a version-1 or version-2 blocker, and one with no condition, behave exactly as today.
     The Phase 6 reduction proof still holds (D-2).
-  - **Built 2026-10-02, container-GREEN; closes on `verify`.** The domain keeps a version-3
+  - **Built 2026-10-02 at `e6149b1`, fixed at `f065782`. `verify` GREEN through the runner
+    (`df029-t3-verify2-1791007535`) on a clean tree at `f065782`: unit 594, component 139,
+    integration 90 with 3 skipped, contract 85, e2e 88, a11y 46, visual 64.** The domain keeps a version-3
     condition; `blocked` and `waiting_input` raise attention only when the condition carries a
     request or no condition is recorded. `failed` is unchanged (D-4).
     - Stub first: `WorkConditionTruth` widened to `WorkConditionV3`. `tsc` then named four sites in
