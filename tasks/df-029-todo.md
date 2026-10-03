@@ -113,7 +113,7 @@ writes owner-run; moved assertions listed (P-4).
       Prettier, `test:guard`, `test:scaffold` clean.
     - Mutations, each confirmed applied and killed: dropping the request filter; evidence worded as
       "can resolve it"; dropping the sentences beside a request.
-- [ ] Task 6: The `blocked-elsewhere` log, e2e and capture.
+- [x] Task 6: The `blocked-elsewhere` log, e2e and capture.
   - Acceptance: e2e at both viewports; a new journey in the Task 9 capture spec; owner re-capture
     and provenance.
   - **Built 2026-10-02 at `f2d6cfa`; code half GREEN on the same run, `verify` GREEN through the runner (`df029-t6-verify-1791011534`) on a clean tree at `f2d6cfa`:
@@ -123,8 +123,9 @@ writes owner-run; moved assertions listed (P-4).
     both manifests (one journey added; request count 19 to 20). The other twelve captures were
     byte-identical. Four ledger entries, each matching its file. The ledger attributes them to the
     Phase 7-O spec approval by folder; DF-029's authority is its approved amendment (2026-09-28).
-  - **Owner comparison with AR-03 column 1, 2026-10-03:** "approved, it matches." Closes on the
-    next `verify`. `OFFICE_FIXTURES["blocked-elsewhere"]`
+  - **Owner comparison with AR-03 column 1, 2026-10-03:** "approved, it matches." `verify` GREEN through the runner
+    (`df029-t6-verify2-1791012127`) on a clean tree at `fc2016d`: unit 603, component 146,
+    integration 90 with 3 skipped, contract 85, e2e 90, a11y 46, visual 64. `OFFICE_FIXTURES["blocked-elsewhere"]`
     (`?fixture=blocked-elsewhere`): the default office with the Test Engineer's blocker recorded
     at version 3, waiting on the Implementation Engineer, with no request. The default log is
     unchanged.
