@@ -4,8 +4,8 @@ import { resolve } from "node:path";
 import { phase6ComparisonFixtureDigest } from "@cuckcode/testing";
 
 import { STATE_TREATMENTS } from "./phase6-accessibility.js";
-import { renderComposition } from "./phase6-candidate-render.js";
-import { CANDIDATE_B, RECONCILIATION_B_CLARITY } from "./phase6-candidate-styles.js";
+import { renderComposition } from "@cuckcode/ui-system/scene";
+import { CANDIDATE_B, RECONCILIATION_B_CLARITY } from "@cuckcode/ui-system/scene";
 
 /**
  * Builds the Task 8 reconciliation and re-measures it.

@@ -366,7 +366,8 @@
         },
         {
           "id": "2",
-          "state": "approved"
+          "state": "in_progress",
+          "note": "Moved; closes on verify"
         },
         {
           "id": "3",

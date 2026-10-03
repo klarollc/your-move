@@ -2,7 +2,7 @@
  * The three candidate styles.
  *
  * Every field here is a *treatment*: colour, edge, shadow, density, lighting. Nothing here can move
- * a desk, add an agent, or change a label — that lives in `phase6-candidate-geometry.ts` and is
+ * a desk, add an agent, or change a label — that lives in `geometry.ts` and is
  * shared. The brief's three comparative emphases survive because the styles are the only variable.
  *
  * Amber is a single reserved accent in all three. It marks manager attention and focus only, never

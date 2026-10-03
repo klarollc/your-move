@@ -5,8 +5,8 @@ import { resolve } from "node:path";
 import { phase6ComparisonFixtureDigest, phase6ComparisonFixtureDigestV1 } from "@cuckcode/testing";
 import { describe, expect, it } from "vitest";
 
-import { renderComposition } from "./phase6-candidate-render.js";
-import { RECONCILIATION_B_CLARITY } from "./phase6-candidate-styles.js";
+import { renderComposition } from "@cuckcode/ui-system/scene";
+import { RECONCILIATION_B_CLARITY } from "@cuckcode/ui-system/scene";
 import {
   GOLDEN_VIEWPORTS,
   goldenStateDigestV1,

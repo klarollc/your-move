@@ -3,8 +3,8 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 import { STATE_TREATMENTS } from "./phase6-accessibility.js";
-import { RECONCILIATION_B_CLARITY } from "./phase6-candidate-styles.js";
-import { renderComposition } from "./phase6-candidate-render.js";
+import { RECONCILIATION_B_CLARITY } from "@cuckcode/ui-system/scene";
+import { renderComposition } from "@cuckcode/ui-system/scene";
 import {
   GOLDEN_VIEWPORTS,
   projectAllGoldenStates,

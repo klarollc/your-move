@@ -1,9 +1,9 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
-import { AGENTS, PROPS } from "./phase6-candidate-geometry.js";
+import { AGENTS, PROPS } from "@cuckcode/ui-system/scene";
 import { STATE_TREATMENTS } from "./phase6-accessibility.js";
-import { CANDIDATE_STYLES, type CandidateStyle } from "./phase6-candidate-styles.js";
+import { CANDIDATE_STYLES, type CandidateStyle } from "@cuckcode/ui-system/scene";
 
 const ROOT = resolve(process.cwd());
 

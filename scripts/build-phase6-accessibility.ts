@@ -2,7 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 import { ACCOMMODATION_CHANGES, FOCUS_INTENT, STATE_TREATMENTS } from "./phase6-accessibility.js";
-import { CANDIDATE_STYLES, type CandidateStyle } from "./phase6-candidate-styles.js";
+import { CANDIDATE_STYLES, type CandidateStyle } from "@cuckcode/ui-system/scene";
 
 const ROOT = resolve(process.cwd());
 const OUT = resolve(ROOT, "docs/evidence/phase-6/accessibility-report.json");

@@ -61,6 +61,24 @@ beside its named plate, and the owner's comparison is recorded before the next s
       headless build does not (traced to the console message's own URL); a11y 46 of 46.
 - [ ] Task 2: Move the Phase 6 primitives into `packages/ui-system`. Acceptance: the golden states
       and the frozen frame re-render byte for byte from the new module; the scripts import it.
+  - **Built 2026-10-03; closes on `verify`.** `git mv` of `scripts/phase6-candidate-{geometry,
+render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`, contents
+    unchanged apart from two relative imports and one comment; a separate entry point,
+    `@cuckcode/ui-system/scene`, so short names such as `TILE`, `iso` and `depth` stay out of the
+    main entry. Seven scripts and one test import it.
+    - A pure move, so no RED: the acceptance is the existing proof in
+      `scripts/phase7o-digest-successors.unit.test.ts` ("renders every approved capture byte for
+      byte as it was approved"), plus the Phase 6 golden-state and comparison-frame tests: 24 of 24
+      before the move and 24 of 24 from the new module.
+    - Mutation, confirmed applied and killed: one hex digit of a reconciliation floor colour in the
+      moved styles broke the byte-for-byte capture test, so the test reads the moved code.
+    - Moved assertion (P-4): `packages/testing/src/phase6-provenance.unit.test.ts` checked that every
+      in-tree source the frozen Phase 6 provenance register cites exists. The register keeps the
+      approval-time paths (not edited), so the test now resolves them through a declared move map,
+      and a new case requires each mapped old path gone and new path present (a recreated old file
+      was caught).
+    - `scripts/phase6-provenance.ts` still writes the old paths into the register it builds: they
+      are the approval-time record, left unchanged.
 - [ ] Task 3: The SVG renderer behind the scene adapter. Acceptance: every existing scene, camera,
       label and zoom test passes against it; `render-error` replaces `canvas-loss` (Q-1) with
       moved assertions listed; captures show the Active office in the app.

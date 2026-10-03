@@ -11,8 +11,8 @@ import {
   pts,
   type AgentPlacement,
   type Prop,
-} from "./phase6-candidate-geometry.js";
-import type { CandidateStyle } from "./phase6-candidate-styles.js";
+} from "./geometry.js";
+import type { CandidateStyle } from "./styles.js";
 
 type Piece = { key: number; svg: string };
 

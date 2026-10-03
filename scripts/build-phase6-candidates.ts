@@ -4,9 +4,9 @@ import { resolve } from "node:path";
 import { phase6ComparisonFixtureDigest } from "@cuckcode/testing";
 
 import { ACCOMMODATION_CHANGES, FOCUS_INTENT, STATE_TREATMENTS } from "./phase6-accessibility.js";
-import { AGENTS, ZONES } from "./phase6-candidate-geometry.js";
-import { renderComposition } from "./phase6-candidate-render.js";
-import { CANDIDATE_STYLES, type CandidateStyle } from "./phase6-candidate-styles.js";
+import { AGENTS, ZONES } from "@cuckcode/ui-system/scene";
+import { renderComposition } from "@cuckcode/ui-system/scene";
+import { CANDIDATE_STYLES, type CandidateStyle } from "@cuckcode/ui-system/scene";
 import { ORIGINALITY, PROVENANCE_GAPS, PROVENANCE_REFERENCES } from "./phase6-provenance.js";
 
 const ROOT = resolve(process.cwd());

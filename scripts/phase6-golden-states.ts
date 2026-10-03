@@ -17,7 +17,7 @@ import {
   type Phase7OAdditionParts,
 } from "@cuckcode/testing";
 
-import type { SceneState } from "./phase6-candidate-render.js";
+import type { SceneState } from "@cuckcode/ui-system/scene";
 
 /**
  * The six golden states the brief names, built the way the comparison frame was: from canonical

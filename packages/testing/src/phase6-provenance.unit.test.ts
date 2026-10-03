@@ -68,12 +68,31 @@ describe("Phase 6 provenance and originality review", () => {
     }
   });
 
-  it("resolves every in-tree source to a file that exists", () => {
+  /**
+   * Phase 7 Task 2 moved the Phase 6 primitives into `@cuckcode/ui-system/scene`. The register is
+   * frozen evidence and keeps the paths they had when Phase 6 was approved; this map says where
+   * each now lives. A map entry must describe a real move: the old path gone, the new one present.
+   */
+  const MOVED_SOURCES: Readonly<Record<string, string>> = {
+    "scripts/phase6-candidate-geometry.ts": "packages/ui-system/src/scene/geometry.ts",
+    "scripts/phase6-candidate-render.ts": "packages/ui-system/src/scene/render.ts",
+    "scripts/phase6-candidate-styles.ts": "packages/ui-system/src/scene/styles.ts",
+  };
+
+  it("resolves every in-tree source to a file that exists, at its recorded or moved path", () => {
     for (const reference of register().references.filter((entry) => entry.kind === "in-tree")) {
+      const current = MOVED_SOURCES[reference.source] ?? reference.source;
       expect(
-        existsSync(resolve(REPOSITORY_ROOT, reference.source)),
+        existsSync(resolve(REPOSITORY_ROOT, current)),
         `${reference.id} cites ${reference.source}, which is not in the tree`,
       ).toBe(true);
+    }
+  });
+
+  it("maps only real moves", () => {
+    for (const [from, to] of Object.entries(MOVED_SOURCES)) {
+      expect(existsSync(resolve(REPOSITORY_ROOT, from)), `${from} still exists`).toBe(false);
+      expect(existsSync(resolve(REPOSITORY_ROOT, to)), `${to} does not exist`).toBe(true);
     }
   });
 
