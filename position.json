@@ -366,8 +366,11 @@
         },
         {
           "id": "2",
-          "state": "in_progress",
-          "note": "Moved; closes on verify"
+          "state": "done",
+          "gate": {
+            "verify": "d7c98dd",
+            "runner": "p7t2-verify2-1791048029"
+          }
         },
         {
           "id": "3",

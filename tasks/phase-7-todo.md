@@ -59,9 +59,12 @@ beside its named plate, and the owner's comparison is recorded before the next s
     - Container: e2e 92 of 94 at both viewports, the two failures the isolation spec's console
       404 for `/favicon.ico`, which the container's full Chromium requests and the owner's
       headless build does not (traced to the console message's own URL); a11y 46 of 46.
-- [ ] Task 2: Move the Phase 6 primitives into `packages/ui-system`. Acceptance: the golden states
+- [x] Task 2: Move the Phase 6 primitives into `packages/ui-system`. Acceptance: the golden states
       and the frozen frame re-render byte for byte from the new module; the scripts import it.
-  - **Built 2026-10-03; closes on `verify`.** `git mv` of `scripts/phase6-candidate-{geometry,
+  - **Built 2026-10-03 at `d7c98dd`.** First `verify` (`p7t2-verify-1791047791`) failed one e2e at
+    1440 with a blank page: DF-028's fourth occurrence, traced below. Second `verify`
+    (`p7t2-verify2-1791048029`) GREEN on a clean tree at the same commit: unit 613, component 146,
+    integration 90 with 3 skipped, contract 85, e2e 94, a11y 46, visual 66. `git mv` of `scripts/phase6-candidate-{geometry,
 render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`, contents
     unchanged apart from two relative imports and one comment; a separate entry point,
     `@cuckcode/ui-system/scene`, so short names such as `TILE`, `iso` and `depth` stay out of the
@@ -79,6 +82,11 @@ render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`
       was caught).
     - `scripts/phase6-provenance.ts` still writes the old paths into the register it builds: they
       are the approval-time record, left unchanged.
+    - **DF-028, first trace (2026-10-03).** The runner kept the failed run's output. The page was
+      entirely blank. The trace shows the dev server's `/@react-refresh` request failing with
+      `net::ERR_NO_BUFFER_SPACE` (the Windows socket-buffer error), after which no `.tsx` module
+      can run and nothing renders. Unrelated to this task: the office does not import the moved
+      module. Not yet in the register; proposed to the owner.
 - [ ] Task 3: The SVG renderer behind the scene adapter. Acceptance: every existing scene, camera,
       label and zoom test passes against it; `render-error` replaces `canvas-loss` (Q-1) with
       moved assertions listed; captures show the Active office in the app.
