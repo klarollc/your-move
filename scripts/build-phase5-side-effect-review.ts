@@ -1,7 +1,8 @@
-import { readFile, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
 
 import {
+  DECISION_NOTICE_ENTRY_POINTS,
   checkReview,
   composeSideEffectReview,
   reachableModules,
@@ -17,7 +18,14 @@ import {
  * journey reached.
  */
 const ROOT = resolve(process.cwd());
-const OUT = resolve(ROOT, "docs/evidence/phase-5/side-effect-review.json");
+/**
+ * Phase 5 fixture removal (D-1, owner ruling 2026-10-03). The accepted review at
+ * `docs/evidence/phase-5/side-effect-review.json` is frozen, and the provenance ledger guards its
+ * digest. This builder now writes and checks its successor, over the fixture's own entry points.
+ * `scripts/phase5-side-effect-successor.unit.test.ts` holds the successor to R-4: a subset of the
+ * accepted modules under the declared mapping, with no new external package and no finding.
+ */
+const OUT = resolve(ROOT, "docs/evidence/phase-5-fixture-removal/side-effect-review.json");
 
 /**
  * The entry points, declared.
@@ -27,11 +35,7 @@ const OUT = resolve(ROOT, "docs/evidence/phase-5/side-effect-review.json");
  * without saying reachable *from where*, and a reader can disagree with this list where they could
  * not disagree with an unstated one.
  */
-const ENTRY_POINTS = [
-  "apps/web/src/decision-notice.tsx",
-  "apps/web/src/decision-notice-capture.tsx",
-  "packages/domain/src/decision-notice.ts",
-];
+const ENTRY_POINTS = [...DECISION_NOTICE_ENTRY_POINTS];
 
 const workspaceManifests = [
   "packages/application",
@@ -64,7 +68,7 @@ for (const file of reachable.modules) {
 const review = composeSideEffectReview({
   entryPoints: ENTRY_POINTS,
   entryPointsWhy:
-    "The component as the browser loads it, the capture surface the evidence is taken through, and the pure core beneath both. 'All reachable code' means nothing without saying reachable from where, and a reader can disagree with a list they can see.",
+    "The component as the browser loads it, the capture surface the evidence is taken through, and the pure core beneath both, at their paths in the fixture workspace since the Phase 5 fixture removal. 'All reachable code' means nothing without saying reachable from where, and a reader can disagree with a list they can see.",
   reachable,
   scans,
 });
@@ -86,7 +90,10 @@ const rendered = `${JSON.stringify(review, null, 2)}\n`;
 const onDisk = await readFile(OUT, "utf8").catch(() => null);
 const artifact = WRITE ? { ok: true, reason: "WRITTEN" as const } : checkReview(rendered, onDisk);
 
-if (WRITE) await writeFile(OUT, rendered, "utf8");
+if (WRITE) {
+  await mkdir(dirname(OUT), { recursive: true });
+  await writeFile(OUT, rendered, "utf8");
+}
 
 process.stdout.write(
   `${JSON.stringify({

@@ -22,7 +22,8 @@ import { evidenceOutputPath } from "../support/evidence-output.js";
  * dev-server page issues ninety-five module requests per journey and schedules them in a different
  * order each run, so the recorded evidence was neither auditable nor reproducible.
  */
-const ORIGIN = "http://127.0.0.1:4174";
+// Phase 5 fixture removal (D-2): the fixture's own production build, not the office bundle.
+const ORIGIN = "http://127.0.0.1:4175";
 
 type Journey = Readonly<{
   id: string;

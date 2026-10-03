@@ -48,5 +48,13 @@ export default defineConfig({
       reuseExistingServer: false,
       timeout: 120_000,
     },
+    // Phase 5 fixture removal (D-2): the Decision Notice fixture left the office bundle and is
+    // served from its own production build, so decision 9-E still holds for the Phase 5 suites.
+    {
+      command: "npm run preview:decision-notice",
+      url: "http://127.0.0.1:4175",
+      reuseExistingServer: false,
+      timeout: 120_000,
+    },
   ],
 });

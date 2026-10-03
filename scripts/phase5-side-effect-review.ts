@@ -118,6 +118,33 @@ export const EFFECT_PATTERNS: EffectPattern[] = [
 ];
 
 /** Workspace package name to its source entry, read from the workspace manifests at build time. */
+/**
+ * The C-11 entry points since the Phase 5 fixture removal: the component, the capture surface and
+ * the pure core, at their paths in the fixture workspace.
+ */
+export const DECISION_NOTICE_ENTRY_POINTS = [
+  "fixtures/decision-notice/src/web/decision-notice.tsx",
+  "fixtures/decision-notice/src/web/decision-notice-capture.tsx",
+  "fixtures/decision-notice/src/model/decision-notice.ts",
+] as const;
+
+/**
+ * Where each moved file lived when the C-11 review was accepted (D-4: names kept, so a directory
+ * prefix maps one to one).
+ */
+export const FIXTURE_REMOVAL_PATH_MAP: Readonly<Record<string, string>> = {
+  "fixtures/decision-notice/src/model/": "packages/domain/src/",
+  "fixtures/decision-notice/src/web/": "apps/web/src/",
+};
+
+/** A module path as it read in the accepted review. */
+export function acceptedPathOf(path: string): string {
+  for (const [moved, accepted] of Object.entries(FIXTURE_REMOVAL_PATH_MAP)) {
+    if (path.startsWith(moved)) return accepted + path.slice(moved.length);
+  }
+  return path;
+}
+
 export type WorkspaceMap = ReadonlyMap<string, string>;
 
 /**

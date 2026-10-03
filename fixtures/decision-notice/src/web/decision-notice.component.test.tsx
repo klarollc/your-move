@@ -6,8 +6,8 @@ import { resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { DecisionNoticeCard, type DecisionNoticeStorage } from "./decision-notice.js";
-import { createDecisionState, storedDateViolations } from "@cuckcode/domain";
-import type { Clock, DecisionNotice, DecisionState } from "@cuckcode/domain";
+import { createDecisionState, storedDateViolations } from "../model/decision-notice.js";
+import type { Clock, DecisionNotice, DecisionState } from "../model/decision-notice.js";
 
 const clock: Clock = { now: () => "2026-09-14T12:00:00.000Z" };
 
@@ -577,7 +577,10 @@ describe("DecisionNoticeCard", () => {
   });
 
   it("C-08: component source cannot reach ambient time, randomness, timers, storage, or network", () => {
-    const source = readFileSync(resolve(process.cwd(), "apps/web/src/decision-notice.tsx"), "utf8");
+    const source = readFileSync(
+      resolve(process.cwd(), "fixtures/decision-notice/src/web/decision-notice.tsx"),
+      "utf8",
+    );
     expect(source).not.toMatch(
       /\bDate\b|Math\.random|setTimeout|setInterval|requestAnimationFrame|fetch\s*\(|localStorage|sessionStorage/,
     );

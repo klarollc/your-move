@@ -15,7 +15,7 @@ import {
   type DecisionStatus,
   type EvidenceLinkState,
   type ValidationCode,
-} from "@cuckcode/domain";
+} from "../model/decision-notice.js";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import "./decision-notice.css";

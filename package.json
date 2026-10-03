@@ -75,6 +75,7 @@
     "test:knowledge": "node --test scripts/phase5-knowledge-scenario.test.mjs scripts/phase5-determinism.test.mjs",
     "phase5:release:run": "tsx scripts/run-phase5-release-review.ts",
     "preview:web": "npm run build --workspace @cuckcode/web && npm run preview --workspace @cuckcode/web",
+    "preview:decision-notice": "npm run build --workspace @cuckcode/decision-notice-fixture && npm run preview --workspace @cuckcode/decision-notice-fixture",
     "phase5:determinism": "tsx scripts/phase5-determinism.ts",
     "phase5:contact-sheet": "tsx scripts/phase5-contact-sheet.ts",
     "phase5:provenance": "tsx scripts/build-phase5-provenance.ts",

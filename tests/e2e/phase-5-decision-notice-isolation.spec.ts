@@ -16,7 +16,8 @@ import { evidenceOutputPath } from "../support/evidence-output.js";
  * result from a detector nobody has ever seen fire is indistinguishable from a detector that does
  * not work, and this repository has shipped that mistake before.
  *
- * Decision 9-E: the page under test is the **production bundle** on 4174, not the dev server. C-11
+ * Decision 9-E: the page under test is a **production bundle** (the fixture's own, on 4175, since
+ * the Phase 5 fixture removal), not the dev server. C-11
  * asks for an auditable network panel, and a dev-server page issues ninety-five module requests per
  * journey. A panel nobody reads is not an audit.
  *
@@ -25,7 +26,8 @@ import { evidenceOutputPath } from "../support/evidence-output.js";
  * does not now fails.
  */
 
-const ORIGIN = "http://127.0.0.1:4174";
+// Phase 5 fixture removal (D-2): the fixture's own production build, not the office bundle.
+const ORIGIN = "http://127.0.0.1:4175";
 const ROOT = resolve(process.cwd());
 
 type JourneyContract = {
@@ -207,14 +209,19 @@ test("@e2e Phase 5 decision notice runs every contract journey in isolation", as
   const record = {
     schema: "cuckcode.phase5-isolation.v2",
     viewport: testInfo.project.name,
-    servedFrom: `${ORIGIN} — the production bundle, per decision 9-E`,
+    servedFrom: `${ORIGIN} — the fixture's production bundle, per decision 9-E`,
     ranAt: new Date().toISOString(),
     journeySource: "the surface contract's journeys.json",
     artifactVersions: {
-      "packages/domain/src/decision-notice.ts": digest("packages/domain/src/decision-notice.ts"),
-      "apps/web/src/decision-notice.tsx": digest("apps/web/src/decision-notice.tsx"),
-      "apps/web/src/decision-notice-capture.tsx": digest(
-        "apps/web/src/decision-notice-capture.tsx",
+      // Phase 5 fixture removal: the same three files, at their paths in the fixture workspace.
+      "fixtures/decision-notice/src/model/decision-notice.ts": digest(
+        "fixtures/decision-notice/src/model/decision-notice.ts",
+      ),
+      "fixtures/decision-notice/src/web/decision-notice.tsx": digest(
+        "fixtures/decision-notice/src/web/decision-notice.tsx",
+      ),
+      "fixtures/decision-notice/src/web/decision-notice-capture.tsx": digest(
+        "fixtures/decision-notice/src/web/decision-notice-capture.tsx",
       ),
     },
     passCondition:

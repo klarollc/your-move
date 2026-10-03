@@ -5,7 +5,7 @@ import {
   type DecisionNotice,
   type DecisionState,
   type EvidenceLink,
-} from "@cuckcode/domain";
+} from "../model/decision-notice.js";
 
 import { DecisionNoticeCard, type DecisionNoticeStorage } from "./decision-notice.js";
 import "./decision-notice-fixture.css";

@@ -3,7 +3,7 @@ import {
   type Clock,
   type DecisionNotice,
   type DecisionState,
-} from "@cuckcode/domain";
+} from "../model/decision-notice.js";
 import { useState } from "react";
 
 import { DecisionNoticeCard, type DecisionNoticeStorage } from "./decision-notice.js";

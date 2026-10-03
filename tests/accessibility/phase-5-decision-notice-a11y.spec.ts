@@ -28,7 +28,8 @@ const STATES = [
 ] as const;
 
 /** Decision 9-E: the production bundle, the same page the captures and the isolation run use. */
-const ORIGIN = "http://127.0.0.1:4174";
+// Phase 5 fixture removal (D-2): the fixture's own production build, not the office bundle.
+const ORIGIN = "http://127.0.0.1:4175";
 
 const open = async (page: Page, state: string): Promise<void> => {
   await page.emulateMedia({ reducedMotion: "reduce" });
