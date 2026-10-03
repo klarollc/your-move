@@ -271,7 +271,8 @@
         },
         {
           "id": "7",
-          "state": "approved"
+          "state": "in_progress",
+          "note": "Register written; closes on verify"
         }
       ]
     },
@@ -449,6 +450,12 @@
       "ruled": "2026-10-02",
       "ruling": "inspector wording per kind of resolver",
       "record": "docs/phase-7-o-operability-spec-v0.2.md"
+    },
+    {
+      "id": "df-029:fixed",
+      "ruled": "2026-10-03",
+      "ruling": "fixed, with the caveat that no runtime producer emits version 3 (B-5)",
+      "record": "docs/evidence/dogfood-register.md"
     }
   ]
 }

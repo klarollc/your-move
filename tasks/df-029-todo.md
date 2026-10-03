@@ -147,3 +147,6 @@ writes owner-run; moved assertions listed (P-4).
     - Two `verify` runs at `073884a` stopped at e2e start: ports 4173 and 4174 were held by
       another project's agent on the owner's machine, not by CuckCode.
 - [ ] Task 7: Register. DF-029 moves to **fixed** in the status index, citing the commits.
+  - **Written 2026-10-03; closes on `verify`.** Owner ruling: fixed, with the caveat that no
+    runtime producer emits version 3 yet (B-5, not authorized). Index row and a "Fixed" paragraph
+    in the entry, citing each layer's commit. Provenance recorded by the owner.

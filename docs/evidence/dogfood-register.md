@@ -68,7 +68,7 @@ updates its row. An entry's own text is history and is not rewritten.
 | DF-026 | fixed | Ruled 2026-09-26: evidence converted to LF and re-recorded. |
 | DF-027 | fixed | Ruled 2026-09-26; built and proved 2026-09-27: `FEATURE_POLICY` per session, `TOOL_SURFACE_PRESENT` refuses a binding, probe `PROBE_OK`, first turn under the policy `SMOKE_OK`. Misfiled as open on 2026-09-28 and corrected 2026-09-29. |
 | DF-028 | ruled | The zoom probe is fixed. The blank-page failure it records has occurred three times, cause unknown; failed runs now keep their traces (owner-approved 2026-09-29). |
-| DF-029 | ruled | Amendment approved 2026-09-28 (`docs/proposals/2026-09-28-df-029-blocked-not-on-you.md`); built after Phase 7-O acceptance. |
+| DF-029 | fixed | Version 3 conditions; attention follows the request; the inspector names the resolver; `blocked-elsewhere` log (`4f585e8`, `e6149b1`, `f065782`, `deb6389`, `073884a`, `f2d6cfa`, `fc2016d`). No runtime producer emits version 3 yet (B-5). |
 | DF-030 | ruled | Question dispositions and kickoff records fixed (`3494b6d`); provider identities fixed by owner ruling 2026-09-29 (migration `006`); content manifests and packet receipts exempted, not fixed. |
 
 ## Entries
@@ -1404,6 +1404,22 @@ say *that* it is stuck but not *who* can unstick it separately from what the man
 Not fixed. Owner ruling 2026-09-28: recorded as a named Phase 7-O finding, fixed by its own
 amendment after Phase 7-O (contract, domain attention rule, spec §6 and §8.4 R-2, the P-4 bar
 count, and fixtures). Task 9g stays wording-only.
+
+**Fixed 2026-10-03, for the vocabulary and the office** (owner ruling: fixed, with the caveat
+below). Spec §10 (`941ebfe`); rulings D-4 to D-6 in `tasks/df-029-plan.md`.
+
+- Contract: payload version 3, where a blocked or waiting condition may omit the request and
+  waiting on the manager without one is refused (`4f585e8`, `f065782`).
+- Domain: manager attention follows the request; no condition still reads as unknown and keeps
+  attention (`e6149b1`).
+- Application: each held item derives who can resolve it, or says it is not recorded (`deb6389`).
+- Web: "Nothing needs you." with the resolver, worded per kind (`073884a`); the `blocked-elsewhere`
+  log, its e2e at both viewports, and a capture journey (`f2d6cfa`); owner capture, provenance and
+  AR-03 column 1 comparison, "approved, it matches" (`fc2016d`).
+
+**Caveat.** No runtime producer emits version 3. The Codex normalizer and the role briefs still
+produce version-2 conditions, so only fixtures exercise "blocked, but not on you". A real agent
+cannot yet say it. Runtime emission is B-5, a follow-on that is not authorized.
 
 ### DF-030 — Four kinds of stored record could not say when they were recorded
 
