@@ -41,14 +41,13 @@ finding and the need for an independent release-review refresh remain current.
 `verify` on a clean tree passed at `f1ca1be`: unit 586, component 139, integration 79 with 3
 skipped, contract 78, e2e 88, a11y 46, visual 64.
 
-- **The cold-run interval is running.** Task 10's commit `f1ca1be` (2026-09-28 21:49 UTC) starts
-  the MDD §20 three-day gap. **Any change under `apps/web/src/` or `packages/ui-system/src/`
-  before the run restarts it.** Docs, tests outside those paths, and backend packages do not.
-  Earliest run: **2026-10-01 14:50 Pacific** (Task 11, owner-run).
-- **Keep the key sealed.** The owner is the operator. Never quote, summarise or hint at the
-  contents of `docs/evidence/phase-7-o/comprehension/answer-key.md`,
-  `tests/e2e/phase-7o-comprehension-key.spec.ts` or `node_modules/.cache/handoff/task10-dump.json`
-  in chat, commit messages or the checklist. The owner may read only `protocol.md` in that folder.
+- **Phase 7-O accepted by owner waiver, 2026-10-02.** The cold run (Task 11, build `3d47326`)
+  scored **1 of 6, not met**; the owner accepted under the MDD §19 waiver clause. Never cite §20
+  comprehension as passed. Sheet, findings F-11-1 and F-11-2, and the reconstructed-marks
+  deviation: `docs/evidence/phase-7-o/comprehension/run-2026-10-02.md`. The interface freeze has
+  ended with Task 11.
+- **The key is spent for this interface.** The owner authorized the agent to read it for scoring.
+  A future cold run needs a new key and a new interval.
 - **The key is guarded two ways inside `verify`:** the e2e spec asserts every fact the key quotes
   at its task URL, and `scripts/comprehension-preamble.test.mjs` asserts the preamble's SHA-256.
   If either fails, the interface or the key moved; both need a ruling, and a key change restarts
@@ -192,9 +191,9 @@ exists any more — `scripts/phase5-evidence-inventory.ts` reads the tree and re
 
 ## Open debts, none of them closed
 
-- **MDD §20 remains unmet at the project level.** Comprehension tasks T3/T5/T6 were never
-  performed. Phase 7-O Task 11 is the run that can perform them (prepared 2026-09-28); until it
-  is scored, **Phase 8 inherits that.**
+- **MDD §20 remains unmet at the project level.** Phase 7-O Task 11 performed all six tasks on
+  2026-10-02 and scored 1 of 6; the owner waived the criterion to accept Phase 7-O. **Phase 8
+  inherits an unmet §20.**
 - **MDD §19's walkthrough obligation was retired 2026-09-18**, owner ruling, screen readers out of
   scope for a single-user tool. **Phase 8 no longer inherits it.** C-17 is excluded by overlay, not
   satisfied: screen-reader behaviour has never been verified and no brief may claim otherwise. The

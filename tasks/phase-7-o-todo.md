@@ -870,8 +870,17 @@ Browser evidence, version 1`, in `evidence-link.component.test.tsx` (twice),
   - **Interval:** no substantive interface work after `f1ca1be`. Earliest cold run
     2026-10-01 21:50 UTC (14:50 Pacific).
 
-- [ ] Task 11: **Owner-run** cold comprehension run.
+- [x] Task 11: **Owner-run** cold comprehension run.
   - Acceptance: all six tasks, with performed marks recorded at the time, exact answers written
     before the key is opened, and scoring under MDD §20. T3, T5 and T6 must actually be performed.
+  - **Run 2026-10-02** (20:45 Pacific), build `3d47326`, 1280×800, gap 4.2 days from `f1ca1be`.
+    Sheet: `docs/evidence/phase-7-o/comprehension/run-2026-10-02.md`.
+  - **Scored 1 of 6, not met** (T5 passes). All six performed, so the run is complete. Findings
+    F-11-1 (missing versus waiting on you) and F-11-2 (the questions ask for less than the key
+    scores) are in the sheet.
+  - **Deviation:** the performed marks were reconstructed after the run, on the agent's
+    instruction, contrary to spec §8.7. Recorded in the sheet.
 
-- [ ] Task 12: **Owner acceptance** of Phase 7-O, or bounded revisions.
+- [x] Task 12: **Owner acceptance** of Phase 7-O, or bounded revisions.
+  - **Accepted by owner waiver, 2026-10-02**, under the MDD §19 owner-waiver clause. The §20
+    comprehension criterion is not met and is never cited as passed; amendment recorded in MDD §19.

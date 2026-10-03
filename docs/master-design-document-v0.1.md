@@ -1239,6 +1239,17 @@ above for current C-17 status. **C-17 is out of scope, not met.** The paragraph 
 historical. Screen-reader behaviour has never been verified, and walkthrough finding SR-01 stays
 open in the record. The §19 retirement notice above states the current requirement.
 
+**Amended 2026-10-02, Phase 7-O:** the cold comprehension run was performed by the owner on build
+`3d47326` (`docs/evidence/phase-7-o/comprehension/run-2026-10-02.md`). All six tasks, including T3,
+T5 and T6, were performed; the performed marks were reconstructed after the run, contrary to the
+Phase 7-O spec §8.7. It scored **1 of 6 (T5), not met.** The owner accepted Phase 7-O by waiver of
+the §20 comprehension criterion. **Phase 7-O does not meet §20**, and no document may state that it
+does. What remains unknown: whether a cold operator can read assignment, attention, missing versus
+waiting, completed versus approved, and recorded-versus-simulated state from the interface alone.
+The run is the first human observation bearing on the V0 truthfulness invariants: the operator did
+not read silence as assent (T5) or infer work in progress (T6), but only T5 passed as a criterion,
+so the invariants still rest on automated assertions over fixtures.
+
 ## 20. Observability and product measures
 
 ### Operational measures

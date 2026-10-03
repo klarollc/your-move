@@ -65,7 +65,7 @@
     {
       "id": "7-O",
       "title": "Phase 7-O, operability",
-      "state": "in_progress",
+      "state": "accepted",
       "checklist": "tasks/phase-7-o-todo.md",
       "spec": "docs/phase-7-o-operability-spec-v0.2.md",
       "tasks": [
@@ -194,16 +194,22 @@
         },
         {
           "id": "11",
-          "state": "authorized",
+          "state": "done",
           "runBy": "owner",
-          "notBefore": "2026-10-01T21:50:00Z",
-          "reason": "MDD §20: at least three days without substantive interface work after f1ca1be"
+          "gate": {
+            "verify": "3d47326",
+            "runner": "owner cold run 2026-10-02, 1280x800"
+          },
+          "note": "Scored 1 of 6, not met. Sheet: docs/evidence/phase-7-o/comprehension/run-2026-10-02.md"
         },
         {
           "id": "12",
-          "state": "pending_owner",
+          "state": "accepted",
           "runBy": "owner",
-          "note": "Owner acceptance of Phase 7-O, after Task 11 is scored"
+          "gate": {
+            "verify": "3d47326"
+          },
+          "note": "Accepted by owner waiver 2026-10-02 (MDD §19); the §20 comprehension criterion is not met"
         }
       ]
     },
@@ -369,7 +375,8 @@
   "dates": [
     {
       "what": "Earliest cold comprehension run (7-O Task 11)",
-      "at": "2026-10-01T21:50:00Z"
+      "at": "2026-10-01T21:50:00Z",
+      "state": "run 2026-10-02"
     },
     {
       "what": "Phase 5 D-24 production-suitability review",
@@ -388,6 +395,12 @@
       "ruled": "2026-09-29",
       "ruling": "satisfies C-18",
       "record": "docs/evidence/phase-5/decision-record-2026-09-29-c18-unknown-producers.md"
+    },
+    {
+      "id": "7-O:12",
+      "ruled": "2026-10-02",
+      "ruling": "accepted by owner waiver; §20 comprehension not met (1 of 6)",
+      "record": "docs/evidence/phase-7-o/comprehension/run-2026-10-02.md"
     }
   ]
 }
