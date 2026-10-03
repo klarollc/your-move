@@ -32,6 +32,12 @@ beside its named plate, and the owner's comparison is recorded before the next s
       not load"); one byte added to a vendored licence; a range pin (`^5.3.0`).
     - The container's first capture cut the Mono column off below the fold (the office's global
       `overflow: hidden`); the sheet was relaid to fit one screen, and the spec now asserts it does.
+    - `verify` GREEN through the runner (`p7t1-verify-1791044460`) on a clean tree at `b485534`:
+      unit 612, component 146, integration 90 with 3 skipped, contract 85, e2e 90, a11y 46,
+      visual 66 (the font sheet at both viewports in the owner's Windows Chromium).
+    - **Owner capture and provenance, 2026-10-03:** `phase-7/fonts/chromium-1440/font-sheet.png`
+      and `chromium-1280/font-sheet.png`. **Owner confirmation (Q-4): "Looks good."** Tokens may
+      now be set.
 - [ ] Task 2: Move the Phase 6 primitives into `packages/ui-system`. Acceptance: the golden states
       and the frozen frame re-render byte for byte from the new module; the scripts import it.
 - [ ] Task 3: The SVG renderer behind the scene adapter. Acceptance: every existing scene, camera,
