@@ -289,7 +289,7 @@ act (`requestedAction`). At `payloadVersion: 3`:
 | Condition                                                       | Attention item | Scene and outline                        | Inspector "What needs you"                        |
 | --------------------------------------------------------------- | -------------- | ---------------------------------------- | ------------------------------------------------- |
 | `requestedAction` present (any `waitingOn`)                     | yes            | "{state} · Needs you", amber             | the request                                       |
-| `requestedAction` absent; `waitingOn` agent, evidence, external | **no**         | "{state}", neutral, plus who can resolve | "Nothing needs you. {resolver} can resolve it."   |
+| `requestedAction` absent; `waitingOn` agent, evidence, external | **no**         | "{state}", neutral, plus who can resolve | "Nothing needs you." and the resolver (§10.1, D-6) |
 | No condition recorded (version-1 payloads; `failed`)            | yes, as today  | as today                                 | "No requested action recorded"                    |
 
 Absence of a condition is unknown, not "not on you", so the last row keeps today's conservative
@@ -300,6 +300,18 @@ behaviour.
 Browser evidence, version 2"); `external` as "an external dependency". An id that does not resolve
 reads "Who can resolve it: not recorded". No name is guessed.
 
+**Inspector wording (owner ruling D-6, 2026-10-02):**
+
+| Waiting on   | "What needs you"                                               |
+| ------------ | -------------------------------------------------------------- |
+| Agent        | "Nothing needs you. {agent's name} can resolve it."            |
+| Evidence     | "Nothing needs you. Waiting for {Kind} evidence, version {n}." |
+| External     | "Nothing needs you. Waiting on an external dependency."        |
+| Not recorded | "Nothing needs you. Who can resolve it: not recorded."         |
+
+The agent's name is the registry's label for that agent, and the agent must also be recorded in
+staffing (owner ruling D-5, 2026-10-02): no canonical record holds a role's display name.
+
 **Bar count (B-3).** The bar counts attention items only, so a blocker that is not on the manager
 leaves the count by construction. The P-4 groups are unchanged.
 
@@ -307,7 +319,7 @@ leaves the count by construction. The P-4 groups are unchanged.
 
 §6 is unchanged for attention items. In addition: when the selected entity holds a `blocked` or
 `waiting_input` item whose condition has no request, the inspector shows the state, the condition
-summary with its attribution, the resolver, and "Nothing needs you. {resolver} can resolve it." It
+summary with its attribution, and "What needs you" as §10.1's D-6 table words it. It
 never shows a manager action for that item, and the item is not in the rail.
 
 ### 10.3 Successor to §7: a ninth adversarial class

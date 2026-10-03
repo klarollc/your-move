@@ -71,15 +71,17 @@ writes owner-run; moved assertions listed (P-4).
       read it as an office record and flagged the five fixture conditions. Fixed by declaring the
       type in full (with a shared `RequestedAction`); the container reproduced the failure and the
       fix. The agent had not run the guard suites before committing; it now does.
-- [ ] Task 4: Application, the resolver.
+- [x] Task 4: Application, the resolver.
   - Acceptance: agent, evidence and external resolve to words; an id that resolves to nothing reads
     "not recorded"; no name is guessed.
-  - **Built 2026-10-02, container-GREEN; closes on `verify`.** `OfficeWorkView.resolver`, derived
+  - **Built 2026-10-02 at `deb6389`. `verify` GREEN through the runner (`df029-t4-verify-1791007884`)
+    on a clean tree at `deb6389`: unit 599, component 139, integration 90 with 3 skipped, contract 85,
+    e2e 88, a11y 46, visual 64.** `OfficeWorkView.resolver`, derived
     per held item: an agent id recorded in staffing, named by the registry's label for that agent;
     an evidence id by its recorded kind and version ("Unit evidence, version 2"); `external` as
     "an external dependency"; the manager as "the manager"; anything else `not_recorded` with its
     id. Null when no condition is recorded.
-    - **Interpretation, stated for the owner:** the plan says "through staffing to its role name".
+    - **D-5, owner-approved 2026-10-02.** The plan says "through staffing to its role name".
       No canonical record holds a role's display name, so the name is the registry's label for the
       agent, and the agent must also be recorded in staffing. Neither alone is enough.
     - Stub first (`resolver: null`), then RED on the assertion: 5 of 5 new tests.
@@ -90,7 +92,7 @@ writes owner-run; moved assertions listed (P-4).
     - Mutations, each confirmed applied and killed: dropping the staffing check; guessing the first
       recorded evidence for an unknown id; naming an external dependency from its id.
 - [ ] Task 5: Web, the inspector and labels.
-  - Acceptance: component tests for "Nothing needs you. {resolver} can resolve it."; the label is
+  - Acceptance: component tests for each D-6 sentence (spec §10.1); the label is
     neutral and has no "Needs you"; the bar count excludes the item; the comprehension key spec and
     the Task 9 captures of existing journeys are unchanged (D-3).
 - [ ] Task 6: The `blocked-elsewhere` log, e2e and capture.

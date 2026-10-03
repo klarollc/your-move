@@ -247,12 +247,15 @@
         },
         {
           "id": "4",
-          "state": "in_progress",
-          "note": "Built, container-GREEN; closes on verify"
+          "state": "done",
+          "gate": {
+            "verify": "deb6389",
+            "runner": "df029-t4-verify-1791007884"
+          }
         },
         {
           "id": "5",
-          "state": "approved"
+          "state": "in_progress"
         },
         {
           "id": "6",
@@ -425,6 +428,18 @@
       "id": "df-029:1",
       "ruled": "2026-10-02",
       "ruling": "spec §10 approved",
+      "record": "docs/phase-7-o-operability-spec-v0.2.md"
+    },
+    {
+      "id": "df-029:D-5",
+      "ruled": "2026-10-02",
+      "ruling": "an agent is named by its registry label and must be recorded in staffing",
+      "record": "tasks/df-029-plan.md"
+    },
+    {
+      "id": "df-029:D-6",
+      "ruled": "2026-10-02",
+      "ruling": "inspector wording per kind of resolver",
       "record": "docs/phase-7-o-operability-spec-v0.2.md"
     }
   ]
