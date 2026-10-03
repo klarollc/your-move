@@ -11,10 +11,24 @@ owner-run; moved assertions listed (P-4). No file under `docs/evidence/phase-5` 
 
 ## Tasks
 
-- [ ] Task 1: Baseline (R-4).
+- [x] Task 1: Baseline (R-4).
   - Acceptance: the accepted C-11 module set and findings, and the four suites' pass counts at both
     viewports, recorded in this checklist from the accepted review and a `verify` log. No code
     change.
+  - **Recorded 2026-10-03** (read-only; no code change).
+    - **Accepted C-11 review** `docs/evidence/phase-5/side-effect-review.json`, last changed in
+      `b0af24d`, SHA-256 `33f92e2d058ca0011855db3942f29efb7614379da602dd5dd8e443f7261a85f2`, matching the ledger's latest entry for it. Entry points:
+      `apps/web/src/decision-notice.tsx`, `apps/web/src/decision-notice-capture.tsx`,
+      `packages/domain/src/decision-notice.ts`. **37 modules**: the 3 Decision Notice files
+      (`decision-notice-capture.tsx`, `decision-notice.tsx`, `decision-notice.ts`) and, through
+      the `@cuckcode/domain` barrel, 34 modules of `packages/domain` and `packages/contracts`. External packages: `react`, `zod`. Non-code imports:
+      `./decision-notice.css`, `./decision-notice-fixture.css`. Findings: none in any category
+      (network, credential, deployment, destructive, paid).
+    - **Suites**, from the clean `verify` at `23841ce` (`df029-t7-verify-1791012655`), per viewport
+      (1440 / 1280): a11y 13 / 13; state matrix 1 / 1; isolation e2e 2 / 2; visual states 20 / 20;
+      no failures.
+    - **Moving tests**, same run: `decision-notice.unit.test.ts` 32;
+      `decision-notice-capture.unit.test.ts` 2; `decision-notice.component.test.tsx` 31.
 - [ ] Task 2: Production-isolation guard (R-3).
   - Acceptance: `scripts/fixture-isolation.test.mjs` inside `verify`; RED today on the assertion
     (production reaches `decision-notice` modules); a mutation that re-adds one import is caught.
