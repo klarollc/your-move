@@ -113,4 +113,26 @@ writes owner-run; moved assertions listed (P-4).
 - [ ] Task 6: The `blocked-elsewhere` log, e2e and capture.
   - Acceptance: e2e at both viewports; a new journey in the Task 9 capture spec; owner re-capture
     and provenance.
+  - **Built 2026-10-02, container-GREEN; the code half closes on `verify`, the evidence half on
+    the owner's re-capture and provenance.** `OFFICE_FIXTURES["blocked-elsewhere"]`
+    (`?fixture=blocked-elsewhere`): the default office with the Test Engineer's blocker recorded
+    at version 3, waiting on the Implementation Engineer, with no request. The default log is
+    unchanged.
+    - Stub first (the log identical to the default office), then RED on the assertion: the
+      blocker waited on evidence; the §10.4 sweep found nothing to check.
+    - §10.4 enforced by a sweep over every office log: each blocker not on the manager resolves
+      its reason, cause and resolver; an empty sweep fails.
+    - e2e `tests/e2e/df029-blocked-elsewhere.spec.ts`, both viewports: the bar reads "1 review",
+      the card has no "Needs you", the inspector reads "Nothing needs you. Implementation Engineer
+      can resolve it.", the rail omits the blocker. Run in the container (Chromium by explicit
+      executable path, a scratch config outside the repo), after cross-checking that harness on
+      the comprehension-key spec: 16 of 16, as on Windows. It failed on the assertion at both
+      viewports with the log reverted to the stub, and passed with it.
+    - Capture journey `blocked-elsewhere` added to the Task 9 capture spec. The container cannot
+      run that spec (a console 404 on its unchanged baseline too), so it is checked by `verify` on
+      Windows.
+    - Contract + unit + component 834 of 834; `tsc -b`, `typecheck:scripts`, ESLint, Prettier,
+      `test:guard`, `test:scaffold` clean.
+    - Two `verify` runs at `073884a` stopped at e2e start: ports 4173 and 4174 were held by
+      another project's agent on the owner's machine, not by CuckCode.
 - [ ] Task 7: Register. DF-029 moves to **fixed** in the status index, citing the commits.

@@ -260,7 +260,8 @@
         },
         {
           "id": "6",
-          "state": "approved"
+          "state": "in_progress",
+          "note": "Built, container-GREEN; closes on verify plus owner re-capture and provenance"
         },
         {
           "id": "7",

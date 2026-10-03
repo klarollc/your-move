@@ -105,6 +105,45 @@ describe("office fixture logs", () => {
     expect(work?.approval.missingEvidenceKinds).toEqual([]);
   });
 
+  it("blocks the Test Engineer on the Implementation Engineer without asking the manager (DF-029, B-4)", () => {
+    const model = modelFor("blocked-elsewhere");
+    const work = person(model, "agent_test_engineer")?.work.find(
+      (view) => view.workItemId === "work_browser_evidence",
+    );
+    expect(work?.state).toBe("blocked");
+    expect(work?.condition?.waitingOn).toEqual({
+      kind: "agent",
+      id: "agent_implementation_engineer",
+    });
+    expect(work?.condition?.requestedAction).toBeUndefined();
+    // Only the graybox review asks the manager; the default office's other item is unchanged.
+    expect(model.attention.map((item) => item.workItemId)).toEqual(["work_graybox_slice"]);
+  });
+
+  it("resolves the reason and the resolver of every blocker that is not on the manager (§10.4)", () => {
+    let checked = 0;
+    for (const fixture of Object.values(OFFICE_FIXTURES)) {
+      const model = modelFor(fixture.id);
+      for (const entity of model.entities) {
+        if (entity.kind !== "person") continue;
+        for (const work of entity.work) {
+          const notOnYou =
+            (work.state === "blocked" || work.state === "waiting_input") &&
+            work.condition !== null &&
+            work.condition.requestedAction === undefined;
+          if (!notOnYou) continue;
+          checked += 1;
+          const label = `${fixture.id}/${work.workItemId}`;
+          expect(work.condition!.summary.length, `${label}: no reason`).toBeGreaterThan(0);
+          expect(work.causeEventId, `${label}: no cause`).not.toBeNull();
+          expect(work.resolver?.status, `${label}: resolver unresolved`).toBe("resolved");
+        }
+      }
+    }
+    // An empty sweep must not pass: the blocked-elsewhere log holds one such blocker.
+    expect(checked).toBeGreaterThan(0);
+  });
+
   it("reads stale when the clock has moved past the log", () => {
     const model = modelFor("stale");
     const test = person(model, "agent_test_engineer");

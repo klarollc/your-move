@@ -111,6 +111,14 @@ const CONDITIONS = {
       summary: "Review the permission boundary, then redirect or cancel the work.",
     },
   },
+  // DF-029 (B-4, AR-03 column 1): blocked on another agent, and nothing asked of the manager.
+  // Recorded at payload version 3, so it carries no request.
+  elsewhere: {
+    reasonCode: "dependency_blocked",
+    summary:
+      "The Test Engineer needs the Implementation Engineer's current build before the browser capture can run.",
+    waitingOn: { kind: "agent", id: "agent_implementation_engineer" },
+  },
   missingArtifact: {
     reasonCode: "dependency_blocked",
     summary: "A required artifact is missing; review and delivery cannot proceed.",
@@ -186,12 +194,13 @@ const raise = (
   fromRevision: number,
   toState: string,
   condition: object,
+  payloadVersion: 2 | 3 = 2,
 ) =>
   log.emit("work.transitioned", {
     workItemId,
     fromRevision,
     toState,
-    payloadVersion: 2,
+    payloadVersion,
     condition,
   });
 
@@ -205,7 +214,7 @@ const presence = (log: Log, roleId: string, value: string, health = "connected")
 type Variant = {
   graybox?:
     "review" | "missing-artifact" | "test-failure" | "disagreement" | "cancelled" | "completed";
-  evidence?: "evidence" | "permission";
+  evidence?: "evidence" | "permission" | "elsewhere";
 };
 
 /**
@@ -295,13 +304,17 @@ function officeLog(prefix: string, variant: Variant = {}): Log {
       presence(log, "implementation-engineer", "idle");
       break;
   }
-  raise(
-    log,
-    "work_browser_evidence",
-    3,
-    "blocked",
-    variant.evidence === "permission" ? CONDITIONS.permission : CONDITIONS.evidence,
-  );
+  if (variant.evidence === "elsewhere") {
+    raise(log, "work_browser_evidence", 3, "blocked", CONDITIONS.elsewhere, 3);
+  } else {
+    raise(
+      log,
+      "work_browser_evidence",
+      3,
+      "blocked",
+      variant.evidence === "permission" ? CONDITIONS.permission : CONDITIONS.evidence,
+    );
+  }
   presence(log, "test-engineer", "blocked");
   presence(log, "visual-qa-reviewer", "waiting");
   for (const roleId of ["delivery-lead", "product-designer", "release-reviewer"]) {
@@ -412,6 +425,12 @@ export const OFFICE_FIXTURES: Readonly<Record<string, OfficeFixture>> = Object.f
     "The graybox slice is completed with its evidence passed, and no manager approval covers it.",
     [],
     () => officeLog("completed", { graybox: "completed" }),
+  ),
+  "blocked-elsewhere": fixture(
+    "blocked-elsewhere",
+    "The Test Engineer is blocked on the Implementation Engineer; nothing is asked of the manager.",
+    [],
+    () => officeLog("elsewhere", { evidence: "elsewhere" }),
   ),
   unassigned: fixture(
     "unassigned",

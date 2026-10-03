@@ -146,6 +146,18 @@ const JOURNEYS: readonly Journey[] = [
     },
   },
   {
+    // DF-029 Task 6 (B-4, AR-03 column 1): blocked on another agent, nothing asked of the manager.
+    id: "blocked-elsewhere",
+    path: "/?fixture=blocked-elsewhere",
+    drive: inspect("Test Engineer"),
+    verify: async (page) => {
+      await expect(page.getByRole("button", { name: "1 review", exact: true })).toBeVisible();
+      await expect(field(page, "What needs you")).toHaveText(
+        "Nothing needs you. Implementation Engineer can resolve it.",
+      );
+    },
+  },
+  {
     id: "unassigned-work",
     path: "/?fixture=unassigned",
     drive: openOfficeOutline,
