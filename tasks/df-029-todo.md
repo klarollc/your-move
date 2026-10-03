@@ -11,22 +11,25 @@ writes owner-run; moved assertions listed (P-4).
 
 ## Tasks
 
-- [ ] Task 1: Spec successor section (docs only).
+- [x] Task 1: Spec successor section (docs only).
   - Acceptance: §3.2 version 3; §6 resolver wording; §7 ninth class ("a blocker without a request,
     waiting on an agent: never Needs you, never counted, never in the rail; the inspector names the
     resolver"); §8.4 addition. Owner-approved before Task 2.
-  - **Owner-approved 2026-10-02**: spec §10 (successor section), commit `941ebfe`. Closes on the
-    first green `verify`.
+  - **Owner-approved 2026-10-02**: spec §10 (successor section), commit `941ebfe`. `verify` GREEN through the runner (`df029-verify-1791006882`) on a clean tree at `505dd32`:
+    unit 590, component 139, integration 90 with 3 skipped, contract 85, e2e 88, a11y 46,
+    visual 64.
   - **Correction, 2026-10-02.** `8a45391` recorded `verify` as passed at `941ebfe`. It could not
     have: `phase5:provenance` fails on the Phase 7-O run sheet, committed in `6287924` without its
     ledger entry. The agent assumed the pass from "done" instead of asking; the runner found the
     failure at `6ba9734`. The owner recorded the entry on 2026-10-02.
-- [ ] Task 2: Contract, version 3.
+- [x] Task 2: Contract, version 3.
   - Acceptance: version 3 accepts a condition without `requestedAction` for `blocked` and
     `waiting_input` (D-1 as narrowed by D-4); refuses `waitingOn: manager` without a request; refuses a
     `review_requested` condition without a request; versions 1 and 2 unchanged; the fixture sweep
     replays every recorded event with no new failure.
-  - **Built 2026-10-02, container-GREEN; closes on the owner's `verify`.** `WorkConditionV3` and a
+  - **Built 2026-10-02 at `4f585e8`.** `verify` GREEN through the runner (`df029-verify-1791006882`) on a clean tree at `505dd32`:
+    unit 590, component 139, integration 90 with 3 skipped, contract 85, e2e 88, a11y 46,
+    visual 64. `WorkConditionV3` and a
     version-3 payload variant; version 2's checks and messages are unchanged. Consumers still read
     only version 2, so a version-3 condition reaches the domain as no condition (attention, as
     today) until Task 3.

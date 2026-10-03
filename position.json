@@ -223,17 +223,23 @@
       "tasks": [
         {
           "id": "1",
-          "state": "in_progress",
-          "note": "Approved at 941ebfe; closes on the first green verify (8a45391's recorded pass was wrong)"
+          "state": "done",
+          "gate": {
+            "verify": "505dd32",
+            "runner": "df029-verify-1791006882"
+          }
         },
         {
           "id": "2",
-          "state": "in_progress",
-          "note": "Built at 4f585e8, container-GREEN; closes on the owner's verify"
+          "state": "done",
+          "gate": {
+            "verify": "505dd32",
+            "runner": "df029-verify-1791006882"
+          }
         },
         {
           "id": "3",
-          "state": "approved"
+          "state": "in_progress"
         },
         {
           "id": "4",
