@@ -189,8 +189,10 @@ render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`
     and zoom (never built) is recorded as an open D-02 item. R-2: the owner runs the uninstall on
     Windows; the lock diff is checked. R-3: the SVG renderer's rectangle path goes and outlines
     become required, with moved assertions listed.
-- [ ] Task 4: Remove Pixi (Q-2). Acceptance: no import remains; the dependency is gone; `verify`.
-  - **Built 2026-10-03; `verify` pending.** Removed `pixi-scene-renderer.ts`, `pixi-scene-probe.tsx`
+- [x] Task 4: Remove Pixi (Q-2). Acceptance: no import remains; the dependency is gone; `verify`.
+  - **Built 2026-10-03 at `2b97c73`; `verify` (`p7t4-verify-1791054463`) GREEN on a clean tree:**
+    unit 633, component 154, integration 90 with 3 skipped, contract 85, e2e 88, a11y 42, visual 68.
+    Removed `pixi-scene-renderer.ts`, `pixi-scene-probe.tsx`
     and `.css`, the `?surface=pixi-probe` branch, and the three probe specs (`phase-4-pixi-scene`,
     `phase-4-camera`, `phase-4-camera-a11y`), per R-1. R-3: `SceneDescriptor` now carries a required
     outline and no rectangle; the SVG renderer draws only hit polygons over the art. Owner ran

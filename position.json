@@ -383,8 +383,12 @@
         },
         {
           "id": "4",
-          "state": "in_progress",
-          "note": "Plan approved 2026-10-03 as recommended (R-1 to R-3). Built; verify pending."
+          "state": "done",
+          "gate": {
+            "verify": "2b97c73",
+            "runner": "p7t4-verify-1791054463"
+          },
+          "note": "R-1 to R-3 as recommended; probe pan/zoom browser coverage given up, D-02 in-office pan and zoom open."
         },
         {
           "id": "5",
