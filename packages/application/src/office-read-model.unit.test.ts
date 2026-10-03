@@ -26,6 +26,9 @@ type Options = {
   approvalEvidenceVersion?: number;
   presenceSecond?: number;
   holder?: "test" | "implementation";
+  /** DF-029: record the blocker at payload version 3, optionally without a request. */
+  payloadVersion?: 2 | 3;
+  omitRequest?: boolean;
 };
 
 function office(options: Options = {}) {
@@ -93,15 +96,19 @@ function office(options: Options = {}) {
       workItemId: "work_evidence",
       fromRevision: 3,
       toState: options.blockedState ?? "blocked",
-      payloadVersion: 2,
+      payloadVersion: options.payloadVersion ?? 2,
       condition: {
         reasonCode: options.reasonCode ?? "awaiting_evidence",
         summary: options.summary ?? "The Test Engineer needs the current browser evidence.",
         waitingOn: options.waitingOn ?? { kind: "manager" },
-        requestedAction: options.requestedAction ?? {
-          kind: "redirect",
-          summary: "Redirect the evidence request or decline it.",
-        },
+        ...(options.omitRequest
+          ? {}
+          : {
+              requestedAction: options.requestedAction ?? {
+                kind: "redirect",
+                summary: "Redirect the evidence request or decline it.",
+              },
+            }),
       },
     }),
     event("event_work_release", "work.created", {
@@ -687,5 +694,82 @@ describe("office read model: unassigned work", () => {
 
   it("lists nothing when everyone's work is held", () => {
     expect(model(office()).unassignedWork).toEqual([]);
+  });
+});
+
+describe("office read model: who can resolve it (DF-029, spec §10.1, B-2)", () => {
+  const resolverOf = (options: Options, extra: Record<string, unknown> = {}) =>
+    mustWork(
+      model(office({ payloadVersion: 3, omitRequest: true, ...options }), extra),
+      "agent_test_engineer",
+      "work_evidence",
+    ).resolver;
+
+  it("names an agent through its recorded staffing and the registry's label", () => {
+    expect(resolverOf({ waitingOn: { kind: "agent", id: "agent_implementation" } })).toEqual({
+      status: "resolved",
+      kind: "agent",
+      text: "Implementation Engineer",
+    });
+  });
+
+  it("names recorded evidence by its kind and version", () => {
+    expect(
+      resolverOf({ waitingOn: { kind: "evidence", id: "evidence_unit" }, evidenceVersion: 2 }),
+    ).toEqual({ status: "resolved", kind: "evidence", text: "Unit evidence, version 2" });
+  });
+
+  it("names an external dependency without inventing who it is", () => {
+    expect(resolverOf({ waitingOn: { kind: "external", id: "vendor" } })).toEqual({
+      status: "resolved",
+      kind: "external",
+      text: "an external dependency",
+    });
+  });
+
+  it("reports an id that resolves to nothing as not recorded, never a guess", () => {
+    expect(resolverOf({ waitingOn: { kind: "agent", id: "agent_ghost" } })).toEqual({
+      status: "not_recorded",
+      kind: "agent",
+      id: "agent_ghost",
+    });
+    expect(resolverOf({ waitingOn: { kind: "evidence", id: "evidence_ghost" } })).toEqual({
+      status: "not_recorded",
+      kind: "evidence",
+      id: "evidence_ghost",
+    });
+    // A recorded agent with no name in the registry is not named from its id.
+    expect(
+      resolverOf(
+        { waitingOn: { kind: "agent", id: "agent_implementation" } },
+        {
+          registry: REGISTRY.filter((entry) => entry.entityId !== "agent_implementation_engineer"),
+        },
+      ),
+    ).toEqual({ status: "not_recorded", kind: "agent", id: "agent_implementation" }); // A name in the registry is not enough: the agent must be recorded in staffing.
+    expect(
+      resolverOf(
+        { waitingOn: { kind: "agent", id: "agent_unrecorded" } },
+        {
+          registry: [
+            ...REGISTRY,
+            {
+              entityId: "agent_ghost",
+              kind: "person",
+              label: "Ghost Engineer",
+              agentId: "agent_unrecorded",
+            },
+          ],
+        },
+      ),
+    ).toEqual({ status: "not_recorded", kind: "agent", id: "agent_unrecorded" });
+  });
+
+  it("names the manager for a condition that asks the manager, and nothing without a condition", () => {
+    const asked = mustWork(model(office()), "agent_test_engineer", "work_evidence");
+    expect(asked.resolver).toEqual({ status: "resolved", kind: "manager", text: "the manager" });
+    const done = mustWork(model(office()), "agent_implementation_engineer", "work_release");
+    expect(done.condition).toBeNull();
+    expect(done.resolver).toBeNull();
   });
 });

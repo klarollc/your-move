@@ -74,6 +74,21 @@ writes owner-run; moved assertions listed (P-4).
 - [ ] Task 4: Application, the resolver.
   - Acceptance: agent, evidence and external resolve to words; an id that resolves to nothing reads
     "not recorded"; no name is guessed.
+  - **Built 2026-10-02, container-GREEN; closes on `verify`.** `OfficeWorkView.resolver`, derived
+    per held item: an agent id recorded in staffing, named by the registry's label for that agent;
+    an evidence id by its recorded kind and version ("Unit evidence, version 2"); `external` as
+    "an external dependency"; the manager as "the manager"; anything else `not_recorded` with its
+    id. Null when no condition is recorded.
+    - **Interpretation, stated for the owner:** the plan says "through staffing to its role name".
+      No canonical record holds a role's display name, so the name is the registry's label for the
+      agent, and the agent must also be recorded in staffing. Neither alone is enough.
+    - Stub first (`resolver: null`), then RED on the assertion: 5 of 5 new tests.
+    - GREEN: the read-model file 34 of 34; contract + unit + component 823 of 823; `tsc -b`,
+      `typecheck:scripts`, ESLint, Prettier, `test:guard`, `test:scaffold` clean.
+    - The staffing half of the agent rule was untested at GREEN; a case was added (a registry name
+      whose agent is not in staffing) and proved by mutation.
+    - Mutations, each confirmed applied and killed: dropping the staffing check; guessing the first
+      recorded evidence for an unknown id; naming an external dependency from its id.
 - [ ] Task 5: Web, the inspector and labels.
   - Acceptance: component tests for "Nothing needs you. {resolver} can resolve it."; the label is
     neutral and has no "Needs you"; the bar count excludes the item; the comprehension key spec and

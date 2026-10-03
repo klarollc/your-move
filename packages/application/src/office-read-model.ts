@@ -84,6 +84,19 @@ export type OfficeApprovalView = Readonly<{
   missingEvidenceKinds: readonly string[];
 }>;
 
+/**
+ * Who can resolve a held item's condition, in words (DF-029, spec §10.1, B-2). Derived from
+ * canonical records and the registry's names, never from free text; an id that resolves to nothing
+ * is reported as not recorded rather than guessed.
+ */
+export type OfficeResolverView =
+  | Readonly<{
+      status: "resolved";
+      kind: "manager" | "agent" | "evidence" | "external";
+      text: string;
+    }>
+  | Readonly<{ status: "not_recorded"; kind: "agent" | "evidence"; id: string }>;
+
 export type OfficeWorkView = Readonly<{
   workItemId: string;
   outcome: string;
@@ -94,6 +107,8 @@ export type OfficeWorkView = Readonly<{
   supported: boolean;
   motion: boolean;
   condition: WorkConditionTruth | null;
+  /** Null when no condition is recorded. */
+  resolver: OfficeResolverView | null;
   assignment: WorkAssignmentTruth | null;
   evidence: readonly OfficeEvidenceView[];
   approval: OfficeApprovalView;
@@ -294,6 +309,32 @@ export function projectOfficeReadModel(input: OfficeReadModelInput): OfficeReadM
     }
   }
 
+  // Who can resolve a condition (B-2): an agent through staffing to the registry's name for it; an
+  // evidence id to its recorded kind and version. Nothing is named from an id alone.
+  const labelByAgent = new Map<string, string>();
+  for (const entry of registry)
+    if (entry.kind === "person") labelByAgent.set(entry.agentId, entry.label);
+  const resolverFor = (condition: WorkConditionTruth | null): OfficeResolverView | null => {
+    if (!condition) return null;
+    const { kind, id } = condition.waitingOn;
+    if (kind === "manager") return { status: "resolved", kind, text: "the manager" };
+    if (kind === "external") return { status: "resolved", kind, text: "an external dependency" };
+    if (kind === "agent") {
+      const label = id && snapshot.staffing.agents[id] ? labelByAgent.get(id) : undefined;
+      return label
+        ? { status: "resolved", kind, text: label }
+        : { status: "not_recorded", kind, id: id ?? "" };
+    }
+    const record = id ? snapshot.work.evidence[id] : undefined;
+    return record
+      ? {
+          status: "resolved",
+          kind,
+          text: `${record.kind.charAt(0).toUpperCase()}${record.kind.slice(1)} evidence, version ${record.version}`,
+        }
+      : { status: "not_recorded", kind, id: id ?? "" };
+  };
+
   const workViews = new Map<string, OfficeWorkView>();
   for (const item of Object.values(snapshot.work.workItems)) {
     const descriptor = scene.find(
@@ -328,6 +369,7 @@ export function projectOfficeReadModel(input: OfficeReadModelInput): OfficeReadM
       supported,
       motion: supported && (descriptor?.semanticMotion ?? false),
       condition: item.condition,
+      resolver: resolverFor(item.condition),
       assignment: item.assignment,
       evidence,
       approval: approvalFor(snapshot, item.workItemId, item.requiredEvidenceKinds, issues),
