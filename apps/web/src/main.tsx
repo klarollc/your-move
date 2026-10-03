@@ -7,7 +7,6 @@ import { FontSheet } from "./font-sheet.js";
 import { LayoutTrial } from "./layout-trial.js";
 import { OfficeWorkspace, type KickoffFixtureId } from "./office-canvas.js";
 import type { OfficeShellState } from "./office-shell.js";
-import { PixiSceneProbe } from "./pixi-scene-probe.js";
 
 const container = document.querySelector("#app");
 
@@ -25,9 +24,7 @@ const initialState: OfficeShellState = isOfficeShellState(requestedState)
 
 createRoot(container).render(
   <StrictMode>
-    {surface === "pixi-probe" ? (
-      <PixiSceneProbe />
-    ) : surface === "layout-trial" ? (
+    {surface === "layout-trial" ? (
       <LayoutTrial />
     ) : surface === "font-sheet" ? (
       <FontSheet />

@@ -79,6 +79,8 @@ Registry versions were queried on 2026-08-13. The lockfile is authoritative afte
 | `zod` | 4.4.3 | runtime boundary validation |
 | `better-sqlite3` | 13.0.3 | synchronous local transactional store |
 
+> **Amended 2026-10-03 (Phase 7 Task 4, plan Q-2):** `pixi.js` was removed. The office scene is SVG in the DOM (Phase 7 specification F-1). The row above is the original pin, kept as written; the same holds for the PixiJS mentions in the layout and dependency-direction sections.
+
 `better-sqlite3` is proposed, not yet accepted. Phase 0 must confirm Windows/Node 24 prebuild or build behavior, license, FTS5 availability, backup/integrity support, and crash-recovery tests before retention.
 
 ### Development and verification

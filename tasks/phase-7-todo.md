@@ -190,6 +190,34 @@ render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`
     Windows; the lock diff is checked. R-3: the SVG renderer's rectangle path goes and outlines
     become required, with moved assertions listed.
 - [ ] Task 4: Remove Pixi (Q-2). Acceptance: no import remains; the dependency is gone; `verify`.
+  - **Built 2026-10-03; `verify` pending.** Removed `pixi-scene-renderer.ts`, `pixi-scene-probe.tsx`
+    and `.css`, the `?surface=pixi-probe` branch, and the three probe specs (`phase-4-pixi-scene`,
+    `phase-4-camera`, `phase-4-camera-a11y`), per R-1. R-3: `SceneDescriptor` now carries a required
+    outline and no rectangle; the SVG renderer draws only hit polygons over the art. Owner ran
+    `npm uninstall pixi.js --workspace @cuckcode/web` on Windows (R-2); the lock diff removes exactly
+    `pixi.js` and the eleven packages only it used (`@pixi/colord`, `@types/earcut`,
+    `@webgpu/types`, `@xmldom/xmldom`, `earcut`, `eventemitter3`, `gifuct-js`, `ismobilejs`,
+    `js-binary-schema-parser`, `parse-svg-path`, `tiny-lru`), adds nothing, and changes only the
+    `apps/web` entry. Dated amendment notes in `docs/scaffold-specification-v0.1.md` and
+    `docs/sources.md`; their original text is unchanged.
+    - Guards: `scripts/no-pixi.unit.test.ts` (no source imports Pixi, no workspace declares it, the
+      lock resolves none of it) and `tests/e2e/phase-7-no-pixi.spec.ts` (the old probe address opens
+      the office, drawn as SVG, with no canvas). RED: 3 of 3 and 2 of 2, on assertions. Mutations,
+      each confirmed applied and killed: a Pixi import added to `office-canvas.tsx`; a probe main
+      with a canvas restored at `?surface=pixi-probe`.
+    - Moved assertions (P-4): the renderer's "draws each descriptor as a rectangle … in the Pixi
+      palette" test is removed (its subject is gone); "updates in place" now checks the outline's
+      points instead of `x`; the adapter test's descriptor fixture carries points instead of a
+      rectangle.
+    - Coverage given up (R-1), recorded rather than lost silently: the only browser tests of pan,
+      zoom limits and pointer–keyboard camera parity ran on the probe. The camera rules stay
+      proven by `office-camera.unit.test.ts` (zoom stops, pan clamp, byte-exact reset, fixed
+      rotation). In-office pan and zoom were never built; that D-02 item stays open.
+    - Bundle, measured in the container build: 13 files, 880,765 bytes (main chunk 503.60 kB, 148.06
+      kB gzip, over Vite's 500 kB warning) before; 2 files, 398,467 bytes (main chunk 383.26 kB,
+      114.67 kB gzip, no warning) after.
+    - Container run (not the gate): e2e and a11y 130 of 130 (140, less 12 removed probe runs, plus 2
+      new); format, lint, both typechecks, guard, scaffold and CSS scope clean.
 - [ ] Task 5: Architecture and light (AR-01). Walls with a deterministic cutaway rule, the window
       wall, baked daylight (F-6). Plate review.
 - [ ] Task 6: Furniture per zone. Each zone's props say what it is for; nothing hides a label or a

@@ -66,10 +66,11 @@ class DeferredMountRenderer extends MemoryRenderer {
 const node = (entityId: string, depth: number): SceneDescriptor => ({
   entityId,
   entityType: "agent",
-  x: depth * 10,
-  y: depth * 20,
-  width: 44,
-  height: 44,
+  points: [
+    { x: depth * 10, y: depth * 20 },
+    { x: depth * 10 + 44, y: depth * 20 },
+    { x: depth * 10 + 44, y: depth * 20 + 44 },
+  ],
   depth,
   visible: true,
 });

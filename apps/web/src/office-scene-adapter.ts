@@ -1,14 +1,10 @@
 export type SceneDescriptor = Readonly<{
   entityId: string;
   entityType: "agent" | "zone" | "work" | "artifact" | "collaboration";
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  /** The projected outline to hit-test, in world coordinates (Task 3b; required since Task 4, R-3). */
+  points: readonly Readonly<{ x: number; y: number }>[];
   depth: number;
   visible: boolean;
-  /** Phase 7 Task 3b: the projected outline to hit-test, in world coordinates. */
-  points?: readonly Readonly<{ x: number; y: number }>[];
 }>;
 
 export type SceneTransform = Readonly<{

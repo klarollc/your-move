@@ -15,7 +15,6 @@
     "@cuckcode/ui-system": "0.0.0",
     "@fontsource/fira-mono": "5.3.0",
     "@fontsource/fira-sans": "5.3.0",
-    "pixi.js": "8.19.0",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   }

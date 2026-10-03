@@ -4,27 +4,29 @@ import type { SceneDescriptor } from "./office-scene-adapter.js";
 import { createSvgSceneRenderer } from "./svg-scene-renderer.js";
 
 /**
- * Phase 7 Task 3a (spec F-1; plan Q-1). The SVG renderer behind the scene adapter, at parity with
- * the Pixi renderer it replaces: one rectangle per descriptor, the same palette, depth order,
- * camera transform, pointer selection and teardown.
+ * Phase 7 Task 3a (spec F-1; plan Q-1). The SVG renderer behind the scene adapter: one hit outline
+ * per descriptor, depth order, camera transform, pointer selection and teardown. Task 4 (R-3) made
+ * outlines required and retired the Pixi-parity rectangles.
  */
 const zone: SceneDescriptor = {
   entityId: "zone_team",
   entityType: "zone",
-  x: -150,
-  y: -40,
-  width: 650,
-  height: 190,
+  points: [
+    { x: -150, y: -40 },
+    { x: 500, y: -40 },
+    { x: 500, y: 150 },
+  ],
   depth: 0,
   visible: true,
 };
 const desk: SceneDescriptor = {
   entityId: "agent_test_engineer",
   entityType: "agent",
-  x: 175,
-  y: 0,
-  width: 80,
-  height: 60,
+  points: [
+    { x: 175, y: 0 },
+    { x: 255, y: 0 },
+    { x: 255, y: 60 },
+  ],
   depth: 4,
   visible: true,
 };
@@ -56,29 +58,16 @@ describe("the SVG scene renderer", () => {
     expect(host.querySelectorAll('svg[data-scene-renderer="svg"]')).toHaveLength(1);
   });
 
-  it("draws each descriptor as a rectangle at its place, in the Pixi palette", async () => {
-    const { renderer } = await mounted();
-    renderer.upsert(zone);
-    renderer.upsert(desk);
-    const rect = must(node("zone_team"));
-    expect(rect.tagName.toLowerCase()).toBe("rect");
-    expect(rect.getAttribute("x")).toBe("-150");
-    expect(rect.getAttribute("y")).toBe("-40");
-    expect(rect.getAttribute("width")).toBe("650");
-    expect(rect.getAttribute("height")).toBe("190");
-    expect(rect.getAttribute("fill")).toBe("#cfd2cf");
-    expect(rect.getAttribute("fill-opacity")).toBe("0.72");
-    expect(rect.getAttribute("stroke")).toBe("#676b68");
-    expect(must(node("agent_test_engineer")).getAttribute("fill")).toBe("#f2f1eb");
-    expect(must(node("agent_test_engineer")).getAttribute("stroke")).toBe("#292c2a");
-  });
-
   it("updates in place, hides what is not visible, and removes what is gone", async () => {
     const { renderer } = await mounted();
     renderer.upsert(desk);
-    renderer.upsert({ ...desk, x: 200, visible: false });
+    renderer.upsert({
+      ...desk,
+      points: [{ x: 200, y: 0 }, ...desk.points.slice(1)],
+      visible: false,
+    });
     expect(host.querySelectorAll('[data-entity-id="agent_test_engineer"]')).toHaveLength(1);
-    expect(must(node("agent_test_engineer")).getAttribute("x")).toBe("200");
+    expect(must(node("agent_test_engineer")).getAttribute("points")).toBe("200,0 255,0 255,60");
     expect(must(node("agent_test_engineer")).getAttribute("visibility")).toBe("hidden");
     renderer.remove("agent_test_engineer");
     expect(node("agent_test_engineer")).toBeNull();
@@ -157,7 +146,7 @@ describe("the SVG scene renderer", () => {
     expect(host.querySelectorAll('[data-art="floor"]')).toHaveLength(1);
   });
 
-  it("outlines a descriptor that carries points as an invisible hit polygon", async () => {
+  it("outlines each descriptor as an invisible hit polygon", async () => {
     const { renderer, onIntent } = await mounted(vi.fn(), { art });
     renderer.upsert(desk);
     renderer.upsert(outlined);

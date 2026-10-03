@@ -34,6 +34,8 @@ Checked: 2026-08-12
 - [Node.js releases](https://nodejs.org/en/about/previous-releases) — production applications should use an Active or Maintenance LTS line; CuckCode selects Active LTS at implementation start.
 - [Node.js child process](https://nodejs.org/api/child_process.html) — stable asynchronous process-spawn boundary relevant to supervising local Codex App Server.
 
+> **Amended 2026-10-03 (Phase 7 Task 4):** PixiJS is no longer used; the office scene is SVG in the DOM. The two PixiJS entries above are kept as the record of the original choice.
+
 Versions remain implementation-time pins. This register records architectural suitability, not permission to install dependencies.
 
 ## Approved verification-toolchain references

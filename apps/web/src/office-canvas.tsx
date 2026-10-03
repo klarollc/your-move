@@ -51,23 +51,13 @@ const sceneArt = Object.freeze({
 });
 const entities = sceneEntities();
 const sceneDescriptors: readonly SceneDescriptor[] = Object.freeze(
-  entities.map((entity) => {
-    const xs = entity.polygon.map(({ x }) => x);
-    const ys = entity.polygon.map(({ y }) => y);
-    const x = Math.min(...xs);
-    const y = Math.min(...ys);
-    return {
-      entityId: entity.entityId,
-      entityType: entity.entityType,
-      x,
-      y,
-      width: Math.max(...xs) - x,
-      height: Math.max(...ys) - y,
-      depth: entity.depth,
-      visible: true,
-      points: entity.polygon,
-    };
-  }),
+  entities.map((entity) => ({
+    entityId: entity.entityId,
+    entityType: entity.entityType,
+    points: entity.polygon,
+    depth: entity.depth,
+    visible: true,
+  })),
 );
 const anchorsById = new Map(entities.map((entity) => [entity.entityId, entity.anchor]));
 
