@@ -45,16 +45,23 @@ export type WorkConditionReasonCode = (typeof workConditionReasonCodes)[number];
 export type WaitingOnKind = (typeof waitingOnKinds)[number];
 export type RequestedActionKind = (typeof requestedActionKinds)[number];
 
+export type RequestedAction = { kind: RequestedActionKind; summary: string };
+
 export type WorkCondition = {
   reasonCode: WorkConditionReasonCode;
   summary: string;
   waitingOn: { kind: WaitingOnKind; id?: string };
-  requestedAction: { kind: RequestedActionKind; summary: string };
+  requestedAction: RequestedAction;
 };
 
 /** A version-3 condition: the request is optional where someone other than the manager resolves it. */
-export type WorkConditionV3 = Omit<WorkCondition, "requestedAction"> & {
-  requestedAction?: WorkCondition["requestedAction"];
+// Declared in full rather than derived with `Omit`: a type from the TypeScript library is not event
+// vocabulary, and scripts/office-literal-guard.mjs would guard it as an office record.
+export type WorkConditionV3 = {
+  reasonCode: WorkConditionReasonCode;
+  summary: string;
+  waitingOn: { kind: WaitingOnKind; id?: string };
+  requestedAction?: RequestedAction;
 };
 
 /** Version-3 targets whose condition may omit the request (spec §10.1). */

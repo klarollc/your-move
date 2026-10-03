@@ -240,7 +240,7 @@
         {
           "id": "3",
           "state": "in_progress",
-          "note": "Built, container-GREEN; closes on verify"
+          "note": "Built; first verify failed in test:guard (Omit), fixed; closes on verify"
         },
         {
           "id": "4",

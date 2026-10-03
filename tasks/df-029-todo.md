@@ -64,6 +64,11 @@ writes owner-run; moved assertions listed (P-4).
       `waiting_input` request guard; the no-condition fallback (six tests failed).
     - Moved assertion (P-4): the office-fixtures sufficiency check reads an optional request
       (`?.summary.length ?? 0`), still failing when no request is recorded.
+    - **First `verify` at `e6149b1` failed** in `test:guard`: `WorkConditionV3` was written with
+      TypeScript's `Omit`, which is declared outside `packages/contracts`, so the literal guard
+      read it as an office record and flagged the five fixture conditions. Fixed by declaring the
+      type in full (with a shared `RequestedAction`); the container reproduced the failure and the
+      fix. The agent had not run the guard suites before committing; it now does.
 - [ ] Task 4: Application, the resolver.
   - Acceptance: agent, evidence and external resolve to words; an id that resolves to nothing reads
     "not recorded"; no name is guessed.
