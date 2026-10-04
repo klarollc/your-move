@@ -1,11 +1,11 @@
 # DF-047 — streamed effects in kickoff classification (task draft)
 
-Status: **approved by owner 2026-10-04; implementation in progress after W6 acceptance**.
+Status: **owner-accepted 2026-10-04 after implementation and verification**.
 Finding: `docs/evidence/dogfood-register.md`, DF-047.
 
 ## Progress checklist
 
-- [ ] Task 1 — include streamed items in shared kickoff classification and pass the clean owner-run
+- [x] Task 1 — include streamed items in shared kickoff classification and pass the clean owner-run
       verification gate.
 
 ## Evidence so far
@@ -20,7 +20,10 @@ Finding: `docs/evidence/dogfood-register.md`, DF-047.
   included in the pasted excerpt.
 - **Provenance, owner-run:** check passed with 426 artifacts, no missing ledger entries, and no
   stale digests.
-- Clean-tree full verification and owner acceptance remain pending.
+- **Full verification, owner-run:** the failure guard did not throw after commit `3fa041f`; the
+  worktree status was clean. The detailed runner footer was not included in the pasted output.
+- **Owner acceptance:** accepted on 2026-10-04. Record:
+  `docs/evidence/workflow-proof/decision-record-2026-10-04-df-047-acceptance.md`.
 
 ## Problem
 
@@ -37,9 +40,8 @@ Do not change turn retry policy, sandbox posture, live-run behavior, provider pr
 Phase 5 review logic.
 
 Likely files: `scripts/phase4-kickoff-session.ts`, a focused script unit test, and a deterministic
-fake app-server fixture only if the existing unit-test harness cannot express notification ordering.
-The existing uncommitted `packages/runtime-codex/src/fixtures/fake-app-server.mjs` diff is not
-assumed to be part of this task until its author and intended use are confirmed.
+test fixture only if the existing unit-test harness cannot express notification ordering. The
+separate fake app-server stream correction is committed at `7280de2` and is not part of this task.
 
 ## RED–GREEN–REFACTOR
 
@@ -54,7 +56,7 @@ assumed to be part of this task until its author and intended use are confirmed.
 
 ## Verification and approval boundary
 
-The task requires a focused deterministic test that first fails for the expected reason, script
-typecheck/lint, and a clean owner-run `npm.cmd run verify`. No live provider run is required or
-authorized. No DF-047 code changes are part of the current W6 work. Implement this task only after
-W6 reaches its owner-accepted gate.
+The task required a focused deterministic test that first failed for the expected reason, script
+typecheck/lint, and a clean owner-run `npm.cmd run verify`. The owner accepted the task after
+reporting the full verification green on `3fa041f`. No live provider run was required or authorized.
+The W6 acceptance prerequisite was met before implementation began.

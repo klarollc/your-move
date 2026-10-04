@@ -91,12 +91,12 @@ fixture's missing `item/started` and `item/completed` notifications; the focused
 integration command exited successfully. A duplicate recovery stash remains; do not reapply it.
 The W6 acceptance record is `docs/evidence/workflow-proof/decision-record-2026-10-04-w6-acceptance.md`.
 
-DF-047's task breakdown is approved and its W6 prerequisite is met. Implementation is in progress:
-the owner-run RED had 3 failures and 1 pass as expected, the focused GREEN command exited 0, and
-`npm.cmd run typecheck:scripts`, lint, formatting, and provenance checks passed. Clean owner-run
-`verify` and owner acceptance remain. Task record:
-`tasks/df-047-todo-draft.md`. W7–W9 remain blocked pending their own task approvals. No W12 live
-attempt, UI implementation, promotion, push, or external effect is authorized by W6.
+DF-047, streamed-effect classification for kickoff callers, was accepted by the owner on
+2026-10-04 after the owner reported a green clean-tree `npm.cmd run verify` on commit `3fa041f`.
+The detailed runner footer was not retained. Its RED/GREEN record and implementation are in
+`tasks/df-047-todo-draft.md` and `scripts/phase4-kickoff-session.ts`; the focused tests are in
+`scripts/phase4-kickoff-session.unit.test.ts`. W7–W9 remain blocked pending their own task
+approvals. No W12 live attempt, UI implementation, promotion, push, or external effect is authorized.
 
 ### Why Phase 7 exists
 

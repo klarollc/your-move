@@ -368,13 +368,17 @@
     {
       "id": "df-047",
       "title": "DF-047, streamed effects in kickoff classification",
-      "state": "in_progress",
+      "state": "accepted",
       "checklist": "tasks/df-047-todo-draft.md",
       "tasks": [
         {
           "id": "1",
-          "state": "in_progress",
-          "note": "Approved task breakdown; W6 prerequisite met. RED established (3 failed, 1 passed); focused GREEN exit guard passed; script typecheck, lint, formatting, and provenance checks passed. Clean verify and owner acceptance remain pending."
+          "state": "accepted",
+          "runBy": "owner",
+          "gate": {
+            "verify": "3fa041f"
+          },
+          "note": "Owner accepted DF-047 on 2026-10-04 after reporting npm.cmd run verify green; worktree status was clean. Focused test RED was 3 failed and 1 passed; focused GREEN exit guard, script typecheck, lint, formatting, and provenance checks passed. Detailed verify footer was not retained. Acceptance: docs/evidence/workflow-proof/decision-record-2026-10-04-df-047-acceptance.md"
         }
       ]
     },
@@ -597,6 +601,12 @@
       "ruled": "2026-10-04",
       "ruling": "accepted by owner after green full verify",
       "record": "docs/evidence/workflow-proof/decision-record-2026-10-04-w6-acceptance.md"
+    },
+    {
+      "id": "df-047",
+      "ruled": "2026-10-04",
+      "ruling": "accepted by owner after green full verify",
+      "record": "docs/evidence/workflow-proof/decision-record-2026-10-04-df-047-acceptance.md"
     }
   ]
 }
