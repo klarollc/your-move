@@ -81,6 +81,7 @@ updates its row. An entry's own text is history and is not rewritten.
 | DF-039 | open | Judgment contamination: anchored "independent" judgments, no clean room. |
 | DF-040 | open | Repair loop is habit, not protocol: unstructured recovery, doesn't transfer. |
 | DF-041 | open | The conversational medium is not an equal projection of canonical state. |
+| DF-042 | open | The office has no work-item creation or assignment affordance; tasking a role goes through off-office machinery. |
 
 ## Entries
 
@@ -1704,3 +1705,18 @@ its exclusion. An unexamined default projection is how hidden complexity gets tr
 agent one message at a time.
 
 Severity of signal: medium.
+
+### DF-042 — The office cannot create or assign work
+
+- Observed: 2026-10-03, tracer V1 check. Owner-confirmed; source is a thread with Muse, not a repo file.
+- D-26 clause implicated: [owner to confirm — not stated in the confirmed source].
+
+V1 (can work be directed through the office?) verified FAILED: the office exposes no work-item
+creation or assignment affordance. The tracer therefore assigns the DF-007 timestamp test through
+the role-exercise machinery (`scripts/run-tracer-attempt.ts`), and the office gap is documented
+rather than hidden (`tracer-task-contract-draft-v0.2.md`, Dependencies).
+
+Product signal: [owner to confirm]. Established only that the surface for directing work does
+not exist yet, so every tasking falls back to an off-office path.
+
+Severity of signal: [owner to confirm].

@@ -3,6 +3,7 @@ import { expect, test } from "vitest";
 
 import {
   checkObservedPosture,
+  describeInstructionSources,
   isInsideWorktree,
   judgeTracerTurn,
   lastAgentMessageText,
@@ -137,4 +138,14 @@ test("posture: workspaceWrite, no network, approval never — read back, not req
   ).toBe(false);
   expect(checkObservedPosture({ ...ok, approvalPolicy: "on-request" }).ok).toBe(false);
   expect(checkObservedPosture({}).ok).toBe(false);
+});
+
+test("instruction sources: paths are named for diagnosis; malformed reports are stated", () => {
+  expect(
+    describeInstructionSources({ instructionSources: ["/h/AGENTS.md", "/wt/AGENTS.md"] }),
+  ).toBe('instructionSources (2): ["/h/AGENTS.md","/wt/AGENTS.md"]');
+  expect(describeInstructionSources({ instructionSources: [] })).toBe("instructionSources (0): []");
+  expect(describeInstructionSources({ instructionSources: [1] })).toContain("<non-string entry>");
+  expect(describeInstructionSources({})).toBe("instructionSources: not reported as a list");
+  expect(describeInstructionSources(null)).toBe("instructionSources: not reported as a list");
 });

@@ -74,6 +74,7 @@ import { assertNoCodexDrift } from "./codex-drift.js";
 import {
   RESULT_MARKER,
   checkObservedPosture,
+  describeInstructionSources,
   hostPathApi,
   judgeTracerTurn,
   type FileChangeRecord,
@@ -298,7 +299,7 @@ try {
     const posture = checkObservedPosture(threadStart);
     if (!hasExactInstructionSource(threadStart, home.instructionPath)) {
       code = "TRACER_INSTRUCTION_SOURCE_MISMATCH";
-      detail = "the session did not load exactly the controlled role instruction file";
+      detail = `the session did not load exactly the controlled role instruction file; expected ${JSON.stringify(home.instructionPath)}; observed ${describeInstructionSources(threadStart)}`;
     } else if (!posture.ok) {
       code = "TRACER_POSTURE_REFUSED";
       detail = posture.detail;

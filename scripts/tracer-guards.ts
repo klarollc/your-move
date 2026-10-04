@@ -213,6 +213,17 @@ export function judgeTracerTurn(input: {
 }
 
 /**
+ * Names the instruction-source paths a thread/start reported, for diagnosis when the exact-source
+ * check refuses. Paths only, never file content. Returns a stable string for a malformed report.
+ */
+export function describeInstructionSources(threadStart: unknown): string {
+  const sources = isRecord(threadStart) ? threadStart.instructionSources : undefined;
+  if (!Array.isArray(sources)) return "instructionSources: not reported as a list";
+  const paths = sources.map((entry) => (typeof entry === "string" ? entry : "<non-string entry>"));
+  return `instructionSources (${paths.length}): ${JSON.stringify(paths)}`;
+}
+
+/**
  * The posture thread/start must report back. The runner compares what the runtime OBSERVED, not
  * what was requested, so a runtime that silently downgraded or widened the sandbox is refused.
  */

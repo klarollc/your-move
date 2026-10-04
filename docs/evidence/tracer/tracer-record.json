@@ -1,0 +1,27 @@
+{
+  "schema": "cuckcode.tracer-record.v1",
+  "task": "df-007-timestamp-test",
+  "turnAllowance": 30,
+  "maxAttempts": 3,
+  "maxTurnsPerAttempt": 10,
+  "recordedAt": "2026-10-04",
+  "status": "tracer-attempt-ended-awaiting-owner-review",
+  "attempts": [
+    {
+      "attempt": 1,
+      "observedAt": "2026-10-04T02:52:24.842Z",
+      "turnsUsed": 0,
+      "code": "TRACER_INSTRUCTION_SOURCE_MISMATCH",
+      "detail": "the session did not load exactly the controlled role instruction file",
+      "contractSha256": "f0f9e3fbe8ea19fc1e8886d3b986a89960d90e2015df0dd501fb61f98c54c26c",
+      "roleContentSha256": "2a5cce0d7afee5ba80bf9f50fbd29ccf2cb52b8c23a894e87d4dce2801c4aea4",
+      "worktree": "C:\\Users\\nater\\CuckCode\\.worktrees\\tracer-df007",
+      "baseCommit": "150998bca0fb685452c68cbfeeba2033a6d35d0c",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "medium",
+      "bindingFingerprint": null,
+      "transcriptPath": "docs/evidence/tracer/attempt-1-2026-10-04T02-52-24-842Z.json",
+      "transcriptSha256": "ddbc29bb89f56f719a7bb38e8b738d078474f4b80a911806726acf8d4c5b723b"
+    }
+  ]
+}

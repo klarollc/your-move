@@ -402,7 +402,7 @@
         {
           "id": "6",
           "state": "in_progress",
-          "note": "Task 6 implemented at dc2f404 under the owner-approved plan, Luna breakdown and three narrow corrections. Two full visible-runner verifies exited 0 (unit 659, component 154, integration 90 +3 skipped, contract 85, e2e 104, a11y 42, visual 68), but both started dirty during concurrent owner file operations. Owner proposal and dogfood copy tracked unchanged in separate commits. The next clean run caught stale position-record metadata after checklist commit 19b17bb; this note refreshes it. Clean verification and owner captures/provenance plus exact AR-01/AR-04 review are still the final task gate; Task 7 waits. Tucked chair legibility needs owner judgment."
+          "note": "Task 6 implemented at dc2f404 under the owner-approved plan, Luna breakdown and three narrow corrections. Two full visible-runner verifies exited 0 (unit 659, component 154, integration 90 +3 skipped, contract 85, e2e 104, a11y 42, visual 68), but both started dirty during concurrent owner file operations. Owner proposal and dogfood copy tracked unchanged in separate commits. The next clean run caught stale position-record metadata after checklist commit 19b17bb; this note refreshes it. Clean verification and owner captures/provenance plus exact AR-01/AR-04 review are still the final task gate; Task 7 waits. Tucked chair legibility needs owner judgment. Owner plate review 2026-10-03: \"making progress, does not meet spec yet\"; recorded as not meeting final spec; Task 6 stays in progress and Task 7 waits."
         },
         {
           "id": "7",

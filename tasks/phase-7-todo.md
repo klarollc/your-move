@@ -331,6 +331,8 @@ render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`
     The proposal was tracked unchanged in separate commit `40090e8` at the owner's instruction.
     Both production preview PNGs exist under ignored `node_modules/.cache/task6/preview/`;
     they are review aids, not owner-written evidence or visual acceptance.
+  - **Owner plate review, 2026-10-03:** "making progress, does not meet spec yet"; recorded as
+    not meeting final spec. Task 6 stays unchecked and Task 7 waits.
 - [ ] Task 7: Figures (F-3). Modular adult figures; poses only from the semantic behavior map;
       paused when blocked; still when status is unknown; travel only on a real transition, none
       under reduced motion. Adversarial fixtures still refused through the new renderer. Plate
