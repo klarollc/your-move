@@ -133,6 +133,7 @@ describe("where the drift preflight runs", () => {
       (name) => /^run-.*\.ts$/u.test(name) && source(name).includes("new CodexStdioSupervisor("),
     );
     expect(direct.sort()).toEqual([
+      "run-approval-probe.ts",
       "run-codex-probe-surface.ts",
       "run-phase6-review.ts",
       "run-role-exercises.ts",
