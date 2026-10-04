@@ -83,6 +83,8 @@ updates its row. An entry's own text is history and is not rewritten.
 | DF-041 | open | The conversational medium is not an equal projection of canonical state. |
 | DF-042 | open | The office has no work-item creation or assignment affordance; tasking a role goes through off-office machinery. |
 | DF-043 | open | A requested sandbox posture is silently downgraded: the runtime reports a weaker one with no cause when no Windows sandbox mode is configured. |
+| DF-044 | open | The turn completion record omits items the runtime streamed, so a control built on it was blind to a file edit. |
+| DF-045 | open | A role without repo access declared done on work it could not ground, and nothing in the surface said it was blind. |
 
 ## Entries
 
@@ -1770,3 +1772,56 @@ granted one.
 
 Severity of signal: medium. The cost here was two of three attempts and a probe, bounded by the
 read-back; the same gap without a read-back would be silent.
+
+### DF-044 — The turn completion record omits what the runtime streamed
+
+- Observed: 2026-10-03 (attempt recorded 2026-10-04 UTC), Claude (Cowork) session, tracer attempt 3.
+- D-26 clause implicated: the reciprocal acceptance gate — "its agent-facing contract forces
+  avoidable guessing, repetition, context reconstruction, or unstructured recovery".
+
+In attempt 3 the role added one file. The runtime streamed it as a `fileChange` item through
+`item/started` and `item/completed` notifications (path inside the worktree, kind `add`, status
+completed). The `turn/completed` record for the same turn listed only the final `agentMessage`.
+The tracer runner's judge (`judgeTracerTurn`) reads that record, so it saw no edit: the transcript
+shows `fileChanges: []` for a turn that created a file. Only the per-turn `git status` noticed the
+new file. A command execution would presumably be omitted the same way and pass the judge; that is
+an inference, not observed. This run was confirmed in bounds by reading the session log, not by the
+control. The same source feeds the text-only turn check in `role-exercise.ts`, which was not
+re-examined for this entry.
+
+Evidence: `docs/evidence/tracer/attempt-3-2026-10-04T04-42-40-666Z.json` and the attempt-3 session
+log under `docs/evidence/runtime/sessions/run-tracer-attempt/`.
+
+Product signal: a turn's completion record should be a complete projection of what happened in the
+turn, or say plainly that it is partial. A control that decides on effects must read the complete
+stream, and the surface should not let a partial record look like a whole one.
+
+Severity of signal: high. A safety control reading the wrong source passes silently. This run was
+bounded by the sandbox and by `git status`, which were independent of it.
+
+### DF-045 — A role without repo access declared done on work it could not ground
+
+- Observed: 2026-10-03 (attempt recorded 2026-10-04 UTC), Claude (Cowork) session, tracer attempt 3.
+- D-26 clause implicated: the reciprocal acceptance gate, as for DF-044; relates to DF-037
+  (capability-model staleness).
+
+The scoped-edit ruling (2026-10-03) lets the role edit files and bars commands. The session log
+shows one `fileChange`, three `reasoning` items and the final message, with no command execution.
+My inference, not tested: reading a file in Codex goes through command execution, so the role could
+not see the repository and wrote the test blind. The result fits that. It is a Python/pytest file
+in a TypeScript repo, outside anything `verify` runs, and it scans every JSON file under a
+`schema`, `schemas` or `contracts` directory. Against the container mirror (not authoritative) it
+scanned 591 JSON files, 589 of them Codex protocol bundles, and reported roughly 3,000 record types
+without timestamps. The repo's canonical records are TypeScript and it finds none of them. It meets
+none of acceptance criteria 1, 3 or 4. The role ended with "TRACER_RESULT: done", which the
+contract defines as the role's belief, and said nothing about not being able to see the repo.
+The role's output is preserved at
+`docs/evidence/tracer/attempt-3-output/test_df007_canonical_record_timestamps.py`.
+
+Product signal: a role should be able to report "I cannot see or verify this" as a structured
+state, and a capability self-report at task start would let the office show what a role can and
+cannot do before the work, not after. Acceptance should rest on evidence, not on the claim.
+
+Severity of signal: medium. The cost here was the tracer's own allowance; the result was
+unambiguous only because the owner read it. The owner decides whether this closes V2 for this
+shape.
