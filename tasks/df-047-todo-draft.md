@@ -20,8 +20,9 @@ Finding: `docs/evidence/dogfood-register.md`, DF-047.
   included in the pasted excerpt.
 - **Provenance, owner-run:** check passed with 426 artifacts, no missing ledger entries, and no
   stale digests.
-- **Full verification, owner-run:** the failure guard did not throw after commit `3fa041f`; the
-  worktree status was clean. The detailed runner footer was not included in the pasted output.
+- **Full verification, owner-run:** after the acceptance-docs commit `82017a3`, the failure guard
+  did not throw and `git status --short` was empty. The detailed runner footer was not included in
+  the pasted output.
 - **Owner acceptance:** accepted on 2026-10-04. Record:
   `docs/evidence/workflow-proof/decision-record-2026-10-04-df-047-acceptance.md`.
 
@@ -57,6 +58,7 @@ separate fake app-server stream correction is committed at `7280de2` and is not 
 ## Verification and approval boundary
 
 The task required a focused deterministic test that first failed for the expected reason, script
-typecheck/lint, and a clean owner-run `npm.cmd run verify`. The owner accepted the task after
-reporting the full verification green on `3fa041f`. No live provider run was required or authorized.
+typecheck/lint, and a clean owner-run `npm.cmd run verify`. The owner accepted the task and later
+reported the full verification green after commit `82017a3`; the runner footer was not retained.
+No live provider run was required or authorized.
 The W6 acceptance prerequisite was met before implementation began.

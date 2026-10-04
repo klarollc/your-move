@@ -17,8 +17,9 @@ The owner accepts DF-047, streamed effects in kickoff classification.
 - `npm.cmd run typecheck:scripts` exited 0. The owner-run lint, format check, and provenance
   commands continued past their nonzero-exit guards; provenance check reported 426 artifacts,
   with no missing ledger entries or stale digests.
-- The owner reported the clean-tree `npm.cmd run verify` green after commit `3fa041f`, and the
-  following `git status --short` was empty. The detailed runner footer was not retained.
+- The owner reported `npm.cmd run verify` green after commit `82017a3`; the failure guard did not
+  throw and the following `git status --short` was empty. The detailed runner footer was not
+  retained.
 
 Implementation: `scripts/phase4-kickoff-session.ts`. Focused test:
 `scripts/phase4-kickoff-session.unit.test.ts`. Task record: `tasks/df-047-todo-draft.md`.

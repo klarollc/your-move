@@ -376,9 +376,9 @@
           "state": "accepted",
           "runBy": "owner",
           "gate": {
-            "verify": "3fa041f"
+            "verify": "82017a3"
           },
-          "note": "Owner accepted DF-047 on 2026-10-04 after reporting npm.cmd run verify green; worktree status was clean. Focused test RED was 3 failed and 1 passed; focused GREEN exit guard, script typecheck, lint, formatting, and provenance checks passed. Detailed verify footer was not retained. Acceptance: docs/evidence/workflow-proof/decision-record-2026-10-04-df-047-acceptance.md"
+          "note": "Owner accepted DF-047 on 2026-10-04. After acceptance docs commit 82017a3, npm.cmd run verify failure guard did not throw and git status --short was empty; detailed verify footer was not retained. Focused test RED was 3 failed and 1 passed; focused GREEN exit guard, script typecheck, lint, formatting, and provenance checks passed. Acceptance: docs/evidence/workflow-proof/decision-record-2026-10-04-df-047-acceptance.md"
         }
       ]
     },

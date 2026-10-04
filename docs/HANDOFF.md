@@ -1,6 +1,6 @@
 # Handoff — state, next action, and what would otherwise be relearned expensively
 
-Written 2026-09-18, last updated 2026-10-03 for Phase 7 Task 6. Read `AGENTS.md` first for authority; this document is the
+Written 2026-09-18, last updated 2026-10-04 for workflow-proof W6 and DF-047 closeout. Read `AGENTS.md` first for authority; this document is the
 live state, the next action, and the things a fresh session pays for twice if nobody wrote them down.
 
 ---
@@ -92,8 +92,9 @@ integration command exited successfully. A duplicate recovery stash remains; do 
 The W6 acceptance record is `docs/evidence/workflow-proof/decision-record-2026-10-04-w6-acceptance.md`.
 
 DF-047, streamed-effect classification for kickoff callers, was accepted by the owner on
-2026-10-04 after the owner reported a green clean-tree `npm.cmd run verify` on commit `3fa041f`.
-The detailed runner footer was not retained. Its RED/GREEN record and implementation are in
+2026-10-04 after the owner reported a green `npm.cmd run verify` on the post-acceptance-docs commit
+`82017a3`. The command's failure guard did not throw and `git status --short` was empty; the
+detailed runner footer was not retained. Its RED/GREEN record and implementation are in
 `tasks/df-047-todo-draft.md` and `scripts/phase4-kickoff-session.ts`; the focused tests are in
 `scripts/phase4-kickoff-session.unit.test.ts`. W7–W9 remain blocked pending their own task
 approvals. No W12 live attempt, UI implementation, promotion, push, or external effect is authorized.
