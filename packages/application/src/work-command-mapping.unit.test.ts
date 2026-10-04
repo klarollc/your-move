@@ -80,3 +80,31 @@ describe("toWorkCommand", () => {
     ).toMatchObject({ ok: false, code: "COMMAND_INVALID" });
   });
 });
+
+describe("toWorkCommand: work.record_evidence", () => {
+  const ev = (payload: Record<string, unknown>) =>
+    toWorkCommand(command({ intent: "work.record_evidence", payload }));
+
+  it("maps the payload to an evidence input", () => {
+    expect(
+      ev({ kind: "test-run", result: "passed", note: "n", outputSha256: "a".repeat(64) }),
+    ).toEqual({
+      ok: true,
+      value: {
+        commandId: "cmd1",
+        projectId: "project_alpha",
+        expectedRevision: 4,
+        actor: { actorType: "manager", actorId: "manager_nate" },
+        intent: "record_evidence",
+        workItemId: "work_slug",
+        evidence: { kind: "test-run", result: "passed", note: "n", outputSha256: "a".repeat(64) },
+      },
+    });
+  });
+
+  it("passes unexpected evidence fields through so the command refuses them by name", () => {
+    const result = ev({ kind: "test-run", result: "passed", extra: 1 });
+    expect(result).toMatchObject({ ok: true });
+    if (result.ok) expect(result.value.evidence).toMatchObject({ extra: 1 });
+  });
+});

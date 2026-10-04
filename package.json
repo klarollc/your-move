@@ -27,6 +27,7 @@
     "roles:exercise": "tsx scripts/run-role-exercises.ts",
     "kickoff:preflight": "tsx scripts/phase4-kickoff-preflight.ts",
     "kickoff:run": "tsx scripts/run-phase4-kickoff.ts",
+    "work:evidence": "tsx scripts/record-work-evidence.ts",
     "phase5:contract:build": "tsx scripts/build-phase5-acceptance-contract.ts",
     "phase5:surface:run": "tsx scripts/run-phase5-surface-contract.ts",
     "phase5:red:capture": "tsx scripts/build-phase5-red-evidence.ts",

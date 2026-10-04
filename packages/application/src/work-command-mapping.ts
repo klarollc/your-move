@@ -9,7 +9,7 @@
  */
 import type { WorkContract, WorkspaceCommand } from "@cuckcode/contracts";
 
-import type { WorkCommand } from "./work-commands.js";
+import type { WorkCommand, WorkEvidenceInput } from "./work-commands.js";
 
 export type WorkCommandMapping =
   | Readonly<{ ok: true; value: WorkCommand }>
@@ -60,6 +60,18 @@ export function toWorkCommand(command: WorkspaceCommand): WorkCommandMapping {
       return invalid("payload.roleAssignmentId must be a non-empty string");
     }
     return { ok: true, value: { ...common, intent: "assign", roleAssignmentId: id } };
+  }
+  if (command.intent === "work.record_evidence") {
+    // The payload is the evidence input as given. The work command validates its fields and
+    // refuses unexpected ones by name, so nothing is dropped silently here.
+    return {
+      ok: true,
+      value: {
+        ...common,
+        intent: "record_evidence",
+        evidence: command.payload as WorkEvidenceInput,
+      },
+    };
   }
   return {
     ok: false,

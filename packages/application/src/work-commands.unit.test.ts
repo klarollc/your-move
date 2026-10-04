@@ -1,4 +1,4 @@
-import { replayProject } from "@cuckcode/domain";
+import { judgeDoneClaim, replayProject } from "@cuckcode/domain";
 import { describe, expect, it } from "vitest";
 
 import { executeWorkCommand, type WorkCommand } from "./work-commands.js";
@@ -274,5 +274,117 @@ describe("executeWorkCommand: judged against the canonical replay order", () => 
     expect(replayProject([...log, ...result.events]).work.workItems.work_slug?.state).toBe(
       "assigned",
     );
+  });
+});
+
+describe("executeWorkCommand: record_evidence (owner-run check results)", () => {
+  const assignedLog = () => {
+    const log = created();
+    const r = run(
+      log,
+      base({
+        commandId: "cmd_assign",
+        intent: "assign",
+        roleAssignmentId: ROLE,
+        contract: undefined,
+        expectedRevision: log.length,
+      }),
+    );
+    if (!r.ok) throw new Error("setup failed");
+    return [...log, ...r.events];
+  };
+  const record = (log: readonly unknown[], evidence: unknown, over: Override = {}) =>
+    run(
+      log,
+      base({
+        commandId: "cmd_ev",
+        intent: "record_evidence",
+        contract: undefined,
+        evidence: evidence as never,
+        expectedRevision: log.length,
+        ...over,
+      }),
+    );
+  const good = { kind: "test-run", result: "passed" as const };
+
+  it("records manager-verified evidence that the done-claim rule then accepts", () => {
+    const log = assignedLog();
+    const result = record(log, { ...good, note: "RED then GREEN", outputSha256: "b".repeat(64) });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.events).toHaveLength(1);
+    expect(result.events[0]).toMatchObject({
+      kind: "evidence.recorded",
+      source: "manager",
+      trust: "verified",
+      workItemId: "work_slug",
+      payload: {
+        evidenceId: "evidence_cmd_ev",
+        workItemId: "work_slug",
+        kind: "test-run",
+        version: 1,
+        result: "passed",
+        note: "RED then GREEN",
+        outputSha256: "b".repeat(64),
+        recordedBy: "manager_nate",
+      },
+    });
+    expect(Object.values(result.state.evidence)).toMatchObject([
+      { kind: "test-run", result: "passed" },
+    ]);
+    expect(judgeDoneClaim({ log: [...log, ...result.events], workItemId: "work_slug" })).toEqual({
+      ok: true,
+    });
+    expect(result.receipt).toMatchObject({
+      intent: "record_evidence",
+      resultingRevision: log.length + 1,
+    });
+  });
+
+  it("refuses a kind the contract does not oblige, so a typo cannot silently never count", () => {
+    const result = record(assignedLog(), { kind: "tset-run", result: "passed" });
+    expect(result).toMatchObject({ ok: false, code: "EVIDENCE_KIND_UNKNOWN" });
+    if (!result.ok) expect(result.issues.join(" ")).toContain("test-run");
+  });
+
+  it("refuses a bad result, a malformed digest, an over-long note, and a missing evidence object", () => {
+    const log = assignedLog();
+    for (const bad of [
+      { kind: "test-run", result: "ok" },
+      { ...good, outputSha256: "nope" },
+      { ...good, note: "x".repeat(281) },
+      { ...good, extra: 1 },
+    ]) {
+      expect(record(log, bad)).toMatchObject({ ok: false, code: "EVIDENCE_INVALID" });
+    }
+    expect(record(log, undefined)).toMatchObject({ ok: false, code: "EVIDENCE_INVALID" });
+  });
+
+  it("refuses an unknown item, an item with no contract, and an item that cannot take evidence", () => {
+    expect(record(staffing(), good)).toMatchObject({ ok: false, code: "WORK_ITEM_NOT_FOUND" });
+    const old = [
+      ...staffing(),
+      event("event_old", "work.created", {
+        workItemId: "work_slug",
+        outcome: "x",
+        requiredEvidenceKinds: [],
+      }),
+    ];
+    expect(record(old, good)).toMatchObject({ ok: false, code: "CONTRACT_MISSING" });
+    expect(record(created(), good)).toMatchObject({
+      ok: false,
+      code: "WORK_NOT_ACCEPTING_EVIDENCE",
+    });
+  });
+
+  it("refuses an agent actor and a stale revision", () => {
+    const log = assignedLog();
+    expect(
+      record(log, good, { actor: { actorType: "agent", actorId: "agent_engineer" } }),
+    ).toMatchObject({ ok: false, code: "NOT_AUTHORIZED" });
+    expect(record(log, good, { expectedRevision: log.length - 1 })).toMatchObject({
+      ok: false,
+      code: "STALE_REVISION",
+    });
   });
 });

@@ -16,10 +16,19 @@ export type WorkCommand = Readonly<{
   projectId: string;
   expectedRevision: number;
   actor: Readonly<{ actorType: "manager" | "agent"; actorId: string }>;
-  intent: "create" | "assign";
+  intent: "create" | "assign" | "record_evidence";
   workItemId: string;
   contract?: WorkContract;
   roleAssignmentId?: string;
+  evidence?: WorkEvidenceInput;
+}>;
+
+/** An owner-run check result (workflow-proof W5f). `outputSha256` digests the saved output. */
+export type WorkEvidenceInput = Readonly<{
+  kind: string;
+  result: "passed" | "failed";
+  note?: string;
+  outputSha256?: string;
 }>;
 
 export type WorkCommandReceipt = Readonly<{
@@ -88,7 +97,9 @@ export function executeWorkCommand(
   const candidates =
     command.intent === "create"
       ? planCreate(command, item !== undefined)
-      : planAssign(command, item);
+      : command.intent === "assign"
+        ? planAssign(command, item)
+        : planRecordEvidence(command, item);
   if (!Array.isArray(candidates)) return candidates;
 
   // Stamped after everything already in the log, so canonical replay applies them last.
@@ -209,4 +220,77 @@ function planAssign(
   });
   steps.push(transition(revision, "assigned"));
   return steps;
+}
+
+const EVIDENCE_STATES = ["assigned", "active", "blocked", "waiting_input", "review_requested"];
+const SHA256 = /^[a-f0-9]{64}$/;
+const MAX_NOTE = 280;
+
+/**
+ * An owner-run check result becomes verified evidence (W5f). The kind must be one the contract
+ * obliges: a misspelt kind would otherwise be recorded and then never count toward "done". The
+ * recorder never runs the check; `outputSha256` digests the output the owner saved from running it.
+ */
+function planRecordEvidence(
+  command: WorkCommand,
+  item: WorkTruthState["workItems"][string] | undefined,
+): Candidate[] | WorkCommandResult {
+  const evidence: unknown = command.evidence;
+  const issues: string[] = [];
+  if (typeof evidence !== "object" || evidence === null || Array.isArray(evidence)) {
+    return refuse("EVIDENCE_INVALID", "evidence is required");
+  }
+  const record = evidence as Record<string, unknown>;
+  const extra = Object.keys(record).filter(
+    (key) => !["kind", "result", "note", "outputSha256"].includes(key),
+  );
+  if (extra.length > 0) issues.push(`unexpected fields: ${extra.sort().join(", ")}`);
+  if (typeof record.kind !== "string" || record.kind.length === 0) issues.push("kind is required");
+  if (record.result !== "passed" && record.result !== "failed") {
+    issues.push('result must be "passed" or "failed"');
+  }
+  if (
+    record.note !== undefined &&
+    (typeof record.note !== "string" || record.note.length > MAX_NOTE)
+  ) {
+    issues.push(`note must be a string of at most ${String(MAX_NOTE)} characters`);
+  }
+  if (
+    record.outputSha256 !== undefined &&
+    (typeof record.outputSha256 !== "string" || !SHA256.test(record.outputSha256))
+  ) {
+    issues.push("outputSha256 must be a 64-character lowercase hex digest");
+  }
+  if (issues.length > 0) return refuse("EVIDENCE_INVALID", ...issues);
+  if (!item) return refuse("WORK_ITEM_NOT_FOUND", `${command.workItemId} does not exist`);
+  if (!item.contract)
+    return refuse("CONTRACT_MISSING", `${command.workItemId} has no work contract`);
+  const kinds = item.contract.evidenceObligations.map((entry) => entry.kind);
+  if (!kinds.includes(record.kind as string)) {
+    return refuse(
+      "EVIDENCE_KIND_UNKNOWN",
+      `${String(record.kind)} is not an obligation of this contract; the obligations are: ${kinds.join(", ")}`,
+    );
+  }
+  if (!EVIDENCE_STATES.includes(item.state)) {
+    return refuse(
+      "WORK_NOT_ACCEPTING_EVIDENCE",
+      `${command.workItemId} is ${item.state}; evidence is taken once it is assigned and until review ends`,
+    );
+  }
+  return [
+    {
+      kind: "evidence.recorded",
+      payload: {
+        evidenceId: `evidence_${command.commandId}`,
+        workItemId: command.workItemId,
+        kind: record.kind,
+        version: 1,
+        result: record.result,
+        ...(record.note !== undefined ? { note: record.note } : {}),
+        ...(record.outputSha256 !== undefined ? { outputSha256: record.outputSha256 } : {}),
+        recordedBy: command.actor.actorId,
+      },
+    },
+  ];
 }

@@ -238,6 +238,46 @@ describe("work API in log mode", () => {
     expect(await readFile(logPath, "utf8")).toBe(before);
   });
 
+  it("records owner-run evidence from a surface command; an unknown kind is refused by name", async () => {
+    const app = await start();
+    await post(app, body({}));
+    await post(
+      app,
+      body({
+        commandId: "cmd2",
+        expectedRevision: 3,
+        intent: "work.assign",
+        payload: { roleAssignmentId: "role-assignment_engineer" },
+      }),
+    );
+    const bad = await post(
+      app,
+      body({
+        commandId: "cmd3",
+        expectedRevision: 6,
+        intent: "work.record_evidence",
+        payload: { kind: "tset-run", result: "passed" },
+      }),
+    );
+    expect(bad.statusCode).toBe(422);
+    expect(bad.json()).toMatchObject({ code: "EVIDENCE_KIND_UNKNOWN" });
+    expect((await readEventLog(logPath)).revision).toBe(6);
+    const good = await post(
+      app,
+      body({
+        commandId: "cmd4",
+        expectedRevision: 6,
+        intent: "work.record_evidence",
+        payload: { kind: "test-run", result: "passed" },
+      }),
+    );
+    expect(good.statusCode).toBe(202);
+    const log = await readEventLog(logPath);
+    expect(log.revision).toBe(7);
+    const evidence = Object.values(replayProject(log.events).work.evidence);
+    expect(evidence).toMatchObject([{ kind: "test-run", result: "passed" }]);
+  });
+
   it("keeps the old validate-only behaviour when no log is configured", async () => {
     const app = createLoopbackApp({
       mode: "test",
