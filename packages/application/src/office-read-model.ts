@@ -19,6 +19,7 @@ import {
   projectOfficeScene,
   type CanonicalProjectSnapshot,
   type ManagerAttentionItem,
+  type PostureTruth,
   type SceneFreshness,
   type WorkAssignmentTruth,
   type WorkConditionTruth,
@@ -110,6 +111,8 @@ export type OfficeWorkView = Readonly<{
   /** Null when no condition is recorded. */
   resolver: OfficeResolverView | null;
   assignment: WorkAssignmentTruth | null;
+  /** Canonical posture history for this work item, oldest first. */
+  postures: readonly PostureTruth[];
   evidence: readonly OfficeEvidenceView[];
   approval: OfficeApprovalView;
 }>;
@@ -371,6 +374,7 @@ export function projectOfficeReadModel(input: OfficeReadModelInput): OfficeReadM
       condition: item.condition,
       resolver: resolverFor(item.condition),
       assignment: item.assignment,
+      postures: snapshot.work.postures?.[item.workItemId] ?? [],
       evidence,
       approval: approvalFor(snapshot, item.workItemId, item.requiredEvidenceKinds, issues),
     });

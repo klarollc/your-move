@@ -1,3 +1,4 @@
+import type { PostureRecord } from "@cuckcode/contracts";
 import { replayProject } from "@cuckcode/domain";
 import { projectOfficeLibraryEvidence } from "./evidence-library.js";
 import { describe, expect, it } from "vitest";
@@ -29,6 +30,40 @@ type Options = {
   /** DF-029: record the blocker at payload version 3, optionally without a request. */
   payloadVersion?: 2 | 3;
   omitRequest?: boolean;
+  postureEvents?: readonly Readonly<{ runId: string; posture: PostureRecord }>[];
+};
+
+const POSTURE_MATCHED: PostureRecord = {
+  schemaVersion: 1,
+  requested: {
+    sandboxMode: "workspace-write",
+    approvalPolicy: "never",
+    networkAccess: false,
+    windowsSandbox: "unelevated",
+  },
+  granted: {
+    type: "workspaceWrite",
+    networkAccess: false,
+    approvalPolicy: "never",
+    multiAgentMode: "explicitRequestOnly",
+  },
+  declared: {
+    kind: "declared",
+    read: "no",
+    write: "possible",
+    run: "no",
+    basis: ["shell_tool is disabled by the feature policy"],
+    observed: null,
+  },
+  match: true,
+  differences: [],
+};
+
+const POSTURE_MISMATCHED: PostureRecord = {
+  ...POSTURE_MATCHED,
+  granted: { ...POSTURE_MATCHED.granted, type: "readOnly" },
+  match: false,
+  differences: [{ field: "sandbox.type", requested: "workspaceWrite", granted: "readOnly" }],
 };
 
 function office(options: Options = {}) {
@@ -184,6 +219,14 @@ function office(options: Options = {}) {
       { agentId: "agent_test", presence: "waiting", health: "connected" },
       "adapter",
       options.presenceSecond,
+    ),
+    ...(options.postureEvents ?? []).map(({ runId, posture }, index) =>
+      event(
+        `event_posture_${index + 1}`,
+        "posture.recorded",
+        { workItemId: "work_evidence", runId, posture },
+        "adapter",
+      ),
     ),
   ];
   return events;
@@ -771,5 +814,71 @@ describe("office read model: who can resolve it (DF-029, spec §10.1, B-2)", () 
     const done = mustWork(model(office()), "agent_implementation_engineer", "work_release");
     expect(done.condition).toBeNull();
     expect(done.resolver).toBeNull();
+  });
+});
+
+describe("office read model: canonical posture history (workflow-proof W6)", () => {
+  it("projects every posture layer and named difference in canonical history order", () => {
+    const projected = mustWork(
+      model(
+        office({
+          postureEvents: [
+            { runId: "run_first", posture: POSTURE_MATCHED },
+            { runId: "run_second", posture: POSTURE_MISMATCHED },
+          ],
+        }),
+      ),
+      "agent_test_engineer",
+      "work_evidence",
+    );
+
+    expect(projected.postures).toEqual([
+      {
+        runId: "run_first",
+        posture: POSTURE_MATCHED,
+        eventId: "event_posture_1",
+        recordedAt: expect.any(String),
+      },
+      {
+        runId: "run_second",
+        posture: POSTURE_MISMATCHED,
+        eventId: "event_posture_2",
+        recordedAt: expect.any(String),
+      },
+    ]);
+  });
+
+  it("returns an empty history when no posture event exists", () => {
+    const projected = mustWork(
+      model(office()),
+      "agent_test_engineer",
+      "work_evidence",
+    );
+
+    expect(projected.postures).toEqual([]);
+  });
+
+  it("refuses posture supplied through auxiliary records", () => {
+    for (const key of ["posture", "requested", "granted", "declared"]) {
+      const projected = model(office(), {
+        auxiliary: [
+          {
+            entityId: "agent_test_engineer",
+            source: "fixture",
+            version: 1,
+            fixture: true,
+            runtimeBinding: {},
+            permissions: [],
+            [key]: {},
+          },
+        ],
+      });
+
+      expect(codes(projected), key).toContain("AUXILIARY_FACT_REFUSED");
+      expect(entity(projected, "agent_test_engineer").runtime).toEqual({
+        status: "unavailable",
+        reason: "not_recorded",
+      });
+    }
   });
 });
