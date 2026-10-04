@@ -62,8 +62,11 @@ review is: "slice meets expectations". A subsequent clean owner-run `verify` pas
 **Do next:** finish the Task 6 owner gate in `tasks/phase-7-task-6-todo-draft.md` §6.8. The Luna
 implementation is ready for review under the three owner-approved corrections recorded there.
 Focused tests pass 37/37; final default/inspector clearance checks pass at both approved viewports.
-The canonical furniture browser command hung in teardown after reaching all 12 cases; do not
-count that as a clean exit. Clean committed owner-run `verify`, owner captures in the `furniture`
+The standalone furniture browser command hung in teardown after reaching all 12 cases. The
+visible runner subsequently completed full `verify` with exit 0 (`p7t6-verify-20261003-01` on
+`dc2f404`: unit 659, component 154, integration 90 (+3 skipped), contract 85, e2e 104, a11y 42,
+visual 68), but recorded a dirty tree for the owner's concurrent proposal. That proposal is
+tracked unchanged in `40090e8`. Clean committed owner-run `verify`, owner captures in the `furniture`
 slice, provenance and the owner's exact AR-01/AR-04 review remain. Team chair backs are small
 because chairs tuck under the desktops; ask the plate review to assess their legibility.
 The Task 6 checklist records performed checks and limitations. Task 7 waits for that review;

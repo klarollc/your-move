@@ -323,6 +323,14 @@ render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`
     The owner's AR-01/AR-04 judgment remains required. Existing label-to-label crowding remains
     deferred to Task 8. Task 6 stays unchecked until clean owner-run verification, owner captures,
     provenance and exact plate review; Task 7 must wait.
+  - **Full runner checks, 2026-10-03:** implementation commit `dc2f404`, runner
+    `p7t6-verify-20261003-01`, exited 0: unit 659, component 154, integration 90 (+3 skipped),
+    contract 85, e2e 104, a11y 42, visual 68. The browser commands completed cleanly through the
+    visible runner, resolving the standalone-command hang as a verification gap. This first run
+    recorded `dirty: true` for the owner's concurrent proposal, so it is not the clean-tree gate.
+    The proposal was tracked unchanged in separate commit `40090e8` at the owner's instruction.
+    Both production preview PNGs exist under ignored `node_modules/.cache/task6/preview/`;
+    they are review aids, not owner-written evidence or visual acceptance.
 - [ ] Task 7: Figures (F-3). Modular adult figures; poses only from the semantic behavior map;
       paused when blocked; still when status is unknown; travel only on a real transition, none
       under reduced motion. Adversarial fixtures still refused through the new renderer. Plate
