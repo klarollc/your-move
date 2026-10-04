@@ -4,12 +4,12 @@
  * Both surfaces call these; neither holds workflow logic. The shape follows the attention commands:
  * a pure function over the current log, a stale-revision refusal, a manager-only authority check,
  * and a receipt. The reducer stays the only rules authority: a command builds candidate events,
- * dry-runs `reduceWorkTruth` over `[...log, ...candidates]`, and refuses on any new reducer issue,
- * passing the reducer's code through. A candidate that does not parse is refused too, because the
+ * dry-runs the canonical replay (`replayProject`) over `[...log, ...candidates]`, and refuses on
+ * any new reducer issue, passing the reducer's code through. A candidate that does not parse is refused too, because the
  * reducer would silently drop it and the command would then report success for nothing.
  */
 import { parseProjectEvent, workContractSchema, type WorkContract } from "@cuckcode/contracts";
-import { reduceWorkTruth, type WorkTruthState } from "@cuckcode/domain";
+import { nextEventTimes, replayProject, type WorkTruthState } from "@cuckcode/domain";
 
 export type WorkCommand = Readonly<{
   commandId: string;
@@ -81,7 +81,9 @@ export function executeWorkCommand(
     return refuse("NOT_AUTHORIZED", "only a manager may create or assign work");
   }
 
-  const before = reduceWorkTruth(log);
+  // Judged in canonical replay order (time, then event id), the order every surface sees, not raw
+  // file order: the two differ when events share or regress a timestamp.
+  const before = replayProject(log).work;
   const item = before.workItems[command.workItemId];
   const candidates =
     command.intent === "create"
@@ -89,6 +91,8 @@ export function executeWorkCommand(
       : planAssign(command, item);
   if (!Array.isArray(candidates)) return candidates;
 
+  // Stamped after everything already in the log, so canonical replay applies them last.
+  const times = nextEventTimes(log, now, candidates.length);
   let sequence = 0;
   const events = candidates.map((candidate) => {
     sequence += 1;
@@ -97,8 +101,8 @@ export function executeWorkCommand(
       eventId: `event_${command.commandId}_${String(sequence)}`,
       projectId: command.projectId,
       kind: candidate.kind,
-      occurredAt: now,
-      receivedAt: now,
+      occurredAt: times[sequence - 1],
+      receivedAt: times[sequence - 1],
       source: "manager",
       trust: "verified",
       workItemId: command.workItemId,
@@ -114,7 +118,7 @@ export function executeWorkCommand(
     }
   }
 
-  const after = reduceWorkTruth([...log, ...events]);
+  const after = replayProject([...log, ...events]).work;
   const fresh = after.issues.slice(before.issues.length);
   const first = fresh[0];
   if (first) return refuse(first.code, ...fresh.map((found) => found.message));

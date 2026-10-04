@@ -329,3 +329,23 @@ describe("reconcileRecords (invariant 6)", () => {
     expect(result).toMatchObject({ ok: false, mismatches: [{ kind: "WORK_ITEM_NOT_FOUND" }] });
   });
 });
+
+describe("judgeDoneClaim: canonical order, not file order", () => {
+  it("lets the later-in-time verified failure win even when it was written first", () => {
+    const early = {
+      ...evidence("e1", "test-run", "passed"),
+      occurredAt: "2026-10-04T10:00:10.000Z",
+    };
+    const late = {
+      ...evidence("e3", "test-run", "failed"),
+      occurredAt: "2026-10-04T10:00:20.000Z",
+    };
+    const git = evidence("e2", "git-status", "passed");
+    // File order puts the passing record last; time order puts the failure last.
+    const log = [created(), late, early, git];
+    expect(judgeDoneClaim({ log, workItemId: "work_slug" })).toMatchObject({
+      ok: false,
+      failedKinds: ["test-run"],
+    });
+  });
+});

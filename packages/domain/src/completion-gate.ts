@@ -15,14 +15,10 @@
  * Limit, stated plainly: evidence carries a kind, a version and a result, not an artifact digest,
  * so "inspectable" here means "recorded by a verified event", not "hash-checked".
  */
-import {
-  parseProjectEvent,
-  type PostureDifference,
-  type PostureRecord,
-  type WorkContract,
-} from "@cuckcode/contracts";
+import { type PostureDifference, type PostureRecord, type WorkContract } from "@cuckcode/contracts";
 
-import { reduceWorkTruth } from "./work-truth.js";
+import { normalizeEventLog } from "./event-order.js";
+import { replayProject } from "./replay.js";
 
 const normalizePath = (path: string): string => path.replaceAll("\\", "/").replace(/^(\.\/)+/, "");
 
@@ -114,12 +110,14 @@ export type DoneJudgement =
 
 const none = { missingKinds: [], failedKinds: [], unverifiedKinds: [] } as const;
 
-/** Positions of parseable events by id: the order the log gave them, which is replay order. */
+/**
+ * Positions of events in canonical replay order (time, then event id), which is the order the
+ * reducer and every surface see. File order is not canonical: an event written first can be later.
+ */
 function eventIndex(log: readonly unknown[]): Map<string, { position: number; trust: string }> {
   const index = new Map<string, { position: number; trust: string }>();
-  log.forEach((candidate, position) => {
-    const parsed = parseProjectEvent(candidate);
-    if (parsed.ok) index.set(parsed.value.eventId, { position, trust: parsed.value.trust });
+  normalizeEventLog(log).events.forEach((event, position) => {
+    index.set(event.eventId, { position, trust: event.trust });
   });
   return index;
 }
@@ -127,7 +125,7 @@ function eventIndex(log: readonly unknown[]): Map<string, { position: number; tr
 export function judgeDoneClaim(
   input: Readonly<{ log: readonly unknown[]; workItemId: string }>,
 ): DoneJudgement {
-  const state = reduceWorkTruth(input.log);
+  const state = replayProject(input.log).work;
   const item = state.workItems[input.workItemId];
   if (!item) return { ok: false, code: "WORK_ITEM_NOT_FOUND", ...none };
   if (!item.contract) return { ok: false, code: "CONTRACT_MISSING", ...none };
@@ -177,7 +175,7 @@ export function reconcileRecords(
     worktreePaths: readonly string[];
   }>,
 ): ReconciliationResult {
-  const state = reduceWorkTruth(input.log);
+  const state = replayProject(input.log).work;
   const item = state.workItems[input.workItemId];
   const mismatches: RecordMismatch[] = [];
   if (!item) {

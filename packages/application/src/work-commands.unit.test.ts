@@ -1,3 +1,4 @@
+import { replayProject } from "@cuckcode/domain";
 import { describe, expect, it } from "vitest";
 
 import { executeWorkCommand, type WorkCommand } from "./work-commands.js";
@@ -178,12 +179,17 @@ describe("executeWorkCommand: assign", () => {
 
   it("uses two events for an item that is already ready", () => {
     const log = created();
-    const ready = event("event_ready", "work.transitioned", {
-      payloadVersion: 3,
-      workItemId: "work_slug",
-      fromRevision: 0,
-      toState: "ready",
-    });
+    // Stamped after the create command's events (at NOW), as canonical replay needs.
+    const ready = {
+      ...event("event_ready", "work.transitioned", {
+        payloadVersion: 3,
+        workItemId: "work_slug",
+        fromRevision: 0,
+        toState: "ready",
+      }),
+      occurredAt: "2026-10-04T11:00:01.000Z",
+      receivedAt: "2026-10-04T11:00:01.000Z",
+    };
     const result = assign([...log, ready]);
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -233,5 +239,40 @@ describe("executeWorkCommand: assign", () => {
       ok: false,
       code: "COMMAND_INVALID",
     });
+  });
+});
+
+describe("executeWorkCommand: judged against the canonical replay order", () => {
+  it("stamps new events after everything in the log, so a tied timestamp cannot reorder them", () => {
+    // Staffing and the command share one instant. Canonical replay breaks time ties by event id
+    // with a locale-aware comparison, which would put the assignment before the role assignment
+    // it depends on. New events are stamped after the log's newest time instead.
+    const stamp = (e: ReturnType<typeof event>) => ({ ...e, occurredAt: NOW, receivedAt: NOW });
+    const tied = staffing().map(stamp);
+    const made = run(tied, base({ expectedRevision: tied.length }));
+    if (!made.ok) throw new Error("setup failed");
+    const log = [...tied, ...made.events];
+    const result = run(
+      log,
+      base({
+        commandId: "cmd_assign",
+        intent: "assign",
+        roleAssignmentId: ROLE,
+        contract: undefined,
+        expectedRevision: log.length,
+      }),
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const newest = Math.max(
+      ...log.map((e) => Date.parse((e as { occurredAt: string }).occurredAt)),
+    );
+    for (const e of result.events) {
+      expect(Date.parse(e.occurredAt as string)).toBeGreaterThan(newest);
+    }
+    expect(replayProject([...log, ...result.events]).work.issues).toEqual([]);
+    expect(replayProject([...log, ...result.events]).work.workItems.work_slug?.state).toBe(
+      "assigned",
+    );
   });
 });

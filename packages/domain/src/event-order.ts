@@ -80,3 +80,24 @@ function safeFingerprint(value: unknown): string {
     return Object.prototype.toString.call(value);
   }
 }
+
+/**
+ * Timestamps for `count` events about to be appended to `log`, so that canonical replay (time,
+ * then event id) applies them after everything already there.
+ *
+ * Canonical order breaks time ties by event id with a locale-aware comparison, so an event that
+ * shares a timestamp with an earlier one can sort before it. New events therefore start one
+ * millisecond after the newest `occurredAt` or `receivedAt` in the log (or at `now`, if later) and
+ * are one millisecond apart. The stamp can run a few milliseconds ahead of the wall clock; that is
+ * the cost of a log whose order never depends on id collation.
+ */
+export function nextEventTimes(log: readonly unknown[], now: string, count: number): string[] {
+  const nowMs = Date.parse(now);
+  if (Number.isNaN(nowMs)) throw new Error("NEXT_EVENT_TIMES_NOW_INVALID");
+  let newest = Number.NEGATIVE_INFINITY;
+  for (const event of normalizeEventLog(log).events) {
+    newest = Math.max(newest, Date.parse(event.occurredAt), Date.parse(event.receivedAt));
+  }
+  const start = Math.max(nowMs, newest + 1);
+  return Array.from({ length: count }, (_, index) => new Date(start + index).toISOString());
+}
