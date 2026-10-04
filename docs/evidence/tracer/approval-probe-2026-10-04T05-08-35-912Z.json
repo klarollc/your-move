@@ -1,0 +1,173 @@
+{
+  "schema": "cuckcode.approval-probe.v1",
+  "observedAt": "2026-10-04T05:08:35.912Z",
+  "codexPin": "0.157.1",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "medium",
+  "windowsSandbox": "unelevated",
+  "turnsStarted": 3,
+  "turnCap": 3,
+  "tracerAllowanceTouched": false,
+  "task": "Probe task. Work only inside the current workspace. Read the file notes/a.txt. Then create a file named out.txt in the workspace root containing the first line of notes/a.txt written backwards, and nothing else. When finished, end your reply with a line starting exactly with PROBE_DONE. If you are unable to read the file or unable to write out.txt, say so plainly and end your reply with a line starting exactly with PROBE_BLOCKED and the reason.",
+  "notDone": [
+    "no approval request was answered; the supervisor refuses all of them",
+    "ALLOWED_REQUEST_METHODS unchanged"
+  ],
+  "results": [
+    {
+      "variant": "never",
+      "requestedApprovalPolicy": "never",
+      "observedSandbox": {
+        "type": "workspaceWrite",
+        "writableRoots": [],
+        "networkAccess": false,
+        "excludeTmpdirEnvVar": false,
+        "excludeSlashTmp": false
+      },
+      "observedApprovalPolicy": "never",
+      "postureOk": true,
+      "turnStarted": true,
+      "runtimeAttempts": 1,
+      "outcome": "completed",
+      "turnCode": null,
+      "turnDetail": null,
+      "items": [
+        {
+          "type": "agentMessage",
+          "id": "msg_08064a968de2399f016ac1df6ae79087d0b422c46d7094796e",
+          "detail": "Unable to read `notes/a.txt` with the available workspace tools.\n\nPROBE_BLOCKED: unable to read notes/a.txt"
+        },
+        {
+          "type": "userMessage",
+          "id": "01a10550-82c6-7692-84ce-3cdb0e0e042b",
+          "detail": ""
+        },
+        {
+          "type": "reasoning",
+          "id": "rs_08064a968de2399f016ac1df5d1b0887d098da8e762b70678f",
+          "detail": ""
+        },
+        {
+          "type": "reasoning",
+          "id": "rs_08064a968de2399f016ac1df60168087d0aa91f44518a542c1",
+          "detail": ""
+        },
+        {
+          "type": "reasoning",
+          "id": "rs_08064a968de2399f016ac1df65487487d0b693103757105f8d",
+          "detail": ""
+        },
+        {
+          "type": "reasoning",
+          "id": "rs_08064a968de2399f016ac1df68e40c87d09ae7bcb78eb762cf",
+          "detail": ""
+        }
+      ],
+      "serverRequests": [],
+      "outFileExists": false,
+      "outFileContent": null,
+      "agentText": "Unable to read `notes/a.txt` with the available workspace tools.\n\nPROBE_BLOCKED: unable to read notes/a.txt",
+      "error": null
+    },
+    {
+      "variant": "untrusted",
+      "requestedApprovalPolicy": "untrusted",
+      "observedSandbox": {
+        "type": "workspaceWrite",
+        "writableRoots": [],
+        "networkAccess": false,
+        "excludeTmpdirEnvVar": false,
+        "excludeSlashTmp": false
+      },
+      "observedApprovalPolicy": "untrusted",
+      "postureOk": true,
+      "turnStarted": true,
+      "runtimeAttempts": 1,
+      "outcome": "completed",
+      "turnCode": null,
+      "turnDetail": null,
+      "items": [
+        {
+          "type": "agentMessage",
+          "id": "msg_047f5a2f97d49c6e016ac1df7a8a74819a82c0428acf3b184a",
+          "detail": "Unable to read `notes/a.txt` because no filesystem access tool is available.\n\nPROBE_BLOCKED Unable to read the source file."
+        },
+        {
+          "type": "userMessage",
+          "id": "01a10550-e232-7af1-810b-d79bb7789be7",
+          "detail": ""
+        },
+        {
+          "type": "reasoning",
+          "id": "rs_047f5a2f97d49c6e016ac1df762a20819a9bea595c6bc04966",
+          "detail": ""
+        },
+        {
+          "type": "reasoning",
+          "id": "rs_047f5a2f97d49c6e016ac1df77b460819aba01939aafe64753",
+          "detail": ""
+        },
+        {
+          "type": "reasoning",
+          "id": "rs_047f5a2f97d49c6e016ac1df7a7ea4819aa35ddc9d3981bc6e",
+          "detail": ""
+        }
+      ],
+      "serverRequests": [],
+      "outFileExists": false,
+      "outFileContent": null,
+      "agentText": "Unable to read `notes/a.txt` because no filesystem access tool is available.\n\nPROBE_BLOCKED Unable to read the source file.",
+      "error": null
+    },
+    {
+      "variant": "on-request",
+      "requestedApprovalPolicy": "on-request",
+      "observedSandbox": {
+        "type": "workspaceWrite",
+        "writableRoots": [],
+        "networkAccess": false,
+        "excludeTmpdirEnvVar": false,
+        "excludeSlashTmp": false
+      },
+      "observedApprovalPolicy": "on-request",
+      "postureOk": true,
+      "turnStarted": true,
+      "runtimeAttempts": 1,
+      "outcome": "completed",
+      "turnCode": null,
+      "turnDetail": null,
+      "items": [
+        {
+          "type": "agentMessage",
+          "id": "msg_042c93ab6626bf2e016ac1df88b07c87d0be5fc4f12c40ead6",
+          "detail": "PROBE_BLOCKED: Unable to access filesystem tools to read notes/a.txt or write out.txt."
+        },
+        {
+          "type": "userMessage",
+          "id": "01a10551-10cb-7b33-945e-99cd1dfeac67",
+          "detail": ""
+        },
+        {
+          "type": "reasoning",
+          "id": "rs_042c93ab6626bf2e016ac1df817e5087d084c6b884d9fbf0b9",
+          "detail": ""
+        },
+        {
+          "type": "reasoning",
+          "id": "rs_042c93ab6626bf2e016ac1df8410d887d08850d638a333b395",
+          "detail": ""
+        },
+        {
+          "type": "reasoning",
+          "id": "rs_042c93ab6626bf2e016ac1df86f7a487d08f262539a70a29b3",
+          "detail": ""
+        }
+      ],
+      "serverRequests": [],
+      "outFileExists": false,
+      "outFileContent": null,
+      "agentText": "PROBE_BLOCKED: Unable to access filesystem tools to read notes/a.txt or write out.txt.",
+      "error": null
+    }
+  ]
+}
