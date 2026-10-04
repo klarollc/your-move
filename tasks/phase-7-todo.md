@@ -283,7 +283,7 @@ render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`
     `p7t5b-verify-20261003-01`, exited 0 with `dirty: false` and `evidenceChanged: false`: unit 646,
     component 154, integration 90 (+3 skipped), contract 85, e2e 92, a11y 42, visual 68. Task 5 is
     done; the owner's AR-01 review remains recorded verbatim above.
-- [ ] Task 6: Furniture per zone. Each zone's props say what it is for; nothing hides a label or a
+- [x] Task 6: Furniture per zone. Each zone's props say what it is for; nothing hides a label or a
       target. Plate review. Detail plan approved 2026-10-03:
       `tasks/phase-7-task-6-plan.md`; task breakdown owner-approved 2026-10-03 in
       `tasks/phase-7-task-6-todo-draft.md`. Implementation in progress with Luna subagents; final owner gate remains open.
@@ -333,6 +333,12 @@ render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`
     they are review aids, not owner-written evidence or visual acceptance.
   - **Owner plate review, 2026-10-03:** "making progress, does not meet spec yet"; recorded as
     not meeting final spec. Task 6 stays unchecked and Task 7 waits.
+  - **Owner disposition, 2026-10-04:** accepted, not met against the final spec; the shortfall is
+    carried forward into Task 10's review as V3. Clean owner-run `verify` `p7t6-verify-20261003-05`
+    passed on `a284685`. See
+    `docs/evidence/phase-7/decision-record-2026-10-04-task-6-disposition.md`. The checkbox above is
+    ticked for that acceptance; it is not a claim that Task 6 meets spec. Task 7 waits for its own
+    approval.
 - [ ] Task 7: Figures (F-3). Modular adult figures; poses only from the semantic behavior map;
       paused when blocked; still when status is unknown; travel only on a real transition, none
       under reduced motion. Adversarial fixtures still refused through the new renderer. Plate

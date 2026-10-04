@@ -59,18 +59,14 @@ provenance entries 631–632, and the read-only provenance check is clean. The o
 review is: "slice meets expectations". A subsequent clean owner-run `verify` passed on `a582953`
 (runner `p7t5b-verify-20261003-01`), closing the gate described below.
 
-**Do next:** finish the Task 6 owner gate in `tasks/phase-7-task-6-todo-draft.md` §6.8. The Luna
-implementation is ready for review under the three owner-approved corrections recorded there.
-Focused tests pass 37/37; final default/inspector clearance checks pass at both approved viewports.
-The standalone furniture browser command hung in teardown after reaching all 12 cases. The
-visible runner subsequently completed full `verify` with exit 0 (`p7t6-verify-20261003-01` on
-`dc2f404`: unit 659, component 154, integration 90 (+3 skipped), contract 85, e2e 104, a11y 42,
-visual 68), but recorded a dirty tree for the owner's concurrent proposal. That proposal is
-tracked unchanged in `40090e8`. Clean committed owner-run `verify`, owner captures in the `furniture`
-slice, provenance and the owner's exact AR-01/AR-04 review remain. Team chair backs are small
-because chairs tuck under the desktops; ask the plate review to assess their legibility.
-The Task 6 checklist records performed checks and limitations. Task 7 waits for that review;
-full Phase 7 art acceptance still waits for Tasks 7–10 and the explicit Task 10 owner ruling.
+**Do next:** Task 7 (figures) is unstarted and waits for its own owner approval. Task 6 was
+accepted by the owner on 2026-10-04 and is not met against the final spec: the shortfall is
+unspecified by the owner, is carried forward into Task 10's review as V3, and the open question
+the checklist carries is whether the tucked team chairs read as chairs. The clean owner-run
+`verify` is `p7t6-verify-20261003-05` on `a284685` (unit 659, component 154, integration 90
+(+3 skipped), contract 85, e2e 104, a11y 42, visual 68); the record is
+`docs/evidence/phase-7/decision-record-2026-10-04-task-6-disposition.md`. Full Phase 7 art
+acceptance still waits for Tasks 7–10 and the explicit Task 10 owner ruling.
 
 Concurrent owner files were preserved separately: the comprehension proposal is tracked unchanged
 in `40090e8`; `docs/evidence/dogfood-register (2).md` is tracked in place, unchanged, in `6ece901`
@@ -157,11 +153,12 @@ composition remain unchanged. The visual capture spec targets `architecture-b`, 
 reviewed `architecture/` evidence. The owner captures match provenance, and the owner's AR-01
 review is "slice meets expectations". The clean owner-run verify above passed, so Task 5 is done.
 Zone-label position and style stay together for Task 8. Task 6's detail plan is approved; its
-separate task breakdown was owner-approved 2026-10-03; implementation is in progress.
+separate task breakdown was owner-approved 2026-10-03. Task 6 was implemented and accepted by the
+owner on 2026-10-04, not met against the final spec (see "Do next").
 
 ### Remaining Phase 7 (each needs its own owner-approved plan before building)
 
-Task 6 furniture per zone (plate review; plan approved, task breakdown approved; implementation in progress) · Task 7 figures,
+Task 6 furniture per zone (done: accepted, not met, V3 carried into Task 10) · Task 7 figures,
 F-3, poses only from the behaviour map, paused when blocked, still when unknown, adversarial
 fixtures still refused (plate review) · Task 8 in-scene cues, F-7 (one amber marker per manager
 request; "Status unknown"
