@@ -349,6 +349,23 @@
       "note": "Closing the Phase 5 fixture initiative remains a separate owner act"
     },
     {
+      "id": "workflow-proof-w6",
+      "title": "Workflow proof W6, canonical posture history",
+      "state": "accepted",
+      "checklist": "tasks/workflow-proof-w6-todo-draft.md",
+      "tasks": [
+        {
+          "id": "6",
+          "state": "accepted",
+          "runBy": "owner",
+          "gate": {
+            "verify": "7280de2"
+          },
+          "note": "Owner accepted W6 on 2026-10-04 after reporting npm.cmd run verify green. The supplied terminal tail shows 42 accessibility and 68 visual tests passed; the detailed runner footer was not retained. Acceptance: docs/evidence/workflow-proof/decision-record-2026-10-04-w6-acceptance.md"
+        }
+      ]
+    },
+    {
       "id": "7",
       "title": "Phase 7, the rendered office",
       "state": "in_progress",
@@ -561,6 +578,12 @@
       "ruled": "2026-10-03",
       "ruling": "Task 3 split into 3a (renderer swap at parity) and 3b (the Active office)",
       "record": "tasks/phase-7-todo.md"
+    },
+    {
+      "id": "workflow-proof-w6",
+      "ruled": "2026-10-04",
+      "ruling": "accepted by owner after green full verify",
+      "record": "docs/evidence/workflow-proof/decision-record-2026-10-04-w6-acceptance.md"
     }
   ]
 }

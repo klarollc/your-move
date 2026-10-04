@@ -1,6 +1,6 @@
 # DF-047 — streamed effects in kickoff classification (task draft)
 
-Status: **approved by owner 2026-10-04; implementation authorized, deferred while W6 proceeds**.
+Status: **approved by owner 2026-10-04; implementation authorized after W6 acceptance on 2026-10-04**.
 Finding: `docs/evidence/dogfood-register.md`, DF-047.
 
 ## Problem

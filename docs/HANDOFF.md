@@ -77,6 +77,24 @@ position metadata (corrected in `e20edea`) and that missing provenance entry (no
 Confirm the final clean runner result in `node_modules/.cache/agent-runner/outbox/` before the
 owner's furniture capture and exact plate review.
 
+## Concurrent workstream: manager-agent workflow proof — 2026-10-04
+
+W6, canonical posture history in `OfficeWorkView`, was accepted by the owner on 2026-10-04 after
+the owner reported a green `npm.cmd run verify`. The supplied verify tail shows 42 accessibility
+and 68 visual tests passed; its detailed runner footer was not retained. The implementation is in
+`packages/application/src/office-read-model.ts` and its unit tests, committed at `dd57609`; the
+formatting follow-up is `4935e06`. The clean full verify also includes the separately scoped fake
+app-server stream correction at `7280de2`.
+
+The fake app-server change was restored from a preservation stash after the full suite exposed the
+fixture's missing `item/started` and `item/completed` notifications; the focused role-exercise
+integration command exited successfully. A duplicate recovery stash remains; do not reapply it.
+The W6 acceptance record is `docs/evidence/workflow-proof/decision-record-2026-10-04-w6-acceptance.md`.
+
+DF-047's task breakdown is approved and its W6 prerequisite is now met. It is the next authorized
+workflow-proof task; begin with its RED test. W7–W9 remain blocked pending their own task approvals.
+No W12 live attempt, UI implementation, promotion, push, or external effect is authorized by W6.
+
 ### Why Phase 7 exists
 
 The owner compared the Phase 7-O app captures with the approved art pack (AR-01 to AR-04) on

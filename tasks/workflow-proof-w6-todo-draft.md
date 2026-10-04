@@ -1,6 +1,6 @@
 # Workflow proof W6 — task breakdown draft
 
-Status: **approved by owner 2026-10-04; W6 implementation authorized**.
+Status: **owner-accepted 2026-10-04 after implementation and verification**.
 Plan: `docs/proposals/2026-10-03-workflow-proof-plan.md`.
 Design ruling: `docs/evidence/workflow-proof/decision-record-2026-10-04-w6-posture-projection.md`.
 
@@ -35,10 +35,16 @@ the event schema, or attention behavior.
       `undefined`.
 - [x] The focused unit test then passed: owner-run GREEN on 2026-10-04, 37/37 passed.
 - [x] TypeScript workspace build passed: owner-run `npm.cmd run typecheck`, exit 0.
-- Owner-run `npm.cmd run verify` exits 0 on a clean committed tree, with `dirty: false` and
-  `evidenceChanged: false`.
+- [x] Owner reported `npm.cmd run verify` green after commit `7280de2`; the supplied terminal tail
+      shows 42 accessibility and 68 visual tests passed. The detailed runner footer was not retained.
+- [x] Owner accepted W6 on 2026-10-04. Acceptance record:
+      `docs/evidence/workflow-proof/decision-record-2026-10-04-w6-acceptance.md`.
 - No visual or browser acceptance is claimed; W6 changes the read model only.
-- The checklist and `position.json` are updated together only when the owner accepts the task gate.
+
+## Owner acceptance
+
+- [x] Task 6 — canonical posture history projection, accepted by owner 2026-10-04.
+- W7–W9 remain blocked pending their own task approvals.
 
 ## Approval boundary
 
