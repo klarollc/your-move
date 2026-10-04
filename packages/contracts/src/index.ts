@@ -10,4 +10,5 @@ export * from "./kickoff.js";
 export * from "./open-question.js";
 export * from "./work-payloads.js";
 export * from "./posture.js";
+export * from "./posture-event.js";
 export * from "./work-contract.js";

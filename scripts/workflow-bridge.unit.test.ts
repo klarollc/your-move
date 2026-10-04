@@ -148,7 +148,8 @@ describe("planPreflight", () => {
     });
     expect(plan).toMatchObject({ ok: true, proceed: true, outcome: "started" });
     if (!plan.ok) return;
-    expect(evidenceKinds(plan.events)).toEqual(["posture-record"]);
+    expect(kinds(plan.events)).toEqual(["posture.recorded", "work.transitioned"]);
+    expect(evidenceKinds(plan.events)).toEqual([]);
     expect(stateOf(log, plan.events)?.state).toBe("active");
     expect(reduceWorkTruth([...log, ...plan.events]).issues).toEqual([]);
   });
@@ -162,7 +163,7 @@ describe("planPreflight", () => {
     });
     expect(plan).toMatchObject({ ok: true, proceed: false, outcome: "blocked" });
     if (!plan.ok) return;
-    expect(kinds(plan.events)).toEqual(["evidence.recorded", "work.transitioned"]);
+    expect(kinds(plan.events)).toEqual(["posture.recorded", "work.transitioned"]);
     const item = stateOf(log, plan.events);
     expect(item?.state).toBe("blocked");
     expect(item?.condition?.summary).toContain("src/other.ts");
@@ -178,8 +179,14 @@ describe("planPreflight", () => {
     });
     expect(plan).toMatchObject({ ok: true, proceed: false, outcome: "blocked" });
     if (!plan.ok) return;
-    const evidence = plan.events.find((e) => e.kind === "evidence.recorded");
-    expect(evidence?.payload).toMatchObject({ kind: "posture-record", result: "failed" });
+    const recorded = plan.events.find((e) => e.kind === "posture.recorded");
+    expect(recorded).toMatchObject({ source: "adapter", trust: "verified" });
+    expect(recorded?.payload).toMatchObject({
+      workItemId: "work_slug",
+      runId: "run1",
+      posture: { match: false },
+    });
+    expect(reduceWorkTruth([...log, ...plan.events]).postures?.work_slug).toHaveLength(1);
     expect(stateOf(log, plan.events)?.state).toBe("blocked");
   });
 

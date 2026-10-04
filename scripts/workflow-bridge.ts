@@ -122,6 +122,14 @@ class Builder {
     });
   }
 
+  posture(record: PostureRecord): void {
+    this.envelope("posture.recorded", "adapter", "verified", {
+      workItemId: this.ctx.workItemId,
+      runId: this.ctx.runId,
+      posture: record,
+    });
+  }
+
   transition(toState: string, condition?: Condition): void {
     this.envelope("work.transitioned", "adapter", "verified", {
       payloadVersion: 3,
@@ -183,9 +191,7 @@ export function planPreflight(
     posture: input.posture,
     neededPaths: input.neededPaths,
   });
-  builder.evidence("posture-record", input.posture.match ? "passed" : "failed", {
-    posture: input.posture,
-  });
+  builder.posture(input.posture);
   if (readiness.ok) {
     // `active` raises no attention, so the transition takes no condition.
     builder.transition("active");

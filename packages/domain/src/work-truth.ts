@@ -2,7 +2,9 @@ import {
   parseProjectEvent,
   validateWorkAssignmentPayload,
   validateWorkCreatedPayload,
+  validatePostureRecordedPayload,
   validateWorkTransitionPayload,
+  type PostureRecord,
   type ProjectEvent,
   type WorkConditionV3,
   type WorkContract,
@@ -62,6 +64,14 @@ export type EvidenceTruth = {
   eventId: string;
 };
 
+/** One posture read back for a run (W6a). Never carries state; history is kept, in canonical order. */
+export type PostureTruth = {
+  runId: string;
+  posture: PostureRecord;
+  eventId: string;
+  recordedAt: string;
+};
+
 export type ApprovalTruth = {
   approvalId: string;
   workItemId: string;
@@ -92,6 +102,11 @@ export type WorkTruthState = {
   workItems: Record<string, WorkItemTruth>;
   evidence: Record<string, EvidenceTruth>;
   approvals: Record<string, ApprovalTruth>;
+  /**
+   * Posture history per work item, oldest first (W6a). Present only once a posture is recorded, so
+   * a log without one projects exactly as before (the Phase 6 fingerprints cover this state).
+   */
+  postures?: Record<string, PostureTruth[]>;
   issues: WorkTruthIssue[];
 };
 
@@ -123,6 +138,7 @@ export function reduceWorkTruth(input: readonly unknown[]): WorkTruthState {
     applyStaffingEvent(staffing, event);
     if (event.kind === "work.created") createWorkItem(state, event);
     if (event.kind === "evidence.recorded") recordEvidence(state, event);
+    if (event.kind === "posture.recorded") recordPosture(state, event);
     if (event.kind === "work.transitioned") transitionWorkItem(state, event);
     if (event.kind === "approval.recorded") recordApproval(state, event);
     if (event.kind === "work.assigned") assignWork(state, event, staffing);
@@ -206,6 +222,46 @@ function recordEvidence(state: WorkTruthState, event: ProjectEvent): void {
     result,
     eventId: event.eventId,
   };
+}
+
+function recordPosture(state: WorkTruthState, event: ProjectEvent): void {
+  const parsed = validatePostureRecordedPayload(event.payload);
+  if (!parsed.ok) {
+    issue(state, "MALFORMED_WORK_EVENT", event, parsed.issues.join("; "));
+    return;
+  }
+  const { workItemId, runId, posture } = parsed.value;
+  if (event.workItemId !== undefined && event.workItemId !== workItemId) {
+    issue(
+      state,
+      "MALFORMED_WORK_EVENT",
+      event,
+      "posture.recorded payload names a different work item than the envelope",
+      workItemId,
+    );
+    return;
+  }
+  // A posture is a fact the runner measured. Anything else is a claim and may not be recorded here.
+  if (event.source !== "adapter" || event.trust !== "verified") {
+    issue(
+      state,
+      "MALFORMED_WORK_EVENT",
+      event,
+      "posture.recorded must come from source adapter with trust verified",
+      workItemId,
+    );
+    return;
+  }
+  if (!state.workItems[workItemId]) {
+    issue(state, "WORK_ITEM_NOT_FOUND", event, "work item does not exist", workItemId);
+    return;
+  }
+  ((state.postures ??= {})[workItemId] ??= []).push({
+    runId,
+    posture,
+    eventId: event.eventId,
+    recordedAt: event.occurredAt,
+  });
 }
 
 function transitionWorkItem(state: WorkTruthState, event: ProjectEvent): void {

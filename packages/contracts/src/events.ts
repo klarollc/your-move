@@ -9,6 +9,7 @@ export const eventKinds = [
   "work.assigned",
   "work.released",
   "evidence.recorded",
+  "posture.recorded",
   "approval.recorded",
   "agent.registered",
   "agent.presence_changed",
