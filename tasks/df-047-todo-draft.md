@@ -1,7 +1,26 @@
 # DF-047 — streamed effects in kickoff classification (task draft)
 
-Status: **approved by owner 2026-10-04; implementation authorized after W6 acceptance on 2026-10-04**.
+Status: **approved by owner 2026-10-04; implementation in progress after W6 acceptance**.
 Finding: `docs/evidence/dogfood-register.md`, DF-047.
+
+## Progress checklist
+
+- [ ] Task 1 — include streamed items in shared kickoff classification and pass the clean owner-run
+      verification gate.
+
+## Evidence so far
+
+- **RED, owner-run:** the focused test had 3 failures and 1 pass. The three failures were the
+  omitted streamed file change, omitted unclassified streamed item, and missing streamed effect on
+  a failed turn; deduplication passed.
+- **GREEN, owner-run:** the focused test's failure guard did not throw. The test summary was not
+  included in the pasted output.
+- **Script typecheck, owner-run:** `npm.cmd run typecheck:scripts` exited 0.
+- **Lint and format check, owner-run:** their nonzero-exit guards did not throw; the output was not
+  included in the pasted excerpt.
+- **Provenance, owner-run:** check passed with 426 artifacts, no missing ledger entries, and no
+  stale digests.
+- Clean-tree full verification and owner acceptance remain pending.
 
 ## Problem
 

@@ -366,6 +366,19 @@
       ]
     },
     {
+      "id": "df-047",
+      "title": "DF-047, streamed effects in kickoff classification",
+      "state": "in_progress",
+      "checklist": "tasks/df-047-todo-draft.md",
+      "tasks": [
+        {
+          "id": "1",
+          "state": "in_progress",
+          "note": "Approved task breakdown; W6 prerequisite met. RED established (3 failed, 1 passed); focused GREEN exit guard passed; script typecheck, lint, formatting, and provenance checks passed. Clean verify and owner acceptance remain pending."
+        }
+      ]
+    },
+    {
       "id": "7",
       "title": "Phase 7, the rendered office",
       "state": "in_progress",

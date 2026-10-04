@@ -91,9 +91,12 @@ fixture's missing `item/started` and `item/completed` notifications; the focused
 integration command exited successfully. A duplicate recovery stash remains; do not reapply it.
 The W6 acceptance record is `docs/evidence/workflow-proof/decision-record-2026-10-04-w6-acceptance.md`.
 
-DF-047's task breakdown is approved and its W6 prerequisite is now met. It is the next authorized
-workflow-proof task; begin with its RED test. W7–W9 remain blocked pending their own task approvals.
-No W12 live attempt, UI implementation, promotion, push, or external effect is authorized by W6.
+DF-047's task breakdown is approved and its W6 prerequisite is met. Implementation is in progress:
+the owner-run RED had 3 failures and 1 pass as expected, the focused GREEN command exited 0, and
+`npm.cmd run typecheck:scripts`, lint, formatting, and provenance checks passed. Clean owner-run
+`verify` and owner acceptance remain. Task record:
+`tasks/df-047-todo-draft.md`. W7–W9 remain blocked pending their own task approvals. No W12 live
+attempt, UI implementation, promotion, push, or external effect is authorized by W6.
 
 ### Why Phase 7 exists
 

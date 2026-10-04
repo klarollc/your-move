@@ -25,6 +25,7 @@ import type { RuntimeBindingReport } from "@cuckcode/contracts";
 
 import { assertNoCodexDrift } from "./codex-drift.js";
 import { KICKOFF_TASK_CONTRACT } from "./phase4-kickoff-briefing.js";
+import { mergeTurnItems } from "./tracer-guards.js";
 
 /**
  * One persistent Codex thread for one role, held open across the whole bounded round.
@@ -190,10 +191,8 @@ export async function openKickoffSession(input: {
 
         // One classification for every caller (R5). Effects are reported even from a turn that
         // failed, and an item nobody has classified stops the turn rather than passing as text.
-        const classified = classifyTurnItems(items);
-        for (const type of classified.effects) {
-          effects.push({ kind: itemKindFor(type), phase: "completed" });
-        }
+        const classified = classifyKickoffTurnItems(run);
+        effects.push(...classified.effects);
         if (!run.ok) {
           return { ok: false, code: run.code, detail: run.detail, effects, attempts: run.attempts };
         }
@@ -263,6 +262,20 @@ function itemKindFor(type: string): string {
   if (["mcpToolCall", "dynamicToolCall", "collabAgentToolCall"].includes(type))
     return "runtime.tool";
   return "runtime.artifact";
+}
+
+/** Classifies the item sources a kickoff turn can report, keeping effects on failed runs visible. */
+export function classifyKickoffTurnItems(run: {
+  ok: boolean;
+  turn: { items: readonly unknown[] } | null;
+  streamedItems: readonly unknown[];
+}): { effects: ObservedTurnEffect[]; unclassified: string[] } {
+  const items = mergeTurnItems(run.turn?.items ?? [], run.streamedItems);
+  const classified = classifyTurnItems(items);
+  return {
+    effects: classified.effects.map((type) => ({ kind: itemKindFor(type), phase: "completed" })),
+    unclassified: classified.unclassified,
+  };
 }
 
 /**
