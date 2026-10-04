@@ -48,7 +48,7 @@ const copySeed = (): string => {
 };
 const runTests = (cwd: string): { ok: boolean; output: string } => {
   try {
-    const output = execFileSync(process.execPath, ["--test"], {
+    const output = execFileSync(process.execPath, ["--test", "--test-reporter=tap"], {
       cwd,
       encoding: "utf8",
       env: { PATH: process.env.PATH ?? "" },

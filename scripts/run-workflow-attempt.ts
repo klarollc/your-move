@@ -53,6 +53,7 @@ import {
 } from "@cuckcode/runtime-codex";
 
 import { appendEventLog, readEventLog } from "../apps/server/src/event-log.js";
+import { acquireLogLock } from "../apps/server/src/log-lock.js";
 import { assertNoCodexDrift } from "./codex-drift.js";
 import {
   RESULT_MARKER,
@@ -175,6 +176,11 @@ if (!Number.isInteger(requestedMaxTurns) || requestedMaxTurns < 1) {
 }
 const observedAt = new Date().toISOString();
 const runId = arg("--run-id", `run_${observedAt.replace(/[^0-9]/gu, "")}`);
+
+// One writer at a time: refuse while the server or another runner holds the log.
+const logLock = await acquireLogLock(logPath, "runner");
+if (!logLock.ok) throw new Error(`WORKFLOW_${logLock.code}:${logLock.detail}`);
+process.once("exit", logLock.lock.releaseSync);
 
 // The log must be whole, and name exactly one project and a work item that carries a contract.
 const initialLog = await readEventLog(logPath);

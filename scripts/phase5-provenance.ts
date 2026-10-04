@@ -84,6 +84,17 @@ export const HISTORICAL_FIELDS = new Set([
 /** The ledger cannot record itself without regress. Excluded by name, never by a pattern. */
 export const LEDGER_PATH = "provenance.jsonl";
 
+/**
+ * Evidence that is git-ignored and regenerated on demand is not provenance: a record of it would go
+ * stale on every regeneration and could never be committed. Today that is the workflow-proof
+ * rehearsal transcript (W10, owner ruling 2026-10-04). Committed workflow evidence, the attempt
+ * ledger and the hashed transcripts, is not excluded and must be recorded.
+ */
+export const REGENERATED_PREFIXES: readonly string[] = ["workflow/rehearsal/"];
+
+export const isRegeneratedArtifact = (artifact: string): boolean =>
+  REGENERATED_PREFIXES.some((prefix) => normaliseArtifactPath(artifact).startsWith(prefix));
+
 const EVIDENCE_PREFIX = "docs/evidence/";
 
 /** Both spellings appear across the tree; they name the same file and must compare equal. */

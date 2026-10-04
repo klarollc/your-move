@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   appendOnlyViolation,
   artifactsMissingFromLedger,
+  isRegeneratedArtifact,
   citedArtifacts,
   currentRecords,
   derivePassSupersessions,
@@ -507,5 +508,15 @@ describe("retracted pairs, reported to the builder", () => {
         supersede("phase-5/r/a.json", "phase-5/r/b.json"),
       ]),
     ]).toStrictEqual([]);
+  });
+});
+
+describe("regenerated evidence", () => {
+  it("excludes the git-ignored rehearsal transcript but not committed workflow evidence", () => {
+    expect(isRegeneratedArtifact("workflow/rehearsal/rehearsal.md")).toBe(true);
+    expect(isRegeneratedArtifact("workflow\\rehearsal\\rehearsal.md")).toBe(true);
+    expect(isRegeneratedArtifact("workflow/attempts.json")).toBe(false);
+    expect(isRegeneratedArtifact("workflow/transcripts/a.json")).toBe(false);
+    expect(isRegeneratedArtifact("phase-5/rehearsal/x.md")).toBe(false);
   });
 });

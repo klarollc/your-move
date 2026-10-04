@@ -21,6 +21,7 @@ import {
   type LedgerEntry,
   type ProducerKind,
   type RecordEntry,
+  isRegeneratedArtifact,
 } from "./phase5-provenance.ts";
 
 /**
@@ -222,7 +223,9 @@ const attribute = (
   };
 };
 
-const files = (await listFiles(EVIDENCE)).filter((path) => path !== LEDGER_PATH);
+const files = (await listFiles(EVIDENCE)).filter(
+  (path) => path !== LEDGER_PATH && !isRegeneratedArtifact(path),
+);
 
 const digests = new Map<string, string>();
 const sizes = new Map<string, number>();

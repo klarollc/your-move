@@ -28,6 +28,7 @@
     "kickoff:preflight": "tsx scripts/phase4-kickoff-preflight.ts",
     "kickoff:run": "tsx scripts/run-phase4-kickoff.ts",
     "work:evidence": "tsx scripts/record-work-evidence.ts",
+    "serve:log": "tsx scripts/serve-office-log.ts",
     "work:review": "tsx scripts/request-work-review.ts",
     "workflow:rehearsal": "tsx scripts/workflow-rehearsal.ts",
     "phase5:contract:build": "tsx scripts/build-phase5-acceptance-contract.ts",
