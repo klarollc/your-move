@@ -10,3 +10,4 @@ export * from "./kickoff-run.js";
 export * from "./kickoff-harness.js";
 export * from "./office-read-model.js";
 export * from "./work-commands.js";
+export * from "./work-command-mapping.js";

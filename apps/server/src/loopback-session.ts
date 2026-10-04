@@ -1,6 +1,9 @@
 import websocket from "@fastify/websocket";
+import { toWorkCommand, executeWorkCommand } from "@cuckcode/application";
 import { validateWorkspaceCommand } from "@cuckcode/contracts";
 import Fastify, { type FastifyInstance } from "fastify";
+
+import { appendEventLog, readEventLog } from "./event-log.js";
 
 export type LoopbackApp = FastifyInstance;
 
@@ -22,6 +25,9 @@ type LoopbackAppOptions = {
     payload: Record<string, unknown>;
   }>;
   fixtureMode?: boolean;
+  /** Log mode (W5c): the append-only JSONL event log this server reads and appends to. */
+  logPath?: string;
+  now?: () => string;
 };
 
 export function createLoopbackApp(options: LoopbackAppOptions): LoopbackApp {
@@ -70,8 +76,26 @@ export function createLoopbackApp(options: LoopbackAppOptions): LoopbackApp {
     sessionId: options.sessionId,
     csrfToken: options.csrfToken,
     projectId: options.projectId,
-    revision: options.initialRevision,
+    revision: options.logPath
+      ? (await readEventLog(options.logPath)).revision
+      : options.initialRevision,
   }));
+
+  // Log mode (W5c): the append-only event log is the source of truth. The surface replays and
+  // projects it itself with the same pure code the office uses, so no read model is chosen here.
+  app.get("/api/log", async (request, reply) => {
+    if (request.headers["x-cuckcode-session"] !== options.sessionId) {
+      return reply.code(403).send({ code: "SESSION_REJECTED" });
+    }
+    if (!options.logPath) return reply.code(404).send({ code: "LOG_NOT_CONFIGURED" });
+    const log = await readEventLog(options.logPath);
+    return reply.code(200).send({
+      revision: log.revision,
+      events: log.events,
+      truncated: log.truncated,
+      problems: log.problems,
+    });
+  });
 
   app.get("/api/workspace", async (request, reply) => {
     if (request.headers["x-cuckcode-session"] !== options.sessionId) {
@@ -88,9 +112,11 @@ export function createLoopbackApp(options: LoopbackAppOptions): LoopbackApp {
       return reply.code(403).send({ code: "SESSION_OR_CSRF_REJECTED" });
     }
 
+    const logPath = options.logPath;
+    const log = logPath ? await readEventLog(logPath) : undefined;
     const result = validateWorkspaceCommand(request.body, {
       projectId: options.projectId,
-      revision: options.initialRevision,
+      revision: log ? log.revision : options.initialRevision,
     });
     if (!result.ok) {
       if (result.code === "WORKSPACE_COMMAND_STALE") {
@@ -107,6 +133,34 @@ export function createLoopbackApp(options: LoopbackAppOptions): LoopbackApp {
           ? 403
           : 400;
       return reply.code(statusCode).send({ code: result.code });
+    }
+
+    if (logPath && log) {
+      if (log.truncated || log.problems.length > 0) {
+        return reply
+          .code(503)
+          .send({ code: "LOG_DAMAGED", detail: "the event log has unreadable records" });
+      }
+      const mapped = toWorkCommand(result.value);
+      if (!mapped.ok) return reply.code(422).send({ code: mapped.code, issues: mapped.issues });
+      const outcome = executeWorkCommand({
+        log: log.events,
+        currentRevision: log.revision,
+        now: (options.now ?? (() => new Date().toISOString()))(),
+        command: mapped.value,
+      });
+      if (!outcome.ok) {
+        const status =
+          outcome.code === "STALE_REVISION" ? 409 : outcome.code === "NOT_AUTHORIZED" ? 403 : 422;
+        return reply.code(status).send({ code: outcome.code, issues: outcome.issues });
+      }
+      const appended = await appendEventLog(logPath, outcome.events, log.revision);
+      if (!appended.ok) {
+        const status =
+          appended.code === "STALE_REVISION" ? 409 : appended.code === "LOG_DAMAGED" ? 503 : 422;
+        return reply.code(status).send({ code: appended.code, detail: appended.detail });
+      }
+      return reply.code(202).send(outcome.receipt);
     }
 
     return reply.code(202).send({
