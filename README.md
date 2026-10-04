@@ -98,3 +98,10 @@ This approval does not authorize implementation or visual-baseline promotion.
 ## Working principle
 
 The office is a truthful projection of inspectable workflow state. It must never use animation, avatar behavior, or spatial placement to imply work, progress, collaboration, urgency, or availability that is not supported by real events.
+
+### Current implementation authority — 2026-10-03
+
+The live position record and HANDOFF supersede historical phase status above. Phase 7-O was
+accepted by owner waiver; Phase 7 Tasks 1–5b are complete. Task 6's furniture plan and implementation
+breakdown are owner-approved, with Luna subagents requested. Implementation is in progress; clean
+owner-run verification, owner captures/provenance and plate review remain open.

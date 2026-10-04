@@ -142,3 +142,12 @@ does not reopen Phase 5 acceptance, and no release review is authorized by it.
 - Never expose credentials, hidden prompts, or private chain-of-thought in the office UI or audit log.
 - Require explicit approval for destructive operations, external publishing, production deployment, financial transactions, or changes outside the active project.
 - Preserve audit events and artifacts; do not rewrite history to make a run appear successful.
+
+## Current amendment — 2026-10-03, Phase 7 Task 6
+
+Position and HANDOFF supersede historical phase status above. Phase 7-O was accepted by owner
+waiver on 2026-10-02; its freeze ended. Phase 7 Tasks 1–5b are done. The owner approved the
+Task 6 implementation breakdown in tasks/phase-7-task-6-todo-draft.md and requested Luna
+subagents. Task 6 implementation is authorized within tasks/phase-7-task-6-plan.md. Clean
+owner-run verification, owner captures/provenance and exact plate review remain required.
+No Task 7 work, evidence regeneration by agents, promotion, push or external effect is authorized.

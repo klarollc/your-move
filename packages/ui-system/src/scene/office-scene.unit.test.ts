@@ -22,17 +22,20 @@ describe("the scene layer", () => {
     expect(frame).toContain(renderSceneDefs(style));
   });
 
-  it("drops only the baked labels and the fixed figures for the app", () => {
+  it("omits baked labels and fixed figures while opting the app into furniture", () => {
     const full = renderSceneLayer(style, { labels: true, figures: true });
-    const app = renderSceneLayer(style, { labels: false, figures: false });
+    const app = renderSceneLayer(style, { labels: false, figures: false, furniture: true });
     expect(count(full, "text")).toBeGreaterThan(0);
     expect(count(app, "text")).toBe(0);
     expect(full).toContain(`fill="${style.palette.figure}"`);
     expect(app).not.toContain(`fill="${style.palette.figure}"`);
     expect(app).not.toContain(`fill="${style.palette.figureShade}"`);
-    // Floor, zones, desks and props are all polygons; figures and labels never are.
+    // The furnished app retains the polygon art and adds its separate furniture inventory.
     expect(count(app, "polygon")).toBeGreaterThan(0);
-    expect(count(app, "polygon")).toBe(count(full, "polygon"));
+    expect(app).toContain('data-furniture="team-chair"');
+    expect(renderSceneLayer(style, { labels: false, figures: false })).not.toContain(
+      "data-furniture=",
+    );
   });
 
   it("references only filters its defs declare", () => {

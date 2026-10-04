@@ -1523,3 +1523,10 @@ plan and checklist. No implementation of either is authorized before Phase 7-O i
 still needs its plan and checklist approved.
 
 This approval does not authorize production implementation. Dependency installation, project scaffolding, runtime connection, imported role material, or production code requires approval of the next implementation-plan gate.
+
+### Phase 7 Task 6 implementation ruling — 2026-10-03
+
+The owner approved tasks/phase-7-task-6-todo-draft.md and requested Luna subagents to complete
+the approved furniture slice under tasks/phase-7-task-6-plan.md. This ruling clears the breakdown
+entry gate after Task 5b's clean verify. It does not amend visual/canonical behavior or waive
+owner-run evidence, clean verification, or per-slice plate review before Task 7.

@@ -52,6 +52,7 @@ const sceneArt = Object.freeze({
     labels: false,
     figures: false,
     architecture: true,
+    furniture: true,
   }),
 });
 const entities = sceneEntities();

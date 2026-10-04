@@ -392,12 +392,17 @@
         },
         {
           "id": "5",
-          "state": "in_progress",
-          "note": "Plan approved 2026-10-03 (W-1 to W-4); Task 5b approved as written 2026-10-03 for wall-only face shades, mid-grey cut tops, and fixed soft daylight. Built Task 5 gate: verify 0637b27, runner p7t5-verify-1791056159. Task 5b implementation in working tree; focused architecture and frozen-frame tests GREEN 17/17. Owner captures at both viewports match provenance entries 631-632; owner AR-01 review 2026-10-03: \"slice meets expectations\". Broad checks passed through build; all 92 e2e and 42 a11y cases reported passing, but Playwright did not exit cleanly and no complete verify gate is claimed. Clean owner-run verify pending. Task 5 remains in progress."
+          "state": "done",
+          "gate": {
+            "verify": "a582953",
+            "runner": "p7t5b-verify-20261003-01"
+          },
+          "note": "Plan approved 2026-10-03 (W-1 to W-4); Task 5b approved as written 2026-10-03 for wall-only face shades, mid-grey cut tops, and fixed soft daylight. Focused architecture and frozen-frame tests GREEN 17/17. Owner captures at both viewports match provenance entries 631-632; owner AR-01 review 2026-10-03: \"slice meets expectations\". Clean owner-run verify passed on a582953 with runner p7t5b-verify-20261003-01: unit 646, component 154, integration 90 (+3 skipped), contract 85, e2e 92, a11y 42, visual 68; exit 0, clean tree, no evidence changes. Task 5 done."
         },
         {
           "id": "6",
-          "state": "approved"
+          "state": "in_progress",
+          "note": "Owner-approved detail plan and Luna breakdown 2026-10-03, with target, opt-in and existing-desk-only corrections. Implementation ready for owner gate: focused tests 37/37, final default/inspector clearance checks at both approved viewports pass. Official browser command hung in teardown; no clean exit claimed. Clean owner-run verify, owner captures/provenance and exact AR-01/AR-04 plate review remain; Task 7 waits. Tucked chair legibility needs owner judgment."
         },
         {
           "id": "7",

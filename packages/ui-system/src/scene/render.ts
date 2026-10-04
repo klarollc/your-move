@@ -175,6 +175,97 @@ function deskPiece(style: CandidateStyle, agent: AgentPlacement): Piece {
   return { key: depth(agent.x, agent.y), svg: parts.join("") };
 }
 
+/** A raised, thin isometric slab used by the furniture-only application scene. */
+function slab(
+  style: CandidateStyle,
+  x: number,
+  y: number,
+  w: number,
+  d: number,
+  z0: number,
+  z1: number,
+  base: string,
+  edge: string,
+): string {
+  const top = [iso(x, y, z1), iso(x + w, y, z1), iso(x + w, y + d, z1), iso(x, y + d, z1)];
+  const left = [iso(x, y + d, z1), iso(x + w, y + d, z1), iso(x + w, y + d, z0), iso(x, y + d, z0)];
+  const right = [
+    iso(x + w, y, z1),
+    iso(x + w, y + d, z1),
+    iso(x + w, y + d, z0),
+    iso(x + w, y, z0),
+  ];
+  const stroke = style.edgeWidth > 0 ? ` stroke="${edge}" stroke-width="${style.edgeWidth}"` : "";
+  return [
+    `<polygon points="${pts(left)}" fill="${shade(base, -0.18)}"${stroke}/>`,
+    `<polygon points="${pts(right)}" fill="${shade(base, -0.08)}"${stroke}/>`,
+    `<polygon points="${pts(top)}" fill="${shade(base, style.lift)}"${stroke}/>`,
+  ].join("");
+}
+
+function furnishedDeskPiece(style: CandidateStyle, agent: AgentPlacement): Piece {
+  const p = style.palette;
+  const supportOffsets: Array<[number, number]> =
+    agent.agentId === "agent_implementation_engineer"
+      ? []
+      : agent.agentId === "agent_test_engineer"
+        ? [
+            [1.68, 1.15],
+            [1.78, 1.15],
+          ]
+        : agent.workArea === "review_station"
+          ? [
+              [1.15, 1.15],
+              [1.45, 1.15],
+            ]
+          : [
+              [1.15, 1.15],
+              [1.2, 1.15],
+            ];
+  const legs = supportOffsets
+    .map(
+      ([dx, dy]) =>
+        `<g data-furniture-part="support">${slab(style, agent.x + dx, agent.y + dy, 0.05, 0.05, 0, 0.38, p.metalShade, p.woodEdge)}</g>`,
+    )
+    .join("");
+  const angledEngineerSupport =
+    agent.agentId === "agent_implementation_engineer"
+      ? (() => {
+          const top = iso(agent.x + 1.72, agent.y + 1.1, 0.38);
+          const foot = iso(agent.x + 1.0, agent.y + 1.75);
+          return `<g data-furniture-part="support"><path d="M ${top.x.toFixed(2)} ${top.y.toFixed(2)} L ${foot.x.toFixed(2)} ${foot.y.toFixed(2)}" fill="none" stroke="${p.metalShade}" stroke-width="1.5"/></g>`;
+        })()
+      : "";
+  const table = `<g data-furniture-part="desk-surface">${slab(style, agent.x + 0.14, agent.y, 1.72, 1.2, 0.38, 0.48, p.wood, p.woodEdge)}</g>`;
+  // Compact back-corner screens use only clear stations; other desks retain a keyboard cue.
+  const monitorX = agent.x + 0.15;
+  const monitor =
+    agent.agentId === "agent_test_engineer" || agent.agentId === "agent_release_reviewer"
+      ? ""
+      : `<g data-furniture-part="monitor">${slab(
+          style,
+          monitorX,
+          agent.y + 0.02,
+          0.4,
+          0.08,
+          0.72,
+          1.1,
+          p.metal,
+          p.metalShade,
+        )}<g data-furniture-part="monitor-stand">${slab(style, agent.x + 0.17, agent.y + 0.03, 0.06, 0.04, 0.49, 0.72, p.metalShade, p.woodEdge)}</g></g>`;
+  const keyboard = [
+    iso(agent.x + 0.15, agent.y + 0.02, 0.48),
+    iso(agent.x + 0.25, agent.y + 0.02, 0.48),
+    iso(agent.x + 0.25, agent.y + 0.08, 0.48),
+    iso(agent.x + 0.15, agent.y + 0.08, 0.48),
+  ];
+  const workSurface = `${legs}${angledEngineerSupport}${table}${monitor}<polygon data-furniture-part="keyboard" points="${pts(keyboard)}" fill="${p.metalShade}" stroke="${p.woodEdge}" stroke-width="0.7"/>`;
+  return {
+    key: depth(agent.x, agent.y),
+    svg: `${contact(style, agent.x - 0.1, agent.y - 0.1, 2.2, 1.6)}${furnitureGroup("work-surface", workSurface, agent.workArea, agent.agentId)}`,
+  };
+}
+
 function figurePiece(style: CandidateStyle, agent: AgentPlacement, scene: SceneState): Piece {
   const p = style.palette;
   const seated = agent.build === "seated-wheelchair";
@@ -276,6 +367,310 @@ function figurePiece(style: CandidateStyle, agent: AgentPlacement, scene: SceneS
     `<text x="${base.x.toFixed(2)}" y="${labelY.toFixed(2)}" text-anchor="middle" font-family="${style.typography.display}" font-size="9" font-weight="${style.typography.labelWeight}" fill="${p.ink}">${escapeText(agent.label)}</text>`,
   );
   return { key: depth(fx, fy) + 0.05, svg: parts.join("") };
+}
+
+const furnitureGroup = (name: string, svg: string, zone = "floor", item?: string): string =>
+  `<g data-furniture="${name}" data-zone="${zone}"${item ? ` data-item="${item}"` : ""} aria-hidden="true">${svg}</g>`;
+
+/** Low-contrast seams clipped to the unchanged canonical floor footprint. */
+function floorSeams(style: CandidateStyle): string {
+  const corners = [
+    iso(FLOOR.x, FLOOR.y),
+    iso(FLOOR.x + FLOOR.w, FLOOR.y),
+    iso(FLOOR.x + FLOOR.w, FLOOR.y + FLOOR.d),
+    iso(FLOOR.x, FLOOR.y + FLOOR.d),
+  ];
+  const seams: Array<[number, number, number, number]> = [
+    [1.1, 2.2, 3.0, 2.2],
+    [5.5, 1.3, 7.9, 1.3],
+    [10.2, 2.5, 12.3, 2.5],
+    [15.3, 1.6, 17.1, 1.6],
+    [2.0, 6.7, 3.7, 6.7],
+    [12.5, 13.5, 14.5, 13.5],
+    [5.1, 12.1, 7.8, 12.1],
+    [10.2, 12.8, 11.6, 12.8],
+  ];
+  const paths = seams
+    .map(([x1, y1, x2, y2], index) => {
+      const start = iso(x1, y1);
+      const end = iso(x2, y2);
+      return furnitureGroup(
+        "floor-seam",
+        `<path data-floor-seam="${index}" d="M ${start.x.toFixed(2)} ${start.y.toFixed(2)} L ${end.x.toFixed(2)} ${end.y.toFixed(2)}"/>`,
+        "floor",
+        `seam-${index}`,
+      );
+    })
+    .join("");
+  return `<defs><clipPath id="furniture-floor-clip"><polygon points="${pts(corners)}"/></clipPath></defs><g clip-path="url(#furniture-floor-clip)" fill="none" stroke="${style.palette.woodShade}" stroke-width="0.8" opacity="0.22">${paths}</g>`;
+}
+
+function chair(style: CandidateStyle, x: number, y: number): string {
+  const p = style.palette;
+  const width = 0.4;
+  const seatDepth = 0.36;
+  const seat = [
+    iso(x, y + seatDepth, 0.2),
+    iso(x + width, y + seatDepth, 0.2),
+    iso(x + width, y, 0.2),
+    iso(x, y, 0.2),
+  ];
+  const seatEdge = [
+    seat[0]!,
+    seat[1]!,
+    iso(x + width, y + seatDepth, 0.14),
+    iso(x, y + seatDepth, 0.14),
+  ];
+  const back = [
+    iso(x, y + 0.04, 0.2),
+    iso(x + width, y + 0.04, 0.2),
+    iso(x + width, y + 0.04, 0.58),
+    iso(x, y + 0.04, 0.58),
+  ];
+  const legs = [
+    [x + 0.04, y + seatDepth - 0.04],
+    [x + width - 0.04, y + seatDepth - 0.04],
+    [x + width - 0.04, y + 0.04],
+  ]
+    .map(([lx, ly]) => {
+      const top = iso(lx!, ly!, 0.14);
+      const foot = iso(lx!, ly!);
+      return `<path d="M ${top.x.toFixed(2)} ${top.y.toFixed(2)} L ${foot.x.toFixed(2)} ${foot.y.toFixed(2)}" stroke="${p.metalShade}" stroke-width="2"/>`;
+    })
+    .join("");
+  const rails = [
+    [x + 0.04, y + 0.04],
+    [x + width - 0.04, y + 0.04],
+  ]
+    .map(([lx, ly]) => {
+      const base = iso(lx!, ly!, 0.2);
+      const top = iso(lx!, ly!, 0.58);
+      return `<path d="M ${base.x.toFixed(2)} ${base.y.toFixed(2)} L ${top.x.toFixed(2)} ${top.y.toFixed(2)}" stroke="${p.metalShade}" stroke-width="2"/>`;
+    })
+    .join("");
+  const shadow = iso(x + width / 2, y + seatDepth / 2);
+  return [
+    `<ellipse cx="${shadow.x.toFixed(2)}" cy="${shadow.y.toFixed(2)}" rx="6.00" ry="3.00" fill="${p.shadow}" opacity="0.12"/>`,
+    legs,
+    `<polygon points="${pts(back)}" fill="${p.textile}" stroke="${p.woodEdge}" stroke-width="1.1"/>`,
+    rails,
+    `<polygon points="${pts(seatEdge)}" fill="${p.woodShade}"/>`,
+    `<polygon points="${pts(seat)}" fill="${p.textile}" stroke="${p.woodEdge}" stroke-width="1.2"/>`,
+  ].join("");
+}
+
+/** Static, state-neutral additions for the opt-in application rendering path. */
+function furniturePieces(style: CandidateStyle): Piece[] {
+  const p = style.palette;
+  const pieces: Piece[] = [];
+
+  for (const agent of AGENTS) {
+    if (agent.workArea === "team_area") {
+      const x = agent.x + 0.15;
+      const y = agent.y + 0.03;
+      pieces.push({
+        // Tuck the chair beneath its own desktop. The opaque desk surface masks the lower
+        // silhouette, leaving the back visible in the clear strip above the nameplate.
+        key: depth(agent.x, agent.y) - 0.03,
+        svg: furnitureGroup("team-chair", chair(style, x, y), agent.workArea, agent.agentId),
+      });
+    } else {
+      // Keep review sheets on the front-right corner of their own work surface.
+      const x = agent.x + 1.72;
+      const y = agent.y + 1.1;
+      const sheet = [
+        iso(x, y, 0.49),
+        iso(x + 0.1, y, 0.49),
+        iso(x + 0.1, y + 0.06, 0.49),
+        iso(x, y + 0.06, 0.49),
+      ];
+      const paper = `<polygon points="${pts(sheet)}" fill="${p.paper}" stroke="${p.woodEdge}" stroke-width="0.65"/>`;
+      pieces.push({
+        key: depth(x, y) + 0.02,
+        svg: furnitureGroup("review-papers", paper, agent.workArea, agent.agentId),
+      });
+    }
+  }
+
+  const collab = PROPS.find(({ kind }) => kind === "collabTable");
+  if (collab) {
+    const legs = [
+      [0.12, 0.12],
+      [2.56, 0.12],
+      [0.12, 1.8],
+      [2.56, 1.8],
+    ]
+      .map(([x, y]) =>
+        box(style, collab.x + x!, collab.y + y!, 0.12, 0.12, 0.36, p.metalShade, p.woodEdge),
+      )
+      .join("");
+    pieces.push({
+      key: depth(collab.x, collab.y) + 0.02,
+      svg: furnitureGroup(
+        "collab-table-edge",
+        `${legs}${slab(style, collab.x, collab.y, 2.8, 2, 0.36, 0.46, p.wood, p.woodEdge)}`,
+        collab.zone,
+        "collaboration-table",
+      ),
+    });
+  }
+
+  const chairs: Array<[number, number]> = [
+    [13.25, 7.2],
+    [16.95, 7.2],
+    [13.25, 8.25],
+    [16.95, 8.25],
+  ];
+  for (const [index, [x, y]] of chairs.entries()) {
+    pieces.push({
+      key: depth(x, y) + 0.02,
+      svg: furnitureGroup(
+        "collab-chair",
+        chair(style, x, y),
+        "collaboration_table",
+        `chair-${index + 1}`,
+      ),
+    });
+  }
+
+  const shelf = PROPS.find(({ kind }) => kind === "shelf");
+  if (shelf) {
+    const books = Array.from({ length: 8 }, (_, index) => {
+      const rowIndex = index % 4;
+      const y = shelf.y + 0.08 + rowIndex * 0.38;
+      const z0 = index < 4 ? 0.18 + (rowIndex % 2) * 0.02 : 0.62 + (rowIndex % 2) * 0.02;
+      const z1 = index < 4 ? 0.61 - (rowIndex % 3) * 0.035 : 1.08 - (rowIndex % 3) * 0.035;
+      const front = shelf.x + 0.58;
+      const polygon = [
+        iso(front, y, z1),
+        iso(front, y + 0.3, z1),
+        iso(front, y + 0.3, z0),
+        iso(front, y, z0),
+      ];
+      const colors = [p.textile, p.plaster, p.woodShade, p.paper];
+      return `<polygon points="${pts(polygon)}" fill="${colors[index % colors.length]}" stroke="${p.woodEdge}" stroke-width="0.45"/>`;
+    }).join("");
+    pieces.push({
+      key: depth(shelf.x, shelf.y) + 0.02,
+      svg: furnitureGroup("shelf-books", books, shelf.zone, "library-shelf"),
+    });
+    const compartments = [0.14, 0.59]
+      .map((z) => {
+        const plank = [
+          iso(shelf.x + 0.56, shelf.y + 0.04, z),
+          iso(shelf.x + 0.6, shelf.y + 0.04, z),
+          iso(shelf.x + 0.6, shelf.y + 1.66, z),
+          iso(shelf.x + 0.56, shelf.y + 1.66, z),
+        ];
+        return `<polygon points="${pts(plank)}" fill="${p.woodShade}" stroke="${p.woodEdge}" stroke-width="0.7"/>`;
+      })
+      .join("");
+    pieces.push({
+      key: depth(shelf.x, shelf.y) + 0.03,
+      svg: furnitureGroup("shelf-compartment", compartments, shelf.zone, "library-shelf"),
+    });
+  }
+
+  const reception = PROPS.find(({ kind }) => kind === "receptionCounter");
+  if (reception) {
+    const a = iso(reception.x + 0.08, reception.y + 0.81, 0.58);
+    const b = iso(reception.x + 1.82, reception.y + 0.81, 0.58);
+    pieces.push({
+      key: depth(reception.x, reception.y) + 0.02,
+      svg: furnitureGroup(
+        "reception-edge",
+        `<path d="M ${a.x.toFixed(2)} ${a.y.toFixed(2)} L ${b.x.toFixed(2)} ${b.y.toFixed(2)}" fill="none" stroke="${p.plasterShade}" stroke-width="2.2"/>`,
+        reception.zone,
+        "reception-counter",
+      ),
+    });
+  }
+
+  const manager = PROPS.find(({ kind }) => kind === "managerDesk");
+  if (manager) {
+    const supports = [
+      [0.1, 0.08],
+      [2.2, 0.08],
+      [0.1, 1.12],
+      [2.2, 1.12],
+    ]
+      .map(([x, y]) =>
+        box(style, manager.x + x!, manager.y + y!, 0.12, 0.12, 0.42, p.metalShade, p.woodEdge),
+      )
+      .join("");
+    pieces.push({
+      key: depth(manager.x, manager.y) + 0.02,
+      svg: furnitureGroup(
+        "manager-edge",
+        `${supports}${slab(style, manager.x, manager.y, 2.4, 1.3, 0.42, 0.5, p.wood, p.woodEdge)}`,
+        manager.zone,
+        "manager-desk",
+      ),
+    });
+  }
+
+  for (const crate of PROPS.filter(({ kind }) => kind === "crate")) {
+    pieces.push({
+      key: depth(crate.x, crate.y) + 0.02,
+      svg: furnitureGroup(
+        "delivery-tray",
+        `${box(style, crate.x, crate.y, 0.85, 0.85, 0.12, p.wood, p.woodEdge)}<polygon points="${pts([iso(crate.x + 0.12, crate.y + 0.12, 0.14), iso(crate.x + 0.73, crate.y + 0.12, 0.14), iso(crate.x + 0.73, crate.y + 0.73, 0.14), iso(crate.x + 0.12, crate.y + 0.73, 0.14)])}" fill="${p.paper}" stroke="${p.woodEdge}" stroke-width="0.55"/>`,
+        crate.zone,
+        `tray-${crate.x}-${crate.y}`,
+      ),
+    });
+  }
+
+  const rug = PROPS.find(({ kind }) => kind === "rug");
+  if (rug) {
+    const footprint = [
+      iso(rug.x - 1.6, rug.y - 1.2),
+      iso(rug.x + 1.6, rug.y - 1.2),
+      iso(rug.x + 1.6, rug.y + 1.2),
+      iso(rug.x - 1.6, rug.y + 1.2),
+    ];
+    pieces.push({
+      key: -1,
+      svg: furnitureGroup(
+        "rug-surface",
+        `<polygon points="${pts(footprint)}" fill="${p.textile}" opacity="0.6"/>`,
+        rug.zone,
+        "team-rug",
+      ),
+    });
+    const seamStart = iso(6.9, 8.1);
+    const seamEnd = iso(7.05, 8.1);
+    pieces.push({
+      key: -0.5,
+      svg: furnitureGroup(
+        "rug-detail",
+        `<path d="M ${seamStart.x.toFixed(2)} ${seamStart.y.toFixed(2)} L ${seamEnd.x.toFixed(2)} ${seamEnd.y.toFixed(2)}" fill="none" stroke="${p.paper}" stroke-width="1.2" opacity="0.48"/>`,
+        rug.zone,
+        "team-rug",
+      ),
+    });
+  }
+
+  for (const plant of PROPS.filter(({ kind }) => kind === "plant")) {
+    const isTeamFoliage = plant.x === 11.4;
+    const isReleaseFoliage = plant.x === 17.2;
+    const centre = iso(
+      plant.x + (isTeamFoliage ? 0.2 : 0),
+      plant.y + (isTeamFoliage ? -0.2 : 0),
+      isTeamFoliage ? 0.8 : isReleaseFoliage ? 0.6 : 0.8,
+    );
+    const leaves = [
+      `<ellipse cx="${(centre.x - 2).toFixed(2)}" cy="${(centre.y + 1).toFixed(2)}" rx="2.3" ry="3.4" transform="rotate(-32 ${(centre.x - 2).toFixed(2)} ${(centre.y + 1).toFixed(2)})" fill="${p.greeneryShade}"/>`,
+      `<ellipse cx="${(centre.x + 2).toFixed(2)}" cy="${(centre.y + 1).toFixed(2)}" rx="2.3" ry="3.4" transform="rotate(34 ${(centre.x + 2).toFixed(2)} ${(centre.y + 1).toFixed(2)})" fill="${p.greenery}"/>`,
+      `<ellipse cx="${centre.x.toFixed(2)}" cy="${(centre.y - 2).toFixed(2)}" rx="2.1" ry="3.5" fill="${p.greenery}"/>`,
+    ].join("");
+    pieces.push({
+      key: depth(plant.x, plant.y) + 0.025,
+      svg: furnitureGroup("plant-leaves", leaves, plant.zone, `plant-${plant.x}-${plant.y}`),
+    });
+  }
+
+  return pieces;
 }
 
 function propPiece(style: CandidateStyle, prop: Prop): Piece | null {
@@ -468,6 +863,8 @@ export type SceneLayerOptions = {
   figures: boolean;
   /** Phase 7 Task 5: walls, the window wall and baked daylight. Off for the frozen frame. */
   architecture?: boolean;
+  /** Phase 7 Task 6: static furnishings and floor materials. Off in every frozen composition. */
+  furniture?: boolean;
   scene?: SceneState;
 };
 
@@ -484,8 +881,9 @@ export function renderSceneDefs(style: CandidateStyle): string {
 export function renderSceneLayer(style: CandidateStyle, options: SceneLayerOptions): string {
   const scene = options.scene ?? DEFAULT_SCENE_STATE;
   const pieces: Piece[] = [];
+  if (options.furniture) pieces.push(...furniturePieces(style));
   for (const agent of AGENTS) {
-    pieces.push(deskPiece(style, agent));
+    pieces.push(options.furniture ? furnishedDeskPiece(style, agent) : deskPiece(style, agent));
     if (options.figures) pieces.push(figurePiece(style, agent, scene));
   }
   if (scene.work) {
@@ -505,6 +903,15 @@ export function renderSceneLayer(style: CandidateStyle, options: SceneLayerOptio
     });
   }
   for (const prop of PROPS) {
+    if (
+      options.furniture &&
+      (prop.kind === "stool" ||
+        prop.kind === "crate" ||
+        prop.kind === "rug" ||
+        prop.kind === "collabTable" ||
+        prop.kind === "managerDesk")
+    )
+      continue;
     const piece = propPiece(style, prop);
     if (piece) pieces.push(piece);
   }
@@ -517,6 +924,7 @@ export function renderSceneLayer(style: CandidateStyle, options: SceneLayerOptio
     .join("");
   return [
     floorPlane(style),
+    ...(options.furniture ? [floorSeams(style)] : []),
     ...(options.architecture
       ? [
           `<g data-arch="back">${backWalls}${windowsSvg(style)}</g>`,

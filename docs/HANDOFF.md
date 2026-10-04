@@ -1,6 +1,6 @@
 # Handoff — state, next action, and what would otherwise be relearned expensively
 
-Written 2026-09-18, last updated 2026-10-03 for Phase 7 Tasks 1–5b. Read `AGENTS.md` first for authority; this document is the
+Written 2026-09-18, last updated 2026-10-03 for Phase 7 Task 6. Read `AGENTS.md` first for authority; this document is the
 live state, the next action, and the things a fresh session pays for twice if nobody wrote them down.
 
 ---
@@ -41,24 +41,33 @@ finding and the need for an independent release-review refresh remain current.
 `docs/phase-7-high-fidelity-spec-v0.1.md` (F-1 to F-8), plan `tasks/phase-7-plan.md` (Q-1 to Q-5),
 checklist `tasks/phase-7-todo.md` (the full record of every task: RED, GREEN, mutations, moved
 assertions, owner rulings). `position.json` carries each task's state and gate. Latest `verify` on a
-clean tree: **`0637b27`, runner `p7t5-verify-1791056159`: unit 643, component 154, integration 90
-(+3 skipped), contract 85, e2e 92, a11y 42, visual 68.**
+clean tree: **`a582953`, runner `p7t5b-verify-20261003-01`: unit 646, component 154, integration
+90 (+3 skipped), contract 85, e2e 92, a11y 42, visual 68.** Exit 0, `dirty: false`,
+`evidenceChanged: false`.
 
 **Task 5b ruling and current state, 2026-10-03.** The owner approved
 `tasks/phase-7-art-gap-plan-draft.md` as written, for Task 5b only: wall-only −8%/−4% face shades,
 mid-grey front cut tops, fixed soft daylight, and a new `architecture-b` capture slice. Labels stay
 deferred to Task 8; furniture shading and the Active palette stay unchanged. The renderer and RED
-assertions are in the working tree. Focused architecture plus frozen-frame tests pass (17/17).
+assertions are committed at `a582953`. Focused architecture plus frozen-frame tests pass (17/17).
 Formatting, lint, typechecks, unit (646), component (154), integration (90; 3 skipped), contract
 (85), provenance, side-effect, knowledge, and production build checks passed. The 92 e2e and 42
 a11y cases all reported passing, but both Playwright processes hung after their last case and were
 interrupted; there is no clean browser-command exit or complete `verify` gate. The owner has now
 captured both approved viewports under `docs/evidence/phase-7/architecture-b/`; both hashes match
 provenance entries 631–632, and the read-only provenance check is clean. The owner's exact AR-01
-review is: "slice meets expectations".
+review is: "slice meets expectations". A subsequent clean owner-run `verify` passed on `a582953`
+(runner `p7t5b-verify-20261003-01`), closing the gate described below.
 
-**Do next:** obtain a clean owner-run `verify` through the visible agent runner, then mark Task 5
-done. Task 6 planning may follow; implementation waits for its separate plan approval.
+**Do next:** finish the Task 6 owner gate in `tasks/phase-7-task-6-todo-draft.md` §6.8. The Luna
+implementation is ready for review under the three owner-approved corrections recorded there.
+Focused tests pass 37/37; final default/inspector clearance checks pass at both approved viewports.
+The canonical furniture browser command hung in teardown after reaching all 12 cases; do not
+count that as a clean exit. Clean committed owner-run `verify`, owner captures in the `furniture`
+slice, provenance and the owner's exact AR-01/AR-04 review remain. Team chair backs are small
+because chairs tuck under the desktops; ask the plate review to assess their legibility.
+The Task 6 checklist records performed checks and limitations. Task 7 waits for that review;
+full Phase 7 art acceptance still waits for Tasks 7–10 and the explicit Task 10 owner ruling.
 
 ### Why Phase 7 exists
 
@@ -127,21 +136,23 @@ rather than at the end.
   Owner captures `docs/evidence/phase-7/architecture/` (`732fb5e`). Owner: "new captures are a
   definite improvement and i agree with the items you noted."
 
-### Task 5b: approved shell refinement, owner capture pending
+### Task 5b: approved shell refinement — complete
 
 The owner approved the proposal as written on 2026-10-03. The approved wall-only shading and cap
 changes, plus a fixed radial-gradient treatment for daylight, are implemented; new tests first
 failed on those three visual contracts and now pass. Furniture face shading and the frozen Phase 6
 composition remain unchanged. The visual capture spec targets `architecture-b`, preserving the
 reviewed `architecture/` evidence. The owner captures match provenance, and the owner's AR-01
-review is "slice meets expectations". Remaining: a clean owner-run verification exit. Zone-label
-position and style stay together for Task 8. Task 6 implementation waits for separate plan approval.
+review is "slice meets expectations". The clean owner-run verify above passed, so Task 5 is done.
+Zone-label position and style stay together for Task 8. Task 6's detail plan is approved; its
+separate task breakdown was owner-approved 2026-10-03; implementation is in progress.
 
 ### Remaining Phase 7 (each needs its own owner-approved plan before building)
 
-Task 5b (above) · Task 6 furniture per zone (plate review) · Task 7 figures, F-3, poses only from
-the behaviour map, paused when blocked, still when unknown, adversarial fixtures still refused
-(plate review) · Task 8 in-scene cues, F-7 (one amber marker per manager request; "Status unknown"
+Task 6 furniture per zone (plate review; plan approved, task breakdown approved; implementation in progress) · Task 7 figures,
+F-3, poses only from the behaviour map, paused when blocked, still when unknown, adversarial
+fixtures still refused (plate review) · Task 8 in-scene cues, F-7 (one amber marker per manager
+request; "Status unknown"
 without motion; AR-03 review) **plus zone-label placement and label styling** · Task 9 capture
 matrix and evidence, F-8, measured contrast, frame time (Q-5) · Task 10 owner visual acceptance
 against AR-01–AR-04 · Task 11 optional second cold run (needs a new key and interval).
@@ -491,7 +502,7 @@ checklist, commits the evidence, runs `verify`, and only then marks the task don
 | --- | --- |
 | `npm run kickoff:preflight` | Task 17 preconditions, no provider calls |
 | `npm run phase5:contract:build` | Rebuild the acceptance contract and traceability matrix |
-| `npm run verify` | The whole gate. At `0637b27`: unit 643, component 154, integration 90 (+3 skipped), contract 85, e2e 92, a11y 42, visual 68 |
+| `npm run verify` | The whole gate. At `a582953`: unit 646, component 154, integration 90 (+3 skipped), contract 85, e2e 92, a11y 42, visual 68 |
 | `npm run phase5:capture` | Recapture the 40 browser cells and rebuild the manifest |
 | `npm run phase5:fidelity` | Contract names, as amended by the overlay, against the captured trees |
 | `npm run phase5:visualqa:run` | Visual QA Reviewer annotation (live, debits the ledger) |
@@ -565,3 +576,13 @@ The Test Engineer's Task 6 pass returned **two full, thirteen partial, six none*
 with **zero overclaims** when cross-checked against what exists. It found gaps in our work, not only
 in the missing component. That is the most valuable agent output of the phase, and it is bad news
 delivered accurately — which is the behaviour the whole project is an argument for.
+
+## Task 6 clearance ruling — 2026-10-03
+
+Owner approved the target correction recorded in the Task 6 plan and breakdown: canonical hit
+polygons stay exact, furniture stays behind transparent targets, targets remain operable, and
+visible labels remain clear. The original literal hit-polygon nonintersection requirement is
+superseded because the existing polygons intentionally cover floors and desks.
+
+The owner subsequently approved the existing desk-under-own-label overlap only; all added chairs,
+papers, foliage, rug marks and floor seams must avoid every label plate. See the plan's overlay.

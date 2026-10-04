@@ -15,9 +15,10 @@ import { evidenceOutputPath } from "../support/evidence-output.js";
  *
  * One spec serves every slice (plan Q-3): `SLICE` names the evidence folder of the slice under
  * review, so each slice's captures sit beside the last ones instead of overwriting them. Task 3
- * captured `active-office`; Task 5b uses `architecture-b` to preserve the reviewed Task 5 plates.
+ * captured `active-office`; Task 5b used `architecture-b`; Task 6 uses `furniture` to preserve
+ * the reviewed architecture plates.
  */
-const SLICE = "architecture-b";
+const SLICE = "furniture";
 const ORIGIN = "http://127.0.0.1:4174";
 
 test("@visual Phase 7 the Active office, default state", async ({ page }, testInfo) => {

@@ -220,7 +220,7 @@ render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`
       114.67 kB gzip, no warning) after.
     - Container run (not the gate): e2e and a11y 130 of 130 (140, less 12 removed probe runs, plus 2
       new); format, lint, both typechecks, guard, scaffold and CSS scope clean.
-- [ ] Task 5: Architecture and light (AR-01). Walls with a deterministic cutaway rule, the window
+- [x] Task 5: Architecture and light (AR-01). Walls with a deterministic cutaway rule, the window
       wall, baked daylight (F-6). Plate review.
   - **Plan approved 2026-10-03 as recommended (W-1 to W-4).** W-1: the windows are in the
     upper-right back wall, behind Reception and the Manager desk, because the approved renderer
@@ -277,10 +277,52 @@ render,styles}.ts` to `packages/ui-system/src/scene/{geometry,render,styles}.ts`
     2026-10-03:** the 1440×900 and 1280×800 PNG digests match provenance entries 632 and 631;
     `phase5:provenance` reports no stale digests. Owner review beside AR-01: "slice meets
     expectations". Broad checks passed through build; the 92 e2e and 42 a11y cases reported passing,
-    but Playwright did not exit cleanly, so no complete verify gate is claimed. Task 5 remains open
-    pending clean owner-run `verify`. Task 6 stays gated on that gate and its own plan approval.
+    but Playwright did not exit cleanly at that checkpoint, so no complete verify gate was claimed
+    then. Task 5 remained open pending clean owner-run `verify` at that point.
+  - **Task 5 closed 2026-10-03:** owner-run `verify` on clean commit `a582953`, runner
+    `p7t5b-verify-20261003-01`, exited 0 with `dirty: false` and `evidenceChanged: false`: unit 646,
+    component 154, integration 90 (+3 skipped), contract 85, e2e 92, a11y 42, visual 68. Task 5 is
+    done; the owner's AR-01 review remains recorded verbatim above.
 - [ ] Task 6: Furniture per zone. Each zone's props say what it is for; nothing hides a label or a
-      target. Plate review.
+      target. Plate review. Detail plan approved 2026-10-03:
+      `tasks/phase-7-task-6-plan.md`; task breakdown owner-approved 2026-10-03 in
+      `tasks/phase-7-task-6-todo-draft.md`. Implementation in progress with Luna subagents; final owner gate remains open.
+  - **Task 6 RED, 2026-10-03:** before the furnishing implementation, the new focused unit suite
+    exited 1 with six expected missing-furniture failures and the canonical-geometry assertion
+    passing. The failures covered the opt-in inventory, team chairs, collaboration seating/table
+    edge, library/review details, counter/trays, and floor/rug/plant details. The later keyboard
+    containment assertion was not independently observed RED before implementation; it is a
+    regression guard, not claimed as preimplementation TDD evidence.
+  - Actual nested primitive bounds replaced a shallow group parser during review. Those checks
+    exposed chair/shadow safe-inset defects, corrected in the source. A subsequent review-paper
+    containment guard failed on sheets outside their actual tabletop hull; its RED is distinct
+    from test-parser corrections. Browser clearance checks examine actual painted primitives,
+    rather than empty space in a group's bounding box. The owner-approved target, opt-in and
+    existing-desk-only overlays are recorded in the Task 6 plan and breakdown.
+  - **Implementation ready for owner gate, 2026-10-03.** The app enables the separate furniture
+    option; the default render remains byte-identical to the frozen Phase 6 output. Furniture uses
+    the existing palette, anchors and seven zones: thin supported worktops, empty chairs,
+    collaboration seating, shelf/book divisions, supported blank review sheets, counter edges,
+    shallow delivery trays, sparse floor seams, rug detail and connected plant leaves.
+    Focused unit/digest checks pass 37/37, full unit tests 659/659; formatting, production build
+    and lint exit 0. The final custom
+    browser clearance command passes 4/4 at 1440×900 and 1280×800, default and inspector-open.
+    The official furniture spec reached all 12 cases without reported assertion failures but
+    hung during teardown and was interrupted; that is not a clean command exit or full gate.
+  - Root directly reviewed the final default and inspector-open render at both approved viewports,
+    exercised Tab/Enter inspection and both Escape focus restorations, and checked reduced motion
+    (no furniture animation). Final reload network checks at both viewports had no failed/HTTP
+    error or external requests; browser console warnings/errors were empty. Primitive clearance
+    checks include effective opacity, clipping and later opaque-art occlusion; labels cannot mask
+    a forbidden overlap. Thin paths are probed every 0.2 CSS px; fill sampling is finite, not a
+    claim of exhaustive pixel proof. Mutation guards reject actual moved chairs, out-of-zone
+    trays, escaped seams and unsupported papers. Static furniture and targets remain invariant
+    across the authored state fixtures; this does not claim every fixture received clearance QA.
+  - **Visual review caveat:** team chairs are tightly tucked under tabletops; only small back
+    portions are visible. Inventory and bounds checks do not prove that these read as chairs.
+    The owner's AR-01/AR-04 judgment remains required. Existing label-to-label crowding remains
+    deferred to Task 8. Task 6 stays unchecked until clean owner-run verification, owner captures,
+    provenance and exact plate review; Task 7 must wait.
 - [ ] Task 7: Figures (F-3). Modular adult figures; poses only from the semantic behavior map;
       paused when blocked; still when status is unknown; travel only on a real transition, none
       under reduced motion. Adversarial fixtures still refused through the new renderer. Plate
