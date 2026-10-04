@@ -6,6 +6,7 @@ import { classifyTurnItems } from "./item-classification.js";
 import { buildBindingReport, collectHandshakeFacts, type BindingExpectation } from "./binding.js";
 import { featureDisableConfig } from "./feature-policy.js";
 import { enumerateMcpServers } from "./tool-surface.js";
+import { reconcileTurnRecord } from "./turn-record.js";
 
 /**
  * The task is deliberately identical for every role. Role-specific instruction belongs only in
@@ -56,6 +57,7 @@ export type RoleExerciseResult =
         | "EXTERNAL_EFFECT_OBSERVED"
         | "TEXT_ONLY_VIOLATION"
         | "UNCLASSIFIED_ITEM_TYPE"
+        | "TURN_RECORD_PARTIAL"
         | "RUNTIME_FAILURE";
       detail: string;
       /** Present once a turn was attempted; absent for refusals before any turn. */
@@ -174,7 +176,10 @@ export async function runRoleExercise(input: {
     }
     const turnId = run.turn.id;
     const completed = { method: "turn/completed", params: { threadId, turn: run.turn } };
-    const checked = checkCompletedTurn(completed, threadId, turnId);
+    const checked = checkCompletedTurn(completed, threadId, turnId, {
+      streamedItems: run.streamedItems,
+      startedItemIds: run.startedItemIds,
+    });
     if (!checked.ok) return { ...checked.result, runtime };
     return {
       performed: true,
@@ -253,6 +258,7 @@ function checkCompletedTurn(
   completed: Record<string, unknown>,
   expectedThreadId: string,
   expectedTurnId: string,
+  stream: Readonly<{ streamedItems: readonly unknown[]; startedItemIds: readonly string[] }>,
 ):
   | { ok: true; responseText: string }
   | { ok: false; result: Extract<RoleExerciseResult, { performed: false }> } {
@@ -276,7 +282,14 @@ function checkCompletedTurn(
   }
 
   const itemTypes = turn.items.map((item) => text(record(item)?.type) ?? "unknown");
-  const { effects: external, unclassified } = classifyTurnItems(turn.items);
+  // `turn/completed.items` normally carries only the final message, so effects are judged on the
+  // completion record merged with what the stream showed (DF-044).
+  const reconciled = reconcileTurnRecord({
+    completedItems: turn.items,
+    streamedItems: stream.streamedItems,
+    startedItemIds: stream.startedItemIds,
+  });
+  const { effects: external, unclassified } = classifyTurnItems(reconciled.items);
   if (unclassified.length > 0) {
     return {
       ok: false,
@@ -304,6 +317,16 @@ function checkCompletedTurn(
         performed: false,
         code: "TEXT_ONLY_VIOLATION",
         detail: `the text-only turn reported item types: ${itemTypes.join(", ")}`,
+      },
+    };
+  }
+  if (reconciled.partial) {
+    return {
+      ok: false,
+      result: {
+        performed: false,
+        code: "TURN_RECORD_PARTIAL",
+        detail: `the turn record cannot show that the turn was text-only: ${reconciled.reasons.join("; ")}`,
       },
     };
   }

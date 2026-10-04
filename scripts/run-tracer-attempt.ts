@@ -65,6 +65,7 @@ import {
   exerciseThreadStartParams,
   hasExactInstructionSource,
   openSessionLog,
+  reconcileTurnRecord,
   resolveInstalledCodexExecutable,
   runTurn,
   type BindingExpectation,
@@ -119,6 +120,19 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const itemTypesOf = (items: readonly unknown[]): string[] =>
   items.map((i) => (isRecord(i) && typeof i.type === "string" ? i.type : "unknown"));
 
+function recordDisclosure(
+  completedItems: readonly unknown[],
+  streamedItems: readonly unknown[],
+  startedItemIds: readonly string[],
+): Pick<TurnNote, "recordPartial" | "recordPartialReasons" | "omittedFromCompletion"> {
+  const reconciled = reconcileTurnRecord({ completedItems, streamedItems, startedItemIds });
+  return {
+    recordPartial: reconciled.partial,
+    recordPartialReasons: reconciled.reasons,
+    omittedFromCompletion: reconciled.omittedFromCompletion,
+  };
+}
+
 type TurnNote = {
   turn: number;
   turnId: string | null;
@@ -126,6 +140,11 @@ type TurnNote = {
   /** Items streamed via item/completed. The completion payload can omit them (DF-044). */
   streamedItemCount: number;
   streamedItemTypes: string[];
+  /** The record is partial when the stream cannot be trusted to be whole (W2). Disclosed, not scored. */
+  recordPartial: boolean;
+  recordPartialReasons: string[];
+  /** Streamed items the completion record omitted. Normal for Codex; informational. */
+  omittedFromCompletion: number;
   fileChanges: FileChangeRecord[];
   worktreeStatus: string[];
   agentText: string | null;
@@ -366,6 +385,7 @@ try {
               itemTypes: [],
               streamedItemCount: run.streamedItems.length,
               streamedItemTypes: itemTypesOf(run.streamedItems),
+              ...recordDisclosure(run.turn?.items ?? [], run.streamedItems, run.startedItemIds),
               fileChanges: [],
               worktreeStatus: [],
               agentText: null,
@@ -390,6 +410,7 @@ try {
             itemTypes: itemTypesOf(run.turn.items),
             streamedItemCount: run.streamedItems.length,
             streamedItemTypes: itemTypesOf(run.streamedItems),
+            ...recordDisclosure(run.turn.items, run.streamedItems, run.startedItemIds),
             fileChanges: verdict.ok ? verdict.fileChanges : [],
             worktreeStatus: status,
             agentText,

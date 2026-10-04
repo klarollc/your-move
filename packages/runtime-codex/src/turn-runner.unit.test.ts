@@ -372,4 +372,60 @@ describe("the shared turn runner", () => {
       expect(result.streamedItems).toEqual([fileChange]);
     });
   });
+
+  describe("started items (W2)", () => {
+    const itemStarted = (turnId: string, id: string, threadId = THREAD) => ({
+      threadId,
+      turnId,
+      item: { type: "reasoning", id },
+    });
+
+    it("returns the ids of items announced through item/started", async () => {
+      const { supervisor } = fake([
+        (id, emit) => {
+          emit("item/started", itemStarted(id, "s1"));
+          emit("item/started", itemStarted(id, "s2"));
+          emit("turn/completed", completed(id));
+        },
+      ]);
+      const result = await runTurn(supervisor, {
+        threadId: THREAD,
+        input,
+        clock: createManualClock(),
+      });
+      expect(result.startedItemIds).toEqual(["s1", "s2"]);
+    });
+
+    it("does not collect ids from another turn or another thread", async () => {
+      const { supervisor } = fake([
+        (id, emit) => {
+          emit("item/started", itemStarted("turn_other", "s1"));
+          emit("item/started", itemStarted(id, "s2", "thread_other"));
+          emit("turn/completed", completed(id));
+        },
+      ]);
+      const result = await runTurn(supervisor, {
+        threadId: THREAD,
+        input,
+        clock: createManualClock(),
+      });
+      expect(result.startedItemIds).toEqual([]);
+    });
+
+    it("returns started ids on a failed turn too", async () => {
+      const { supervisor } = fake([
+        (id, emit) => {
+          emit("item/started", itemStarted(id, "s1"));
+          emit("turn/completed", failed(id, "other"));
+        },
+      ]);
+      const result = await runTurn(supervisor, {
+        threadId: THREAD,
+        input,
+        clock: createManualClock(),
+      });
+      expect(result.ok).toBe(false);
+      expect(result.startedItemIds).toEqual(["s1"]);
+    });
+  });
 });

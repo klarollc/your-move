@@ -30,7 +30,13 @@ const observedThread = {
 };
 
 function supervisor(
-  overrides: Partial<{ threadStart: unknown; completed: unknown; mcpServers: unknown[] }> = {},
+  overrides: Partial<{
+    threadStart: unknown;
+    completed: unknown;
+    mcpServers: unknown[];
+    /** Notifications emitted before turn/completed. Defaults to a started and completed pair for each item in the completion record, as Codex streams them. */
+    stream: Array<{ method: string; params: unknown }>;
+  }> = {},
 ) {
   const calls: Array<{ method: string; params: Record<string, unknown> }> = [];
   const listeners = new Set<(event: SupervisorEvent) => void>();
@@ -64,13 +70,18 @@ function supervisor(
         return { data: overrides.mcpServers ?? [], nextCursor: null };
       if (method === "turn/start") {
         // The completion arrives as a notification after turn/start answers, as it does live.
+        const turnItems = ((completion.params as { turn?: { items?: unknown[] } }).turn?.items ??
+          []) as unknown[];
+        const stream =
+          overrides.stream ??
+          turnItems.flatMap((item) => [
+            { method: "item/started", params: { threadId: "thread_1", turnId: "turn_1", item } },
+            { method: "item/completed", params: { threadId: "thread_1", turnId: "turn_1", item } },
+          ]);
         queueMicrotask(() => {
-          for (const listener of [...listeners])
-            listener({
-              kind: "notification",
-              method: completion.method,
-              params: completion.params,
-            });
+          for (const note of [...stream, completion])
+            for (const listener of [...listeners])
+              listener({ kind: "notification", method: note.method, params: note.params });
         });
         return { turn: { id: "turn_1" } };
       }
@@ -413,5 +424,90 @@ describe("Windows sandbox mode (tracer, DF-043)", () => {
     );
     expect(both.sandbox).toBe("workspace-write");
     expect(both.approvalPolicy).toBe("never");
+  });
+});
+
+describe("role exercise: the turn is judged on the stream as well as the completion record (W2, DF-044)", () => {
+  const agentMessage = { id: "item_1", type: "agentMessage", text: "EXERCISE_OK" };
+  const event = (method: string, item: unknown) => ({
+    method,
+    params: { threadId: "thread_1", turnId: "turn_1", item },
+  });
+  const run = (fake: ReturnType<typeof supervisor>) =>
+    runRoleExercise({
+      supervisor: fake.instance,
+      cwd: "C:/synthetic/role-exercise",
+      expectedInstructionSource: "C:/controlled/delivery-lead/AGENTS.md",
+      agentId: "agent_delivery",
+      bindingId: "binding_delivery",
+      roleId: "delivery-lead",
+      expected,
+    });
+
+  it("accepts the shape Codex really sends: reasoning and the user message stream, the completion carries one message", async () => {
+    const user = { id: "u1", type: "userMessage" };
+    const reasoning = { id: "r1", type: "reasoning" };
+    const result = await run(
+      supervisor({
+        stream: [
+          event("item/started", user),
+          event("item/completed", user),
+          event("item/started", reasoning),
+          event("item/completed", reasoning),
+          event("item/started", agentMessage),
+          event("item/completed", agentMessage),
+        ],
+      }),
+    );
+    expect(result).toMatchObject({ performed: true, responseText: "EXERCISE_OK" });
+  });
+
+  it("refuses a command the stream showed and the completion record omitted", async () => {
+    const command = { id: "c1", type: "commandExecution", command: "dir" };
+    const result = await run(
+      supervisor({
+        stream: [
+          event("item/started", command),
+          event("item/completed", command),
+          event("item/started", agentMessage),
+          event("item/completed", agentMessage),
+        ],
+      }),
+    );
+    expect(result).toMatchObject({ performed: false, code: "EXTERNAL_EFFECT_OBSERVED" });
+  });
+
+  it("refuses an unclassified item type that only the stream showed", async () => {
+    const odd = { id: "t1", type: "teleport" };
+    const result = await run(
+      supervisor({
+        stream: [
+          event("item/started", odd),
+          event("item/completed", odd),
+          event("item/started", agentMessage),
+          event("item/completed", agentMessage),
+        ],
+      }),
+    );
+    expect(result).toMatchObject({ performed: false, code: "UNCLASSIFIED_ITEM_TYPE" });
+  });
+
+  it("refuses a record that is partial: an item started and never completed", async () => {
+    const result = await run(
+      supervisor({
+        stream: [
+          event("item/started", { id: "c9", type: "reasoning" }),
+          event("item/started", agentMessage),
+          event("item/completed", agentMessage),
+        ],
+      }),
+    );
+    expect(result).toMatchObject({ performed: false, code: "TURN_RECORD_PARTIAL" });
+    expect((result as { detail: string }).detail).toContain("c9");
+  });
+
+  it("refuses a record that is partial: the completion holds an item the stream never showed", async () => {
+    const result = await run(supervisor({ stream: [] }));
+    expect(result).toMatchObject({ performed: false, code: "TURN_RECORD_PARTIAL" });
   });
 });

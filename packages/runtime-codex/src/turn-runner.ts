@@ -93,7 +93,13 @@ export type TurnAttempt = {
 export type CompletedTurn = { id: string; status: string; items: unknown[] };
 
 export type TurnRunResult =
-  | { ok: true; turn: CompletedTurn; streamedItems: unknown[]; attempts: TurnAttempt[] }
+  | {
+      ok: true;
+      turn: CompletedTurn;
+      streamedItems: unknown[];
+      startedItemIds: string[];
+      attempts: TurnAttempt[];
+    }
   | {
       ok: false;
       code: string;
@@ -104,6 +110,7 @@ export type TurnRunResult =
        * can omit them (DF-044), so a judge of what the turn did must read both.
        */
       streamedItems: unknown[];
+      startedItemIds: string[];
       attempts: TurnAttempt[];
     };
 
@@ -141,6 +148,7 @@ type AttemptEnd = {
   attempt: TurnAttempt;
   turn: CompletedTurn | null;
   streamedItems: unknown[];
+  startedItemIds: string[];
   code?: string;
   detail?: string;
 };
@@ -176,8 +184,9 @@ function runAttempt(
     let unsubscribe: () => void = () => undefined;
 
     const streamed: unknown[] = [];
+    const startedIds: string[] = [];
     const finish = (
-      end: Omit<AttemptEnd, "attempt" | "streamedItems">,
+      end: Omit<AttemptEnd, "attempt" | "streamedItems" | "startedItemIds">,
       outcome: TurnAttempt["outcome"],
     ) => {
       if (settled) return;
@@ -188,7 +197,7 @@ function runAttempt(
       unsubscribe();
       attempt.outcome = outcome;
       attempt.elapsedMs = clock.now() - startedAt;
-      resolve({ attempt, streamedItems: streamed, ...end });
+      resolve({ attempt, streamedItems: streamed, startedItemIds: startedIds, ...end });
     };
 
     const interrupt = (outcome: TurnAttempt["outcome"], code: string, detail: string) => {
@@ -246,6 +255,10 @@ function runAttempt(
       }
 
       if (event.method === "item/completed" && isRecord(params.item)) streamed.push(params.item);
+      if (event.method === "item/started" && isRecord(params.item)) {
+        const startedId = params.item.id;
+        if (typeof startedId === "string" && startedId.length > 0) startedIds.push(startedId);
+      }
 
       if (event.method === "error") {
         attempt.retries.push({
@@ -345,7 +358,13 @@ export async function runTurn(
     );
     attempts.push(end.attempt);
     if (end.attempt.outcome === "completed" && end.turn) {
-      return { ok: true, turn: end.turn, streamedItems: end.streamedItems, attempts };
+      return {
+        ok: true,
+        turn: end.turn,
+        streamedItems: end.streamedItems,
+        startedItemIds: end.startedItemIds,
+        attempts,
+      };
     }
     const retryable =
       end.attempt.outcome === "failed" &&
@@ -360,6 +379,7 @@ export async function runTurn(
         detail: end.detail ?? "turn did not complete",
         turn: end.turn,
         streamedItems: end.streamedItems,
+        startedItemIds: end.startedItemIds,
         attempts,
       };
     }
