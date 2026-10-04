@@ -85,6 +85,7 @@ updates its row. An entry's own text is history and is not rewritten.
 | DF-043 | open | A requested sandbox posture is silently downgraded: the runtime reports a weaker one with no cause when no Windows sandbox mode is configured. |
 | DF-044 | open | The turn completion record omits items the runtime streamed, so a control built on it was blind to a file edit. |
 | DF-045 | open | A role without repo access declared done on work it could not ground, and nothing in the surface said it was blind. |
+| DF-046 | open | The scoped-edit posture leaves the role no way to read: the feature policy disables the shell tools, so "edit files, no commands" means edit blind. |
 
 ## Entries
 
@@ -1712,17 +1713,21 @@ Severity of signal: medium.
 ### DF-042 — The office cannot create or assign work
 
 - Observed: 2026-10-03, tracer V1 check. Owner-confirmed; source is a thread with Muse, not a repo file.
-- D-26 clause implicated: [owner to confirm — not stated in the confirmed source].
+- D-26 clause implicated: "Goals arrive as bounded work contracts with outcome, exclusions, acceptance criteria, dependencies, evidence obligations, permission ceiling, stop conditions, and definition of done." Also MDD §2 core management loop step 1, "Assign an outcome to an agent or team." (Clause text as supplied by the owner, 2026-10-04.)
 
 V1 (can work be directed through the office?) verified FAILED: the office exposes no work-item
 creation or assignment affordance. The tracer therefore assigns the DF-007 timestamp test through
 the role-exercise machinery (`scripts/run-tracer-attempt.ts`), and the office gap is documented
 rather than hidden (`tracer-task-contract-draft-v0.2.md`, Dependencies).
 
-Product signal: [owner to confirm]. Established only that the surface for directing work does
-not exist yet, so every tasking falls back to an off-office path.
+Product signal (owner, 2026-10-04): The §2 differentiation claim is "operable, not observational." For work
+assignment, the office is currently observational — precisely the F-2 critique the competitive landscape
+levels at every entrant ("renders what agents are doing... not a control surface"). The gap between the
+domain's capability and the surface's affordance is the finding: the truth is canonical, but it is not
+operable. Established by the check itself: the surface for directing work does not exist yet, so every
+tasking falls back to an off-office path.
 
-Severity of signal: [owner to confirm].
+Severity of signal: high (owner, 2026-10-04). "This is the product's central claim meeting its primary surface, and the meeting has not happened yet."
 
 ### DF-043 — A requested sandbox posture is silently downgraded
 
@@ -1825,3 +1830,44 @@ cannot do before the work, not after. Acceptance should rest on evidence, not on
 Severity of signal: medium. The cost here was the tracer's own allowance; the result was
 unambiguous only because the owner read it. The owner decides whether this closes V2 for this
 shape.
+
+### DF-046 — The scoped-edit posture gives the role no way to read
+
+- Observed: 2026-10-04 (UTC), Claude (Cowork) session, approval probe
+  (`docs/evidence/tracer/approval-probe-2026-10-04T05-08-35-912Z.json`, report sha256
+  `2d572ea06f3cf95d3b1dd11f8ec853e90a039684c6bd478ff31d717bf6b359fa`).
+- D-26 clause implicated: [owner to confirm]. Relates to DF-045, whose cause this probe narrows,
+  and to DF-043 (the same posture-versus-reality gap, one layer over).
+
+The probe asked a role to read `notes/a.txt` and write its first line, reversed, to `out.txt`, in a
+disposable scratch workspace, with the tracer's posture (`workspaceWrite`, network off, unelevated
+Windows sandbox, `gpt-5.6-luna`) under three approval policies: `never`, `untrusted` and
+`on-request`. `thread/start` reported the requested posture each time, and each variant ran one
+turn. The result was the same three times: the role ended with `PROBE_BLOCKED`, saying it had no
+filesystem tool. No `commandExecution` item and no server request arrived under any policy, and no
+`out.txt` was written. Turns used: 3 of the 3 approved, separate from the tracer's exhausted cap.
+
+The likely cause is the deny-by-default feature policy, which sets `shell_tool` and
+`unified_exec` to "disable" on every `thread/start` (`packages/runtime-codex/src/feature-policy.ts`).
+That cause is inferred from the policy and the result. It was not tested by enabling those
+features. One session log (the first variant) also shows stderr
+`apply_patch verification failed: invalid hunk ... Update hunk does not contain any lines`: the
+role reached for `apply_patch`, the only editing tool left, and produced no `fileChange` item.
+I read that one log by hand; the report covers all three variants.
+
+What this settles: DF-045 inferred that the role could not see the repository. The probe supports
+that. The evidence is the role's own statement in three runs, not an enumerated tool list from the
+runtime.
+What it does not settle: whether a valid `apply_patch` raises
+`item/fileChange/requestApproval` under `untrusted` (no patch succeeded), and what approval
+requests would arrive if the shell tool were enabled. Approval mediation has nothing to mediate
+under the current policy, so any design for it waits on a ruling about enabling a read path.
+
+Product signal: the owner's ruling ("edit files, no commands") and the feature policy together
+produced a role that can write but not read, and nothing at the time of the ruling, in the
+contract, or in the surface said so. A posture should be shown as what the role can and cannot do
+(read, write, run), derived from the observed `thread/start` and the feature policy, before any
+work is assigned; "no commands" and "no way to read" are different postures and the ruling named
+only the first.
+
+Severity of signal: [owner to confirm].
