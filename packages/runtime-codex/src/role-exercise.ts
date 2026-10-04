@@ -195,23 +195,30 @@ export async function runRoleExercise(input: {
   }
 }
 
+/** The only sandbox modes a caller may request. `danger-full-access` is deliberately not one. */
+export type ExerciseSandboxMode = "read-only" | "workspace-write";
+export type ExerciseThreadOptions = Readonly<{ sandbox?: ExerciseSandboxMode }>;
+
 export function exerciseThreadStartParams(
   cwd: string,
   expected: BindingExpectation,
   taskPrompt: string = STANDARD_ROLE_EXERCISE_PROMPT,
+  options: ExerciseThreadOptions = {},
 ): Record<string, unknown> {
   return {
     cwd,
     ephemeral: true,
     model: expected.requestedModel,
     // This is the bounded posture observed back from thread/start, not a client-side assertion.
-    sandbox: "read-only",
+    sandbox: options.sandbox ?? "read-only",
     approvalPolicy: "never",
     approvalsReviewer: "user",
     // The role's identity comes only from its controlled home; the task is attached at
     // thread/start, as the approved channel split requires. Parameterised so a second bounded
-    // caller can pose a different task without a second copy of the posture above — the sandbox,
-    // approval policy and effort are the parts that must never vary by caller.
+    // caller can pose a different task without a second copy of the posture above. Approval policy
+    // and effort must never vary by caller. The sandbox defaults to read-only and varies only by an
+    // explicit typed option (the tracer's workspace-write, owner ruling 2026-10-03);
+    // `danger-full-access` is not expressible.
     baseInstructions: taskPrompt,
     // The feature policy (F1.1) rides on the one place every caller builds thread/start from.
     config: {
@@ -221,7 +228,7 @@ export function exerciseThreadStartParams(
   };
 }
 
-function hasExactInstructionSource(threadStart: unknown, expected: string): boolean {
+export function hasExactInstructionSource(threadStart: unknown, expected: string): boolean {
   const sources = record(threadStart)?.instructionSources;
   return Array.isArray(sources) && sources.length === 1 && sources[0] === expected;
 }

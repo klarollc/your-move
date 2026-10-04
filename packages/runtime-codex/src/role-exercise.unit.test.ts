@@ -5,6 +5,7 @@ import { featureDisableConfig } from "./feature-policy.js";
 import {
   STANDARD_ROLE_EXERCISE_PROMPT,
   exerciseThreadStartParams,
+  hasExactInstructionSource,
   runRoleExercise,
   type ExerciseSupervisor,
 } from "./role-exercise.js";
@@ -320,5 +321,51 @@ describe("bounded turn task prompt", () => {
     });
 
     expect(params.baseInstructions).toBe(STANDARD_ROLE_EXERCISE_PROMPT);
+  });
+});
+
+describe("caller-chosen sandbox mode (tracer, P-1)", () => {
+  const base = {
+    requestedModel: "gpt-5.6-luna",
+    expectedReasoningEffort: "medium",
+    expectedAuthMode: "chatgpt" as const,
+    protocolVersion: "0.146.0",
+    promotedContentSha256: "authored-implementation-engineer-v1",
+  };
+
+  it("defaults to read-only, so no existing caller changes posture", () => {
+    expect(exerciseThreadStartParams("C:/w", base, "Task.").sandbox).toBe("read-only");
+    expect(exerciseThreadStartParams("C:/w", base, "Task.", {}).sandbox).toBe("read-only");
+  });
+
+  it("applies workspace-write when asked, and changes nothing else", () => {
+    const standard = exerciseThreadStartParams("C:/w", base, "Task.");
+    const widened = exerciseThreadStartParams("C:/w", base, "Task.", {
+      sandbox: "workspace-write",
+    });
+    expect(widened.sandbox).toBe("workspace-write");
+    expect({ ...widened, sandbox: "read-only" }).toEqual(standard);
+    expect(widened.approvalPolicy).toBe("never");
+    expect(widened.ephemeral).toBe(true);
+  });
+});
+
+describe("hasExactInstructionSource (P-2, exported for the tracer)", () => {
+  it("accepts exactly the one controlled instruction file and nothing else", () => {
+    expect(
+      hasExactInstructionSource({ instructionSources: ["/h/AGENTS.md"] }, "/h/AGENTS.md"),
+    ).toBe(true);
+    expect(
+      hasExactInstructionSource(
+        { instructionSources: ["/h/AGENTS.md", "/x/AGENTS.md"] },
+        "/h/AGENTS.md",
+      ),
+    ).toBe(false);
+    expect(
+      hasExactInstructionSource({ instructionSources: ["/x/AGENTS.md"] }, "/h/AGENTS.md"),
+    ).toBe(false);
+    expect(hasExactInstructionSource({ instructionSources: [] }, "/h/AGENTS.md")).toBe(false);
+    expect(hasExactInstructionSource({}, "/h/AGENTS.md")).toBe(false);
+    expect(hasExactInstructionSource(null, "/h/AGENTS.md")).toBe(false);
   });
 });
