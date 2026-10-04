@@ -72,6 +72,15 @@ because chairs tuck under the desktops; ask the plate review to assess their leg
 The Task 6 checklist records performed checks and limitations. Task 7 waits for that review;
 full Phase 7 art acceptance still waits for Tasks 7–10 and the explicit Task 10 owner ruling.
 
+Concurrent owner files were preserved separately: the comprehension proposal is tracked unchanged
+in `40090e8`; `docs/evidence/dogfood-register (2).md` is tracked in place, unchanged, in `6ece901`
+under the owner's explicit instruction. Tracking the latter required one provenance entry; the
+writer appended only that new owner-supplied artifact, with no re-recording or attribution changes.
+No furniture captures were regenerated. The failed clean runs were bookkeeping checks: stale
+position metadata (corrected in `e20edea`) and that missing provenance entry (now registered).
+Confirm the final clean runner result in `node_modules/.cache/agent-runner/outbox/` before the
+owner's furniture capture and exact plate review.
+
 ### Why Phase 7 exists
 
 The owner compared the Phase 7-O app captures with the approved art pack (AR-01 to AR-04) on
