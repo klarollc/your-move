@@ -20,3 +20,6 @@ debug.log
 
 # Regenerated on demand by `npm run workflow:rehearsal` (W10, owner ruling 2026-10-04).
 /docs/evidence/workflow/rehearsal/
+
+# Disposable scratch repo and worktrees for the workflow proof (W11).
+/.scratch/

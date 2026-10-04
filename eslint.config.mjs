@@ -7,6 +7,10 @@ export default tseslint.config(
       ".restore/**",
       ".worktrees/**",
       ".cuckcode/**",
+      ".scratch/**",
+      // Seed files for the workflow-proof scratch repo (W11): bytes are digested, never linted.
+      "workflow-proof-seed/slugify-proof/**",
+      "workflow-proof-seed/slugify-reference/**",
       "coverage/**",
       "**/dist/**",
       "**/*.tsbuildinfo",

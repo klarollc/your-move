@@ -1,0 +1,55 @@
+{
+  "outcome": "Implement the function slugify in src/slugify.js so that the pre-written test in test/slugify.test.js passes. Change nothing else.",
+  "exclusions": [
+    "Do not edit test/slugify.test.js, package.json or .gitattributes.",
+    "Do not create, rename or delete any file.",
+    "No new dependencies, no commands, no network.",
+    "No changes outside this worktree."
+  ],
+  "acceptanceCriteria": [
+    "The pre-written test passes when the owner runs it between turns.",
+    "The diff touches only src/slugify.js.",
+    "Every change you claim appears in the recorded event stream and in git status.",
+    "Slugs are kept to a length suitable for use in a URL."
+  ],
+  "dependencies": [
+    "Codex at the pinned version.",
+    "A clean linked scratch worktree.",
+    "An owner-started runner."
+  ],
+  "evidenceObligations": [
+    {
+      "kind": "test-run",
+      "description": "The pre-written test, run by the owner with `npm test`: RED on the clean worktree before the run, GREEN after it. Output saved."
+    },
+    {
+      "kind": "diff-review",
+      "description": "The owner reviews git status and git diff after the run: only src/slugify.js changed."
+    }
+  ],
+  "permissionCeiling": {
+    "sandboxMode": "workspace-write",
+    "approvalPolicy": "never",
+    "networkAccess": false,
+    "windowsSandbox": "unelevated"
+  },
+  "stopConditions": [
+    "The granted posture differs from the requested posture.",
+    "Any effect outside the permission ceiling.",
+    "The event stream and the worktree disagree.",
+    "You are blocked, or any part of the task is ambiguous: say so and stop. Do not guess.",
+    "The turn cap is reached.",
+    "Any unanticipated failure."
+  ],
+  "definitionOfDone": "Owner acceptance through the surface under test, based on the recorded evidence, not on the role's claim.",
+  "contextRefs": [
+    {
+      "path": "src/slugify.js",
+      "sha256": "c5ba039c1cab770109632ddf6d1949275c9f68239acc81e6b0cc79329e23a483"
+    },
+    {
+      "path": "test/slugify.test.js",
+      "sha256": "04afb01f1df64c986158082c19593743d3833f335be95ce1513a758a30a5843a"
+    }
+  ]
+}
