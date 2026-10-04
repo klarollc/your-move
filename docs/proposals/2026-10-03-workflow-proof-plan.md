@@ -1,6 +1,6 @@
-# Workflow-proof plan — DRAFT v0.1 (2026-10-03)
+# Workflow-proof plan — v0.2 APPROVED (2026-10-04)
 
-**Status: draft for owner review. Not approved. Authorizes no implementation, no live run, and no spend.**
+**Status: plan approved by the owner 2026-10-04, with these rulings: W1 to W5 may start before the Task 6 gate (UI tasks W6 to W9 still wait); branch `workflow-proof` approved; W5 data path is the file log; the W12 stop rule is adopted. Tasks are still approved individually. W0 is done (see `2026-10-04-workflow-proof-w0-findings.md`, which also corrects W1 to W5). The plan authorizes no live run and no spend.**
 Implements `docs/proposals/2026-10-03-workflow-proof-spec.md` (v1.0, approved 2026-10-03). Order per AGENTS.md: spec (done) → plan (this) → tasks (approved individually).
 
 Facts were read from the repo on 2026-10-03 (read-only). **[unverified]** marks anything not read or tested. **[OWNER]** marks a ruling needed.
@@ -84,7 +84,7 @@ Run the whole loop against a fake runtime before any live turn, following `kicko
 **W11. Scratch repo and contract.** Build the disposable scratch repo (one function, one pre-written test, one seeded ambiguity) and the confirmed task's D-26 contract. Owner approves the contract text.
 
 **W12. Live run, Surface B first, then Surface A (or reverse) [OWNER].** Same contract, separate disposable worktrees, no secrets, no network. 10 turns per attempt, up to 10 attempts per surface (ceiling 100 turns per surface, 200 total). Owner review between attempts; no auto-retry. Hard stops per spec §8. Each attempt records posture, event stream, diff, checks, blocker handling, manager action, disposition. Any difference between the two runs is a finding, not noise.
-Proposed stop rule **[OWNER]**: stop a surface's series after two consecutive attempts that fail for the same recorded reason, rather than spending the ceiling. This is my proposal, not in the spec.
+Stop rule (adopted by the owner 2026-10-04): stop a surface's series after two consecutive attempts that fail for the same recorded reason, rather than spending the ceiling. This rule is in addition to the spec's hard stops.
 
 **W13. Comprehension gate.** MDD §20 as written. Cold run after at least three days since the last substantive interface work; new protocol and key; both surfaces; performed/not-performed recorded per task; 6/6 met, 5/6 met with a finding, 4 or fewer fails; incomplete runs are not scored. Dates are set when W7 and W8 finish.
 
