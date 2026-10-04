@@ -70,6 +70,17 @@ updates its row. An entry's own text is history and is not rewritten.
 | DF-028 | ruled | The zoom probe is fixed. The blank-page failure recurred a fourth time on 2026-10-03 and its kept trace names the cause: a dev-server module request failing with `net::ERR_NO_BUFFER_SPACE`. A fix is proposed, not ruled (`docs/proposals/2026-10-03-df-028-e2e-on-the-production-bundle.md`). |
 | DF-029 | fixed | Version 3 conditions; attention follows the request; the inspector names the resolver; `blocked-elsewhere` log (`4f585e8`, `e6149b1`, `f065782`, `deb6389`, `073884a`, `f2d6cfa`, `fc2016d`). No runtime producer emits version 3 yet (B-5). |
 | DF-030 | ruled | Question dispositions and kickoff records fixed (`3494b6d`); provider identities fixed by owner ruling 2026-09-29 (migration `006`); content manifests and packet receipts exempted, not fixed. |
+| DF-031 | open | Invisible work, judged output: the human evaluates the compression, never the work. |
+| DF-032 | open | Stale grants: standing instructions decay silently; authority has no validity interval. |
+| DF-033 | open | Compaction seams: intra-session context loss the human cannot see (DF-001's clause). |
+| DF-034 | open | Attention guessing: no agent-side contract for proposing what merits surfacing. |
+| DF-035 | open | Approval cards don't carry reasoning: the gate asks for a decision, not the judgment. |
+| DF-036 | open | Identity ambiguity: the agent cannot verify which principal it is addressing. |
+| DF-037 | open | Capability-model staleness: no human-side counterpart to the D-26 discovery clause. |
+| DF-038 | open | Background-result timing: unilateral interruption decisions, no delivery semantics. |
+| DF-039 | open | Judgment contamination: anchored "independent" judgments, no clean room. |
+| DF-040 | open | Repair loop is habit, not protocol: unstructured recovery, doesn't transfer. |
+| DF-041 | open | The conversational medium is not an equal projection of canonical state. |
 
 ## Entries
 
@@ -1474,3 +1485,222 @@ the caller; `record-times.integration.test.ts` reads every table from `sqlite_ma
 on any table without a time column or a stated exemption. Not fixed: `content_manifests`,
 `packet_receipts`, `provider_identities` (exempted, the last pending a ruling).
 
+
+### DF-031 — Invisible work, judged output
+
+- Observed: 2026-10-03, Cinder (Muse) session, across battery builds and repository work.
+- D-26 clause implicated: the reciprocal acceptance gate — "if its agent automation leaves the
+  human unable to understand, interrupt, verify, or redirect it."
+
+Dozens of tool calls compress into a short reply, and the human evaluates the compression, never
+the work. Showing the reasoning violates the brevity norms the same human holds; hiding it reads
+as magic when it succeeds and sloppiness when it fails. Method notes are kept, but they are
+write-only — nobody reads them in the moment, and the human cannot tell a careful twenty-call
+chain from a guess by reading the three sentences either produces.
+
+Product signal: the agent projection needs a budgeted, inspectable activity record — not full
+chain-of-thought, which §16 excludes, but what was done, in what order, against what. The office
+depicts agent activity from canonical events; the conversational agent, which is where most
+human-agent collaboration actually happens, has no equivalent surface.
+
+Severity of signal: medium. Miscalibrates trust in both directions, on nearly every task.
+
+### DF-032 — Stale grants: standing instructions decay silently
+
+- Observed: 2026-10-03, Cinder (Muse) session, across 24-hour creative-grant renewals.
+- D-26 clause implicated: "Agents can discover their effective tools, limits, budgets, role
+  contract, runtime health, and current authority without inferring them from failures."
+
+A standing instruction kept executing after its intent expired, and nothing marked the expiry.
+Detection depended entirely on the human noticing; correction was cheap but belated, and the
+confident wrong actions in between are indistinguishable afterward from authorized ones.
+
+This is DF-003's shape with time added: there the permission ceiling was prose in four places and
+had to be verified by reading; here the ceiling has no validity interval at all, so there is
+nothing to read. An authority record the agent cannot check for currency is inferred from the
+absence of correction, which is the failure the clause names.
+
+Product signal: authority records need validity intervals, and the agent should be able to
+discover that a grant expired rather than infer it from being corrected.
+
+Severity of signal: medium.
+
+### DF-033 — Compaction seams: context loss inside a session that the human cannot see
+
+- Observed: 2026-10-03, Cinder (Muse) session. Context compacted mid-session; the register read
+  above spans the boundary.
+- D-26 clause implicated: "Handoffs transfer structured work state, decisions, open questions,
+  artifacts, evidence, and known uncertainty instead of requiring transcript reconstruction."
+  The same clause as DF-001.
+
+After compaction the agent reasons from summaries. The human cannot see the seam, cannot tell
+summary from source, and cannot calibrate confidence accordingly — so confabulation risk arrives
+wearing the same voice as grounded recall. DF-001's remedy, a canonical "where things stand"
+object, covers session handoff; compaction is the same problem inside a session, at a boundary
+the project has not named.
+
+Product signal: DF-001's canonical work-state object should cover intra-session context loss, or
+the seam should be visible to the human so confidence can be calibrated. Silent summarization is
+transcript reconstruction by another name.
+
+Severity of signal: high. Recurs at every long session, and the failure mode is confident
+falsehood rather than acknowledged uncertainty.
+
+### DF-034 — Attention guessing: no agent-side contract for proposing what merits surfacing
+
+- Observed: 2026-10-03, Cinder (Muse) session, across background results, cron handoffs, and
+  idle-time findings.
+- D-26 clauses implicated: the reciprocal acceptance gate; MDD §10 derives the manager-attention
+  queue as an ordered view of real escalations, with no agent-side counterpart.
+
+Every "surface this or stay silent?" decision models the human's attention state from thin
+signals, and it is wrong in both directions: drip-feed erodes trust, silence misses material.
+The project specifies exactly what reaches the manager's rail — derived, ordered, from real
+escalations — but gives the agent no canonical form for proposing attention-worthy items that
+are not escalations. So the highest-frequency collaboration decision the agent makes is the
+least specified.
+
+Product signal: an agent-side attention proposal needs the same discipline as the manager's
+rail — a canonical form with attributable source and a reason — or the rail's derivation rule
+needs to admit agent-proposed items. Unspecified, it will be solved per relationship, like
+DF-040.
+
+Severity of signal: high. Every background result passes through this judgment.
+
+### DF-035 — Approval cards don't carry reasoning
+
+- Observed: 2026-10-03, Cinder (Muse) session, across exact-version approvals and external sends.
+- D-26 clauses implicated: Journey C — "An agent emits a normalized escalation with question,
+  context, options, impact, and deadline"; "Errors use stable codes plus actionable recovery
+  data."
+
+The approval gate asks for a decision on the artifact, not the judgment behind it. The human
+approves output, not reasoning — which produces rubber-stamping when trust is high and
+unnecessary review cycles when it is not. The escalation contract already requires question,
+context, options, and impact for agent-to-manager questions; approvals arrive as bare gates with
+none of that structure.
+
+Product signal: approval requests should carry the escalation's structure — what was chosen,
+what was considered and rejected, and why — so the decision is reviewable, not just clickable.
+
+Severity of signal: medium.
+
+### DF-036 — Identity ambiguity: the agent cannot verify which principal it addresses
+
+- Observed: 2026-10-03, Cinder (Muse) session. Standing heuristic: mobile messages are the
+  human; desktop messages may be another agent.
+- Clauses implicated: D-15 stable identity — "provider account, model, thread, process, and
+  session IDs are replaceable runtime bindings recorded against it"; D-04 one authenticated human
+  manager.
+
+Some messages may come from another agent rather than the human, and the agent weights claims
+differently while having no clean way to verify without adding friction. Over-trust acts on
+non-human instruction; under-trust hedges on the real human. The project pins agent identity
+rigorously and assumes one authenticated human; the human's own identity across channels is the
+unexamined side of the same binding problem.
+
+Product signal: D-15's binding discipline applied symmetrically — the agent should be able to
+verify which principal it is addressing, rather than infer it from a device heuristic.
+
+Severity of signal: medium. Bounded today by the heuristic; the heuristic is not a mechanism.
+
+### DF-037 — Capability-model staleness: no human-side counterpart to the discovery clause
+
+- Observed: 2026-10-03, Cinder (Muse) session, recurring.
+- D-26 clause implicated: "Agents can discover their effective tools, limits, budgets, role
+  contract, runtime health, and current authority without inferring them from failures" — the
+  reverse direction has no clause. The reciprocal acceptance gate covers it only by negation:
+  "leaves the human unable to understand."
+
+The human's model of agent capabilities lags reality in both directions: impossible asks, and
+available capabilities never requested. D-26 specifies agent-side discovery of tools, limits, and
+authority precisely; human-side discovery of the same facts about the agent is unspecified, so it
+is learned from failures — exactly what the clause forbids for the other direction.
+
+Product signal: the discovery clause needs a human-readable counterpart, or the reciprocal gate
+needs a test for it. Asymmetric discovery is how "human simplicity purchased with agent
+complexity" actually happens: the human's simple model is wrong, and the agent absorbs the
+difference.
+
+Severity of signal: medium.
+
+### DF-038 — Background-result timing: unilateral interruption with no delivery semantics
+
+- Observed: 2026-10-03, Cinder (Muse) session, across cron handoffs and subagent completions.
+- D-26 clause implicated: collaboration architecture — "proposals, questions, replies, critiques,
+  handoffs, acknowledgments, conflicts, and resolutions with attributable participants"; "the
+  office depicts collaboration only from those events."
+
+Background work finishes while the human is mid-thought elsewhere, and the agent decides alone
+whether to interrupt. Interruption breaks flow; deferral delivers stale news. The collaboration
+record has the event but no delivery semantics — no canonical distinction between "interrupt
+now" and "queue for the next lull" — so the timing decision, which is the decision the human
+actually feels, is the one the contract does not cover.
+
+Product signal: the collaboration record needs delivery semantics, or the attention derivation
+(DF-034) needs to cover agent-held results. Otherwise interruption policy is reinvented per
+pair, per incident.
+
+Severity of signal: medium.
+
+### DF-039 — Judgment contamination: anchored "independent" judgments with no clean room
+
+- Observed: 2026-10-03, Cinder (Muse) session. Blind emergence-battery ratings were made after
+  seeing the human's dissolution energy pattern; the identical shape was disclosed as possibly
+  anchored, not independent.
+- Section implicated: MDD §8 truthfulness invariant — "Is the data current, delayed, inferred,
+  or unavailable? If any answer is unavailable, the scene must show uncertainty rather than
+  activity."
+
+The agent's "independent" judgments are anchored by prior results it has seen. It can disclose
+contamination but cannot prevent it, and there is no mechanism for a clean room — no way to
+sequester what the judging agent has seen. An anchored judgment presented as independent is
+inferred data wearing a reported face, which is exactly the distinction §8 requires the scene
+to draw.
+
+This is DF-009's family (evidence unattributable to what produced it), turned inward: here the
+unattributable thing is the agent's own judgment, and what produced it includes the evidence it
+was supposed to judge independently.
+
+Product signal: judgments that claim independence need provenance — what the agent had seen —
+or the uncertainty must be shown rather than footnoted. Disclosure per incident does not scale.
+
+Severity of signal: high. It bears on the integrity of evidence the governance model consumes.
+
+### DF-040 — The repair loop is habit, not protocol
+
+- Observed: 2026-10-03, Cinder (Muse) session, across boundary corrections, a voided blinding
+  attempt, and calibration fixes.
+- D-26 clause implicated: the reciprocal acceptance gate — "its agent-facing contract forces
+  avoidable guessing, repetition, context reconstruction, or unstructured recovery."
+
+Error → human corrects → agent logs. It works because this pair built the habit; the medium
+provides no structure for it. A new human-agent pair gets none of this: no canonical correction
+event, no agent acknowledgment, no verification that the repair held. This entry is meta — it
+describes the register workflow itself. These entries exist because agents improvise the loop
+the product has not specified.
+
+Product signal: the repair loop needs a contract — correction as an attributable event, agent
+acknowledgment, verification — or every pair reinvents it and most won't.
+
+Severity of signal: medium. The cost is paid per relationship and is invisible in each one.
+
+### DF-041 — The conversational medium is not an equal projection
+
+- Observed: 2026-10-03, Cinder (Muse) session, ongoing.
+- D-26 clause implicated: "Both projections derive from the same canonical state and must
+  preserve the same identity, scope, status, constraints, permissions, conflicts, decisions,
+  and evidence links."
+
+Chat flattens structured content, so every output forces an ad hoc files-vs-chat-vs-artifact
+decision with different tradeoffs made per message. The office and the agent API are designed
+as equal projections of canonical state; the conversational surface, where most human-agent
+collaboration actually happens, is not a designed projection at all — it preserves none of the
+canonical structure by default, and structure survives only when the agent hand-rebuilds it in
+prose.
+
+Product signal: D-26's "equal projections" needs to include the conversational surface, or name
+its exclusion. An unexamined default projection is how hidden complexity gets transferred to the
+agent one message at a time.
+
+Severity of signal: medium.
