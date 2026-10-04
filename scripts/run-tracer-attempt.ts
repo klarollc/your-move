@@ -94,6 +94,9 @@ const MAX_TURNS_PER_ATTEMPT = 10;
 const MAX_ATTEMPTS = 3;
 const TURN_ALLOWANCE = 30;
 const RECORD_SCHEMA = "cuckcode.tracer-record.v1";
+// Owner ruling 2026-10-03 (DF-043): the controlled home has no config.toml, so the Windows sandbox
+// mode must be sent with thread/start or the runtime downgrades workspace-write to read-only.
+const WINDOWS_SANDBOX_MODE = "unelevated" as const;
 
 const CREDENTIAL_SOURCE = resolve(
   process.env.CUCKCODE_CODEX_AUTH ??
@@ -133,6 +136,7 @@ type AttemptOutcome = {
   baseCommit: string;
   model: string;
   reasoningEffort: string;
+  windowsSandbox: string;
   bindingFingerprint: string | null;
   transcriptPath: string | null;
   transcriptSha256: string | null;
@@ -293,6 +297,7 @@ try {
     // baseInstructions, feature-disable config) is the builder's.
     const params = exerciseThreadStartParams(worktree, expected, livePrompt(contractText), {
       sandbox: "workspace-write",
+      windowsSandbox: WINDOWS_SANDBOX_MODE,
     });
     const threadStart = await supervisor.request("thread/start", params, 30_000);
 
@@ -429,6 +434,7 @@ const outcome: AttemptOutcome = {
   baseCommit,
   model,
   reasoningEffort,
+  windowsSandbox: WINDOWS_SANDBOX_MODE,
   bindingFingerprint,
   transcriptPath: transcriptPath.slice(ROOT.length + 1).replaceAll("\\", "/"),
   transcriptSha256: sha256(transcript),

@@ -1,0 +1,140 @@
+{
+  "schema": "cuckcode.sandbox-probe.v1",
+  "observedAt": "2026-10-04T04:24:41.205Z",
+  "codexPin": "0.157.1",
+  "turnsStarted": 0,
+  "tracerAllowanceTouched": false,
+  "notDone": [
+    "windowsSandbox/readiness (not in ALLOWED_REQUEST_METHODS)"
+  ],
+  "results": [
+    {
+      "variant": "baseline",
+      "homeUnderTemp": true,
+      "featuresOn": [],
+      "featuresOmitted": [],
+      "requestedSandbox": "workspace-write",
+      "observedSandbox": {
+        "type": "readOnly",
+        "networkAccess": false
+      },
+      "observedApprovalPolicy": "never",
+      "instructionSources": "instructionSources (1): [\"C:\\\\Users\\\\nater\\\\AppData\\\\Local\\\\Temp\\\\cuckcode-role-G76cdc\\\\AGENTS.md\"]",
+      "workspaceWriteHonoured": false,
+      "error": null
+    },
+    {
+      "variant": "home-outside-temp",
+      "homeUnderTemp": false,
+      "featuresOn": [],
+      "featuresOmitted": [],
+      "requestedSandbox": "workspace-write",
+      "observedSandbox": {
+        "type": "readOnly",
+        "networkAccess": false
+      },
+      "observedApprovalPolicy": "never",
+      "instructionSources": "instructionSources (1): [\"C:\\\\Users\\\\nater\\\\codex-probe-scratch\\\\cuckcode-role-ZJeN8H\\\\AGENTS.md\"]",
+      "workspaceWriteHonoured": false,
+      "error": null
+    },
+    {
+      "variant": "all-three-windows-sandbox-features-on",
+      "homeUnderTemp": false,
+      "featuresOn": [
+        "elevated_windows_sandbox",
+        "experimental_windows_sandbox",
+        "windows_sandbox_service"
+      ],
+      "featuresOmitted": [],
+      "requestedSandbox": "workspace-write",
+      "observedSandbox": {
+        "type": "workspaceWrite",
+        "writableRoots": [],
+        "networkAccess": false,
+        "excludeTmpdirEnvVar": false,
+        "excludeSlashTmp": false
+      },
+      "observedApprovalPolicy": "never",
+      "instructionSources": "instructionSources (1): [\"C:\\\\Users\\\\nater\\\\codex-probe-scratch\\\\cuckcode-role-hYugT0\\\\AGENTS.md\"]",
+      "workspaceWriteHonoured": true,
+      "error": null
+    },
+    {
+      "variant": "only-elevated_windows_sandbox",
+      "homeUnderTemp": false,
+      "featuresOn": [
+        "elevated_windows_sandbox"
+      ],
+      "featuresOmitted": [],
+      "requestedSandbox": "workspace-write",
+      "observedSandbox": {
+        "type": "workspaceWrite",
+        "writableRoots": [],
+        "networkAccess": false,
+        "excludeTmpdirEnvVar": false,
+        "excludeSlashTmp": false
+      },
+      "observedApprovalPolicy": "never",
+      "instructionSources": "instructionSources (1): [\"C:\\\\Users\\\\nater\\\\codex-probe-scratch\\\\cuckcode-role-OEH2SZ\\\\AGENTS.md\"]",
+      "workspaceWriteHonoured": true,
+      "error": null
+    },
+    {
+      "variant": "only-experimental_windows_sandbox",
+      "homeUnderTemp": false,
+      "featuresOn": [
+        "experimental_windows_sandbox"
+      ],
+      "featuresOmitted": [],
+      "requestedSandbox": "workspace-write",
+      "observedSandbox": {
+        "type": "workspaceWrite",
+        "writableRoots": [],
+        "networkAccess": false,
+        "excludeTmpdirEnvVar": false,
+        "excludeSlashTmp": false
+      },
+      "observedApprovalPolicy": "never",
+      "instructionSources": "instructionSources (1): [\"C:\\\\Users\\\\nater\\\\codex-probe-scratch\\\\cuckcode-role-fBeo7n\\\\AGENTS.md\"]",
+      "workspaceWriteHonoured": true,
+      "error": null
+    },
+    {
+      "variant": "only-windows_sandbox_service",
+      "homeUnderTemp": false,
+      "featuresOn": [
+        "windows_sandbox_service"
+      ],
+      "featuresOmitted": [],
+      "requestedSandbox": "workspace-write",
+      "observedSandbox": {
+        "type": "readOnly",
+        "networkAccess": false
+      },
+      "observedApprovalPolicy": "never",
+      "instructionSources": "instructionSources (1): [\"C:\\\\Users\\\\nater\\\\codex-probe-scratch\\\\cuckcode-role-LyFgkc\\\\AGENTS.md\"]",
+      "workspaceWriteHonoured": false,
+      "error": null
+    },
+    {
+      "variant": "three-keys-omitted",
+      "homeUnderTemp": false,
+      "featuresOn": [],
+      "featuresOmitted": [
+        "elevated_windows_sandbox",
+        "experimental_windows_sandbox",
+        "windows_sandbox_service"
+      ],
+      "requestedSandbox": "workspace-write",
+      "observedSandbox": {
+        "type": "readOnly",
+        "networkAccess": false
+      },
+      "observedApprovalPolicy": "never",
+      "instructionSources": "instructionSources (1): [\"C:\\\\Users\\\\nater\\\\codex-probe-scratch\\\\cuckcode-role-5X9ziY\\\\AGENTS.md\"]",
+      "workspaceWriteHonoured": false,
+      "error": null
+    }
+  ]
+}

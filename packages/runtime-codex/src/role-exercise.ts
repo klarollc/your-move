@@ -197,7 +197,17 @@ export async function runRoleExercise(input: {
 
 /** The only sandbox modes a caller may request. `danger-full-access` is deliberately not one. */
 export type ExerciseSandboxMode = "read-only" | "workspace-write";
-export type ExerciseThreadOptions = Readonly<{ sandbox?: ExerciseSandboxMode }>;
+/**
+ * The only Windows sandbox mode a caller may ask for (owner ruling 2026-10-03, DF-043). The
+ * controlled home carries no `config.toml`, so without this the runtime reports `readOnly` for a
+ * requested `workspace-write`. `elevated` is deliberately not expressible: it needs
+ * administrator-approved host setup and has not been ruled.
+ */
+export type ExerciseWindowsSandbox = "unelevated";
+export type ExerciseThreadOptions = Readonly<{
+  sandbox?: ExerciseSandboxMode;
+  windowsSandbox?: ExerciseWindowsSandbox;
+}>;
 
 export function exerciseThreadStartParams(
   cwd: string,
@@ -224,6 +234,8 @@ export function exerciseThreadStartParams(
     config: {
       model_reasoning_effort: expected.expectedReasoningEffort,
       features: featureDisableConfig(),
+      // Present only when a caller asks; the default thread/start is unchanged (DF-043).
+      ...(options.windowsSandbox ? { windows: { sandbox: options.windowsSandbox } } : {}),
     },
   };
 }

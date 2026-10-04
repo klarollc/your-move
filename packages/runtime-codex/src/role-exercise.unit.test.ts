@@ -369,3 +369,49 @@ describe("hasExactInstructionSource (P-2, exported for the tracer)", () => {
     expect(hasExactInstructionSource(null, "/h/AGENTS.md")).toBe(false);
   });
 });
+
+describe("Windows sandbox mode (tracer, DF-043)", () => {
+  const base = {
+    requestedModel: "gpt-5.6-luna",
+    expectedReasoningEffort: "medium",
+    expectedAuthMode: "chatgpt" as const,
+    protocolVersion: "0.146.0",
+    promotedContentSha256: "authored-implementation-engineer-v1",
+  };
+
+  it("sends no windows config by default, so no existing caller changes", () => {
+    expect(exerciseThreadStartParams("C:/w", base, "Task.").config).not.toHaveProperty("windows");
+    expect(exerciseThreadStartParams("C:/w", base, "Task.", {}).config).not.toHaveProperty(
+      "windows",
+    );
+  });
+
+  it("adds exactly the documented windows.sandbox key and changes nothing else", () => {
+    const standard = exerciseThreadStartParams("C:/w", base, "Task.");
+    const withMode = exerciseThreadStartParams("C:/w", base, "Task.", {
+      windowsSandbox: "unelevated",
+    });
+    expect(withMode.config).toEqual({
+      ...(standard.config as Record<string, unknown>),
+      windows: { sandbox: "unelevated" },
+    });
+    const { config: ignoredWith, ...restWith } = withMode;
+    const { config: ignoredStandard, ...restStandard } = standard;
+    expect(ignoredWith).toBeDefined();
+    expect(ignoredStandard).toBeDefined();
+    expect(restWith).toEqual(restStandard);
+  });
+
+  it("leaves the feature policy untouched and is independent of the sandbox option", () => {
+    const standard = exerciseThreadStartParams("C:/w", base, "Task.");
+    const both = exerciseThreadStartParams("C:/w", base, "Task.", {
+      sandbox: "workspace-write",
+      windowsSandbox: "unelevated",
+    });
+    expect((both.config as Record<string, unknown>).features).toEqual(
+      (standard.config as Record<string, unknown>).features,
+    );
+    expect(both.sandbox).toBe("workspace-write");
+    expect(both.approvalPolicy).toBe("never");
+  });
+});

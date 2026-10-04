@@ -17,6 +17,11 @@ through the office. The test is the vehicle.
 - **Consequence the owner should see:** because the role cannot run commands, it cannot observe
   RED or GREEN itself. The RED/GREEN evidence obligation below is met by the owner (or a
   separately authorized session) running the focused test between turns and attempts.
+- **Windows sandbox mode ruled 2026-10-03 (DF-043): `unelevated`.** The controlled home carries no
+  `config.toml`, so without an explicit mode the runtime reports `readOnly` for a requested
+  `workspace-write` (attempt 2, zero turns). The runner now sends `windows.sandbox = "unelevated"`
+  with `thread/start` and records the mode on every attempt. Probe evidence:
+  `docs/evidence/tracer/sandbox-probe-2026-10-04T04-*.json`.
 - **Off-repo references are marked.** `DF-042`, "V1 verified FAILED", "C-1" and "C-4" appear in
   v0.1 but not in the repository (the register ends at DF-030). The owner confirmed them
   2026-10-03; their source is a thread with Muse, not a repo file. They are marked
@@ -49,12 +54,18 @@ through the office. The test is the vehicle.
   and `git status` of the worktree; one hashed transcript per attempt.
 - **Permission ceiling:** `workspace-write` sandbox, approval policy `never`, network off,
   read back from `thread/start` and refused if different. File edits only, every path inside the
-  worktree (`.git` excluded). Any command, MCP call, web search, subagent, or edit outside the
+  worktree (`.git` excluded). Windows sandbox mode `unelevated` (owner ruling 2026-10-03), also
+  read back as `workspaceWrite`. Any command, MCP call, web search, subagent, or edit outside the
   worktree stops the run. No promotion, no push (all owner-run).
 - **Residual surface (stated, not hidden):** `workspace-write` also makes the temp directory
   writable, and `thread/start` accepts only a sandbox _mode_, not a narrower root list. The
   post-turn check sees only edits the runtime reports as file changes; a stray write under the
-  temp directory would not be detected.
+  temp directory would not be detected. The `unelevated` mode is the weaker Windows boundary: per
+  the Codex documentation it "runs commands with a restricted Windows token derived from your
+  current user" and applies ACL-based filesystem boundaries, where `elevated` uses dedicated
+  lower-privilege sandbox users and firewall rules. The tracer accepts that weaker preventive
+  control because the role is barred from commands, and the runner stops on any non-edit item. The
+  reported posture does not show that edits succeed; the first live turn is the first test of that.
 - **Turn budget _(owner-confirmed 2026-10-03, source off-repo)_:** 10 turns per attempt, up to 3 attempts (30
   total). Owner review between attempts; no auto-retry. A transport re-submission counts as a
   turn. Recorded as the tracer's own allowance, separate from the Phase 5 60-turn ledger.

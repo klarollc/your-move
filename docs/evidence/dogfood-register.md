@@ -82,6 +82,7 @@ updates its row. An entry's own text is history and is not rewritten.
 | DF-040 | open | Repair loop is habit, not protocol: unstructured recovery, doesn't transfer. |
 | DF-041 | open | The conversational medium is not an equal projection of canonical state. |
 | DF-042 | open | The office has no work-item creation or assignment affordance; tasking a role goes through off-office machinery. |
+| DF-043 | open | A requested sandbox posture is silently downgraded: the runtime reports a weaker one with no cause when no Windows sandbox mode is configured. |
 
 ## Entries
 
@@ -1720,3 +1721,52 @@ Product signal: [owner to confirm]. Established only that the surface for direct
 not exist yet, so every tasking falls back to an off-office path.
 
 Severity of signal: [owner to confirm].
+
+### DF-043 — A requested sandbox posture is silently downgraded
+
+- Observed: 2026-10-03 (attempts recorded 2026-10-04 UTC), Claude (Cowork) session, tracer attempt 2
+  and the sandbox probe.
+- D-26 clause implicated: the reciprocal acceptance gate — "its agent-facing contract forces
+  avoidable guessing, repetition, context reconstruction, or unstructured recovery" — and this
+  register's own test of an unactionable error.
+
+The tracer contract (owner ruling 2026-10-03) needs a `workspace-write` sandbox. The runner
+requested it through the typed option and read the posture back from `thread/start`. The runtime
+reported `readOnly`: no error, no reason, and no notification naming a cause. The only nearby
+signal was a stderr line about helper binaries under the temp directory, which turned out not to
+matter. Attempt 2 was spent with zero turns.
+
+A zero-turn probe (`scripts/run-sandbox-probe.ts`, nine variants across three runs) found the
+cause. The controlled `CODEX_HOME` deliberately carries no `config.toml` (DF-010), so no Windows
+sandbox mode is configured, and the runtime downgrades a requested `workspace-write` to `readOnly`
+without saying why. Setting the documented config key `windows.sandbox` to either `elevated` or
+`unelevated` on `thread/start` reported `workspaceWrite`. Two removed legacy flags
+(`elevated_windows_sandbox`, `experimental_windows_sandbox`) did the same; a third
+(`windows_sandbox_service`) did not. Moving the home out of the temp directory changed nothing, and
+neither did leaving the three feature keys unsent, so the project's deny-by-default feature policy
+is not the cause. This entry first attributed the downgrade to that policy; the omission variant
+disproved it. Evidence: `docs/evidence/tracer/attempt-2-2026-10-04T04-04-31-086Z.json` and the
+three `docs/evidence/tracer/sandbox-probe-2026-10-04T04-*.json` reports.
+
+Owner ruling 2026-10-03: `unelevated`, sent per call through a typed option on
+`exerciseThreadStartParams` (default unchanged, `elevated` not expressible). The controlled home
+keeps its no-`config.toml` guarantee.
+
+Not yet established: whether edits actually succeed under either mode, because the probe started
+no turn; and whether `elevated` needs administrator-approved setup on this host, which the
+reported posture does not reveal.
+
+Three separate frictions: the runtime downgraded instead of refusing; a posture that needs an
+explicit platform setting looks ordinary until the runtime reports back, and this surfaced only
+live, after two attempts; and the recovery was ad hoc — guess, read logs, build a probe, then
+correct the guess — with no structured way to ask why a requested posture was not granted. The
+read-back check is what turned this into a refusal; without it the tracer would have run under a
+posture other than the one ruled.
+
+Product signal: a requested permission posture the runtime cannot grant should come back as a
+refusal that names the cause, or at least as an explicit requested-versus-granted pair with the
+reason. The office should likewise show requested and granted posture side by side, not only the
+granted one.
+
+Severity of signal: medium. The cost here was two of three attempts and a probe, bounded by the
+read-back; the same gap without a read-back would be silent.

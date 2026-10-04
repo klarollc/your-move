@@ -22,6 +22,22 @@
       "bindingFingerprint": null,
       "transcriptPath": "docs/evidence/tracer/attempt-1-2026-10-04T02-52-24-842Z.json",
       "transcriptSha256": "ddbc29bb89f56f719a7bb38e8b738d078474f4b80a911806726acf8d4c5b723b"
+    },
+    {
+      "attempt": 2,
+      "observedAt": "2026-10-04T04:04:31.086Z",
+      "turnsUsed": 0,
+      "code": "TRACER_POSTURE_REFUSED",
+      "detail": "sandbox reported as readOnly, expected workspaceWrite",
+      "contractSha256": "ae9fd0c10b9a4a55c285cd623be69e7f9c0cb718de348c3941a6227ecff60ff3",
+      "roleContentSha256": "2a5cce0d7afee5ba80bf9f50fbd29ccf2cb52b8c23a894e87d4dce2801c4aea4",
+      "worktree": "C:\\Users\\nater\\CuckCode\\.worktrees\\tracer-df007",
+      "baseCommit": "150998bca0fb685452c68cbfeeba2033a6d35d0c",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "medium",
+      "bindingFingerprint": null,
+      "transcriptPath": "docs/evidence/tracer/attempt-2-2026-10-04T04-04-31-086Z.json",
+      "transcriptSha256": "37e9951da5b3c1a44325f6bd1431d4a08098fca6c1eb303020d8d0c4d3ac688e"
     }
   ]
 }
