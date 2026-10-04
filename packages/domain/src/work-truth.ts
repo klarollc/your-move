@@ -1,9 +1,11 @@
 import {
   parseProjectEvent,
   validateWorkAssignmentPayload,
+  validateWorkCreatedPayload,
   validateWorkTransitionPayload,
   type ProjectEvent,
   type WorkConditionV3,
+  type WorkContract,
 } from "@cuckcode/contracts";
 
 import { applyStaffingEvent, createStaffingTruth, type StaffingTruth } from "./staffing-truth.js";
@@ -47,6 +49,8 @@ export type WorkItemTruth = {
   updatedAt: string;
   assignment: WorkAssignmentTruth | null;
   condition: WorkConditionTruth | null;
+  /** The D-26 work contract, present only for a work item created with a version-2 payload. */
+  contract?: WorkContract;
 };
 
 export type EvidenceTruth = {
@@ -130,6 +134,28 @@ export function reduceWorkTruth(input: readonly unknown[]): WorkTruthState {
 }
 
 function createWorkItem(state: WorkTruthState, event: ProjectEvent): void {
+  // Version 2 carries the bounded work contract (W3). Version 1 keeps its exact old meaning.
+  if (event.payload.payloadVersion !== undefined) {
+    const parsed = validateWorkCreatedPayload(event.payload);
+    if (!parsed.ok) {
+      issue(state, "MALFORMED_WORK_EVENT", event, parsed.issues.join("; "));
+      return;
+    }
+    const { workItemId, outcome, requiredEvidenceKinds, contract } = parsed.value;
+    state.workItems[workItemId] = {
+      workItemId,
+      outcome,
+      state: "draft",
+      revision: 0,
+      requiredEvidenceKinds: [...requiredEvidenceKinds],
+      updatedByEventId: event.eventId,
+      updatedAt: event.occurredAt,
+      assignment: null,
+      condition: null,
+      ...(contract ? { contract } : {}),
+    };
+    return;
+  }
   const workItemId = stringField(event.payload, "workItemId");
   const outcome = stringField(event.payload, "outcome");
   const requiredEvidenceKinds = stringArrayField(event.payload, "requiredEvidenceKinds");
