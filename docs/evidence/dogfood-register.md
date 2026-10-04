@@ -86,6 +86,7 @@ updates its row. An entry's own text is history and is not rewritten.
 | DF-044 | open | The turn completion record omits items the runtime streamed, so a control built on it was blind to a file edit. |
 | DF-045 | open | A role without repo access declared done on work it could not ground, and nothing in the surface said it was blind. |
 | DF-046 | open | The scoped-edit posture leaves the role no way to read: the feature policy disables the shell tools, so "edit files, no commands" means edit blind. |
+| DF-047 | open | The Phase 4 kickoff session classifies only the `turn/completed` items, so it repeats DF-044's blindness to streamed effects; the Phase 5 release review inherits it. |
 
 ## Entries
 
@@ -1836,8 +1837,10 @@ shape.
 - Observed: 2026-10-04 (UTC), Claude (Cowork) session, approval probe
   (`docs/evidence/tracer/approval-probe-2026-10-04T05-08-35-912Z.json`, report sha256
   `2d572ea06f3cf95d3b1dd11f8ec853e90a039684c6bd478ff31d717bf6b359fa`).
-- D-26 clause implicated: [owner to confirm]. Relates to DF-045, whose cause this probe narrows,
-  and to DF-043 (the same posture-versus-reality gap, one layer over).
+- D-26 clause implicated: "Agents can discover their effective tools, limits, budgets, role
+  contract, runtime health, and current authority without inferring them from failures." (Owner
+  confirmed 2026-10-04.) Relates to DF-045, whose cause this probe narrows, and to DF-043 (the same
+  posture-versus-reality gap, one layer over).
 
 The probe asked a role to read `notes/a.txt` and write its first line, reversed, to `out.txt`, in a
 disposable scratch workspace, with the tracer's posture (`workspaceWrite`, network off, unelevated
@@ -1870,4 +1873,35 @@ contract, or in the surface said so. A posture should be shown as what the role 
 work is assigned; "no commands" and "no way to read" are different postures and the ruling named
 only the first.
 
-Severity of signal: [owner to confirm].
+Severity of signal: medium. (Owner confirmed 2026-10-04.) The role stopped itself with
+`PROBE_BLOCKED` rather than guessing, and nothing was written outside bounds; the high-severity
+part is DF-045, where the same blindness ended in a done claim.
+
+### DF-047 — The kickoff session judges a turn on the partial completion record
+
+- Observed: 2026-10-04 (UTC), Claude (Cowork) session, reading code while closing the open items
+  from DF-044.
+- D-26 clause implicated: the reciprocal acceptance gate, as for DF-044. (Owner approved this entry
+  2026-10-04.)
+
+`scripts/phase4-kickoff-session.ts` (lines 189 to 193) reads `run.turn?.items`, the `turn/completed`
+record, and passes only that to `classifyTurnItems`. It does not merge in the items the runtime
+streamed (`run.streamedItems`). That is the source DF-044 found to be partial: a `fileChange`
+streamed through `item/started` and `item/completed` was absent from the completion record. The
+tracer and workflow runners and `role-exercise.ts` read the reconciled record
+(`reconcileTurnRecord`); this session does not. DF-044 named `role-exercise.ts` as not re-examined;
+this entry is that follow-up for the kickoff session, and `role-exercise.ts` itself now goes through
+`reconcileTurnRecord`.
+
+Reach, from reading the code: `scripts/run-phase5-release-review.ts` opens its session through
+`openKickoffSession`, so it classifies turns the same way. `scripts/codex-smoke.ts` never reads
+items; it takes an injected `SmokeSession` and records only what that session returns. Both run
+text-only turns. Whether a missed effect could reach either in practice was not tested, and nothing
+was run live for this entry. That a streamed effect would pass the kickoff session's
+classification is an inference from DF-044, not an observation.
+
+Product signal: as for DF-044. A turn's effects should come from one reconciled source that every
+caller uses, so a second consumer cannot quietly keep reading the partial one.
+
+Severity of signal: medium. (Owner confirmed 2026-10-04.) An effect read from the partial record
+would pass, but the turns it governs carry no write posture, and the code change is not made.
