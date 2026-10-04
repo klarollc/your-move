@@ -217,6 +217,14 @@ for await (const line of lines) {
     process.stdout.write(
       `${JSON.stringify({ id: message.id, result: { turn: { id: turnId } } })}\n`,
     );
+    // A real runtime streams each item before turn/completed; a turn record is judged against that stream.
+    for (const item of items) {
+      for (const method of ["item/started", "item/completed"]) {
+        process.stdout.write(
+          `${JSON.stringify({ method, params: { threadId: "thread_fixture", turnId, item } })}\n`,
+        );
+      }
+    }
     process.stdout.write(
       `${JSON.stringify({ method: "turn/completed", params: { threadId: "thread_fixture", turn: { id: turnId, status: "completed", items } } })}\n`,
     );
