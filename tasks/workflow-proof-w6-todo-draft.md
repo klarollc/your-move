@@ -31,8 +31,8 @@ the event schema, or attention behavior.
 ## Verification and done-when
 
 - [x] The focused unit test failed first for the expected missing-field behavior: owner-run RED on
-  2026-10-04, 2 failed and 35 passed; the shown failure was `postures` expected `[]`, received
-  `undefined`.
+      2026-10-04, 2 failed and 35 passed; the shown failure was `postures` expected `[]`, received
+      `undefined`.
 - [x] The focused unit test then passed: owner-run GREEN on 2026-10-04, 37/37 passed.
 - [x] TypeScript workspace build passed: owner-run `npm.cmd run typecheck`, exit 0.
 - Owner-run `npm.cmd run verify` exits 0 on a clean committed tree, with `dirty: false` and

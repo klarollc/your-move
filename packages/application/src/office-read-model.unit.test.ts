@@ -849,11 +849,7 @@ describe("office read model: canonical posture history (workflow-proof W6)", () 
   });
 
   it("returns an empty history when no posture event exists", () => {
-    const projected = mustWork(
-      model(office()),
-      "agent_test_engineer",
-      "work_evidence",
-    );
+    const projected = mustWork(model(office()), "agent_test_engineer", "work_evidence");
 
     expect(projected.postures).toEqual([]);
   });
