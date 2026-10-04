@@ -25,7 +25,9 @@ export type AttemptDeps = Readonly<{
   readLog(): Promise<Readonly<{ events: readonly unknown[]; revision: number }>>;
   append(events: readonly unknown[], expectedRevision: number): Promise<AppendOutcome>;
   startSession(): Promise<Readonly<{ posture: PostureRecord; close(): Promise<void> }>>;
-  runTurn(number: number): Promise<Readonly<{ summary: TurnSummary; claimDone: boolean }>>;
+  runTurn(
+    number: number,
+  ): Promise<Readonly<{ summary: TurnSummary; claimDone: boolean; claimBlocked?: string }>>;
   now(): string;
 }>;
 
@@ -34,6 +36,7 @@ export type AttemptOutcome =
   | "hard_stop"
   | "review_requested"
   | "claim_unsupported"
+  | "role_blocked"
   | "turn_cap"
   | "runtime_failure"
   | "log_refused"
@@ -124,6 +127,7 @@ export async function runWorkflowAttempt(
           runId: `${input.runId}t${String(number)}`,
           turn: turn.summary,
           claimDone: turn.claimDone,
+          ...(turn.claimBlocked !== undefined ? { claimBlocked: turn.claimBlocked } : {}),
         }),
       );
       if ("stop" in step) return step.stop;
@@ -132,6 +136,8 @@ export async function runWorkflowAttempt(
           return { outcome: "hard_stop", turnsRun, notes: step.plan.notes };
         case "review_requested":
           return { outcome: "review_requested", turnsRun, notes: step.plan.notes };
+        case "role_blocked":
+          return { outcome: "role_blocked", turnsRun, notes: step.plan.notes };
         case "done_unsupported":
           return { outcome: "claim_unsupported", turnsRun, notes: step.plan.notes };
         default:

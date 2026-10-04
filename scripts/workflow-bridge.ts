@@ -49,7 +49,13 @@ export type PlanResult =
       events: readonly Record<string, unknown>[];
       proceed: boolean;
       outcome:
-        "started" | "blocked" | "continue" | "review_requested" | "done_unsupported" | "hard_stop";
+        | "started"
+        | "blocked"
+        | "continue"
+        | "review_requested"
+        | "done_unsupported"
+        | "role_blocked"
+        | "hard_stop";
       notes: readonly string[];
     }>
   | Readonly<{ ok: false; code: "BRIDGE_REJECTED"; issues: readonly string[] }>;
@@ -213,7 +219,7 @@ export function planPreflight(
 }
 
 export function planTurn(
-  input: BridgeContext & Readonly<{ turn: TurnSummary; claimDone: boolean }>,
+  input: BridgeContext & Readonly<{ turn: TurnSummary; claimDone: boolean; claimBlocked?: string }>,
 ): PlanResult {
   const item = itemOf(input, "active");
   if (isPlan(item)) return item;
@@ -252,6 +258,24 @@ export function planTurn(
       proceed: false,
       outcome: "hard_stop",
       notes: reconciliation.mismatches.map((entry) => entry.detail),
+    });
+  }
+  if (input.claimBlocked !== undefined) {
+    // The role's own structured end state (spec §4): it cannot proceed and says why. That is a
+    // question for the manager, not a failure.
+    builder.transition("blocked", {
+      reasonCode: "awaiting_clarification",
+      summary: clamp(`The role reports it is blocked: ${input.claimBlocked}`),
+      waitingOn: { kind: "manager" },
+      requestedAction: {
+        kind: "answer_question",
+        summary: "Answer the role's question, or redirect the work.",
+      },
+    });
+    return finish(input, builder.events, {
+      proceed: false,
+      outcome: "role_blocked",
+      notes: [`the role reports blocked: ${input.claimBlocked}`],
     });
   }
   if (!input.claimDone) {

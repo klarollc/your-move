@@ -139,6 +139,7 @@ describe("where the drift preflight runs", () => {
       "run-role-exercises.ts",
       "run-sandbox-probe.ts",
       "run-tracer-attempt.ts",
+      "run-workflow-attempt.ts",
     ]);
     for (const name of direct) {
       const text = source(name);

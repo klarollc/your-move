@@ -362,3 +362,48 @@ describe("planHalt", () => {
     expect(plan).toMatchObject({ ok: false, code: "BRIDGE_REJECTED" });
   });
 });
+
+describe("planTurn: the role reports blocked", () => {
+  it("blocks the item with a clarification request carrying the role's question", () => {
+    const log = activeLog();
+    const plan = planTurn({
+      ...turnCtx(log),
+      turn: turn(),
+      claimDone: false,
+      claimBlocked: "Should slugify keep unicode letters or strip them?",
+    });
+    expect(plan).toMatchObject({ ok: true, proceed: false, outcome: "role_blocked" });
+    if (!plan.ok) return;
+    expect(evidenceKinds(plan.events)).toEqual(["turn-record"]);
+    const item = stateOf(log, plan.events);
+    expect(item?.state).toBe("blocked");
+    expect(item?.condition).toMatchObject({
+      reasonCode: "awaiting_clarification",
+      waitingOn: { kind: "manager" },
+      requestedAction: { kind: "answer_question" },
+    });
+    expect(item?.condition?.summary).toContain("unicode");
+  });
+
+  it("lets a hard stop win over the role's blocked report", () => {
+    const log = activeLog();
+    const plan = planTurn({
+      ...turnCtx(log),
+      turn: turn({ worktreePaths: [] }),
+      claimDone: false,
+      claimBlocked: "stuck",
+    });
+    expect(plan).toMatchObject({ ok: true, outcome: "hard_stop" });
+  });
+
+  it("clamps a long question to the condition summary limit", () => {
+    const log = activeLog();
+    const plan = planTurn({
+      ...turnCtx(log),
+      turn: turn(),
+      claimDone: false,
+      claimBlocked: "q".repeat(500),
+    });
+    expect(plan).toMatchObject({ ok: true, outcome: "role_blocked" });
+  });
+});

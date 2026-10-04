@@ -131,7 +131,9 @@ type Fake = {
 };
 function fake(opts: {
   posture?: PostureRecord;
-  turns?: (n: number) => { summary: TurnSummary; claimDone: boolean } | Error;
+  turns?: (
+    n: number,
+  ) => { summary: TurnSummary; claimDone: boolean; claimBlocked?: string } | Error;
   refuseAppendAt?: number;
   verifiedEvidence?: boolean;
   startFails?: boolean;
@@ -284,5 +286,15 @@ describe("runWorkflowAttempt", () => {
     expect(result.turnsRun).toBe(0);
     expect(f.appendCalls()).toBe(0);
     expect(result.notes.join(" ")).toContain("spawn failed");
+  });
+
+  it("stops when the role reports blocked, asking the manager, with the item blocked", async () => {
+    const f = fake({
+      turns: (n) => ({ summary: cleanTurn(n), claimDone: false, claimBlocked: "which locale?" }),
+    });
+    const result = await runWorkflowAttempt(input(f));
+    expect(result).toMatchObject({ outcome: "role_blocked", turnsRun: 1 });
+    expect(stateOf(f)?.state).toBe("blocked");
+    expect(stateOf(f)?.condition?.summary).toContain("which locale?");
   });
 });
