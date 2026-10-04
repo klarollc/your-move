@@ -190,6 +190,13 @@ const item = snapshot.work.workItems[workItemId];
 if (!item) throw new Error(`WORKFLOW_WORK_ITEM_NOT_FOUND:${workItemId}`);
 const contract = item.contract;
 if (!contract) throw new Error(`WORKFLOW_CONTRACT_MISSING:${workItemId}`);
+// Preflight requires an assigned item, so each attempt needs its own work item (rehearsal finding
+// F-2). Refuse here, before a Codex session is opened, rather than after.
+if (item.state !== "assigned") {
+  throw new Error(
+    `WORKFLOW_ITEM_NOT_ASSIGNED:${workItemId} is ${item.state}; create and assign a new work item for each attempt`,
+  );
+}
 
 const baseCommit = await assertCleanLinkedWorktree(worktree);
 

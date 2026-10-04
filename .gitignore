@@ -17,3 +17,6 @@ debug.log
 # Local art-reference work, kept out of the repo by owner ruling 2026-09-27.
 /output/
 /art-reference-brainstorm-*.md
+
+# Regenerated on demand by `npm run workflow:rehearsal` (W10, owner ruling 2026-10-04).
+/docs/evidence/workflow/rehearsal/
