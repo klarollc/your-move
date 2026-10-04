@@ -314,4 +314,62 @@ describe("the shared turn runner", () => {
     ).rejects.toThrow("TURN_LIMIT_OUT_OF_RANGE: hardMs");
     expect(turnStarts()).toBe(0);
   });
+
+  describe("streamed items (DF-044)", () => {
+    const fileChange = { type: "fileChange", id: "f1", status: "completed", changes: [] };
+    const itemDone = (turnId: string, item: unknown, threadId = THREAD) => ({
+      threadId,
+      turnId,
+      item,
+    });
+
+    it("returns items announced through item/completed that turn/completed omits", async () => {
+      const { supervisor } = fake([
+        (id, emit) => {
+          emit("item/completed", itemDone(id, fileChange));
+          emit("turn/completed", completed(id));
+        },
+      ]);
+      const result = await runTurn(supervisor, {
+        threadId: THREAD,
+        input,
+        clock: createManualClock(),
+      });
+      expect(result.ok).toBe(true);
+      expect(result.streamedItems).toEqual([fileChange]);
+      if (result.ok) expect(result.turn.items).toEqual([{ type: "agentMessage", text: "OK" }]);
+    });
+
+    it("does not collect items from another turn or another thread", async () => {
+      const { supervisor } = fake([
+        (id, emit) => {
+          emit("item/completed", itemDone("turn_other", fileChange));
+          emit("item/completed", itemDone(id, fileChange, "thread_other"));
+          emit("turn/completed", completed(id));
+        },
+      ]);
+      const result = await runTurn(supervisor, {
+        threadId: THREAD,
+        input,
+        clock: createManualClock(),
+      });
+      expect(result.streamedItems).toEqual([]);
+    });
+
+    it("returns streamed items on a failed turn too", async () => {
+      const { supervisor } = fake([
+        (id, emit) => {
+          emit("item/completed", itemDone(id, fileChange));
+          emit("turn/completed", failed(id, "other"));
+        },
+      ]);
+      const result = await runTurn(supervisor, {
+        threadId: THREAD,
+        input,
+        clock: createManualClock(),
+      });
+      expect(result.ok).toBe(false);
+      expect(result.streamedItems).toEqual([fileChange]);
+    });
+  });
 });

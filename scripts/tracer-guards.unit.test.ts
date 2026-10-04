@@ -7,6 +7,7 @@ import {
   isInsideWorktree,
   judgeTracerTurn,
   lastAgentMessageText,
+  mergeTurnItems,
   parseResultLine,
   type ItemClassifier,
 } from "./tracer-guards.js";
@@ -148,4 +149,53 @@ test("instruction sources: paths are named for diagnosis; malformed reports are 
   expect(describeInstructionSources({ instructionSources: [1] })).toContain("<non-string entry>");
   expect(describeInstructionSources({})).toBe("instructionSources: not reported as a list");
   expect(describeInstructionSources(null)).toBe("instructionSources: not reported as a list");
+});
+
+const judgeStreamed = (t: unknown, streamedItems: unknown[]) =>
+  judgeTracerTurn({
+    turn: t,
+    threadId: "th",
+    expectedTurnId: "t1",
+    worktree: WT,
+    classify,
+    streamedItems,
+  });
+
+test("streamed items: a fileChange absent from turn.items is seen and checked (DF-044)", () => {
+  const verdict = judgeStreamed(turn([msg("done")]), [edit("src/a.ts", { id: "f1" })]);
+  expect(verdict).toMatchObject({ ok: true, fileChanges: [{ path: "src/a.ts" }] });
+  const outside = judgeStreamed(turn([msg("done")]), [edit("/etc/passwd", { id: "f1" })]);
+  expect(outside).toMatchObject({ ok: false, code: "FILE_CHANGE_OUTSIDE_WORKTREE" });
+});
+
+test("streamed items: a streamed commandExecution that turn.items omits is refused", () => {
+  const verdict = judgeStreamed(turn([msg("done")]), [{ type: "commandExecution", id: "c1" }]);
+  expect(verdict).toMatchObject({ ok: false, code: "EXTERNAL_EFFECT_OBSERVED" });
+});
+
+test("streamed items: an unclassified streamed type stops the run", () => {
+  const verdict = judgeStreamed(turn([msg("done")]), [{ type: "novelThing", id: "n1" }]);
+  expect(verdict).toMatchObject({ ok: false, code: "UNCLASSIFIED_ITEM_TYPE" });
+});
+
+test("streamed items: the same item in both lists counts once", () => {
+  const item = edit("src/a.ts", { id: "f1" });
+  const verdict = judgeStreamed(turn([item, msg("done")]), [item]);
+  expect(verdict).toMatchObject({ ok: true });
+  if (verdict.ok) expect(verdict.fileChanges).toHaveLength(1);
+});
+
+test("streamed items: omitted input judges exactly as before", () => {
+  expect(judge(turn([edit("src/a.ts"), msg("TRACER_RESULT: done — x")]))).toMatchObject({
+    ok: true,
+    resultLine: { verdict: "done" },
+  });
+  expect(mergeTurnItems([1, 2])).toEqual([1, 2]);
+});
+
+test("streamed items: a result line in a streamed agent message is read", () => {
+  const verdict = judgeStreamed(turn([]), [
+    { type: "agentMessage", id: "m9", text: "TRACER_RESULT: done — fine" },
+  ]);
+  expect(verdict).toMatchObject({ ok: true, resultLine: { verdict: "done" } });
 });

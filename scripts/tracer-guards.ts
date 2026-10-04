@@ -111,6 +111,30 @@ export function parseResultLine(text: string): ResultLine | null {
 }
 
 /**
+ * The items a turn is judged on: `turn/completed.items` plus the items the runtime streamed
+ * through `item/completed`. The completion payload can omit streamed items (DF-044), so judging
+ * it alone is blind to them. De-duplicated by item id; an item with no string id is keyed by its
+ * content, so the same item never counts twice.
+ */
+export function mergeTurnItems(
+  completedItems: readonly unknown[],
+  streamedItems: readonly unknown[] = [],
+): unknown[] {
+  const seen = new Set<string>();
+  const merged: unknown[] = [];
+  for (const item of [...completedItems, ...streamedItems]) {
+    const key =
+      isRecord(item) && typeof item.id === "string" && item.id.length > 0
+        ? `id:${item.id}`
+        : `json:${JSON.stringify(item) ?? String(item)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(item);
+  }
+  return merged;
+}
+
+/**
  * Judges one completed turn against the scoped-edit posture.
  *
  * - Unclassified item types stop the run (conservative, as everywhere else in runtime-codex).
@@ -127,6 +151,8 @@ export function judgeTracerTurn(input: {
   expectedTurnId: string;
   worktree: string;
   classify: ItemClassifier;
+  /** Items the runtime streamed for this turn (`runTurn`'s `streamedItems`). Judged with `turn.items`. */
+  streamedItems?: readonly unknown[];
   pathApi?: PathApi;
 }): TurnVerdict {
   const pathApi = input.pathApi ?? posix;
@@ -148,7 +174,8 @@ export function judgeTracerTurn(input: {
   const effects: string[] = [];
   const unclassified: string[] = [];
 
-  for (const item of turn.items) {
+  const items = mergeTurnItems(turn.items, input.streamedItems);
+  for (const item of items) {
     const type =
       isRecord(item) && typeof item.type === "string" && item.type.length > 0
         ? item.type
@@ -208,7 +235,7 @@ export function judgeTracerTurn(input: {
     };
   }
 
-  const text = lastAgentMessageText(turn.items);
+  const text = lastAgentMessageText(items);
   return { ok: true, fileChanges, resultLine: text === null ? null : parseResultLine(text) };
 }
 

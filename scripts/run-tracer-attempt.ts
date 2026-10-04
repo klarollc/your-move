@@ -77,6 +77,8 @@ import {
   describeInstructionSources,
   hostPathApi,
   judgeTracerTurn,
+  lastAgentMessageText,
+  mergeTurnItems,
   type FileChangeRecord,
 } from "./tracer-guards.js";
 
@@ -114,10 +116,16 @@ function arg(name: string): string {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
+const itemTypesOf = (items: readonly unknown[]): string[] =>
+  items.map((i) => (isRecord(i) && typeof i.type === "string" ? i.type : "unknown"));
+
 type TurnNote = {
   turn: number;
   turnId: string | null;
   itemTypes: string[];
+  /** Items streamed via item/completed. The completion payload can omit them (DF-044). */
+  streamedItemCount: number;
+  streamedItemTypes: string[];
   fileChanges: FileChangeRecord[];
   worktreeStatus: string[];
   agentText: string | null;
@@ -356,6 +364,8 @@ try {
               turn: turnsUsed,
               turnId: run.turn?.id ?? null,
               itemTypes: [],
+              streamedItemCount: run.streamedItems.length,
+              streamedItemTypes: itemTypesOf(run.streamedItems),
               fileChanges: [],
               worktreeStatus: [],
               agentText: null,
@@ -367,26 +377,19 @@ try {
             turn: run.turn,
             threadId,
             expectedTurnId: run.turn.id,
+            streamedItems: run.streamedItems,
             worktree,
             classify: classifyItem,
             pathApi,
           });
           const status = (await git(worktree, "status", "--porcelain")).split("\n").filter(Boolean);
-          const agentText =
-            run.turn.items
-              .map((i) =>
-                isRecord(i) && i.type === "agentMessage" && typeof i.text === "string"
-                  ? i.text
-                  : null,
-              )
-              .filter((t): t is string => t !== null)
-              .at(-1) ?? null;
+          const agentText = lastAgentMessageText(mergeTurnItems(run.turn.items, run.streamedItems));
           notes.push({
             turn: turnsUsed,
             turnId: run.turn.id,
-            itemTypes: run.turn.items.map((i) =>
-              isRecord(i) && typeof i.type === "string" ? i.type : "unknown",
-            ),
+            itemTypes: itemTypesOf(run.turn.items),
+            streamedItemCount: run.streamedItems.length,
+            streamedItemTypes: itemTypesOf(run.streamedItems),
             fileChanges: verdict.ok ? verdict.fileChanges : [],
             worktreeStatus: status,
             agentText,
