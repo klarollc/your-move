@@ -73,6 +73,10 @@ export function toWorkCommand(command: WorkspaceCommand): WorkCommandMapping {
       },
     };
   }
+  if (command.intent === "work.request_review") {
+    if (keys.length > 0) return invalid(`unexpected payload fields: ${keys.join(", ")}`);
+    return { ok: true, value: { ...common, intent: "request_review" } };
+  }
   return {
     ok: false,
     code: "INTENT_UNSUPPORTED",

@@ -99,16 +99,20 @@ describe("workflow rehearsal against a fake runtime (W10)", () => {
     }
   });
 
-  it("supports a done claim only through owner-recorded verified evidence, and pins the missing review step", async () => {
+  it("supports a done claim only through owner-recorded verified evidence, then allows a review request", async () => {
     const r = byId(await runRehearsal(dir), "owner-evidence-after-claim");
     expect(r.ownerEvidence).toEqual([
       { result: "failed", doneSupported: false },
       { result: "passed", doneSupported: true },
     ]);
-    // Finding F-1: nothing moves an active item to review_requested after the owner records
-    // evidence. This assertion pins today's behaviour so the gap stays visible until it is ruled.
-    expect(r.finalState).toBe("active");
-    expect(r.findings.join(" ")).toContain("F-1");
+    // F-1, resolved by W5h: a review is refused until the evidence supports the claim, then taken.
+    expect(r.reviewRequests).toEqual([
+      { ok: false, code: "DONE_NOT_SUPPORTED" },
+      { ok: false, code: "DONE_NOT_SUPPORTED" },
+      { ok: true },
+    ]);
+    expect(r.finalState).toBe("review_requested");
+    expect(r.findings.join(" ")).toContain("F-1 (resolved by W5h)");
   });
 
   it("renders a deterministic transcript with no temp paths", async () => {

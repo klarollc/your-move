@@ -278,6 +278,38 @@ describe("work API in log mode", () => {
     expect(evidence).toMatchObject([{ kind: "test-run", result: "passed" }]);
   });
 
+  it("refuses a review request on an item that is not active, by name, and appends nothing", async () => {
+    const app = await start();
+    await post(app, body({}));
+    await post(
+      app,
+      body({
+        commandId: "cmd2",
+        expectedRevision: 3,
+        intent: "work.assign",
+        payload: { roleAssignmentId: "role-assignment_engineer" },
+      }),
+    );
+    const res = await post(
+      app,
+      body({ commandId: "cmd3", expectedRevision: 6, intent: "work.request_review", payload: {} }),
+    );
+    expect(res.statusCode).toBe(422);
+    expect(res.json()).toMatchObject({ code: "WORK_NOT_REVIEWABLE" });
+    expect((await readEventLog(logPath)).revision).toBe(6);
+    const extra = await post(
+      app,
+      body({
+        commandId: "cmd4",
+        expectedRevision: 6,
+        intent: "work.request_review",
+        payload: { toState: "completed" },
+      }),
+    );
+    expect(extra.statusCode).toBe(422);
+    expect(extra.json()).toMatchObject({ code: "COMMAND_INVALID" });
+  });
+
   it("keeps the old validate-only behaviour when no log is configured", async () => {
     const app = createLoopbackApp({
       mode: "test",

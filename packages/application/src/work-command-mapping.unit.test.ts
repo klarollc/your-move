@@ -108,3 +108,27 @@ describe("toWorkCommand: work.record_evidence", () => {
     if (result.ok) expect(result.value.evidence).toMatchObject({ extra: 1 });
   });
 });
+
+describe("toWorkCommand: work.request_review", () => {
+  it("maps an empty payload to a request_review command", () => {
+    expect(toWorkCommand(command({ intent: "work.request_review", payload: {} }))).toEqual({
+      ok: true,
+      value: {
+        commandId: "cmd1",
+        projectId: "project_alpha",
+        expectedRevision: 4,
+        actor: { actorType: "manager", actorId: "manager_nate" },
+        intent: "request_review",
+        workItemId: "work_slug",
+      },
+    });
+  });
+
+  it("refuses any payload field: the review request carries no claims", () => {
+    const result = toWorkCommand(
+      command({ intent: "work.request_review", payload: { toState: "completed" } }),
+    );
+    expect(result).toMatchObject({ ok: false, code: "COMMAND_INVALID" });
+    if (!result.ok) expect(result.issues.join(" ")).toContain("toState");
+  });
+});

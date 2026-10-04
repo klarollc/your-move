@@ -388,3 +388,164 @@ describe("executeWorkCommand: record_evidence (owner-run check results)", () => 
     });
   });
 });
+
+describe("executeWorkCommand: request_review (workflow-proof W5h)", () => {
+  const assignedLog = () => {
+    const log = created();
+    const r = run(
+      log,
+      base({
+        commandId: "cmd_assign",
+        intent: "assign",
+        roleAssignmentId: ROLE,
+        contract: undefined,
+        expectedRevision: log.length,
+      }),
+    );
+    if (!r.ok) throw new Error("setup failed");
+    return [...log, ...r.events];
+  };
+  // Stamped after the assignment (NOW): replay order is by time, not array position.
+  let later = 0;
+  const adapter = (
+    eventId: string,
+    kind: string,
+    payload: Record<string, unknown>,
+    trust = "verified",
+  ) => {
+    later += 1;
+    const at = new Date(Date.parse(NOW) + later * 1000).toISOString();
+    return {
+      ...event(eventId, kind, payload),
+      occurredAt: at,
+      receivedAt: at,
+      workItemId: "work_slug",
+      source: "adapter",
+      trust,
+    };
+  };
+  const activeLog = () => [
+    ...assignedLog(),
+    adapter("event_active", "work.transitioned", {
+      payloadVersion: 3,
+      workItemId: "work_slug",
+      fromRevision: 2,
+      toState: "active",
+    }),
+  ];
+  const claim = () =>
+    adapter(
+      "event_claim",
+      "evidence.recorded",
+      {
+        evidenceId: "evidence_claim",
+        workItemId: "work_slug",
+        kind: "done-claim",
+        version: 1,
+        result: "failed",
+        code: "DONE_NOT_SUPPORTED",
+      },
+      "reported",
+    );
+  const ownerEvidence = (log: readonly unknown[], result: "passed" | "failed", id: string) => {
+    const r = run(
+      log,
+      base({
+        commandId: id,
+        intent: "record_evidence",
+        contract: undefined,
+        evidence: { kind: "test-run", result },
+        expectedRevision: log.length,
+      }),
+    );
+    if (!r.ok) throw new Error(`setup failed: ${r.code}`);
+    return [...log, ...r.events];
+  };
+  const request = (log: readonly unknown[], over: Override = {}) =>
+    run(
+      log,
+      base({
+        commandId: "cmd_review",
+        intent: "request_review",
+        contract: undefined,
+        expectedRevision: log.length,
+        ...over,
+      }),
+    );
+
+  it("moves an active item to review_requested once the claim is supported by verified evidence", () => {
+    const log = ownerEvidence([...activeLog(), claim()], "passed", "cmd_ev");
+    const result = request(log);
+    expect(result).toMatchObject({ ok: true });
+    if (!result.ok) return;
+    expect(result.events).toHaveLength(1);
+    expect(result.events[0]).toMatchObject({
+      kind: "work.transitioned",
+      source: "manager",
+      trust: "verified",
+      workItemId: "work_slug",
+      payload: {
+        payloadVersion: 3,
+        workItemId: "work_slug",
+        fromRevision: 3,
+        toState: "review_requested",
+        condition: {
+          reasonCode: "review_requested",
+          waitingOn: { kind: "manager" },
+          requestedAction: { kind: "approve" },
+        },
+      },
+    });
+    const item = result.state.workItems.work_slug;
+    expect(item?.state).toBe("review_requested");
+    expect(item?.condition?.requestedAction?.kind).toBe("approve");
+    expect(result.receipt).toMatchObject({
+      intent: "request_review",
+      resultingRevision: log.length + 1,
+    });
+    expect(replayProject([...log, ...result.events]).work.issues).toEqual([]);
+  });
+
+  it("refuses an item that is not active", () => {
+    expect(request(assignedLog())).toMatchObject({ ok: false, code: "WORK_NOT_REVIEWABLE" });
+    expect(request(created())).toMatchObject({ ok: false, code: "WORK_NOT_REVIEWABLE" });
+  });
+
+  it("refuses when the role never claimed done: the owner cannot skip the claim", () => {
+    const log = ownerEvidence(activeLog(), "passed", "cmd_ev");
+    expect(request(log)).toMatchObject({ ok: false, code: "DONE_CLAIM_MISSING" });
+  });
+
+  it("refuses a claim with no evidence, naming the missing obligation", () => {
+    const result = request([...activeLog(), claim()]);
+    expect(result).toMatchObject({ ok: false, code: "DONE_NOT_SUPPORTED" });
+    if (!result.ok) expect(result.issues.join(" ")).toContain("test-run");
+  });
+
+  it("refuses a claim whose only evidence failed, and accepts once a later passing record exists", () => {
+    const failed = ownerEvidence([...activeLog(), claim()], "failed", "cmd_ev1");
+    expect(request(failed)).toMatchObject({ ok: false, code: "DONE_NOT_SUPPORTED" });
+    const passed = ownerEvidence(failed, "passed", "cmd_ev2");
+    expect(request(passed).ok).toBe(true);
+  });
+
+  it("refuses an agent actor, an unknown item and a stale revision", () => {
+    const log = ownerEvidence([...activeLog(), claim()], "passed", "cmd_ev");
+    expect(
+      request(log, { actor: { actorType: "agent", actorId: "agent_engineer" } }),
+    ).toMatchObject({ ok: false, code: "NOT_AUTHORIZED" });
+    expect(request(staffing())).toMatchObject({ ok: false, code: "WORK_ITEM_NOT_FOUND" });
+    expect(request(log, { expectedRevision: log.length - 1 })).toMatchObject({
+      ok: false,
+      code: "STALE_REVISION",
+    });
+  });
+
+  it("is refused a second time: the item is no longer active", () => {
+    const log = ownerEvidence([...activeLog(), claim()], "passed", "cmd_ev");
+    const first = request(log);
+    if (!first.ok) throw new Error("setup failed");
+    const again = request([...log, ...first.events], { commandId: "cmd_review2" });
+    expect(again).toMatchObject({ ok: false, code: "WORK_NOT_REVIEWABLE" });
+  });
+});

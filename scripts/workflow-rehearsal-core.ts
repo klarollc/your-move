@@ -17,6 +17,7 @@ import { replayProject } from "@cuckcode/domain";
 
 import { appendEventLog, readEventLog } from "../apps/server/src/event-log.js";
 import { recordWorkEvidence } from "./record-work-evidence-core.js";
+import { requestWorkReview } from "./request-work-review-core.js";
 import { runWorkflowAttempt, type AttemptDeps, type AttemptResult } from "./workflow-attempt.js";
 
 const T0 = "2026-10-04T10:00:00.000Z";
@@ -62,6 +63,8 @@ export type RehearsalResult = Readonly<{
   replayIssues: readonly unknown[];
   runtimeTurnCalls: number;
   ownerEvidence: readonly Readonly<{ result: string; doneSupported: boolean }>[];
+  /** The owner's review requests, in order: refused until the evidence supports the claim. */
+  reviewRequests: readonly Readonly<{ ok: boolean; code?: string }>[];
   findings: readonly string[];
   checks: readonly RehearsalCheck[];
 }>;
@@ -318,7 +321,18 @@ async function runSpec(dir: string, spec: Spec): Promise<RehearsalResult> {
   for (let attempt = 2; attempt <= (spec.attempts ?? 1); attempt += 1) result = await run(attempt);
 
   const ownerEvidence: { result: string; doneSupported: boolean }[] = [];
+  const reviewRequests: { ok: boolean; code?: string }[] = [];
+  const askForReview = async (now: string): Promise<void> => {
+    const asked = await requestWorkReview({
+      logPath: path,
+      workItemId: WORK,
+      actorId: MANAGER.actorId,
+      now,
+    });
+    reviewRequests.push(asked.ok ? { ok: true } : { ok: false, code: asked.code });
+  };
   if (spec.id === "owner-evidence-after-claim") {
+    await askForReview(T1);
     const output = join(dir, "test-output.txt");
     const steps = [
       { result: "failed" as const, now: T1, text: "RED: slugify is not defined\n" },
@@ -337,6 +351,7 @@ async function runSpec(dir: string, spec: Spec): Promise<RehearsalResult> {
       });
       if (!recorded.ok) throw new Error(`rehearsal evidence: ${recorded.code}`);
       ownerEvidence.push({ result: step.result, doneSupported: recorded.doneSupported });
+      await askForReview(step.now);
     }
   }
 
@@ -358,7 +373,7 @@ async function runSpec(dir: string, spec: Spec): Promise<RehearsalResult> {
   const findings: string[] = [];
   if (spec.id === "owner-evidence-after-claim") {
     findings.push(
-      "F-1: after the owner records passing evidence the item is still `active`. Nothing moves it to `review_requested`, so the acceptance step the spec requires has no command.",
+      "F-1 (resolved by W5h): the role cannot run the checks, so its claim always precedes the owner's evidence and an `active` item had no way to reach review. `request_review` closes it: refused until the role has claimed done and the evidence supports the claim. It does not check that the evidence was produced from the final worktree; that stays the owner's responsibility.",
     );
   }
   if (spec.id === "second-attempt-same-item") {
@@ -380,6 +395,7 @@ async function runSpec(dir: string, spec: Spec): Promise<RehearsalResult> {
     replayIssues: snapshot.work.issues,
     runtimeTurnCalls,
     ownerEvidence,
+    reviewRequests,
     findings,
   };
   return { ...base, checks: checksFor(base) };
@@ -504,6 +520,13 @@ function checksFor(r: Base): RehearsalCheck[] {
           JSON.stringify(r.ownerEvidence) ===
             '[{"result":"failed","doneSupported":false},{"result":"passed","doneSupported":true}]',
           JSON.stringify(r.ownerEvidence),
+        ),
+        check(
+          "the review request is refused until the evidence supports the claim, then accepted",
+          JSON.stringify(r.reviewRequests) ===
+            '[{"ok":false,"code":"DONE_NOT_SUPPORTED"},{"ok":false,"code":"DONE_NOT_SUPPORTED"},{"ok":true}]' &&
+            r.finalState === "review_requested",
+          `${JSON.stringify(r.reviewRequests)} ${r.finalState}`,
         ),
         check(
           "owner evidence is verified, from the manager",

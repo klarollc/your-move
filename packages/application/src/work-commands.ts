@@ -1,5 +1,6 @@
 /**
- * Create and assign commands for work items (workflow-proof W3, P-1).
+ * Create, assign, evidence and review-request commands for work items (workflow-proof W3, P-1,
+ * W5f, W5h).
  *
  * Both surfaces call these; neither holds workflow logic. The shape follows the attention commands:
  * a pure function over the current log, a stale-revision refusal, a manager-only authority check,
@@ -9,14 +10,19 @@
  * reducer would silently drop it and the command would then report success for nothing.
  */
 import { parseProjectEvent, workContractSchema, type WorkContract } from "@cuckcode/contracts";
-import { nextEventTimes, replayProject, type WorkTruthState } from "@cuckcode/domain";
+import {
+  judgeDoneClaim,
+  nextEventTimes,
+  replayProject,
+  type WorkTruthState,
+} from "@cuckcode/domain";
 
 export type WorkCommand = Readonly<{
   commandId: string;
   projectId: string;
   expectedRevision: number;
   actor: Readonly<{ actorType: "manager" | "agent"; actorId: string }>;
-  intent: "create" | "assign" | "record_evidence";
+  intent: "create" | "assign" | "record_evidence" | "request_review";
   workItemId: string;
   contract?: WorkContract;
   roleAssignmentId?: string;
@@ -87,7 +93,7 @@ export function executeWorkCommand(
     };
   }
   if (command.actor.actorType !== "manager") {
-    return refuse("NOT_AUTHORIZED", "only a manager may create or assign work");
+    return refuse("NOT_AUTHORIZED", "only a manager may create, assign or review work");
   }
 
   // Judged in canonical replay order (time, then event id), the order every surface sees, not raw
@@ -99,7 +105,9 @@ export function executeWorkCommand(
       ? planCreate(command, item !== undefined)
       : command.intent === "assign"
         ? planAssign(command, item)
-        : planRecordEvidence(command, item);
+        : command.intent === "record_evidence"
+          ? planRecordEvidence(command, item)
+          : planRequestReview(command, item, log);
   if (!Array.isArray(candidates)) return candidates;
 
   // Stamped after everything already in the log, so canonical replay applies them last.
@@ -290,6 +298,74 @@ function planRecordEvidence(
         ...(record.note !== undefined ? { note: record.note } : {}),
         ...(record.outputSha256 !== undefined ? { outputSha256: record.outputSha256 } : {}),
         recordedBy: command.actor.actorId,
+      },
+    },
+  ];
+}
+
+/** Evidence the runner recorded when the role claimed done (the bridge's `done-claim` kind). */
+const hasRunnerDoneClaim = (log: readonly unknown[], workItemId: string): boolean =>
+  log.some((raw) => {
+    if (typeof raw !== "object" || raw === null) return false;
+    const e = raw as { kind?: unknown; source?: unknown; payload?: unknown };
+    const payload = e.payload as Record<string, unknown> | undefined;
+    return (
+      e.kind === "evidence.recorded" &&
+      e.source === "adapter" &&
+      payload?.workItemId === workItemId &&
+      payload.kind === "done-claim"
+    );
+  });
+
+/**
+ * The owner moves an active item to review (W5h, rehearsal finding F-1). The role cannot run the
+ * checks, so its done claim is always recorded before the owner's evidence exists; this is the
+ * step that follows. It needs both halves: the role actually claimed done, and every contract
+ * obligation now has verified passing evidence. The owner cannot skip the claim, and the claim
+ * alone is never enough. It records no claim of its own, and it does not check that the evidence
+ * was produced from the final worktree: that is the owner's responsibility.
+ */
+function planRequestReview(
+  command: WorkCommand,
+  item: WorkTruthState["workItems"][string] | undefined,
+  log: readonly unknown[],
+): Candidate[] | WorkCommandResult {
+  if (!item) return refuse("WORK_ITEM_NOT_FOUND", `${command.workItemId} does not exist`);
+  if (item.state !== "active") {
+    return refuse(
+      "WORK_NOT_REVIEWABLE",
+      `${command.workItemId} is ${item.state}; a review is requested only for an active item`,
+    );
+  }
+  if (!hasRunnerDoneClaim(log, command.workItemId)) {
+    return refuse(
+      "DONE_CLAIM_MISSING",
+      `${command.workItemId} has no recorded done claim from the role; nothing is ready to review`,
+    );
+  }
+  const judgement = judgeDoneClaim({ log, workItemId: command.workItemId });
+  if (!judgement.ok) {
+    return refuse(
+      "DONE_NOT_SUPPORTED",
+      `missing verified evidence: ${judgement.missingKinds.join(", ") || "none"}`,
+      `failed evidence: ${judgement.failedKinds.join(", ") || "none"}`,
+      `unverified evidence: ${judgement.unverifiedKinds.join(", ") || "none"}`,
+    );
+  }
+  return [
+    {
+      kind: "work.transitioned",
+      payload: {
+        payloadVersion: 3,
+        workItemId: command.workItemId,
+        fromRevision: item.revision,
+        toState: "review_requested",
+        condition: {
+          reasonCode: "review_requested",
+          summary: "Every evidence obligation has verified passing evidence; acceptance is yours.",
+          waitingOn: { kind: "manager" },
+          requestedAction: { kind: "approve", summary: "Accept, redirect or decline this work." },
+        },
       },
     },
   ];
