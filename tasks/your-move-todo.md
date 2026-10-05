@@ -87,14 +87,18 @@ as a separately gated addition. Approval response for the package: “Approve + 
       1440×900 and 1280×800. `phase5:provenance` checked 430 artifacts and 696 ledger lines with no
       missing files or stale digests; side-effect review passed. No live provider, W12, or §20 run.
       Push `workflow-proof` to `review/workflow-proof` after the position/provenance record check.
-- [ ] Task 17 — implement approved §11 direct manager-authored creation from the contract-draft
+- [x] Task 17 — implement approved §11 direct manager-authored creation from the contract-draft
       proposal. Follow its RED–GREEN order: strict v4 manager/agent union and old-shape/v1–v3
       contracts; reducer source labels with no inference; absent-receipt manager create plus
       fail-closed supplied-receipt command checks; loopback session binding and shared-log
       append/readback; projection/adversarial UI tests for draft-first, deliberate direct labeling,
       explicit provenance, service-down availability, and no optimism; then full `verify` and
       provenance. New agent drafts carry `draftSource: "agent"`; manager records carry only
-      `draftSource: "manager"`. No live provider run, W12, or §20.
+      `draftSource: "manager"`. All ordered gates passed on `16fb847`; focused loopback integration
+      passed 22/22. Full `npm.cmd run verify` exited 0: unit 957, component 196, integration
+      166 passed/3 skipped, contract 159; build and e2e/a11y/visual checks passed, 2 each at
+      1440×900 and 1280×800. Provenance checked 430 artifacts and 696 ledger lines with no missing
+      files or stale digests; side-effect review passed. No live provider run, W12, or §20.
 
 ## Current implementation status — 2026-10-05
 
@@ -107,3 +111,13 @@ build/e2e/a11y/visual checks passed. Provenance checked 430 artifacts and 696 le
 missing files or stale digests; side-effect review passed. Browser checks use an ephemeral empty log
 and no runner at 1440×900 and 1280×800; they are technical QA, not owner visual acceptance. No live
 provider session ran. W12 and §20 remain separately gated and were not run.
+
+Task 17's §11 direct-create amendment is implemented in order on `16fb847`. The v4 event schema
+strictly distinguishes manager-authored records from explicit agent-draft records, preserves exact
+legacy v4 agent replay and v1–v3 replay, and rejects invalid supplied receipts without falling back.
+Surface B keeps agent drafting as the default and exposes direct manager-authored creation only
+after the labeled deliberate step. Loopback accepts the same authenticated manager command and
+appends/readbacks the manager-authored event in the shared log. Full verification and provenance
+passed with unit 957, component 196, integration 166 passed/3 skipped, contract 159; build and
+e2e/a11y/visual checks passed at both approved widths. Provenance found no missing files or stale
+digests, and side-effect review passed. No live provider, W12, or §20 run.

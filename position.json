@@ -437,11 +437,15 @@
         },
         {
           "id": "17",
-          "state": "in_progress",
-          "note": "Owner approved proposal §11 as written. Implementation is following the ordered RED–GREEN gate; live provider, W12, and §20 remain gated."
+          "state": "done",
+          "gate": {
+            "verify": "16fb847",
+            "runner": "ordered §11 RED-GREEN gates; npm.cmd run verify exited 0; provenance and side-effect checks passed"
+          },
+          "note": "Direct manager-authored create implemented under the approved proposal. Full verification: unit 957, component 196, integration 166 passed/3 skipped, contract 159; build and e2e/a11y/visual checks passed at both approved widths. Provenance checked 430 artifacts and 696 ledger lines with no missing files or stale digests. No live provider, W12, or §20 run."
         }
       ],
-      "note": "Workflow-core proposal, seven additive Surface B details, speech acts, and contract-draft service are implemented and verified through their ordered gates. Task 16 full verify and provenance passed on ac7345a. Task 17 implements the approved direct manager-authored create amendment. No live provider session is authorized. W12 and §20 remain gated."
+      "note": "Workflow-core proposal, seven additive Surface B details, speech acts, contract-draft service, and the approved direct manager-authored create amendment are implemented and verified through their ordered gates. Task 17 full verify and provenance passed on 16fb847. No live provider session is authorized. W12 and §20 remain gated."
     },
     {
       "id": "df-047",
@@ -703,6 +707,12 @@
       "ruled": "2026-10-05",
       "ruling": "approved as written; implement through the ordered §7 RED-GREEN gate, without a live provider run",
       "record": "docs/proposals/2026-10-05-your-move-contract-draft-service-ruling.md"
+    },
+    {
+      "id": "your-move-contract-draft-direct-create",
+      "ruled": "2026-10-05",
+      "ruling": "§11 direct-create amendment approved as written; implement through the ordered RED-GREEN gate without a live provider run",
+      "record": "docs/proposals/2026-10-05-your-move-contract-draft-direct-create-ruling.md"
     }
   ]
 }

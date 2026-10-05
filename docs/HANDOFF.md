@@ -52,13 +52,16 @@ written. The ruling is recorded at
 `docs/proposals/2026-10-05-your-move-contract-draft-direct-create-ruling.md`. Task 17 adds a strict
 manager-authored v4 provenance variant and a deliberate Surface B direct-create route. The route
 uses the existing manager-authenticated `work.create` command; an invalid supplied receipt never
-falls back to direct creation. Implementation and ordered RED–GREEN checks are in progress. No live
-provider run, W12, or §20 is included.
+falls back to direct creation. All ordered RED–GREEN gates passed on `16fb847`. The loopback API
+suite passes 22/22; full `npm.cmd run verify` exits 0: unit 957, component 196, integration 166
+passed/3 skipped, contract 159; build and e2e/accessibility/visual checks pass, 2 each at 1440×900
+and 1280×800. Provenance checks 430 artifacts and 696 ledger lines with no missing files or stale
+digests; side-effect review passes. No live provider run, W12, or §20 is included.
 
-**Immediate next gate:** complete Task 17's full `npm.cmd run verify` and provenance checks, update
-the position record, then push `workflow-proof` to `review/workflow-proof` as directed. Do not start
-a live provider session or substitute a model. Keep W8 shelved and do not promote. W12 and the §20
-Surface B comprehension run remain separately gated owner actions.
+**Immediate next gate:** record Task 17's completed gate in the position record, rerun verification
+on the final documentation commit, then push `workflow-proof` to `review/workflow-proof` as directed.
+Do not start a live provider session or substitute a model. Keep W8 shelved and do not promote. W12
+and the §20 Surface B comprehension run remain separately gated owner actions.
 
 ---
 
