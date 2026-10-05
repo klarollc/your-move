@@ -550,14 +550,31 @@ describe("work API in log mode", () => {
     expect(res.json()).toMatchObject({ revision: 2 });
   });
 
-  it("keeps new work unavailable until the contract-draft provider is separately authorized", async () => {
+  it("creates manager-authored work through the shared log when agent drafting is unavailable", async () => {
     const app = await start();
     const res = await post(app, body({}));
-    expect(res.statusCode).toBe(503);
-    expect(res.json()).toMatchObject({ code: "CONTRACT_DRAFT_UNAVAILABLE" });
+    expect(res.statusCode).toBe(202);
+    expect(res.json()).toMatchObject({
+      commandId: "cmd1",
+      intent: "create",
+      actorId: "manager_nate",
+      resultingRevision: 3,
+      readbackRevision: 3,
+    });
     const log = await readEventLog(logPath);
-    expect(log.revision).toBe(2);
-    expect(replayProject(log.events).work.workItems.work_slug).toBeUndefined();
+    expect(log.revision).toBe(3);
+    expect(log.events.at(-1)).toMatchObject({
+      kind: "work.created",
+      actor: { actorType: "manager", actorId: "manager_nate" },
+      payload: {
+        payloadVersion: 4,
+        contractDraft: { provenance: { draftSource: "manager" } },
+      },
+    });
+    expect(replayProject(log.events).work.workItems.work_slug).toMatchObject({
+      state: "draft",
+      outcome: contract.outcome,
+    });
   });
 
   it("assigns it: the replayed log then shows state assigned with the assignment bound", async () => {
@@ -586,14 +603,14 @@ describe("work API in log mode", () => {
     expect((await readEventLog(logPath)).revision).toBe(2);
   });
 
-  it("keeps invalid and valid create requests disabled without an authorized draft session", async () => {
+  it("refuses an invalid direct contract without appending to the shared log", async () => {
     const app = await start();
     const res = await post(
       app,
       body({ payload: { contract: { ...contract, acceptanceCriteria: [] } } }),
     );
-    expect(res.statusCode).toBe(503);
-    expect(res.json()).toMatchObject({ code: "CONTRACT_DRAFT_UNAVAILABLE" });
+    expect(res.statusCode).toBe(422);
+    expect(res.json()).toMatchObject({ code: "CONTRACT_INVALID" });
     expect((await readEventLog(logPath)).revision).toBe(2);
   });
 
@@ -629,14 +646,21 @@ describe("work API in log mode", () => {
     expect((await readEventLog(logPath)).revision).toBe(2);
   });
 
-  it("does not create work under concurrent requests without a draft service", async () => {
+  it("atomically accepts one manager-authored create under concurrent requests", async () => {
     const app = await start();
     const [a, b] = await Promise.all([
       post(app, body({ commandId: "cmdA", targetEntityId: "work_a" })),
       post(app, body({ commandId: "cmdB", targetEntityId: "work_b" })),
     ]);
-    expect([a.statusCode, b.statusCode]).toEqual([503, 503]);
-    expect((await readEventLog(logPath)).revision).toBe(2);
+    expect([a.statusCode, b.statusCode].sort()).toEqual([202, 409]);
+    const log = await readEventLog(logPath);
+    expect(log.revision).toBe(3);
+    expect(log.events.slice(2)).toHaveLength(1);
+    expect(log.events.at(-1)).toMatchObject({
+      kind: "work.created",
+      actor: { actorType: "manager", actorId: "manager_nate" },
+      payload: { contractDraft: { provenance: { draftSource: "manager" } } },
+    });
   });
 
   it("reports a truncated log at /api/log and refuses commands with 503, leaving it untouched", async () => {
