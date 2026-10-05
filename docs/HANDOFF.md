@@ -36,15 +36,16 @@ accessibility and visual checks. Provenance reports 430 artifacts and 696 ledger
 files or stale digests. Surface B browser checks use an ephemeral empty log and no runner at 1440×900
 and 1280×800; these are technical checks, not owner visual acceptance. The speech-acts approval is
 recorded at `docs/evidence/workflow-proof/decision-record-2026-10-05-your-move-agent-speech-acts-approval.md`.
-The contract-draft service proposal is included at
-`docs/proposals/2026-10-04-your-move-contract-draft-service-proposal.md`; implementation awaits its
-separate owner ruling. The full §8 package remains incomplete. W12 and §20 remain separately gated
-and were not run.
+The contract-draft service proposal is at
+`docs/proposals/2026-10-04-your-move-contract-draft-service-proposal.md`. The revised proposal is
+pushed to `review/workflow-proof`; Cinder review and Nate's approve/amend/decline ruling are the next
+gates. No implementation or live provider run has occurred. The full §8 package remains incomplete.
+W12 and §20 remain separately gated and were not run.
 
-**Immediate next gate:** push the verified `workflow-proof` branch to `review/workflow-proof` and
-verify the remote ref. The contract-draft service proposal still awaits its separate owner ruling.
-Keep W8 shelved; do not start a live provider session or promote. W12 and the §20 Surface B
-comprehension run remain separately gated owner actions.
+**Immediate next gate:** Cinder reviews the pushed contract-draft proposal, then Nate rules
+approve/amend/decline. Do not implement the proposal or start a live provider session before those
+gates. Keep W8 shelved and do not promote. W12 and the §20 Surface B comprehension run remain
+separately gated owner actions.
 
 ---
 
