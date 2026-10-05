@@ -45,8 +45,59 @@ export type WorkListItem = Readonly<{
     sourceRevision: number | null;
   }> | null;
   contract: WorkContract | null;
+  contractRevision: number | null;
+  contractHistory: readonly Readonly<{
+    revision: number;
+    eventId: string;
+    contract: WorkContract;
+  }>[];
+  turnBudget: Readonly<{
+    budgetRecorded: boolean;
+    budgetRevision: number;
+    baseMaxTurns: number | null;
+    grantedTurns: number;
+    effectiveMaxTurns: number | null;
+    usedTurns: number | null;
+    remainingTurns: number | null;
+    exhausted: boolean | null;
+    countComplete: boolean;
+  }> | null;
+  resurface: Readonly<{
+    at: string;
+    due: boolean | null;
+    projectedAt: string | null;
+    eventId: string;
+    sourceRevision: number | null;
+  }> | null;
+  nudgeSuppression: Readonly<{
+    disposition: "snooze" | "dismiss";
+    until: string;
+    eventId: string;
+    sourceRevision: number | null;
+  }> | null;
+  nudgeSuppressed: boolean;
+  nudges: readonly Readonly<{
+    eventId: string;
+    roleAssignmentId: string;
+    note: string;
+    recordedAt: string;
+    sourceRevision: number | null;
+  }>[];
+  currentRulingId: string | null;
+  rulings: readonly Readonly<{
+    rulingId: string;
+    decision: "accept" | "accept_with_exception" | "send_back" | "defer";
+    recordedAt: string;
+    withdrawn: boolean;
+    eventId: string;
+    sourceRevision: number | null;
+    reason?: string;
+    note?: string;
+    resurfaceAt?: string;
+  }>[];
   waitingMs: number | null;
   assignee: string | null;
+  roleAssignmentId: string | null;
   assignmentSourceRevision: number | null;
   assignmentSource: string | null;
   assignmentTrust: string | null;
@@ -102,6 +153,13 @@ export type WorkListJourney = Readonly<{
   from: Readonly<{ x: number; y: number; width: number; height: number }>;
 }>;
 
+export type WorkListRuling = Readonly<{
+  decision: "accept" | "accept_with_exception" | "send_back" | "defer";
+  reason?: string;
+  note?: string;
+  resurfaceAt?: string;
+}>;
+
 export type WorkListRunner = Readonly<{
   available: boolean;
   state:
@@ -122,6 +180,21 @@ export type SurfaceBCommandApi = Readonly<{
   ) => void | Promise<void>;
   onReview: (workItemId: string) => void | Promise<void>;
   onExecute: (workItemId: string) => void | Promise<void>;
+  onRuling?: (workItemId: string, ruling: WorkListRuling) => void | Promise<void>;
+  onGrantTurns?: (
+    workItemId: string,
+    turnsGranted: number,
+    budgetRevision: number,
+  ) => void | Promise<void>;
+  onRescope?: (
+    workItemId: string,
+    expectedContractRevision: number,
+    contract: WorkContract,
+  ) => void | Promise<void>;
+  onCloseIncomplete?: (workItemId: string, reason: string) => void | Promise<void>;
+  onNudge?: (workItemId: string, roleAssignmentId: string, note: string) => void | Promise<void>;
+  onSuppressNudge?: (workItemId: string, disposition: "snooze" | "dismiss") => void | Promise<void>;
+  onWithdrawRuling?: (workItemId: string, rulingId: string) => void | Promise<void>;
 }>;
 
 type WorkListView = "today" | "new-work" | "log";
@@ -175,6 +248,7 @@ export function WorkList(
     queue: readonly string[];
     cursor: number;
     skipped: readonly string[];
+    startRevision: number;
   }> | null>(null);
   const [awayState, setAwayState] = useState<Readonly<{ baseline: number | null; open: boolean }>>({
     baseline: null,
@@ -267,7 +341,12 @@ export function WorkList(
   const actionsDisabled = props.actionsDisabled === true || pendingAction !== null;
   const stale = props.health?.status !== "current";
   const quietSuggestions = props.items.filter((item) => {
-    if (item.group === "your-move" || item.group === "done" || item.lastEvent === null)
+    if (
+      item.group === "your-move" ||
+      item.group === "done" ||
+      item.nudgeSuppressed ||
+      item.lastEvent === null
+    )
       return false;
     const timestamp = Date.parse(item.lastEvent);
     return Number.isFinite(timestamp) && Date.now() - timestamp >= 3 * 24 * 60 * 60 * 1000;
@@ -294,7 +373,7 @@ export function WorkList(
     });
   }, [attention]);
 
-  const perform = async (label: string, action: () => void | Promise<void>) => {
+  const perform = async (label: string, action: () => void | Promise<void>): Promise<boolean> => {
     setPendingAction(label);
     setActionMessage("Recording…");
     try {
@@ -302,12 +381,14 @@ export function WorkList(
       setActionMessage(
         label.startsWith("execute:")
           ? "Runner start accepted. Progress will appear only after the event log records it."
-          : "The command was accepted and the view was reread from the event log.",
+          : "The command receipt was read back from the event log.",
       );
+      return true;
     } catch {
       setActionMessage(
         "The log has not confirmed this action. Check the read status before retrying.",
       );
+      return false;
     } finally {
       setPendingAction(null);
     }
@@ -331,7 +412,12 @@ export function WorkList(
 
   const startSession = () => {
     props.onCancelJourney?.();
-    setSession({ queue: attention.map((item) => item.workItemId), cursor: 0, skipped: [] });
+    setSession({
+      queue: attention.map((item) => item.workItemId),
+      cursor: 0,
+      skipped: [],
+      startRevision: props.revision,
+    });
     setDetailId(null);
     setActionMessage(null);
   };
@@ -481,6 +567,7 @@ export function WorkList(
           fresh={freshEmpty}
           revision={props.revision}
           underwayCount={underwayCount}
+          resurfaceDueCount={props.items.filter((item) => item.resurface?.due === true).length}
           actionsDisabled={actionsDisabled}
           onStart={() => navigate("new-work")}
           onShowAll={() => setShowAllWork(true)}
@@ -491,9 +578,13 @@ export function WorkList(
             <RulingSession
               session={session}
               items={props.items}
+              log={props.log}
               revision={props.revision}
               onSkip={skipSessionMatter}
               onEnd={() => setSession(null)}
+              commands={props}
+              disabled={actionsDisabled}
+              onAction={perform}
               onOpenDetail={(workItemId) => {
                 setSession(null);
                 openDetail(workItemId);
@@ -535,6 +626,9 @@ export function WorkList(
                   )}
                   revision={props.revision}
                   onBack={() => setDetailId(null)}
+                  commands={props}
+                  disabled={actionsDisabled}
+                  onAction={perform}
                 />
               ) : null}
               {view === "today" && !selectedItem ? (
@@ -685,6 +779,9 @@ export function WorkList(
               stale={stale}
               viewedId={selectedItem?.workItemId ?? null}
               quietItems={quietSuggestions}
+              commands={props}
+              actionsDisabled={actionsDisabled}
+              onAction={perform}
               onOpen={openDetail}
               onStartSession={startSession}
               onViewAll={() => {
@@ -709,11 +806,17 @@ function WorkDetail({
   log,
   revision,
   onBack,
+  commands,
+  disabled,
+  onAction,
 }: Readonly<{
   item: WorkListItem;
   log: readonly WorkListLogEntry[];
   revision: number;
   onBack: () => void;
+  commands: SurfaceBCommandApi;
+  disabled: boolean;
+  onAction: (label: string, action: () => void | Promise<void>) => Promise<boolean>;
 }>) {
   const isReview = item.state === "review_requested";
   const blocker =
@@ -741,6 +844,21 @@ function WorkDetail({
     if (evidence.status === "recorded") return "Recorded · not yet checked";
     return "Claimed · says it is done";
   };
+  const latestRuling = item.currentRulingId
+    ? item.rulings.find((ruling) => ruling.rulingId === item.currentRulingId)
+    : undefined;
+  const receiptEvents = log.filter((entry) =>
+    [
+      "approval.recorded",
+      "work.ruling_recorded",
+      "ruling.withdrawn",
+      "work.turns_granted",
+      "work.rescoped",
+      "work.closed_incomplete",
+      "work.nudged",
+      "work.nudge_suppressed",
+    ].includes(entry.kind),
+  );
 
   return (
     <article className={`workflow-work-detail${blocker ? " is-blocker" : ""}`}>
@@ -818,7 +936,23 @@ function WorkDetail({
         ) : (
           <p>No work contract is recorded for this item.</p>
         )}
+        {item.contractHistory.length > 1 ? (
+          <div className="workflow-agreement-history">
+            <h3>Recorded changes</h3>
+            <AgreementDiff history={item.contractHistory} />
+          </div>
+        ) : null}
       </section>
+
+      {item.resurface ? (
+        <p className="workflow-resurface-status" role="status">
+          {item.resurface.due === true
+            ? `Resurface due · derived from ${revisionLabel(item.resurface.sourceRevision)}.`
+            : item.resurface.due === false
+              ? `Resurface set for ${item.resurface.at} · ${revisionLabel(item.resurface.sourceRevision)}.`
+              : "Resurface time is recorded; due status is unavailable in this view."}
+        </p>
+      ) : null}
 
       <section className="workflow-detail-section">
         <h2>Evidence</h2>
@@ -867,48 +1001,62 @@ function WorkDetail({
 
       <section className="workflow-detail-section">
         <h2>Your ruling</h2>
-        <p className="workflow-attestation">If accepted: {attestation}</p>
-        <div className="workflow-ruling-actions">
-          <button
-            type="button"
-            disabled
-            title="The shared workflow core does not yet expose this ruling command."
-          >
-            {item.hasEvidenceFailure ? "Accept anyway" : "Accept as done"}
-          </button>
-          <button
-            type="button"
-            disabled
-            title="The shared workflow core does not yet expose this ruling command."
-          >
-            Send back with notes
-          </button>
-          <button
-            type="button"
-            disabled
-            title="The shared workflow core does not yet expose defer and re-surface events."
-          >
-            Defer with reason
-          </button>
-        </div>
-        <p className="workflow-help">
-          Ruling controls are unavailable until the workflow-proof proposal adds an approved command
-          and event path. Nothing is recorded from this panel.
+        <p className="workflow-attestation">
+          Evidence at r{revision}: {attestation}
         </p>
+        <RulingActions item={item} disabled={disabled} commands={commands} onAction={onAction} />
       </section>
 
-      {log.some((entry) => entry.kind === "approval.recorded") ? (
-        <section className="workflow-detail-section" aria-label="Ruling receipt">
-          <h2>Ruling receipt</h2>
-          {log
-            .filter((entry) => entry.kind === "approval.recorded")
-            .map((entry) => (
-              <p key={entry.eventId}>
-                {entry.summary} · {revisionLabel(entry.revision)}. The event records the artifact
-                and evidence-version binding; it does not record who was notified or what resumed or
-                stood.
-              </p>
-            ))}
+      {item.turnBudget ? (
+        <TurnBudgetActions
+          item={item}
+          disabled={disabled}
+          commands={commands}
+          onAction={onAction}
+        />
+      ) : null}
+
+      {item.contract && item.contractRevision !== null ? (
+        <RescopeAction item={item} disabled={disabled} commands={commands} onAction={onAction} />
+      ) : null}
+
+      {receiptEvents.length > 0 ? (
+        <section
+          className="workflow-detail-section"
+          aria-label={
+            receiptEvents.some((entry) => entry.kind === "work.ruling_recorded")
+              ? "Ruling receipt"
+              : "Recorded effects"
+          }
+        >
+          <h2>
+            {receiptEvents.some((entry) => entry.kind === "work.ruling_recorded")
+              ? "Ruling receipt"
+              : "Recorded effects"}
+          </h2>
+          {receiptEvents.map((entry) => (
+            <p key={entry.eventId}>
+              Recorded at {revisionLabel(entry.revision)} · {entry.summary} · visible on next
+              check-in.
+            </p>
+          ))}
+          {latestRuling &&
+          !latestRuling.withdrawn &&
+          commands.onWithdrawRuling &&
+          item.sourceRevision === latestRuling.sourceRevision &&
+          Date.now() - Date.parse(latestRuling.recordedAt) <= 60_000 ? (
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() =>
+                void onAction(`withdraw:${item.workItemId}`, () =>
+                  commands.onWithdrawRuling!(item.workItemId, latestRuling.rulingId),
+                )
+              }
+            >
+              Undo ruling
+            </button>
+          ) : null}
         </section>
       ) : null}
 
@@ -931,6 +1079,495 @@ function WorkDetail({
         )}
       </section>
     </article>
+  );
+}
+
+type ActionRunner = (label: string, action: () => void | Promise<void>) => Promise<boolean>;
+
+function RulingActions({
+  item,
+  disabled,
+  commands,
+  onAction,
+}: Readonly<{
+  item: WorkListItem;
+  disabled: boolean;
+  commands: SurfaceBCommandApi;
+  onAction: ActionRunner;
+}>) {
+  const [mode, setMode] = useState<"exception" | "send-back" | "defer" | null>(null);
+  const [reason, setReason] = useState("");
+  const [note, setNote] = useState("");
+  const [resurfaceLocal, setResurfaceLocal] = useState("");
+  const inReview = item.state === "review_requested";
+  const latestByKind = new Map<string, WorkListEvidence>();
+  for (const evidence of item.evidence) latestByKind.set(evidence.kind, evidence);
+  const canAcceptNormally =
+    item.evidenceObligations.length > 0 &&
+    item.evidenceObligations.every((obligation) => {
+      const evidence = latestByKind.get(obligation.kind);
+      return (
+        evidence?.status === "checked" &&
+        evidence.result === "passed" &&
+        evidence.worktreeSha256 !== null
+      );
+    });
+  const callback = commands.onRuling;
+  const submit = async (decision: WorkListRuling["decision"]) => {
+    if (!callback) return;
+    const payload: WorkListRuling = {
+      decision,
+      ...(reason.trim() ? { reason: reason.trim() } : {}),
+      ...(note.trim() ? { note: note.trim() } : {}),
+      ...(decision === "defer" && resurfaceLocal
+        ? { resurfaceAt: new Date(resurfaceLocal).toISOString() }
+        : {}),
+    };
+    const accepted = await onAction(`ruling:${item.workItemId}`, () =>
+      callback(item.workItemId, payload),
+    );
+    if (accepted) {
+      setMode(null);
+      setReason("");
+      setNote("");
+      setResurfaceLocal("");
+    }
+  };
+  const resurfaceIsFuture =
+    resurfaceLocal.length > 0 &&
+    Number.isFinite(Date.parse(resurfaceLocal)) &&
+    Date.parse(resurfaceLocal) > Date.now();
+
+  return (
+    <div className="workflow-ruling-actions">
+      <button
+        type="button"
+        disabled={disabled || !callback || !inReview || !canAcceptNormally}
+        title={
+          !canAcceptNormally
+            ? "Every obligation needs checked, passing evidence bound to a recorded worktree digest before ordinary acceptance."
+            : undefined
+        }
+        onClick={() => void submit("accept")}
+      >
+        Accept as done
+      </button>
+      <button
+        type="button"
+        disabled={disabled || !callback || !inReview}
+        onClick={() => {
+          setMode("exception");
+          setReason("");
+        }}
+      >
+        Accept with exception
+      </button>
+      <button
+        type="button"
+        disabled={disabled || !callback || !inReview}
+        onClick={() => {
+          setMode("send-back");
+          setReason("");
+        }}
+      >
+        Send back
+      </button>
+      <button
+        type="button"
+        disabled={disabled || !callback}
+        onClick={() => {
+          setMode("defer");
+          setReason("");
+          setResurfaceLocal("");
+        }}
+      >
+        Defer
+      </button>
+      {mode ? (
+        <form
+          className="workflow-ruling-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (mode === "exception") void submit("accept_with_exception");
+            else if (mode === "send-back") void submit("send_back");
+            else void submit("defer");
+          }}
+        >
+          <label>
+            {mode === "exception"
+              ? "Override reason"
+              : mode === "send-back"
+                ? "Send-back reason"
+                : "Defer reason"}
+            <textarea
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+              required
+              maxLength={2000}
+              disabled={disabled}
+            />
+          </label>
+          {mode === "defer" ? (
+            <label>
+              Resurface at
+              <input
+                type="datetime-local"
+                value={resurfaceLocal}
+                onChange={(event) => setResurfaceLocal(event.target.value)}
+                required
+                disabled={disabled}
+              />
+              <small>The saved time is converted to UTC and must be in the future.</small>
+            </label>
+          ) : null}
+          <label>
+            Note (optional)
+            <input
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+              maxLength={2000}
+              disabled={disabled}
+            />
+          </label>
+          <div className="workflow-form-actions">
+            <button
+              type="submit"
+              disabled={
+                disabled || reason.trim().length === 0 || (mode === "defer" && !resurfaceIsFuture)
+              }
+            >
+              {mode === "exception"
+                ? "Record exception ruling"
+                : mode === "send-back"
+                  ? "Record send-back"
+                  : "Record defer"}
+            </button>
+            <button type="button" disabled={disabled} onClick={() => setMode(null)}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      ) : null}
+      {!callback ? (
+        <p className="workflow-help">Rulings need the connected workflow command path.</p>
+      ) : null}
+    </div>
+  );
+}
+
+function AgreementDiff({ history }: Readonly<{ history: WorkListItem["contractHistory"] }>) {
+  const pairs = history.slice(1).map((next, index) => ({ previous: history[index]!, next }));
+  return (
+    <ol className="workflow-agreement-diff">
+      {pairs.flatMap(({ previous, next }) => {
+        const fields: [string, string, string][] = [
+          ["Outcome", previous.contract.outcome, next.contract.outcome],
+          ["Done means", previous.contract.definitionOfDone, next.contract.definitionOfDone],
+          [
+            "Acceptance criteria",
+            previous.contract.acceptanceCriteria.join(" · "),
+            next.contract.acceptanceCriteria.join(" · "),
+          ],
+          [
+            "Boundaries",
+            previous.contract.exclusions.join(" · ") || "None",
+            next.contract.exclusions.join(" · ") || "None",
+          ],
+          [
+            "Dependencies",
+            previous.contract.dependencies.join(" · ") || "None",
+            next.contract.dependencies.join(" · ") || "None",
+          ],
+          [
+            "Stop conditions",
+            previous.contract.stopConditions.join(" · "),
+            next.contract.stopConditions.join(" · "),
+          ],
+          [
+            "Turn cap",
+            String(previous.contract.maxTurns ?? "not recorded"),
+            String(next.contract.maxTurns ?? "not recorded"),
+          ],
+        ];
+        const changed = fields.filter(([, before, after]) => before !== after);
+        return changed.map(([label, before, after]) => (
+          <li key={`${next.revision}-${label}`}>
+            <strong>{label}:</strong> {before || "(empty)"} → {after || "(empty)"} · r
+            {previous.revision} to r{next.revision}
+          </li>
+        ));
+      })}
+    </ol>
+  );
+}
+
+function TurnBudgetActions({
+  item,
+  disabled,
+  commands,
+  onAction,
+}: Readonly<{
+  item: WorkListItem;
+  disabled: boolean;
+  commands: SurfaceBCommandApi;
+  onAction: ActionRunner;
+}>) {
+  const budget = item.turnBudget;
+  const [amount, setAmount] = useState("");
+  const [closeReason, setCloseReason] = useState("");
+  if (!budget) return null;
+  const turns = Number(amount);
+  const grantDisabled =
+    disabled || !commands.onGrantTurns || !Number.isInteger(turns) || turns <= 0;
+  return (
+    <section className="workflow-detail-section" aria-label="Turn budget">
+      <h2>Turn budget</h2>
+      {budget.budgetRecorded && budget.effectiveMaxTurns !== null ? (
+        <>
+          <p>
+            {budget.usedTurns === null ? "Turn count incomplete" : `${budget.usedTurns} turns used`}{" "}
+            · {budget.effectiveMaxTurns} allowed ·{" "}
+            {budget.countComplete
+              ? `${budget.remainingTurns ?? "remaining count unavailable"} remaining`
+              : "remaining count unavailable"}
+          </p>
+          {budget.exhausted ? <p>This recorded turn budget is exhausted.</p> : null}
+          <div className="workflow-budget-action">
+            <label>
+              Grant more turns
+              <input
+                type="number"
+                min={1}
+                step={1}
+                value={amount}
+                onChange={(event) => setAmount(event.target.value)}
+                disabled={disabled}
+              />
+            </label>
+            <button
+              type="button"
+              disabled={grantDisabled}
+              onClick={() =>
+                commands.onGrantTurns &&
+                void onAction(`grant-turns:${item.workItemId}`, () =>
+                  commands.onGrantTurns!(item.workItemId, turns, budget.budgetRevision),
+                )
+              }
+            >
+              Grant turns
+            </button>
+          </div>
+          <div className="workflow-budget-action">
+            <label>
+              Close-incomplete reason
+              <textarea
+                value={closeReason}
+                onChange={(event) => setCloseReason(event.target.value)}
+                disabled={disabled}
+              />
+            </label>
+            <button
+              type="button"
+              disabled={disabled || !commands.onCloseIncomplete || !closeReason.trim()}
+              onClick={() =>
+                commands.onCloseIncomplete &&
+                void onAction(`close-incomplete:${item.workItemId}`, () =>
+                  commands.onCloseIncomplete!(item.workItemId, closeReason.trim()),
+                )
+              }
+            >
+              Close as incomplete
+            </button>
+          </div>
+        </>
+      ) : (
+        <p>No turn budget is recorded. Turn use is unavailable.</p>
+      )}
+    </section>
+  );
+}
+
+function RescopeAction({
+  item,
+  disabled,
+  commands,
+  onAction,
+}: Readonly<{
+  item: WorkListItem;
+  disabled: boolean;
+  commands: SurfaceBCommandApi;
+  onAction: ActionRunner;
+}>) {
+  const contract = item.contract;
+  const [editing, setEditing] = useState(false);
+  const [outcome, setOutcome] = useState(contract?.outcome ?? "");
+  const [definitionOfDone, setDefinitionOfDone] = useState(contract?.definitionOfDone ?? "");
+  const [acceptanceCriteria, setAcceptanceCriteria] = useState(
+    contract?.acceptanceCriteria.join("\n") ?? "",
+  );
+  const [exclusions, setExclusions] = useState(contract?.exclusions.join("\n") ?? "");
+  const [dependencies, setDependencies] = useState(contract?.dependencies.join("\n") ?? "");
+  const [evidenceObligations, setEvidenceObligations] = useState(
+    contract?.evidenceObligations
+      .map((entry) => `${entry.kind}: ${entry.description}`)
+      .join("\n") ?? "",
+  );
+  const [stopConditions, setStopConditions] = useState(contract?.stopConditions.join("\n") ?? "");
+  const [maxTurns, setMaxTurns] = useState(
+    contract?.maxTurns === undefined ? "" : String(contract.maxTurns),
+  );
+  if (!contract || item.contractRevision === null) return null;
+  const lines = (value: string) =>
+    value
+      .split(/\r?\n/u)
+      .map((line) => line.trim())
+      .filter(Boolean);
+  const obligations = lines(evidenceObligations).map((line) => {
+    const split = line.indexOf(":");
+    return split < 0
+      ? { kind: "", description: "" }
+      : {
+          kind: line.slice(0, split).trim(),
+          description: line.slice(split + 1).trim(),
+        };
+  });
+  const cap = Number(maxTurns);
+  const candidate: WorkContract = {
+    ...contract,
+    outcome: outcome.trim(),
+    definitionOfDone: definitionOfDone.trim(),
+    acceptanceCriteria: lines(acceptanceCriteria),
+    exclusions: lines(exclusions),
+    dependencies: lines(dependencies),
+    evidenceObligations: obligations,
+    stopConditions: lines(stopConditions),
+    ...(Number.isInteger(cap) && cap > 0 ? { maxTurns: cap } : { maxTurns: undefined }),
+  };
+  const valid =
+    Boolean(commands.onRescope) &&
+    candidate.outcome.length > 0 &&
+    candidate.definitionOfDone.length > 0 &&
+    candidate.acceptanceCriteria.length > 0 &&
+    candidate.stopConditions.length > 0 &&
+    Number.isInteger(cap) &&
+    cap > 0 &&
+    obligations.length > 0 &&
+    obligations.every((entry) => entry.kind.length > 0 && entry.description.length > 0) &&
+    new Set(obligations.map((entry) => entry.kind)).size === obligations.length;
+  return (
+    <section className="workflow-detail-section" aria-label="Re-scope agreement">
+      <h2>Agreement revisions</h2>
+      <p>
+        Current agreement revision {item.contractRevision} · re-scope records a full replacement.
+      </p>
+      {!editing ? (
+        <button
+          type="button"
+          disabled={disabled || !commands.onRescope}
+          onClick={() => setEditing(true)}
+        >
+          Re-scope agreement
+        </button>
+      ) : (
+        <form
+          className="workflow-rescope-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!valid || !commands.onRescope) return;
+            void onAction(`rescope:${item.workItemId}`, async () => {
+              await commands.onRescope!(item.workItemId, item.contractRevision!, candidate);
+            }).then((accepted) => {
+              if (accepted) setEditing(false);
+            });
+          }}
+        >
+          <label>
+            Outcome
+            <input
+              required
+              value={outcome}
+              onChange={(event) => setOutcome(event.target.value)}
+              disabled={disabled}
+            />
+          </label>
+          <label>
+            Definition of done
+            <textarea
+              required
+              value={definitionOfDone}
+              onChange={(event) => setDefinitionOfDone(event.target.value)}
+              disabled={disabled}
+            />
+          </label>
+          <label>
+            Acceptance criteria (one per line)
+            <textarea
+              required
+              value={acceptanceCriteria}
+              onChange={(event) => setAcceptanceCriteria(event.target.value)}
+              disabled={disabled}
+            />
+          </label>
+          <label>
+            Exclusions (one per line)
+            <textarea
+              value={exclusions}
+              onChange={(event) => setExclusions(event.target.value)}
+              disabled={disabled}
+            />
+          </label>
+          <label>
+            Dependencies (one per line)
+            <textarea
+              value={dependencies}
+              onChange={(event) => setDependencies(event.target.value)}
+              disabled={disabled}
+            />
+          </label>
+          <label>
+            Evidence obligations, kind: description (one per line)
+            <textarea
+              required
+              value={evidenceObligations}
+              onChange={(event) => setEvidenceObligations(event.target.value)}
+              disabled={disabled}
+            />
+          </label>
+          <label>
+            Stop conditions (one per line)
+            <textarea
+              required
+              value={stopConditions}
+              onChange={(event) => setStopConditions(event.target.value)}
+              disabled={disabled}
+            />
+          </label>
+          <label>
+            Turn cap
+            <input
+              type="number"
+              min={1}
+              step={1}
+              required
+              value={maxTurns}
+              onChange={(event) => setMaxTurns(event.target.value)}
+              disabled={disabled}
+            />
+          </label>
+          <p>
+            Permission ceiling and context references carry forward from the recorded agreement.
+          </p>
+          <div className="workflow-form-actions">
+            <button type="submit" disabled={disabled || !valid}>
+              Record replacement agreement
+            </button>
+            <button type="button" disabled={disabled} onClick={() => setEditing(false)}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+    </section>
   );
 }
 
@@ -997,11 +1634,17 @@ function QuietSuggestions({
   items,
   revision,
   onOpen,
+  commands,
+  actionsDisabled,
+  onAction,
   compact = false,
 }: Readonly<{
   items: readonly WorkListItem[];
   revision: number;
   onOpen: (workItemId: string) => void;
+  commands: SurfaceBCommandApi;
+  actionsDisabled: boolean;
+  onAction: ActionRunner;
   compact?: boolean;
 }>) {
   if (items.length === 0) return null;
@@ -1016,38 +1659,119 @@ function QuietSuggestions({
         recorded nudges.
       </p>
       {items.map((item) => (
-        <article key={item.workItemId}>
-          <button
-            type="button"
-            className="workflow-quiet-title"
-            onClick={() => onOpen(item.workItemId)}
-          >
-            {item.outcome}
-          </button>
-          <p>
-            No signal since {revisionLabel(item.lastSignalRevision)} ·{" "}
-            {formatWait(item.lastEvent ? Date.now() - Date.parse(item.lastEvent) : null)} ·
-            evaluated at current time against r{revision}
-          </p>
-          <div className="workflow-quiet-actions">
-            <button
-              type="button"
-              disabled
-              title="The workflow core has no approved nudge event yet."
-            >
-              Send nudge
-            </button>
-            <button
-              type="button"
-              disabled
-              title="The workflow core has no approved snooze event yet."
-            >
-              Snooze 2d
-            </button>
-          </div>
-        </article>
+        <QuietSuggestion
+          key={item.workItemId}
+          item={item}
+          revision={revision}
+          onOpen={onOpen}
+          commands={commands}
+          actionsDisabled={actionsDisabled}
+          onAction={onAction}
+        />
       ))}
     </section>
+  );
+}
+
+function QuietSuggestion({
+  item,
+  revision,
+  onOpen,
+  commands,
+  actionsDisabled,
+  onAction,
+}: Readonly<{
+  item: WorkListItem;
+  revision: number;
+  onOpen: (workItemId: string) => void;
+  commands: SurfaceBCommandApi;
+  actionsDisabled: boolean;
+  onAction: ActionRunner;
+}>) {
+  const [editing, setEditing] = useState(false);
+  const [note, setNote] = useState("");
+  const canNudge = Boolean(commands.onNudge && item.roleAssignmentId);
+  return (
+    <article>
+      <button
+        type="button"
+        className="workflow-quiet-title"
+        onClick={() => onOpen(item.workItemId)}
+      >
+        {item.outcome}
+      </button>
+      <p>
+        No signal since {revisionLabel(item.lastSignalRevision)} ·{" "}
+        {formatWait(item.lastEvent ? Date.now() - Date.parse(item.lastEvent) : null)} · evaluated at
+        current time against r{revision}
+      </p>
+      <div className="workflow-quiet-actions">
+        <button
+          type="button"
+          disabled={actionsDisabled || !canNudge}
+          title={!item.roleAssignmentId ? "There is no current assignee to nudge." : undefined}
+          onClick={() => setEditing((value) => !value)}
+        >
+          {editing ? "Cancel nudge" : "Send nudge"}
+        </button>
+        <button
+          type="button"
+          disabled={actionsDisabled || !commands.onSuppressNudge}
+          onClick={() =>
+            commands.onSuppressNudge &&
+            void onAction(`snooze:${item.workItemId}`, () =>
+              commands.onSuppressNudge!(item.workItemId, "snooze"),
+            )
+          }
+        >
+          Snooze 2 days
+        </button>
+        <button
+          type="button"
+          disabled={actionsDisabled || !commands.onSuppressNudge}
+          onClick={() =>
+            commands.onSuppressNudge &&
+            void onAction(`dismiss:${item.workItemId}`, () =>
+              commands.onSuppressNudge!(item.workItemId, "dismiss"),
+            )
+          }
+        >
+          Dismiss for 3 days
+        </button>
+      </div>
+      {!canNudge ? (
+        <p className="workflow-help">Assign the work before asking for a check-in.</p>
+      ) : null}
+      {editing && commands.onNudge && item.roleAssignmentId ? (
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            void onAction(`nudge:${item.workItemId}`, () =>
+              commands.onNudge!(item.workItemId, item.roleAssignmentId!, note.trim()),
+            ).then((accepted) => {
+              if (accepted) {
+                setEditing(false);
+                setNote("");
+              }
+            });
+          }}
+        >
+          <label>
+            Check-in request
+            <textarea
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+              required
+              maxLength={280}
+              disabled={actionsDisabled}
+            />
+          </label>
+          <button type="submit" disabled={actionsDisabled || !note.trim()}>
+            Record nudge
+          </button>
+        </form>
+      ) : null}
+    </article>
   );
 }
 
@@ -1073,6 +1797,12 @@ function AwayDigest({
   );
   const evidence = events.filter((entry) => entry.kind === "evidence.recorded");
   const motion = events.filter((entry) => !yours.includes(entry) && !evidence.includes(entry));
+  const visibleEvents = events.slice(-8);
+  const visibleIds = new Set(visibleEvents.map((entry) => entry.eventId));
+  const visibleYours = yours.filter((entry) => visibleIds.has(entry.eventId));
+  const visibleEvidence = evidence.filter((entry) => visibleIds.has(entry.eventId));
+  const visibleMotion = motion.filter((entry) => visibleIds.has(entry.eventId));
+  const omittedCount = events.length - visibleEvents.length;
   return (
     <section className="workflow-away-digest" aria-label="While you were away">
       <div className="workflow-title-row">
@@ -1084,9 +1814,12 @@ function AwayDigest({
       <p className="workflow-showing">
         Changes in the log from r{baseline + 1} through r{revision}.
       </p>
-      <DigestGroup title="Yours" entries={yours} onOpen={onOpen} />
-      <DigestGroup title="Evidence" entries={evidence} onOpen={onOpen} />
-      <DigestGroup title="Motion" entries={motion} onOpen={onOpen} />
+      <DigestGroup title="Yours" entries={visibleYours} onOpen={onOpen} />
+      <DigestGroup title="Evidence" entries={visibleEvidence} onOpen={onOpen} />
+      <DigestGroup title="Motion" entries={visibleMotion} onOpen={onOpen} />
+      {omittedCount > 0 ? (
+        <p className="workflow-help">{omittedCount} events not shown in this digest.</p>
+      ) : null}
       <section>
         <h3>Quiet</h3>
         {quietItems.length > 0 ? (
@@ -1151,19 +1884,35 @@ function DigestGroup({
 function RulingSession({
   session,
   items,
+  log,
   revision,
   onSkip,
   onEnd,
+  commands,
+  disabled,
+  onAction,
   onOpenDetail,
 }: Readonly<{
-  session: Readonly<{ queue: readonly string[]; cursor: number; skipped: readonly string[] }>;
+  session: Readonly<{
+    queue: readonly string[];
+    cursor: number;
+    skipped: readonly string[];
+    startRevision: number;
+  }>;
   items: readonly WorkListItem[];
+  log: readonly WorkListLogEntry[];
   revision: number;
   onSkip: () => void;
   onEnd: () => void;
+  commands: SurfaceBCommandApi;
+  disabled: boolean;
+  onAction: ActionRunner;
   onOpenDetail: (workItemId: string) => void;
 }>) {
   const item = items.find((entry) => entry.workItemId === session.queue[session.cursor]);
+  const rulingsRecorded = log.filter(
+    (entry) => entry.revision > session.startRevision && entry.kind === "work.ruling_recorded",
+  ).length;
   return (
     <section className="workflow-ruling-session" aria-label="Ruling session">
       <header className="workflow-title-row">
@@ -1186,46 +1935,45 @@ function RulingSession({
           <h1>{item.outcome}</h1>
           <p>{item.condition?.summary ?? `The recorded state is ${humanState(item.state)}.`}</p>
           <p className="workflow-attestation">Evidence: {attestationSummary(item, revision)}</p>
+          <ul className="workflow-session-evidence" aria-label="Evidence lines">
+            {item.evidenceObligations.map((obligation) => {
+              const evidence = [...item.evidence]
+                .reverse()
+                .find((entry) => entry.kind === obligation.kind);
+              return (
+                <li key={obligation.kind}>
+                  <span className={`workflow-evidence-state is-${evidence?.status ?? "missing"}`}>
+                    {evidenceStatusLabel(evidence)}
+                  </span>
+                  <span>
+                    <strong>{obligation.description}</strong> · {obligation.kind}
+                  </span>
+                  <small>
+                    {evidence
+                      ? `${revisionLabel(evidence.sourceRevision)} · ${evidence.source ?? "source missing"} · ${evidence.trust ?? "trust missing"} · worktree SHA-256 ${evidence.worktreeSha256 ?? "missing"}`
+                      : `Not recorded at r${revision}`}
+                  </small>
+                </li>
+              );
+            })}
+          </ul>
           <button type="button" onClick={() => onOpenDetail(item.workItemId)}>
             Open full detail
           </button>
+          <RulingActions item={item} disabled={disabled} commands={commands} onAction={onAction} />
           <div className="workflow-ruling-actions">
-            <button
-              type="button"
-              disabled
-              title="The shared workflow core does not yet expose an accept command."
-            >
-              Accept
-            </button>
-            <button
-              type="button"
-              disabled
-              title="The shared workflow core does not yet expose a send-back command."
-            >
-              Send back
-            </button>
-            <button
-              type="button"
-              disabled
-              title="Defer needs a reason and a re-surface event in the core."
-            >
-              Defer
-            </button>
             <button type="button" onClick={onSkip}>
               Skip
             </button>
           </div>
-          <p className="workflow-help">
-            Ruling choices are disabled until the workflow-proof proposal is approved and
-            implemented. Skip only changes this session’s view order.
-          </p>
+          <p className="workflow-help">Skip only changes this session’s view order.</p>
         </article>
       ) : (
         <div className="workflow-session-tally">
           <h1>Session tally</h1>
           <p>
-            0 rulings recorded · {session.skipped.length} skipped. The log contains no ruling from
-            this session.
+            {rulingsRecorded} rulings recorded · {session.skipped.length} skipped · from r
+            {session.startRevision} through r{revision}.
           </p>
           <button type="button" onClick={onEnd}>
             Return to Your Move
@@ -1321,6 +2069,7 @@ function CalmScreen({
   fresh,
   revision,
   underwayCount,
+  resurfaceDueCount,
   actionsDisabled,
   onStart,
   onShowAll,
@@ -1328,6 +2077,7 @@ function CalmScreen({
   fresh: boolean;
   revision: number;
   underwayCount: number;
+  resurfaceDueCount: number;
   actionsDisabled: boolean;
   onStart: () => void;
   onShowAll: () => void;
@@ -1335,7 +2085,7 @@ function CalmScreen({
   return (
     <section className="workflow-calm" aria-label={fresh ? "No work yet" : "All clear"}>
       <span className="workflow-calm-lamp" aria-hidden="true" />
-      <h2>{fresh ? "No work yet." : "Nothing needs your move."}</h2>
+      <h1>{fresh ? "No work yet." : "Nothing needs your move."}</h1>
       <p>
         {fresh
           ? "The event log has no work items. Describe the first outcome when the contract-drafting path is available."
@@ -1360,6 +2110,13 @@ function CalmScreen({
           ? `projection of r${String(revision).padStart(3, "0")} · log empty`
           : `projection of r${revision} · checked from the log`}
       </p>
+      {!fresh ? (
+        <p className="workflow-calm-resurface">
+          {resurfaceDueCount === 0
+            ? "No resurface is due from the recorded defer events."
+            : `${resurfaceDueCount} recorded resurface point${resurfaceDueCount === 1 ? " is" : "s are"} due.`}
+        </p>
+      ) : null}
     </section>
   );
 }
@@ -1385,6 +2142,9 @@ function AttentionRail({
   stale,
   viewedId,
   quietItems,
+  commands,
+  actionsDisabled,
+  onAction,
   onOpen,
   onStartSession,
   onViewAll,
@@ -1394,6 +2154,9 @@ function AttentionRail({
   stale: boolean;
   viewedId: string | null;
   quietItems: readonly WorkListItem[];
+  commands: SurfaceBCommandApi;
+  actionsDisabled: boolean;
+  onAction: ActionRunner;
   onOpen: (workItemId: string) => void;
   onStartSession: () => void;
   onViewAll: () => void;
@@ -1429,7 +2192,8 @@ function AttentionRail({
               <span className="workflow-rail-item-meta">
                 {viewedId === item.workItemId ? "viewing · " : ""}
                 {item.attentionReason ? `${item.attentionReason.replaceAll("_", " ")} · ` : ""}
-                {formatWait(item.waitingMs)} · {revisionLabel(item.lastSignalRevision)}
+                your move for {formatWait(item.waitingMs)} ·{" "}
+                {revisionLabel(item.lastSignalRevision)}
               </span>
             </button>
           ))}
@@ -1454,7 +2218,15 @@ function AttentionRail({
         </div>
       ) : null}
       {quietItems.length > 0 ? (
-        <QuietSuggestions items={quietItems} revision={revision} onOpen={onOpen} compact />
+        <QuietSuggestions
+          items={quietItems}
+          revision={revision}
+          onOpen={onOpen}
+          commands={commands}
+          actionsDisabled={actionsDisabled}
+          onAction={onAction}
+          compact
+        />
       ) : null}
     </aside>
   );
@@ -1486,7 +2258,7 @@ function WorkGroup({
   actionsDisabled: boolean;
   pendingAction: string | null;
   onToggle: () => void;
-  onAction: (label: string, action: () => void | Promise<void>) => Promise<void>;
+  onAction: (label: string, action: () => void | Promise<void>) => Promise<boolean>;
   onOpen: (workItemId: string) => void;
 }>) {
   const head = items[0];
@@ -1546,7 +2318,7 @@ function WorkRow({
   commands: SurfaceBCommandApi;
   actionsDisabled: boolean;
   pending: boolean;
-  onAction: (label: string, action: () => void | Promise<void>) => Promise<void>;
+  onAction: (label: string, action: () => void | Promise<void>) => Promise<boolean>;
   onOpen: () => void;
 }>) {
   const [assignmentId, setAssignmentId] = useState(assignments[0]?.roleAssignmentId ?? "");
@@ -1664,7 +2436,7 @@ function WorkRow({
           onSave={(payload) =>
             onAction(`evidence:${item.workItemId}`, () =>
               commands.onEvidence(item.workItemId, payload),
-            )
+            ).then(() => undefined)
           }
           onCancel={() => setEvidenceOpen(false)}
         />
@@ -1784,7 +2556,7 @@ function EvidenceDetails({ item }: Readonly<{ item: WorkListItem }>) {
             <ul>
               {item.evidence.map((evidence) => (
                 <li key={evidence.eventId}>
-                  {evidence.kind}: {evidence.result} · {evidenceStatusLabel(evidence.status)} ·{" "}
+                  {evidence.kind}: {evidence.result} · {evidenceStatusLabel(evidence)} ·{" "}
                   {revisionLabel(evidence.sourceRevision)}
                   <span className="workflow-evidence-provenance">
                     {` · source ${evidence.source ?? "missing"}; trust ${evidence.trust ?? "missing"}; run ${evidence.providerRunId ?? "missing"}; worktree SHA-256 ${evidence.worktreeSha256 ?? "missing"}; output SHA-256 ${evidence.outputSha256 ?? "missing"}`}
@@ -1921,10 +2693,12 @@ function headDescription(group: WorkListGroupKey, item: WorkListItem): string {
   return `${lead}: “${item.outcome},” ${revisionLabel(item.lastSignalRevision)}`;
 }
 
-function evidenceStatusLabel(status: WorkListEvidence["status"]): string {
-  if (status === "checked") return "Verified";
-  if (status === "recorded") return "Recorded — not yet checked";
-  return "Claimed";
+function evidenceStatusLabel(evidence: WorkListEvidence | undefined): string {
+  if (!evidence) return "Not recorded yet";
+  if (evidence.status === "checked")
+    return evidence.result === "passed" ? "Checked · passed" : "Checked · failed";
+  if (evidence.status === "recorded") return "Recorded · not yet checked";
+  return "Claimed · says it is done";
 }
 
 function humanState(state: string): string {
@@ -1938,9 +2712,9 @@ function revisionLabel(revision: number | null): string {
 function formatWait(milliseconds: number | null): string {
   if (milliseconds === null) return "duration missing";
   const minutes = Math.floor(milliseconds / 60_000);
-  if (minutes < 60) return `${minutes}m`;
+  if (minutes < 60) return `${minutes} ${minutes === 1 ? "minute" : "minutes"}`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h`;
+  if (hours < 24) return `${hours} ${hours === 1 ? "hour" : "hours"}`;
   const days = Math.floor(hours / 24);
-  return `${days}d`;
+  return `${days} ${days === 1 ? "day" : "days"}`;
 }

@@ -390,13 +390,17 @@
       "tasks": [
         {
           "id": "6",
-          "state": "approved",
+          "state": "done",
+          "gate": {
+            "verify": "ab85c50",
+            "runner": "approved amendment, plan, and task breakdown recorded"
+          },
           "note": "Owner approved the MDD amendment, plan and task breakdown on 2026-10-04; response: Approve + bind digest."
         },
         {
           "id": "7",
-          "state": "pending_owner",
-          "note": "Workflow-core proposal is prepared at docs/proposals/2026-10-04-your-move-workflow-core-proposal.md; no proposed event, command or digest field has been implemented."
+          "state": "approved",
+          "note": "Owner approved the workflow-core proposal as written on 2026-10-04. §7 stages 1–6 passed, including full npm run verify and provenance; the authorized commit/push is pending."
         },
         { "id": "8", "state": "in_progress" },
         { "id": "9", "state": "in_progress" },
@@ -407,10 +411,10 @@
         {
           "id": "14",
           "state": "in_progress",
-          "note": "Behavior/evidence matrix and partial browser checks are recorded; the full §8 package and owner visual review remain incomplete."
+          "note": "Behavior/evidence matrix and full verify/provenance results are recorded. Technical browser checks passed at both approved widths; owner visual review and the unavailable contract-draft service remain outstanding."
         }
       ],
-      "note": "Implementation authorized by owner 2026-10-04 under the Your Move plan. Substantial read-model/UI code is present; new workflow events, ruling writes and evidence digest schema remain behind Task 7 owner approval. Agent-authored draft service, W12, and §20 are not authorized here."
+      "note": "Owner approved the workflow-core proposal and seven additive Surface B details on 2026-10-04. Proposal §7 stages 1–6, full verify and provenance are green; authorized commit/push bookkeeping remains. The agent-side speech-acts proposal is drafting-only until a separate owner ruling; contract-draft service implementation, W12 and §20 remain gated."
     },
     {
       "id": "df-047",
@@ -547,24 +551,17 @@
       "Documentation, plans and proposals",
       "Scripts and tests outside the frozen paths",
       "Backend changes that do not change what the office shows",
-      "Your Move Surface B implementation under the owner-approved plan; workflow-core mutations remain subject to workflow-proof, without launching a live run"
+      "Your Move Surface B implementation under the owner-approved plan and workflow-core proposal, following §7 without launching a live run"
     ],
     "ownerRunOnly": [
       "Evidence writes (npm run phase5:provenance:write)",
       "Live provider runs",
       "Promotion",
       "Evidence regeneration (CUCKCODE_REGENERATE_EVIDENCE=1)",
-      "Task 11 comprehension run and its scoring",
-      "Pushes"
+      "W12 real Surface B session",
+      "§20 Surface B comprehension run"
     ],
-    "freezes": [
-      {
-        "paths": ["apps/web/src", "packages/ui-system/src"],
-        "since": "f1ca1be",
-        "until": "7-O:11",
-        "reason": "MDD §20 cold-run interval: any change here restarts it"
-      }
-    ],
+    "freezes": [],
     "neverDisclose": [
       "docs/evidence/phase-7-o/comprehension/answer-key.md",
       "tests/e2e/phase-7o-comprehension-key.spec.ts",
@@ -661,6 +658,12 @@
       "ruled": "2026-10-04",
       "ruling": "accepted by owner after green full verify",
       "record": "docs/evidence/workflow-proof/decision-record-2026-10-04-df-047-acceptance.md"
+    },
+    {
+      "id": "your-move-workflow-core",
+      "ruled": "2026-10-04",
+      "ruling": "approved as written; implement in RED-GREEN order under §7",
+      "record": "docs/evidence/workflow-proof/decision-record-2026-10-04-your-move-workflow-core-approval.md"
     }
   ]
 }

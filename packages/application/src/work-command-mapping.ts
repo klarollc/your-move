@@ -77,6 +77,89 @@ export function toWorkCommand(command: WorkspaceCommand): WorkCommandMapping {
     if (keys.length > 0) return invalid(`unexpected payload fields: ${keys.join(", ")}`);
     return { ok: true, value: { ...common, intent: "request_review" } };
   }
+  if (command.intent === "work.record_ruling") {
+    if (keys.some((key) => !["decision", "reason", "note", "resurfaceAt"].includes(key))) {
+      return invalid(
+        `unexpected ruling payload fields: ${keys.filter((key) => !["decision", "reason", "note", "resurfaceAt"].includes(key)).join(", ")}`,
+      );
+    }
+    return {
+      ok: true,
+      value: {
+        ...common,
+        intent: "record_ruling",
+        ruling: command.payload as NonNullable<WorkCommand["ruling"]>,
+      },
+    };
+  }
+  if (command.intent === "work.grant_turns") {
+    if (keys.some((key) => !["turnsGranted", "budgetRevision"].includes(key)))
+      return invalid("unexpected turn grant payload fields");
+    return {
+      ok: true,
+      value: {
+        ...common,
+        intent: "grant_turns",
+        turnsGranted: command.payload.turnsGranted as number,
+        budgetRevision: command.payload.budgetRevision as number,
+      },
+    };
+  }
+  if (command.intent === "work.rescope") {
+    if (keys.some((key) => !["expectedContractRevision", "contract"].includes(key)))
+      return invalid("unexpected re-scope payload fields");
+    if (!isRecord(command.payload.contract)) return invalid("payload.contract must be an object");
+    return {
+      ok: true,
+      value: {
+        ...common,
+        intent: "rescope",
+        expectedContractRevision: command.payload.expectedContractRevision as number,
+        contract: command.payload.contract as WorkContract,
+      },
+    };
+  }
+  if (command.intent === "work.close_incomplete") {
+    if (keys.some((key) => key !== "reason"))
+      return invalid("unexpected close-incomplete payload fields");
+    return {
+      ok: true,
+      value: { ...common, intent: "close_incomplete", reason: command.payload.reason as string },
+    };
+  }
+  if (command.intent === "work.nudge") {
+    if (keys.some((key) => !["roleAssignmentId", "note"].includes(key)))
+      return invalid("unexpected nudge payload fields");
+    return {
+      ok: true,
+      value: {
+        ...common,
+        intent: "nudge",
+        roleAssignmentId: command.payload.roleAssignmentId as string,
+        note: command.payload.note as string,
+      },
+    };
+  }
+  if (command.intent === "work.suppress_nudge") {
+    if (keys.some((key) => key !== "disposition"))
+      return invalid("unexpected suppression payload fields");
+    return {
+      ok: true,
+      value: {
+        ...common,
+        intent: "suppress_nudge",
+        disposition: command.payload.disposition as "snooze" | "dismiss",
+      },
+    };
+  }
+  if (command.intent === "work.withdraw_ruling") {
+    if (keys.some((key) => key !== "rulingId"))
+      return invalid("unexpected withdrawal payload fields");
+    return {
+      ok: true,
+      value: { ...common, intent: "withdraw_ruling", rulingId: command.payload.rulingId as string },
+    };
+  }
   return {
     ok: false,
     code: "INTENT_UNSUPPORTED",

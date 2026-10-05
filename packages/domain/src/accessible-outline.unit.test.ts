@@ -40,6 +40,8 @@ const snapshot = (): CanonicalProjectSnapshot => ({
         version: 3,
         result: "passed",
         eventId: "event_evidence",
+        source: "manager",
+        trust: "verified",
       },
     },
     approvals: {},

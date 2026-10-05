@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -37,8 +37,39 @@ const item: WorkListItem = {
     definitionOfDone: "The manager reviews the evidence",
     contextRefs: [],
   },
+  contractRevision: 1,
+  contractHistory: [
+    {
+      revision: 1,
+      eventId: "event_contract_1",
+      contract: {
+        outcome: "Implement slugify",
+        exclusions: ["Do not edit the test"],
+        acceptanceCriteria: ["The test passes"],
+        dependencies: [],
+        evidenceObligations: [{ kind: "test-run", description: "Test output" }],
+        permissionCeiling: {
+          sandboxMode: "workspace-write",
+          approvalPolicy: "never",
+          networkAccess: false,
+          windowsSandbox: "unelevated",
+        },
+        stopConditions: ["Stop if the granted posture differs"],
+        definitionOfDone: "The manager reviews the evidence",
+        contextRefs: [],
+      },
+    },
+  ],
+  turnBudget: null,
+  resurface: null,
+  nudgeSuppression: null,
+  nudgeSuppressed: false,
+  nudges: [],
+  currentRulingId: null,
+  rulings: [],
   waitingMs: null,
   assignee: "Implementation Engineer",
+  roleAssignmentId: "role-assignment_engineer",
   assignmentSourceRevision: 5,
   assignmentSource: "manager",
   assignmentTrust: "verified",
@@ -267,7 +298,7 @@ describe("Surface B work list", () => {
     const suggestions = within(rail).getByRole("region", { name: "Quiet suggestions" });
     expect(suggestions).toHaveTextContent("More than 3 days without a recorded signal");
     expect(within(suggestions).getByRole("button", { name: "Send nudge" })).toBeDisabled();
-    expect(within(suggestions).getByRole("button", { name: "Snooze 2d" })).toBeDisabled();
+    expect(within(suggestions).getByRole("button", { name: "Snooze 2 days" })).toBeDisabled();
   });
 
   it("keeps verified failures in terra and includes the failure in the focused decision", async () => {
@@ -304,6 +335,326 @@ describe("Surface B work list", () => {
       "workflow-evidence-state",
       "is-failed",
     );
-    expect(screen.getByRole("button", { name: "Accept anyway" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Accept with exception" })).toBeDisabled();
+  });
+
+  it("shows each obligation's evidence state in the ruling-session card", async () => {
+    const sessionItem: WorkListItem = {
+      ...item,
+      state: "review_requested",
+      group: "your-move",
+      attentionReason: "review_requested",
+      evidenceObligations: [
+        { kind: "checked-line", description: "Checked deliverable" },
+        { kind: "recorded-line", description: "Recorded deliverable" },
+        { kind: "claim-line", description: "Claimed deliverable" },
+        { kind: "missing-line", description: "Missing deliverable" },
+      ],
+      evidence: [
+        { ...evidenceLine("checked-line", "checked", 1), result: "passed" },
+        { ...evidenceLine("recorded-line", "recorded", 2), result: "passed" },
+        { ...evidenceLine("claim-line", "claimed", 3), result: "passed" },
+      ],
+    };
+    const user = userEvent.setup();
+    render(<WorkList {...baseProps} items={[sessionItem]} />);
+
+    await user.click(screen.getByRole("button", { name: "Start ruling session" }));
+    const card = screen.getByRole("region", { name: "Ruling session" });
+    expect(within(card).getByText("Checked · passed")).toBeVisible();
+    expect(within(card).getByText("Recorded · not yet checked")).toBeVisible();
+    expect(within(card).getByText("Claimed · says it is done")).toBeVisible();
+    expect(within(card).getByText("Not recorded yet")).toBeVisible();
+  });
+
+  it("requires a reason for exception acceptance and leaves evidence states unchanged", async () => {
+    const onRuling = vi.fn();
+    const reviewItem: WorkListItem = {
+      ...item,
+      state: "review_requested",
+      group: "your-move",
+      attentionReason: "review_requested",
+      evidence: [evidenceLine("test-run", "claimed", 8)],
+    };
+    const user = userEvent.setup();
+    render(<WorkList {...baseProps} items={[reviewItem]} onRuling={onRuling} />);
+
+    await user.click(screen.getByRole("button", { name: "Details for Implement slugify" }));
+    await user.click(screen.getByRole("button", { name: "Accept with exception" }));
+    const confirm = screen.getByRole("button", { name: "Record exception ruling" });
+    expect(confirm).toBeDisabled();
+    await user.type(screen.getByLabelText("Override reason"), "The owner accepts this gap.");
+    expect(confirm).toBeEnabled();
+    await user.click(confirm);
+
+    expect(onRuling).toHaveBeenCalledWith("work_slugify", {
+      decision: "accept_with_exception",
+      reason: "The owner accepts this gap.",
+    });
+    expect(screen.getByText("Claimed · says it is done")).toBeVisible();
+    expect(screen.getByText(/worktree SHA-256 missing/u)).toBeVisible();
+  });
+
+  it("captures defer as a reason and an actual future UTC date-time", async () => {
+    const onRuling = vi.fn();
+    const reviewItem: WorkListItem = {
+      ...item,
+      state: "review_requested",
+      group: "your-move",
+      attentionReason: "review_requested",
+    };
+    const user = userEvent.setup();
+    render(<WorkList {...baseProps} items={[reviewItem]} onRuling={onRuling} />);
+
+    await user.click(screen.getByRole("button", { name: "Details for Implement slugify" }));
+    await user.click(screen.getByRole("button", { name: "Defer" }));
+    const confirm = screen.getByRole("button", { name: "Record defer" });
+    expect(confirm).toBeDisabled();
+    await user.type(screen.getByLabelText("Defer reason"), "Waiting for the maintainer.");
+    const dateTime = screen.getByLabelText(/Resurface at/u);
+    expect(dateTime).toHaveAttribute("type", "datetime-local");
+    fireEvent.change(dateTime, { target: { value: "2030-01-02T12:30" } });
+    expect(confirm).toBeEnabled();
+    await user.click(confirm);
+
+    expect(onRuling).toHaveBeenCalledWith("work_slugify", {
+      decision: "defer",
+      reason: "Waiting for the maintainer.",
+      resurfaceAt: new Date("2030-01-02T12:30").toISOString(),
+    });
+  });
+
+  it("states what the ruling event records and does not claim notification", async () => {
+    const reviewItem: WorkListItem = {
+      ...item,
+      state: "verified_with_exception",
+      group: "other",
+      attentionReason: null,
+    };
+    const user = userEvent.setup();
+    render(
+      <WorkList
+        {...baseProps}
+        items={[reviewItem]}
+        log={[
+          {
+            eventId: "event_ruling_9",
+            kind: "work.ruling_recorded",
+            summary: "Accepted with exception · The owner accepts this gap.",
+            source: "manager",
+            trust: "verified",
+            occurredAt: "2026-10-04T10:01:00.000Z",
+            workItemId: "work_slugify",
+            revision: 9,
+          },
+        ]}
+        currentRevision={9}
+        revision={9}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Show all work" }));
+    await user.click(screen.getByRole("button", { name: "Details for Implement slugify" }));
+    const receipt = screen.getByRole("region", { name: "Ruling receipt" });
+    expect(receipt).toHaveTextContent("Recorded at r9");
+    expect(receipt).toHaveTextContent("visible on next check-in");
+    expect(receipt).not.toHaveTextContent(/sent|notified/i);
+  });
+
+  it("reports the count of away events omitted from the digest", async () => {
+    window.localStorage.setItem("your-move:last-seen-revision:project_slugify", "0");
+    const log = Array.from({ length: 10 }, (_, index) => ({
+      eventId: `event_digest_${index + 1}`,
+      kind: "work.transitioned",
+      summary: `signal ${index + 1}`,
+      source: "adapter",
+      trust: "reported",
+      occurredAt: new Date(Date.UTC(2026, 9, 4, 10, 0, index + 1)).toISOString(),
+      workItemId: "work_slugify",
+      revision: index + 1,
+    }));
+    render(<WorkList {...baseProps} revision={10} currentRevision={10} log={log} />);
+
+    expect(await screen.findByText("2 events not shown in this digest.")).toBeVisible();
+  });
+
+  it("refuses all ruling writes while the visible projection is in the past", async () => {
+    const onRuling = vi.fn();
+    const reviewItem: WorkListItem = {
+      ...item,
+      state: "review_requested",
+      group: "your-move",
+      attentionReason: "review_requested",
+    };
+    const user = userEvent.setup();
+    render(
+      <WorkList
+        {...baseProps}
+        items={[reviewItem]}
+        revision={7}
+        visitedRevision={7}
+        actionsDisabled
+        onRuling={onRuling}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Details for Implement slugify" }));
+    expect(screen.getByRole("button", { name: "Accept with exception" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Defer" })).toBeDisabled();
+    expect(onRuling).not.toHaveBeenCalled();
+  });
+
+  it("does not suggest a quiet task while its log-derived suppression window is active", async () => {
+    const quietItem: WorkListItem = {
+      ...item,
+      state: "active",
+      group: "in-progress",
+      nudgeSuppressed: true,
+      nudgeSuppression: {
+        disposition: "snooze",
+        until: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        eventId: "event_suppression_9",
+        sourceRevision: 9,
+      },
+      lastEvent: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+    };
+    const user = userEvent.setup();
+    render(<WorkList {...baseProps} items={[quietItem]} />);
+    await user.click(screen.getByRole("button", { name: "Show all work" }));
+
+    expect(screen.queryByRole("region", { name: "Quiet suggestions" })).not.toBeInTheDocument();
+  });
+
+  it("shows manager queue age in plain words from the projected wait duration", async () => {
+    const waiting: WorkListItem = {
+      ...item,
+      state: "review_requested",
+      group: "your-move",
+      attentionReason: "review_requested",
+      waitingMs: 6 * 24 * 60 * 60 * 1000,
+    };
+    render(<WorkList {...baseProps} items={[waiting]} />);
+
+    expect(screen.getByRole("complementary", { name: "Your move, unfiltered" })).toHaveTextContent(
+      "your move for 6 days",
+    );
+  });
+
+  it("does not present an unrecorded turn budget as zero turns used", async () => {
+    const noBudget: WorkListItem = {
+      ...item,
+      turnBudget: {
+        budgetRecorded: false,
+        budgetRevision: 1,
+        baseMaxTurns: null,
+        grantedTurns: 0,
+        effectiveMaxTurns: null,
+        usedTurns: 0,
+        remainingTurns: 0,
+        exhausted: false,
+        countComplete: true,
+      },
+    };
+    const user = userEvent.setup();
+    render(<WorkList {...baseProps} items={[noBudget]} />);
+    await user.click(screen.getByRole("button", { name: "Show all work" }));
+    await user.click(screen.getByRole("button", { name: "Details for Implement slugify" }));
+
+    const budget = screen.getByRole("region", { name: "Turn budget" });
+    expect(budget).toHaveTextContent("No turn budget is recorded. Turn use is unavailable.");
+    expect(budget).not.toHaveTextContent("0 turns used");
+    expect(within(budget).queryByLabelText("Grant more turns")).not.toBeInTheDocument();
+  });
+
+  it("grants the entered positive turn count instead of a fixed amount", async () => {
+    const onGrantTurns = vi.fn();
+    const budgeted: WorkListItem = {
+      ...item,
+      state: "paused",
+      group: "your-move",
+      attentionReason: "turns_exhausted",
+      turnBudget: {
+        budgetRecorded: true,
+        budgetRevision: 2,
+        baseMaxTurns: 4,
+        grantedTurns: 0,
+        effectiveMaxTurns: 4,
+        usedTurns: 4,
+        remainingTurns: 0,
+        exhausted: true,
+        countComplete: true,
+      },
+    };
+    const user = userEvent.setup();
+    render(<WorkList {...baseProps} items={[budgeted]} onGrantTurns={onGrantTurns} />);
+    await user.click(screen.getByRole("button", { name: "Details for Implement slugify" }));
+    await user.type(screen.getByLabelText("Grant more turns"), "7");
+    await user.click(screen.getByRole("button", { name: "Grant turns" }));
+
+    expect(onGrantTurns).toHaveBeenCalledWith("work_slugify", 7, 2);
+    expect(screen.getByRole("region", { name: "Turn budget" })).toHaveTextContent("4 turns used");
+  });
+
+  it("shows a full old-to-new agreement diff and submits the replacement contract", async () => {
+    const onRescope = vi.fn();
+    const previous = item.contract!;
+    const current = { ...previous, outcome: "Implement slugify with Unicode normalization" };
+    const changed: WorkListItem = {
+      ...item,
+      contract: current,
+      contractRevision: 2,
+      contractHistory: [
+        { revision: 1, eventId: "event_contract_1", contract: previous },
+        { revision: 2, eventId: "event_contract_9", contract: current },
+      ],
+      state: "blocked",
+      group: "your-move",
+      attentionReason: "blocked",
+    };
+    const user = userEvent.setup();
+    render(<WorkList {...baseProps} items={[changed]} onRescope={onRescope} />);
+    await user.click(screen.getByRole("button", { name: "By assignee" }));
+    await user.click(screen.getByRole("button", { name: "Implement slugify" }));
+    const detail = screen.getByRole("region", { name: "Work detail" });
+    expect(
+      within(detail).getByText(/Implement slugify → Implement slugify with Unicode normalization/u),
+    ).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Re-scope agreement" }));
+    await user.clear(screen.getByLabelText("Outcome"));
+    await user.type(screen.getByLabelText("Outcome"), "Unicode-safe slugify");
+    await user.type(screen.getByLabelText("Turn cap"), "4");
+    await user.click(screen.getByRole("button", { name: "Record replacement agreement" }));
+
+    expect(onRescope).toHaveBeenCalledWith(
+      "work_slugify",
+      2,
+      expect.objectContaining({
+        outcome: "Unicode-safe slugify",
+        maxTurns: 4,
+        evidenceObligations: [{ kind: "test-run", description: "Test output" }],
+        permissionCeiling: previous.permissionCeiling,
+        contextRefs: [],
+      }),
+    );
   });
 });
+
+function evidenceLine(
+  kind: string,
+  status: WorkListItem["evidence"][number]["status"],
+  sourceRevision: number,
+) {
+  return {
+    kind,
+    result: "passed",
+    eventId: `event_${kind}`,
+    status,
+    source: status === "claimed" ? "adapter" : "manager",
+    trust: status === "checked" ? "verified" : "reported",
+    sourceRevision,
+    occurredAt: "2026-10-04T10:00:00.000Z",
+    providerRunId: null,
+    worktreeSha256: null,
+    outputSha256: null,
+  } as const;
+}

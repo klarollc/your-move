@@ -4,10 +4,18 @@ import {
   validateWorkCreatedPayload,
   validatePostureRecordedPayload,
   validateWorkTransitionPayload,
+  validateWorkTurnsGrantedPayload,
+  validateWorkRescopedPayload,
+  validateWorkClosedIncompletePayload,
+  validateWorkRulingRecordedPayload,
+  validateWorkNudgedPayload,
+  validateWorkNudgeSuppressedPayload,
+  validateRulingWithdrawnPayload,
   type PostureRecord,
   type ProjectEvent,
   type WorkConditionV3,
   type WorkContract,
+  type EvidenceVersionRef,
 } from "@cuckcode/contracts";
 
 import { applyStaffingEvent, createStaffingTruth, type StaffingTruth } from "./staffing-truth.js";
@@ -24,7 +32,9 @@ export type WorkState =
   | "blocked"
   | "failed"
   | "paused"
-  | "cancelled";
+  | "cancelled"
+  | "verified_with_exception"
+  | "closed_incomplete";
 
 /** The role assignment that holds a work item, and the event that bound it (spec §3.1). */
 export type WorkAssignmentTruth = { roleAssignmentId: string; eventId: string };
@@ -53,6 +63,51 @@ export type WorkItemTruth = {
   condition: WorkConditionTruth | null;
   /** The D-26 work contract, present only for a work item created with a version-2 payload. */
   contract?: WorkContract;
+  contractRevision?: number;
+  contractHistory?: ContractRevisionTruth[];
+  turnBudget?: TurnBudgetTruth;
+  resurface?: ResurfaceTruth;
+  nudgeSuppression?: NudgeSuppressionTruth;
+  nudges?: NudgeTruth[];
+  currentRulingId?: string;
+};
+
+export type ContractRevisionTruth = {
+  revision: number;
+  eventId: string;
+  contract: WorkContract;
+};
+
+export type TurnBudgetTruth = {
+  budgetRecorded: boolean;
+  budgetRevision: number;
+  baseMaxTurns: number | null;
+  grantedTurns: number;
+  effectiveMaxTurns: number | null;
+  usedTurns: number | null;
+  remainingTurns: number | null;
+  exhausted: boolean | null;
+  countComplete: boolean;
+};
+
+export type ResurfaceTruth = {
+  at: string;
+  due: boolean | null;
+  projectedAt: string | null;
+  eventId: string;
+};
+
+export type NudgeSuppressionTruth = {
+  disposition: "snooze" | "dismiss";
+  until: string;
+  eventId: string;
+};
+
+export type NudgeTruth = {
+  eventId: string;
+  roleAssignmentId: string;
+  note: string;
+  recordedAt: string;
 };
 
 export type EvidenceTruth = {
@@ -62,6 +117,29 @@ export type EvidenceTruth = {
   version: number;
   result: "passed" | "failed";
   eventId: string;
+  source: ProjectEvent["source"];
+  trust: ProjectEvent["trust"];
+  providerRunId?: string;
+  worktreeSha256?: string;
+  contractRevisionAtRecord?: number;
+  applicableContractRevisions?: number[];
+};
+
+export type RulingTruth = {
+  rulingId: string;
+  workItemId: string;
+  decision: "accept" | "accept_with_exception" | "send_back" | "defer";
+  evidenceVersions: EvidenceVersionRef[];
+  previousState: WorkState;
+  previousCondition: WorkConditionTruth | null;
+  eventId: string;
+  recordedAt: string;
+  sourceWorkRevision: number;
+  withdrawn: boolean;
+  withdrawnByEventId?: string;
+  reason?: string;
+  note?: string;
+  resurfaceAt?: string;
 };
 
 /** One posture read back for a run (W6a). Never carries state; history is kept, in canonical order. */
@@ -92,7 +170,15 @@ export type WorkTruthIssue = {
     | "INVALID_APPROVAL"
     | "WORK_ASSIGNMENT_INVALID"
     | "WORK_ALREADY_ASSIGNED"
-    | "WORK_ORPHANED";
+    | "WORK_ORPHANED"
+    | "EVIDENCE_VERSION_INVALID"
+    | "UNAUTHORIZED_WORK_DECISION"
+    | "WORK_CONTRACT_REVISION_INVALID"
+    | "TURN_BUDGET_INVALID"
+    | "INVALID_WORK_RULING"
+    | "INVALID_NUDGE"
+    | "INVALID_NUDGE_SUPPRESSION"
+    | "RULING_WITHDRAWAL_REFUSED";
   eventId: string;
   workItemId?: string;
   message: string;
@@ -101,6 +187,8 @@ export type WorkTruthIssue = {
 export type WorkTruthState = {
   workItems: Record<string, WorkItemTruth>;
   evidence: Record<string, EvidenceTruth>;
+  evidenceHistory?: Record<string, EvidenceTruth[]>;
+  rulings?: Record<string, RulingTruth>;
   approvals: Record<string, ApprovalTruth>;
   /**
    * Posture history per work item, oldest first (W6a). Present only once a posture is recorded, so
@@ -117,15 +205,20 @@ const transitions: Record<WorkState, readonly WorkState[]> = {
   active: ["review_requested", "waiting_input", "blocked", "failed", "paused", "cancelled"],
   review_requested: ["verified", "active", "blocked", "failed", "cancelled"],
   verified: ["completed", "active", "cancelled"],
+  verified_with_exception: ["active", "cancelled"],
   completed: [],
   waiting_input: ["active", "blocked", "failed", "paused", "cancelled"],
   blocked: ["active", "failed", "paused", "cancelled"],
   failed: ["active", "cancelled"],
   paused: ["active", "cancelled"],
   cancelled: [],
+  closed_incomplete: [],
 };
 
-export function reduceWorkTruth(input: readonly unknown[]): WorkTruthState {
+export function reduceWorkTruth(
+  input: readonly unknown[],
+  options: Readonly<{ asOf?: string }> = {},
+): WorkTruthState {
   const state: WorkTruthState = { workItems: {}, evidence: {}, approvals: {}, issues: [] };
   // Work assignment is valid only against staffing as it stood at that point in the log, so
   // staffing is replayed alongside, through its own reducer, and never re-derived here.
@@ -144,13 +237,22 @@ export function reduceWorkTruth(input: readonly unknown[]): WorkTruthState {
     if (event.kind === "work.assigned") assignWork(state, event, staffing);
     if (event.kind === "work.released") releaseWork(state, event);
     if (event.kind === "role.released") orphanReleasedWork(state, event, staffing);
+    if (event.kind === "work.rescoped") rescopeWork(state, event);
+    if (event.kind === "work.turns_granted") grantTurns(state, event);
+    if (event.kind === "work.closed_incomplete") closeIncomplete(state, event);
+    if (event.kind === "work.ruling_recorded") recordRuling(state, event);
+    if (event.kind === "ruling.withdrawn") withdrawRuling(state, event);
+    if (event.kind === "work.nudged") recordNudge(state, event);
+    if (event.kind === "work.nudge_suppressed") suppressNudge(state, event);
   }
+
+  deriveWorkSummaries(state, input, options.asOf);
 
   return state;
 }
 
 function createWorkItem(state: WorkTruthState, event: ProjectEvent): void {
-  // Version 2 carries the bounded work contract (W3). Version 1 keeps its exact old meaning.
+  // Version 2 carries the historical contract; version 3 adds an explicit bounded turn cap.
   if (event.payload.payloadVersion !== undefined) {
     const parsed = validateWorkCreatedPayload(event.payload);
     if (!parsed.ok) {
@@ -169,6 +271,13 @@ function createWorkItem(state: WorkTruthState, event: ProjectEvent): void {
       assignment: null,
       condition: null,
       ...(contract ? { contract } : {}),
+      ...(contract
+        ? {
+            contractRevision: 1,
+            contractHistory: [{ revision: 1, eventId: event.eventId, contract }],
+            turnBudget: initialTurnBudget(contract.maxTurns),
+          }
+        : {}),
     };
     return;
   }
@@ -221,7 +330,24 @@ function recordEvidence(state: WorkTruthState, event: ProjectEvent): void {
     version,
     result,
     eventId: event.eventId,
+    source: event.source,
+    trust: event.trust,
+    ...(event.providerRunId ? { providerRunId: event.providerRunId } : {}),
+    ...(typeof event.payload.worktreeSha256 === "string"
+      ? { worktreeSha256: event.payload.worktreeSha256 }
+      : {}),
+    ...(state.workItems[workItemId]?.contractRevision !== undefined
+      ? {
+          contractRevisionAtRecord: state.workItems[workItemId]!.contractRevision,
+          applicableContractRevisions: [state.workItems[workItemId]!.contractRevision!],
+        }
+      : {}),
   };
+  const item = state.workItems[workItemId];
+  if (item) {
+    const history = ((state.evidenceHistory ??= {})[workItemId] ??= []);
+    history.push(state.evidence[evidenceId]!);
+  }
 }
 
 function recordPosture(state: WorkTruthState, event: ProjectEvent): void {
@@ -447,6 +573,583 @@ function recordApproval(state: WorkTruthState, event: ProjectEvent): void {
     ),
     eventId: event.eventId,
   };
+}
+
+function initialTurnBudget(maxTurns: number | undefined): TurnBudgetTruth {
+  return {
+    budgetRecorded: maxTurns !== undefined,
+    budgetRevision: maxTurns === undefined ? 0 : 1,
+    baseMaxTurns: maxTurns ?? null,
+    grantedTurns: 0,
+    effectiveMaxTurns: maxTurns ?? null,
+    usedTurns: 0,
+    remainingTurns: maxTurns ?? null,
+    exhausted: maxTurns === undefined ? null : false,
+    countComplete: true,
+  };
+}
+
+function managerEvent(event: ProjectEvent): boolean {
+  return event.source === "manager" && event.trust === "verified";
+}
+
+function rescopeWork(state: WorkTruthState, event: ProjectEvent): void {
+  const parsed = validateWorkRescopedPayload(event.payload);
+  if (!parsed.ok) {
+    issue(state, "MALFORMED_WORK_EVENT", event, parsed.issues.join("; "));
+    return;
+  }
+  const data = parsed.value;
+  const item = state.workItems[data.workItemId];
+  if (!item) {
+    issue(state, "WORK_ITEM_NOT_FOUND", event, "work item does not exist", data.workItemId);
+    return;
+  }
+  if (!managerEvent(event)) {
+    issue(
+      state,
+      "UNAUTHORIZED_WORK_DECISION",
+      event,
+      "only a verified manager may re-scope work",
+      data.workItemId,
+    );
+    return;
+  }
+  if (
+    !item.contract ||
+    item.contractRevision !== data.expectedContractRevision ||
+    data.contractRevision !== data.expectedContractRevision + 1 ||
+    item.state === "active"
+  ) {
+    issue(
+      state,
+      "WORK_CONTRACT_REVISION_INVALID",
+      event,
+      item.state === "active"
+        ? "work cannot be re-scoped while active"
+        : `expected contract revision ${String(item.contractRevision)}, received ${data.expectedContractRevision}`,
+      data.workItemId,
+    );
+    return;
+  }
+  const nextContract = data.contract;
+  const previousObligations = item.contract.evidenceObligations;
+  const unchangedKinds = new Set(
+    nextContract.evidenceObligations
+      .filter((next) =>
+        previousObligations.some(
+          (previous) => previous.kind === next.kind && previous.description === next.description,
+        ),
+      )
+      .map(({ kind }) => kind),
+  );
+  for (const evidence of state.evidenceHistory?.[data.workItemId] ?? []) {
+    if (unchangedKinds.has(evidence.kind)) {
+      evidence.applicableContractRevisions = sortedUnique([
+        ...(evidence.applicableContractRevisions ?? []),
+        data.contractRevision,
+      ]);
+    }
+  }
+  const history = [
+    ...(item.contractHistory ?? []),
+    {
+      revision: data.contractRevision,
+      eventId: event.eventId,
+      contract: nextContract,
+    },
+  ];
+  const maxTurns = nextContract.maxTurns;
+  const currentBudget = item.turnBudget ?? initialTurnBudget(item.contract.maxTurns);
+  const budget: TurnBudgetTruth = {
+    ...currentBudget,
+    budgetRecorded: maxTurns !== undefined,
+    budgetRevision: currentBudget.budgetRevision + 1,
+    baseMaxTurns: maxTurns ?? null,
+    effectiveMaxTurns: maxTurns === undefined ? null : maxTurns + currentBudget.grantedTurns,
+  };
+  state.workItems[data.workItemId] = {
+    ...item,
+    outcome: nextContract.outcome,
+    requiredEvidenceKinds: nextContract.evidenceObligations.map(({ kind }) => kind),
+    contract: nextContract,
+    contractRevision: data.contractRevision,
+    contractHistory: history,
+    turnBudget: budget,
+    revision: item.revision + 1,
+    updatedByEventId: event.eventId,
+    updatedAt: event.occurredAt,
+    condition: null,
+  };
+}
+
+function grantTurns(state: WorkTruthState, event: ProjectEvent): void {
+  const parsed = validateWorkTurnsGrantedPayload(event.payload);
+  if (!parsed.ok) {
+    issue(state, "MALFORMED_WORK_EVENT", event, parsed.issues.join("; "));
+    return;
+  }
+  const data = parsed.value;
+  const item = state.workItems[data.workItemId];
+  if (!item) {
+    issue(state, "WORK_ITEM_NOT_FOUND", event, "work item does not exist", data.workItemId);
+    return;
+  }
+  const budget = item.turnBudget;
+  if (!managerEvent(event)) {
+    issue(
+      state,
+      "UNAUTHORIZED_WORK_DECISION",
+      event,
+      "only a verified manager may grant turns",
+      data.workItemId,
+    );
+    return;
+  }
+  if (!budget?.budgetRecorded || data.budgetRevision !== budget.budgetRevision) {
+    issue(
+      state,
+      "TURN_BUDGET_INVALID",
+      event,
+      `expected budget revision ${String(budget?.budgetRevision)}, received ${data.budgetRevision}`,
+      data.workItemId,
+    );
+    return;
+  }
+  state.workItems[data.workItemId] = {
+    ...item,
+    turnBudget: {
+      ...budget,
+      budgetRevision: budget.budgetRevision + 1,
+      grantedTurns: budget.grantedTurns + data.turnsGranted,
+      effectiveMaxTurns: budget.effectiveMaxTurns! + data.turnsGranted,
+    },
+    revision: item.revision + 1,
+    updatedByEventId: event.eventId,
+    updatedAt: event.occurredAt,
+  };
+}
+
+function closeIncomplete(state: WorkTruthState, event: ProjectEvent): void {
+  const parsed = validateWorkClosedIncompletePayload(event.payload);
+  if (!parsed.ok) {
+    issue(state, "MALFORMED_WORK_EVENT", event, parsed.issues.join("; "));
+    return;
+  }
+  const { workItemId, fromRevision } = parsed.value;
+  const item = state.workItems[workItemId];
+  if (!item) {
+    issue(state, "WORK_ITEM_NOT_FOUND", event, "work item does not exist", workItemId);
+    return;
+  }
+  if (
+    !managerEvent(event) ||
+    item.revision !== fromRevision ||
+    transitions[item.state].length === 0
+  ) {
+    issue(
+      state,
+      "INVALID_WORK_TRANSITION",
+      event,
+      "close-incomplete requires a current non-terminal work revision and verified manager",
+      workItemId,
+    );
+    return;
+  }
+  state.workItems[workItemId] = {
+    ...item,
+    state: "closed_incomplete",
+    revision: item.revision + 1,
+    updatedByEventId: event.eventId,
+    updatedAt: event.occurredAt,
+    condition: null,
+  };
+}
+
+function recordRuling(state: WorkTruthState, event: ProjectEvent): void {
+  const parsed = validateWorkRulingRecordedPayload(event.payload);
+  if (!parsed.ok) {
+    issue(state, "MALFORMED_WORK_EVENT", event, parsed.issues.join("; "));
+    return;
+  }
+  const data = parsed.value;
+  const item = state.workItems[data.workItemId];
+  if (!item) {
+    issue(state, "WORK_ITEM_NOT_FOUND", event, "work item does not exist", data.workItemId);
+    return;
+  }
+  if (!managerEvent(event)) {
+    issue(
+      state,
+      "UNAUTHORIZED_WORK_DECISION",
+      event,
+      "only a verified manager may record a ruling",
+      data.workItemId,
+    );
+    return;
+  }
+  if (state.rulings?.[data.rulingId]) {
+    issue(state, "INVALID_WORK_RULING", event, "rulingId has already been used", data.workItemId);
+    return;
+  }
+  if (item.revision !== data.sourceWorkRevision) {
+    issue(
+      state,
+      "INVALID_WORK_RULING",
+      event,
+      `expected work revision ${item.revision}, received ${data.sourceWorkRevision}`,
+      data.workItemId,
+    );
+    return;
+  }
+  const currentVersions = currentEvidenceVersions(state, data.workItemId);
+  if (!sameEvidenceVersions(currentVersions, data.evidenceVersions)) {
+    issue(
+      state,
+      "INVALID_WORK_RULING",
+      event,
+      "ruling evidenceVersions must match the latest recorded evidence snapshot",
+      data.workItemId,
+    );
+    return;
+  }
+  if (data.decision === "defer" && Date.parse(data.resurfaceAt!) <= Date.parse(event.occurredAt)) {
+    issue(
+      state,
+      "INVALID_WORK_RULING",
+      event,
+      "defer resurfaceAt must be after the ruling time",
+      data.workItemId,
+    );
+    return;
+  }
+  if (data.decision === "accept" && !obligationsSatisfied(state, item)) {
+    issue(
+      state,
+      "INVALID_WORK_RULING",
+      event,
+      "accept requires checked evidence for every current contract obligation",
+      data.workItemId,
+    );
+    return;
+  }
+  if (
+    (data.decision === "accept" ||
+      data.decision === "accept_with_exception" ||
+      data.decision === "send_back") &&
+    item.state !== "review_requested"
+  ) {
+    issue(
+      state,
+      "INVALID_WORK_RULING",
+      event,
+      `${data.decision} requires review_requested state`,
+      data.workItemId,
+    );
+    return;
+  }
+  const ruling: RulingTruth = {
+    rulingId: data.rulingId,
+    workItemId: data.workItemId,
+    decision: data.decision,
+    evidenceVersions: [...data.evidenceVersions],
+    previousState: item.state,
+    previousCondition: item.condition,
+    eventId: event.eventId,
+    recordedAt: event.occurredAt,
+    sourceWorkRevision: data.sourceWorkRevision,
+    withdrawn: false,
+    ...(data.reason ? { reason: data.reason } : {}),
+    ...(data.note ? { note: data.note } : {}),
+    ...(data.resurfaceAt ? { resurfaceAt: data.resurfaceAt } : {}),
+  };
+  (state.rulings ??= {})[data.rulingId] = ruling;
+  const ruledItem: WorkItemTruth = {
+    ...item,
+    state: rulingState(data.decision),
+    revision: item.revision + 1,
+    updatedByEventId: event.eventId,
+    updatedAt: event.occurredAt,
+    condition: null,
+    currentRulingId: data.rulingId,
+  };
+  if (data.decision === "defer") {
+    ruledItem.resurface = {
+      at: data.resurfaceAt!,
+      due: null,
+      projectedAt: null,
+      eventId: event.eventId,
+    };
+  } else {
+    delete ruledItem.resurface;
+  }
+  state.workItems[data.workItemId] = ruledItem;
+}
+
+function withdrawRuling(state: WorkTruthState, event: ProjectEvent): void {
+  const parsed = validateRulingWithdrawnPayload(event.payload);
+  if (!parsed.ok) {
+    issue(state, "MALFORMED_WORK_EVENT", event, parsed.issues.join("; "));
+    return;
+  }
+  const { workItemId, rulingId, evidenceVersions } = parsed.value;
+  const item = state.workItems[workItemId];
+  const ruling = state.rulings?.[rulingId];
+  const elapsed = ruling ? Date.parse(event.occurredAt) - Date.parse(ruling.recordedAt) : Infinity;
+  const restorable =
+    !!item &&
+    !!ruling &&
+    managerEvent(event) &&
+    ruling.workItemId === workItemId &&
+    !ruling.withdrawn &&
+    item.currentRulingId === rulingId &&
+    item.updatedByEventId === ruling.eventId &&
+    elapsed >= 0 &&
+    elapsed <= 60_000 &&
+    sameEvidenceVersions(currentEvidenceVersions(state, workItemId), ruling.evidenceVersions) &&
+    sameEvidenceVersions(evidenceVersions, ruling.evidenceVersions);
+  if (!restorable || !item || !ruling) {
+    issue(
+      state,
+      "RULING_WITHDRAWAL_REFUSED",
+      event,
+      "the ruling is expired, changed, no longer current, or its evidence snapshot changed",
+      workItemId,
+    );
+    return;
+  }
+  state.rulings![rulingId] = { ...ruling, withdrawn: true, withdrawnByEventId: event.eventId };
+  const restored: WorkItemTruth = {
+    ...item,
+    state: ruling.previousState,
+    condition: ruling.previousCondition,
+    revision: item.revision + 1,
+    updatedByEventId: event.eventId,
+    updatedAt: event.occurredAt,
+  };
+  delete restored.currentRulingId;
+  delete restored.resurface;
+  state.workItems[workItemId] = restored;
+}
+
+function recordNudge(state: WorkTruthState, event: ProjectEvent): void {
+  const parsed = validateWorkNudgedPayload(event.payload);
+  if (!parsed.ok) {
+    issue(state, "MALFORMED_WORK_EVENT", event, parsed.issues.join("; "));
+    return;
+  }
+  const data = parsed.value;
+  const item = state.workItems[data.workItemId];
+  if (!item) {
+    issue(state, "WORK_ITEM_NOT_FOUND", event, "work item does not exist", data.workItemId);
+    return;
+  }
+  if (!managerEvent(event) || item.assignment?.roleAssignmentId !== data.roleAssignmentId) {
+    issue(
+      state,
+      "INVALID_NUDGE",
+      event,
+      "nudge requires a verified manager and the current assignment",
+      data.workItemId,
+    );
+    return;
+  }
+  state.workItems[data.workItemId] = {
+    ...item,
+    nudges: [
+      ...(item.nudges ?? []),
+      {
+        eventId: event.eventId,
+        roleAssignmentId: data.roleAssignmentId,
+        note: data.note,
+        recordedAt: event.occurredAt,
+      },
+    ],
+  };
+}
+
+function suppressNudge(state: WorkTruthState, event: ProjectEvent): void {
+  const parsed = validateWorkNudgeSuppressedPayload(event.payload);
+  if (!parsed.ok) {
+    issue(state, "MALFORMED_WORK_EVENT", event, parsed.issues.join("; "));
+    return;
+  }
+  const data = parsed.value;
+  const item = state.workItems[data.workItemId];
+  const duration = data.disposition === "snooze" ? 2 : 3;
+  const expected = Date.parse(event.occurredAt) + duration * 24 * 60 * 60 * 1000;
+  if (!item) {
+    issue(state, "WORK_ITEM_NOT_FOUND", event, "work item does not exist", data.workItemId);
+    return;
+  }
+  if (!managerEvent(event) || Date.parse(data.until) !== expected) {
+    issue(
+      state,
+      "INVALID_NUDGE_SUPPRESSION",
+      event,
+      `suppression requires a verified manager and until = event time + ${duration} days`,
+      data.workItemId,
+    );
+    return;
+  }
+  state.workItems[data.workItemId] = {
+    ...item,
+    nudgeSuppression: { disposition: data.disposition, until: data.until, eventId: event.eventId },
+  };
+}
+
+function deriveWorkSummaries(
+  state: WorkTruthState,
+  input: readonly unknown[],
+  asOf?: string,
+): void {
+  const parsedEvents = input
+    .map(parseProjectEvent)
+    .filter((entry) => entry.ok)
+    .map((entry) => entry.value);
+  for (const item of Object.values(state.workItems)) {
+    if (item.turnBudget) {
+      const count = countTurns(
+        item.workItemId,
+        parsedEvents,
+        state.postures?.[item.workItemId] ?? [],
+      );
+      const budget = item.turnBudget;
+      const exhausted =
+        budget.effectiveMaxTurns === null || count.usedTurns === null
+          ? null
+          : count.usedTurns >= budget.effectiveMaxTurns;
+      item.turnBudget = {
+        ...budget,
+        usedTurns: count.usedTurns,
+        countComplete: count.complete,
+        exhausted: count.complete ? exhausted : null,
+        remainingTurns:
+          count.complete && budget.effectiveMaxTurns !== null
+            ? Math.max(0, budget.effectiveMaxTurns - count.usedTurns!)
+            : null,
+      };
+    }
+    if (item.resurface) {
+      const projectedAt = asOf && Number.isFinite(Date.parse(asOf)) ? asOf : null;
+      item.resurface = {
+        ...item.resurface,
+        projectedAt,
+        due: projectedAt === null ? null : Date.parse(projectedAt) >= Date.parse(item.resurface.at),
+      };
+    }
+  }
+}
+
+function countTurns(
+  workItemId: string,
+  events: readonly ProjectEvent[],
+  postures: readonly PostureTruth[],
+): { usedTurns: number | null; complete: boolean } {
+  const runs = new Set(postures.map(({ runId }) => runId));
+  const turnEvents = events.filter(
+    (event) =>
+      event.kind === "evidence.recorded" &&
+      event.payload.workItemId === workItemId &&
+      event.payload.kind === "turn-record",
+  );
+  if (runs.size === 0 && turnEvents.length === 0) return { usedTurns: 0, complete: true };
+  if (
+    runs.size === 0 ||
+    [...runs].some((runId) => !turnEvents.some((event) => event.providerRunId === runId))
+  ) {
+    return { usedTurns: null, complete: false };
+  }
+  if (
+    turnEvents.some(
+      (event) =>
+        event.source !== "adapter" ||
+        event.trust !== "verified" ||
+        typeof event.providerRunId !== "string" ||
+        !runs.has(event.providerRunId) ||
+        typeof event.payload.turn !== "number" ||
+        !Number.isInteger(event.payload.turn) ||
+        event.payload.turn < 1,
+    )
+  ) {
+    return { usedTurns: null, complete: false };
+  }
+  const counts = new Map<string, number[]>();
+  for (const event of turnEvents) {
+    const values = counts.get(event.providerRunId!) ?? [];
+    values.push(event.payload.turn as number);
+    counts.set(event.providerRunId!, values);
+  }
+  let total = 0;
+  for (const turns of counts.values()) {
+    const unique = [...turns].sort((left, right) => left - right);
+    if (
+      new Set(unique).size !== unique.length ||
+      unique.some((turn, index) => turn !== index + 1)
+    ) {
+      return { usedTurns: null, complete: false };
+    }
+    total += unique.length;
+  }
+  return { usedTurns: total, complete: true };
+}
+
+function currentEvidenceVersions(state: WorkTruthState, workItemId: string): EvidenceVersionRef[] {
+  return Object.values(state.evidence)
+    .filter(({ workItemId: id }) => id === workItemId)
+    .map(({ evidenceId, version }) => ({ evidenceId, version }))
+    .sort((left, right) =>
+      left.evidenceId < right.evidenceId ? -1 : left.evidenceId > right.evidenceId ? 1 : 0,
+    );
+}
+
+function sameEvidenceVersions(
+  left: readonly EvidenceVersionRef[],
+  right: readonly EvidenceVersionRef[],
+): boolean {
+  return (
+    left.length === right.length &&
+    left.every(
+      (entry, index) =>
+        entry.evidenceId === right[index]?.evidenceId && entry.version === right[index]?.version,
+    )
+  );
+}
+
+function obligationsSatisfied(state: WorkTruthState, item: WorkItemTruth): boolean {
+  if (!item.contract) {
+    return item.requiredEvidenceKinds.every((kind) =>
+      Object.values(state.evidence).some(
+        (record) =>
+          record.workItemId === item.workItemId &&
+          record.kind === kind &&
+          record.trust === "verified" &&
+          record.result === "passed",
+      ),
+    );
+  }
+  const revision = item.contractRevision;
+  return item.contract.evidenceObligations.every(({ kind }) =>
+    Object.values(state.evidence).some(
+      (record) =>
+        record.workItemId === item.workItemId &&
+        record.kind === kind &&
+        record.trust === "verified" &&
+        record.result === "passed" &&
+        (revision === undefined || record.applicableContractRevisions?.includes(revision)),
+    ),
+  );
+}
+
+function rulingState(decision: RulingTruth["decision"]): WorkState {
+  if (decision === "accept") return "verified";
+  if (decision === "accept_with_exception") return "verified_with_exception";
+  if (decision === "send_back") return "active";
+  return "paused";
+}
+
+function sortedUnique(values: number[]): number[] {
+  return [...new Set(values)].sort((left, right) => left - right);
 }
 
 function stringField(payload: Record<string, unknown>, key: string): string | undefined {

@@ -29,7 +29,12 @@ export type CanonicalProjectSnapshot = {
   replayIssues: ReplayIssue[];
 };
 
-export function replayProject(input: readonly unknown[]): CanonicalProjectSnapshot {
+export type ReplayOptions = Readonly<{ asOf?: string }>;
+
+export function replayProject(
+  input: readonly unknown[],
+  options: ReplayOptions = {},
+): CanonicalProjectSnapshot {
   const normalized = normalizeEventLog(input);
   const projectIds = [...new Set(normalized.events.map(({ projectId }) => projectId))].sort();
   const selectedProjectId = projectIds[0] ?? null;
@@ -50,7 +55,7 @@ export function replayProject(input: readonly unknown[]): CanonicalProjectSnapsh
     schemaVersion: 1,
     project: { projectId: selectedProjectId, name: projectName(events) },
     eventIds: events.map(({ eventId }) => eventId),
-    work: reduceWorkTruth(events),
+    work: reduceWorkTruth(events, options),
     staffing: reduceStaffingTruth(events),
     knowledge: reduceKnowledgeTruth(events),
     collaborations: reduceCollaborations(events),

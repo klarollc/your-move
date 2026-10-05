@@ -359,4 +359,104 @@ describe("Surface B canonical list projection", () => {
       outputSha256: "b".repeat(64),
     });
   });
+
+  it("derives resurface-due from the defer event and the requested projection clock", () => {
+    const deferred = event(
+      9,
+      "work.ruling_recorded",
+      {
+        workItemId: "work_slugify",
+        rulingId: "ruling_defer_1",
+        decision: "defer",
+        sourceWorkRevision: 2,
+        evidenceVersions: [{ evidenceId: "evidence_test_run", version: 1 }],
+        reason: "Waiting for the maintainer",
+        resurfaceAt: at(15),
+      },
+      { source: "manager", trust: "verified", workItemId: "work_slugify" },
+    );
+
+    const withoutFailure = events.filter((entry) => entry.eventId !== "event_model_7");
+    const beforeDue = projectWorkList([...withoutFailure, deferred], { now: at(14) });
+    const atDue = projectWorkList([...withoutFailure, deferred], { now: at(15) });
+
+    expect(beforeDue.items[0]?.resurface).toMatchObject({ at: at(15), due: false });
+    expect(atDue.items[0]?.resurface).toMatchObject({ at: at(15), due: true });
+    expect(atDue.items[0]).toMatchObject({
+      group: "your-move",
+      attentionReason: "resurface_due",
+      waitingMs: 0,
+    });
+    expect(atDue.log.some((entry) => entry.kind === "work.resurfaced")).toBe(false);
+  });
+
+  it("projects nudge suppression and manager waiting age from recorded events", () => {
+    const review = event(
+      9,
+      "work.transitioned",
+      {
+        payloadVersion: 3,
+        workItemId: "work_slugify",
+        fromRevision: 2,
+        toState: "review_requested",
+        condition: {
+          reasonCode: "review_requested",
+          summary: "The evidence is ready for your decision.",
+          waitingOn: { kind: "manager" },
+        },
+      },
+      { source: "manager", trust: "verified", workItemId: "work_slugify" },
+    );
+    const suppressedAt = at(10);
+    const suppressed = event(
+      10,
+      "work.nudge_suppressed",
+      {
+        workItemId: "work_slugify",
+        disposition: "snooze",
+        until: new Date(Date.parse(suppressedAt) + 2 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+      { source: "manager", trust: "verified", workItemId: "work_slugify" },
+    );
+    const model = projectWorkList([...events, review, suppressed], {
+      now: new Date(Date.parse(suppressedAt) + 60_000).toISOString(),
+    });
+
+    expect(model.items[0]).toMatchObject({
+      group: "your-move",
+      waitingMs: 63_000,
+      nudgeSuppression: {
+        disposition: "snooze",
+        eventId: "event_model_10",
+      },
+    });
+  });
+
+  it("retains both full contract revisions for an assignee-visible rescope diff", () => {
+    const replacement = {
+      ...contract,
+      outcome: "Implement slugify with Unicode normalization",
+      maxTurns: 4,
+    };
+    const rescope = event(
+      9,
+      "work.rescoped",
+      {
+        workItemId: "work_slugify",
+        expectedContractRevision: 1,
+        contractRevision: 2,
+        contract: replacement,
+      },
+      { source: "manager", trust: "verified", workItemId: "work_slugify" },
+    );
+    const model = projectWorkList([...events, rescope]);
+
+    expect(model.items[0]).toMatchObject({
+      contract: replacement,
+      contractHistory: [
+        { revision: 1, eventId: "event_model_3", contract },
+        { revision: 2, eventId: "event_model_9", contract: replacement },
+      ],
+    });
+  });
 });

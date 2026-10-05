@@ -22,6 +22,7 @@ const contract = {
   stopConditions: ["turn cap"],
   definitionOfDone: "owner acceptance",
   contextRefs: [{ path: "src/slugify.ts", sha256: "a".repeat(64) }],
+  maxTurns: 3,
 };
 const staffing = [
   {

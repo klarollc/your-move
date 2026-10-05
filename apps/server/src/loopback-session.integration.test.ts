@@ -52,6 +52,7 @@ describe("loopback session boundary", () => {
       csrfToken: "csrf_fixture",
       projectId: "project_fixture",
       revision: 7,
+      runner: { available: false, state: "unavailable" },
     });
     expect(rejected.statusCode).toBe(403);
     expect(rejected.json()).toEqual({ code: "ORIGIN_REJECTED" });

@@ -16,24 +16,24 @@ import type { WorkPayloadResult } from "./work-payloads.js";
 const nonEmpty = z.string().min(1);
 
 const workContractFields = {
-    outcome: nonEmpty,
-    exclusions: z.array(nonEmpty),
-    acceptanceCriteria: z.array(nonEmpty).min(1),
-    dependencies: z.array(nonEmpty),
-    evidenceObligations: z
-      .array(z.object({ kind: nonEmpty, description: nonEmpty }).strict())
-      .min(1)
-      .refine((items) => new Set(items.map((item) => item.kind)).size === items.length, {
-        message: "evidence kinds must be unique",
-      }),
-    // The ceiling is a requested posture: it cannot express full access or network.
-    permissionCeiling: requestedPostureSchema,
-    stopConditions: z.array(nonEmpty).min(1),
-    definitionOfDone: nonEmpty,
-    contextRefs: z.array(
-      z.object({ path: nonEmpty, sha256: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
-    ),
-  };
+  outcome: nonEmpty,
+  exclusions: z.array(nonEmpty),
+  acceptanceCriteria: z.array(nonEmpty).min(1),
+  dependencies: z.array(nonEmpty),
+  evidenceObligations: z
+    .array(z.object({ kind: nonEmpty, description: nonEmpty }).strict())
+    .min(1)
+    .refine((items) => new Set(items.map((item) => item.kind)).size === items.length, {
+      message: "evidence kinds must be unique",
+    }),
+  // The ceiling is a requested posture: it cannot express full access or network.
+  permissionCeiling: requestedPostureSchema,
+  stopConditions: z.array(nonEmpty).min(1),
+  definitionOfDone: nonEmpty,
+  contextRefs: z.array(
+    z.object({ path: nonEmpty, sha256: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
+  ),
+};
 
 /** Historical schema-v2 contracts stay byte-for-byte compatible and have no turn cap. */
 export const legacyWorkContractSchema = z.object(workContractFields).strict();

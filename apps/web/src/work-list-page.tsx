@@ -5,6 +5,7 @@ import {
   WorkList,
   type SurfaceBCommandApi,
   type WorkListJourney,
+  type WorkListRuling,
   type WorkListRunner,
 } from "./work-list.js";
 
@@ -24,6 +25,11 @@ type LogResponse = Readonly<{
   problems: readonly unknown[];
 }>;
 
+type CommandReceipt = Readonly<{
+  resultingRevision?: number;
+  eventIds?: readonly string[];
+}>;
+
 type LogRead = WorkListProjectionOptions;
 
 const isBusy = (state: WorkListRunner["state"]) => state === "starting" || state === "running";
@@ -39,6 +45,14 @@ function describeApiFailure(code: string): string {
     WORKSPACE_COMMAND_STALE: "The event log changed. The list has been refreshed; try again.",
     DONE_CLAIM_MISSING: "The assigned role has not recorded a done claim yet.",
     DONE_NOT_SUPPORTED: "Review is unavailable until every evidence obligation passes.",
+    WORKTREE_DIGEST_MISMATCH:
+      "The saved check evidence belongs to a different worktree. Record fresh evidence before ordinary acceptance.",
+    WORKTREE_DIGEST_MISSING:
+      "The saved check evidence has no worktree digest. Record fresh evidence before ordinary acceptance.",
+    WORKTREE_DIGEST_UNAVAILABLE:
+      "The current worktree digest could not be measured. No ruling was recorded.",
+    RULING_WITHDRAWAL_REFUSED:
+      "The ruling can no longer be undone because the work or evidence changed, or the 60-second window ended.",
   };
   return messages[code] ?? `The loopback server refused that action (${code}).`;
 }
@@ -132,6 +146,7 @@ export function WorkListPage() {
         connected: true,
         fetchedAt: new Date().toISOString(),
       });
+      return log;
     } catch (cause) {
       setLogRead((current) => ({ ...current, connected: false }));
       throw cause;
@@ -239,8 +254,25 @@ export function WorkListPage() {
           describeApiFailure(typeof rejected.code === "string" ? rejected.code : "HTTP_409"),
         );
       }
-      await responseJson<unknown>(response);
-      await refreshLog(session);
+      const receipt = await responseJson<CommandReceipt>(response);
+      const readback = await refreshLog(session);
+      if (
+        typeof receipt.resultingRevision !== "number" ||
+        !Array.isArray(receipt.eventIds) ||
+        readback.revision < receipt.resultingRevision ||
+        !receipt.eventIds.every((eventId) =>
+          readback.events.some(
+            (event) =>
+              typeof event === "object" &&
+              event !== null &&
+              (event as Record<string, unknown>).eventId === eventId,
+          ),
+        )
+      ) {
+        throw new Error(
+          "The command receipt is not present in the event-log readback. The projection remains unchanged.",
+        );
+      }
     },
     [refreshLog, revision, session],
   );
@@ -300,6 +332,56 @@ export function WorkListPage() {
       throw cause;
     }
   };
+
+  const sendSurfaceCommand = useCallback(
+    async (intent: string, workItemId: string, payload: Record<string, unknown>) => {
+      try {
+        await sendCommand(intent, workItemId, payload);
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : "The workflow command was refused.");
+        throw cause;
+      }
+    },
+    [sendCommand],
+  );
+
+  const onRuling: NonNullable<SurfaceBCommandApi["onRuling"]> = (
+    workItemId,
+    ruling: WorkListRuling,
+  ) => sendSurfaceCommand("work.record_ruling", workItemId, ruling);
+
+  const onGrantTurns: NonNullable<SurfaceBCommandApi["onGrantTurns"]> = (
+    workItemId,
+    turnsGranted,
+    budgetRevision,
+  ) => sendSurfaceCommand("work.grant_turns", workItemId, { turnsGranted, budgetRevision });
+
+  const onRescope: NonNullable<SurfaceBCommandApi["onRescope"]> = (
+    workItemId,
+    expectedContractRevision,
+    contract,
+  ) => sendSurfaceCommand("work.rescope", workItemId, { expectedContractRevision, contract });
+
+  const onCloseIncomplete: NonNullable<SurfaceBCommandApi["onCloseIncomplete"]> = (
+    workItemId,
+    reason,
+  ) => sendSurfaceCommand("work.close_incomplete", workItemId, { reason });
+
+  const onNudge: NonNullable<SurfaceBCommandApi["onNudge"]> = (
+    workItemId,
+    roleAssignmentId,
+    note,
+  ) => sendSurfaceCommand("work.nudge", workItemId, { roleAssignmentId, note });
+
+  const onSuppressNudge: NonNullable<SurfaceBCommandApi["onSuppressNudge"]> = (
+    workItemId,
+    disposition,
+  ) => sendSurfaceCommand("work.suppress_nudge", workItemId, { disposition });
+
+  const onWithdrawRuling: NonNullable<SurfaceBCommandApi["onWithdrawRuling"]> = (
+    workItemId,
+    rulingId,
+  ) => sendSurfaceCommand("work.withdraw_ruling", workItemId, { rulingId });
 
   const projection = useMemo(
     () =>
@@ -370,6 +452,13 @@ export function WorkListPage() {
         onEvidence={onEvidence}
         onReview={onReview}
         onExecute={onExecute}
+        onRuling={onRuling}
+        onGrantTurns={onGrantTurns}
+        onRescope={onRescope}
+        onCloseIncomplete={onCloseIncomplete}
+        onNudge={onNudge}
+        onSuppressNudge={onSuppressNudge}
+        onWithdrawRuling={onWithdrawRuling}
       />
     </>
   );

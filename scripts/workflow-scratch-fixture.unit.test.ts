@@ -162,7 +162,7 @@ describe("the two contract versions", () => {
     expect(strip(v2)).toEqual(strip(v1));
   });
 
-  it.each(names)("%s is accepted by the create and assign commands", (name) => {
+  it.each(names)("%s is accepted for new work when given an explicit turn cap", (name) => {
     const at = "2026-10-04T10:00:00.000Z";
     const staffing = [
       {
@@ -205,7 +205,7 @@ describe("the two contract versions", () => {
         actor,
         intent: "create",
         workItemId: "work_slug",
-        contract: contract(name) as never,
+        contract: { ...(contract(name) as Record<string, unknown>), maxTurns: 3 } as never,
       },
     });
     expect(created.ok).toBe(true);

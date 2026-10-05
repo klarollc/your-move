@@ -26,9 +26,10 @@ authorized within this checklist. Approval response: “Approve + bind digest.�
 - [x] Task 6 — record the approved MDD amendment, implementation plan, and task breakdown. Owner
       approval was given on 2026-10-04 (“Approve + bind digest”); docs are recorded and the
       position record reflects the approval.
-- [ ] Task 7 — workflow-core proposal prepared at
-      `docs/proposals/2026-10-04-your-move-workflow-core-proposal.md`; owner approval is pending.
-      No proposed event, command, or digest field has been implemented.
+- [ ] Task 7 — workflow-core proposal approved as written by the owner on 2026-10-04. Implement
+      strictly in proposal §7 order. Contract, reducer, command, loopback, and projection/adversarial
+      UI stages passed focused RED–GREEN checks. Full `npm run verify` exited 0 and the provenance
+      check is clean; no live runner or later gate was run. Commit and push bookkeeping remains.
 - [ ] Task 8 — complete read-model-only conformance using `replayProject`: source/trust/revision
       provenance, checked/recorded-not-checked/not-recorded evidence, per-figure source revisions,
       explicit missing values, no inferred idle state, stale/offline/damaged log, readable gaps, and
@@ -46,8 +47,9 @@ authorized within this checklist. Approval response: “Approve + bind digest.�
       generic seed work and the synthetic clock out of production UI.
 - [ ] Task 11 — implement round 5: the detail panel replaces only the list column and leaves the
       rail visible; render decision, agreement, three evidence states, risk, actions and matter-scoped
-      log trail in that order. Blockers name dependent work. Defer requires a reason and re-surface
-      point; every available fork is stated honestly. Writes wait for approved core semantics.
+      log trail in that order. Blockers name dependent work. Defer captures a real future UTC time
+      and reason; resurface-due is derived from the defer log event. Show per-line evidence states.
+      Exception acceptance requires a reason and never upgrades evidence.
 - [ ] Task 12 — implement round 6: one global lamp with lit/count and stale hollow/count states;
       Log revision travel re-folds the entire projection from that revision prefix, dims later events,
       marks the visited revision, disables past writes and returns to present. The ghost travels in both
@@ -56,10 +58,12 @@ authorized within this checklist. Approval response: “Approve + bind digest.�
 - [ ] Task 13 — implement round 7: a longest-waiting-first ruling session with skip/requeue behavior,
       quiet arrivals, progress and tally; first-visit away digest grouped as yours/evidence/motion/quiet
       with an empty digest when nothing happened; >3-day quiet suggestions and one suggestion per
-      task; attestation generated from actual evidence states; assignee counts and Unassigned group;
-      and receipts describing the recorded effect. Nudge, snooze, ruling undo and their time windows
-      must be persisted as compensating/log events, never UI-only mutations, and wait for approved core
-      semantics.
+      task; attestation generated from actual evidence lines; assignee counts and Unassigned group;
+      and receipts that name only the log-recorded effect. Turn grants take a positive integer.
+      The away digest reports its omitted-event count; retain the project-scoped read watermark.
+      Re-scope records a full replacement agreement and shows an old-to-new diff to the assignee.
+      Surface how long each matter has waited on the manager. Nudge, snooze and undo use the
+      approved core commands and event log; receipts never claim notification.
 - [ ] Task 14 — produce a §8 behavior-to-evidence matrix and run required unit/build/browser checks;
       capture current-build evidence at approved viewports and record limitations. Owner performs visual
       acceptance. W12 and the §20 comprehension run remain separately gated owner actions.
@@ -67,8 +71,9 @@ authorized within this checklist. Approval response: “Approve + bind digest.�
 ## Current implementation status — 2026-10-04
 
 The source changes for the read-model, calm/list/detail, log travel, session/digest/lens, and truthful
-disabled controls are present. The behavior-to-evidence matrix is
-`docs/your-move/behavior-evidence-matrix.md`. Focused checks and current-build browser captures cover
-parts of Tasks 8–14; remaining gaps are called out there. The full package is not complete: the
-workflow-core proposal needs owner approval, the contract-draft service is absent, and W12 and §20
-remain outside this implementation authorization.
+controls are present. The seven approved UI decisions and current evidence are mapped in
+`docs/your-move/behavior-evidence-matrix.md`. All six ordered workflow-core stages have passed,
+including full `npm run verify` and provenance. Current-build Surface B browser QA used an ephemeral
+empty log with no runner at 1440×900 and 1280×800; the captures are technical QA, not owner visual
+acceptance. The contract-draft service is absent and must be scoped as a brief proposal after the
+authorized push. W12 and §20 remain separately gated and were not run.

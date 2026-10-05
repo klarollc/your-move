@@ -50,6 +50,7 @@ const contract = () => ({
   stopConditions: ["turn cap"],
   definitionOfDone: "owner acceptance",
   contextRefs: [],
+  maxTurns: 5,
 });
 
 const manager = { actorType: "manager" as const, actorId: "manager_nate" };

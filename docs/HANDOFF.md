@@ -14,7 +14,9 @@ work until the owner reopens it. The shared core remains one `executeWorkCommand
 `replayProject` reducer, and one event log. W0–W6 and W9–W11 stand as built. W12 now requires a real
 create → assign → execute → evidence → review session driven entirely from Surface B, including
 assignment. The §20 comprehension gate targets Surface B; its existing materials carry over, with
-the target surface changed only. No live run, promotion, push, or external effect is authorized.
+the target surface changed only. No live run or promotion is authorized. The current workflow-proof
+request authorizes pushing the completed change set to `review/workflow-proof` after ordered
+RED–GREEN, full verification, and provenance checks.
 
 **Prior W7 implementation status — 2026-10-04:** the default Surface B list, canonical-log projection,
 shared command actions, evidence digest display, and loopback runner-start endpoint are implemented.
@@ -25,19 +27,24 @@ animations or transitions. This is historical W7 evidence, not Your Move accepta
 existing behavior has not been submitted to the separately started runner.
 
 **Approval and current state — 2026-10-04:** the owner approved the MDD amendment,
-`tasks/your-move-plan.md`, and `tasks/your-move-todo.md` with “Approve + bind digest.” The current
-branch implements substantial read-model and Surface B behavior, with focused tests/build and
-current-build browser review recorded in `docs/your-move/behavior-evidence-matrix.md`. A project-
-scoped away-digest regression was fixed after browser review. The full §8 package is not complete.
+`tasks/your-move-plan.md`, and `tasks/your-move-todo.md` with “Approve + bind digest.” The workflow-core
+proposal was subsequently approved as written. Contract, reducer, command, loopback integration, and
+projection/adversarial UI stages have passed their ordered focused RED–GREEN checks. The seven
+additional UI decisions are reconciled in `docs/your-move/behavior-evidence-matrix.md`; no new write
+path was added. Worktree SHA-256 is measured server-side and bound to relevant evidence. All six §7
+stages are green: `npm run verify` exited 0, including unit (905), component (182), integration
+(150 passed, 3 skipped), contract (140), build, and the Surface B browser checks at 1440×900 and
+1280×800. Provenance reports 429 artifacts and 695 ledger lines, with no missing files or stale
+digests. This verified change set is ready for the already-authorized commit and push to
+`review/workflow-proof`. The full §8 package remains incomplete. See `tasks/your-move-todo.md` and
+the behavior/evidence matrix for current evidence.
 
-**Immediate next gate:** review and approve or amend
-`docs/proposals/2026-10-04-your-move-workflow-core-proposal.md`. It reconciles new ruling, turn,
-defer, nudge, undo and worktree-digest semantics against the canonical workflow core. No new event,
-command, or evidence digest field has been added while that gate is pending. The separate real
-agent-authored contract-draft service is also absent; the Surface B create view truthfully refuses
-to create work without it. Keep W8 shelved; do not start a live provider session, promote, push, or
-cause an external effect. W12 and the §20 Surface B comprehension run remain separately gated owner
-actions.
+**Immediate next gate:** commit and push the verified authorized change set to
+`review/workflow-proof`, without regenerating owner-only evidence. After that push, scope the separate
+contract-draft service as a brief proposal. The agent-side speech-acts proposal is drafted at
+`docs/proposals/2026-10-04-your-move-agent-speech-acts-proposal.md`; do not implement it before a
+separate owner ruling. Keep W8 shelved; do not start a live provider session or promote. W12 and the
+§20 Surface B comprehension run remain separately gated owner actions.
 
 ---
 

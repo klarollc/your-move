@@ -26,6 +26,7 @@ const contract = {
   stopConditions: ["turn cap"],
   definitionOfDone: "owner acceptance",
   contextRefs: [{ path: "src/slugify.ts", sha256: "a".repeat(64) }],
+  maxTurns: 3,
 };
 const env = (eventId: string, kind: string, payload: Record<string, unknown>) => ({
   schemaVersion: 1,

@@ -23,12 +23,14 @@ const workPresentation: Record<WorkState, { behavior: string; zone: string }> = 
   active: { behavior: "work_loop", zone: "desk" },
   review_requested: { behavior: "review_station", zone: "review" },
   verified: { behavior: "verified_waiting", zone: "review" },
+  verified_with_exception: { behavior: "exception_stationary", zone: "review" },
   completed: { behavior: "delivery_area", zone: "delivery" },
   waiting_input: { behavior: "attention_request", zone: "desk" },
   blocked: { behavior: "blocked_stationary", zone: "desk" },
   failed: { behavior: "failure_stationary", zone: "desk" },
   paused: { behavior: "paused_stationary", zone: "desk" },
   cancelled: { behavior: "cancelled", zone: "archive" },
+  closed_incomplete: { behavior: "incomplete_stationary", zone: "archive" },
 };
 const agentBehavior: Record<AgentPresence, string> = {
   unavailable: "offline",

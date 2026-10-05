@@ -30,6 +30,8 @@ const snapshot: CanonicalProjectSnapshot = {
         version: 1,
         result: "passed",
         eventId: "event_evidence",
+        source: "manager",
+        trust: "verified",
       },
     },
     approvals: {},

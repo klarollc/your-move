@@ -607,7 +607,7 @@
   box-shadow: inset 0 0 0 11px var(--plaster);
 }
 
-.workflow-calm h2 {
+.workflow-calm h1 {
   margin: 0;
   font-family: Georgia, serif;
   font-size: clamp(1.4rem, 3vw, 1.85rem);
@@ -983,6 +983,66 @@
   margin-top: 10px;
 }
 
+.workflow-ruling-form,
+.workflow-rescope-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+  border-left: 2px solid var(--signal);
+  border-radius: 0 8px 8px 0;
+  padding: 14px;
+  background: rgb(26 33 64 / 48%);
+}
+
+.workflow-ruling-form label,
+.workflow-rescope-form label,
+.workflow-budget-action label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.workflow-ruling-form input,
+.workflow-ruling-form textarea,
+.workflow-rescope-form input,
+.workflow-rescope-form textarea,
+.workflow-budget-action input,
+.workflow-budget-action textarea {
+  width: 100%;
+  max-width: 100%;
+}
+
+.workflow-ruling-form textarea,
+.workflow-rescope-form textarea,
+.workflow-budget-action textarea {
+  min-height: 76px;
+  resize: vertical;
+}
+
+.workflow-ruling-form small {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.workflow-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.workflow-budget-action {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 10px;
+  margin-block: 10px;
+}
+
+.workflow-budget-action label {
+  min-width: 0;
+}
+
 .workflow-help {
   line-height: 1.5;
 }
@@ -1180,6 +1240,10 @@
   }
 
   .workflow-detail-content {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .workflow-budget-action {
     grid-template-columns: minmax(0, 1fr);
   }
 

@@ -1,42 +1,51 @@
 # Your Move behavior-to-evidence matrix
 
-**Status:** implementation in progress; this matrix distinguishes projected behavior from actions
-that cannot yet be written through the approved core. Evidence is from the current `workflow-proof`
-worktree and is not owner visual acceptance.
+**Status:** the ordered workflow-core gates and implementation verification are green. This matrix
+records technical implementation evidence, not owner visual acceptance. The real agent-authored
+contract-draft service remains unavailable pending its separate proposal and ruling; W12 and §20
+remain gated owner actions.
 
-| Approved behavior | Current evidence | Status and remaining gap |
+## Approved seven-item change set
+
+| Decision | Reconciliation with approved workflow-core proposal | Surface B implementation and evidence |
 |---|---|---|
-| One log projection through `replayProject`; source, trust, revision, missing provenance, partial and damaged reads | `apps/web/src/work-list-model.ts`; `work-list-model.unit.test.ts` | Implemented; focused projection tests pass. |
-| Fresh empty, all clear, calm on every landing, global unfiltered rail | Browser at 1440×900 (fresh empty) and 1280×800 (all clear); `work-list.tsx` | Implemented; directly inspected. The rail is above the list at 390×844. |
-| Filtered-empty explanation, fractional counts, session collapse, deterministic group ordering | `work-list.tsx`; `work-list-model.ts` | Implemented in the projection/view; broader ordering and filter coverage still needed. |
-| Disconnect age, stale master lamp, damaged/gapped log and log-versus-revision disagreement | `work-list-model.unit.test.ts`; `ReadHealth` projection and disabled actions | Implemented and covered at model level; current browser session used a healthy log. |
-| Failed evidence is a blocker; verified, recorded-not-checked, claimed, and missing stay distinct | `work-list-model.unit.test.ts`; `work-list.component.test.tsx` | Implemented; tests cover failed evidence and the evidence-state distinctions. |
-| Detail replaces the list column, retains the rail, shows agreement/evidence/risk/trail | `work-list.component.test.tsx`; browser accessibility tree at 390×844 | Implemented. Risk and downstream-blocked links are truthfully named as absent. The core does not carry enough links to name dependent work. |
-| Defer reason/resurface point; accept, accept-anyway, send-back, and receipts | Current UI disables ruling buttons; workflow-core proposal in `docs/proposals/2026-10-04-your-move-workflow-core-proposal.md` | Blocked on owner approval of the new core event/command semantics. |
-| Master lamp and full-log time travel with past writes disabled | `work-list-page.component.test.tsx` | Implemented; test covers whole-projection replay and disabled past actions. |
-| Two-sided journey only after confirmed append; reduced-motion behavior | `work-list-page.tsx`, `work-list.tsx`; component test for reduced motion; browser emulation confirms `prefers-reduced-motion: reduce` is observed | Reduced-motion cancellation is covered. A current browser journey was not produced; no real attention ruling command is available yet. |
-| Ruling session, skip/requeue, arrivals, progress and tally | `work-list.component.test.tsx` | Read-only session and skip are implemented. Actual rulings remain disabled; new-arrival and final-tally coverage is incomplete. |
-| Away digest grouped from log, including “nothing happened” | `work-list.component.test.tsx`; browser log-derived digest | Implemented. A regression now scopes last-seen revision by project and resets a baseline ahead of the log. |
-| Quiet suggestions >3 days; one per work item; send, snooze and dismiss | `work-list.component.test.tsx`; disabled controls | Suggestions are projected. Persisted nudge/snooze/dismiss is blocked on core approval; no message delivery exists, so the UI cannot claim notification. |
-| Attested acceptance; assignee lens; ruling receipts | Attestation and assignee tests; detail panel states `approval.recorded` is only an artifact binding | Attestation and lens are read-only projections. A true ruling receipt waits on the ruling command/event; existing artifact approvals are described narrowly. |
-| Turn-budget counts, grants, re-scope and close-incomplete | Workflow-core proposal; current D-26 contract has no numeric budget | Not implemented; missing budget is not inferred. Core proposal defines a budget and derived exhaustion. |
-| Agent-authored create draft before `work.created` | New work view explains the missing draft service and sends no command; page test verifies no `/api/commands` call | Not implemented. No provider or fake draft is used. Needs a separately scoped real draft capability before a truthful create flow. |
-| Worktree digest bound into recorded evidence | Current projection shows missing/present evidence and posture digests; proposal defines collector and canonical policy | UI display exists; event/collector binding awaits workflow-proof approval. |
-| Product title “Your Move” | `apps/web/index.html`; `scripts/your-move-name.test.mjs` | Implemented; RED assertion failed against the old title, then GREEN passed. |
+| 1. Derive resurface; require honest defer input | No `work.resurfaced` event. Due state derives from `work.ruling_recorded` plus the replay clock. | Defer requires a reason and future `datetime-local` value converted to UTC. The calm certification cites only derived due state. `work-list-model.unit.test.ts` verifies due grouping/wait age and absence of a resurface event; `work-list.component.test.tsx` verifies the real future-time input. |
+| 2. No browser-verified evidence; show each line | Attestation is replay-derived; the browser supplies no counts or verified claims. Exception acceptance does not change evidence state. | Escalation detail and ruling session show per-obligation states. Tests cover checked, recorded, claimed, and missing lines; exception acceptance preserves the shown state. Worktree digest is read from logged evidence, never typed into the ruling. |
+| 3. Require override reason | `accept_with_exception` requires a non-empty reason in the approved command. | The override reason is required before submit; component and core command tests cover it. |
+| 4. Receipts make no delivery claim | No delivery adapter exists, so receipts report logged effects only. | Ruling/nudge receipts say “recorded at rNNN” and “visible on next check-in”; tests reject “sent” or “notified” wording. |
+| 5. Re-scope records full terms and diff | Approved `work.rescoped` event records a full contract revision and preserves history. | The edit form submits a replacement contract; the projection retains revisions and shows an old-to-new diff. Component coverage opens the item from the assignee lens and verifies the diff. |
+| 6. Show manager queue age | Age derives from manager-attention event time or the recorded due time; no new event is added. | Model projects `waitingMs`; the rail uses plain wording such as “your move for 6 days.” Model and component tests cover the calculation and label. |
+| 7. Numeric grant, omitted-event count, scoped watermark | Positive integer turn grant uses the approved command. The away watermark remains project-scoped. | Turn grant uses the entered number; away digest reports omitted events; local-storage key retains the project ID. Items with no recorded turn budget now say turn use is unavailable and expose no budget actions. |
 
-## Verification performed
+## §8 behavior coverage
 
-- `npm run build` passed after the project-scoped away-digest fix; it runs `npm run typecheck` first.
-- Focused model tests: 8 passed. Focused component tests: 14 passed. Position and product-title
-  tests: 8 passed. The title test first failed against the old name, then passed after the fix.
-- Prettier check passed for every changed implementation, test, status, proposal, matrix, and
-  reference file in scope.
-- The isolated browser used a disposable temp log. Its item was created by `executeWorkCommand` and
-  appended with the existing `appendEventLog`; the configured runner reported unavailable. No
-  project event log or live runner was used.
-- At the captured 1280×800 browser load, `/api/session`, `/api/workflow/status`, and `/api/log`
-  returned 200 and the console had no warnings/errors. A prior `/api/session` request was canceled by
-  an explicit reload; the replacement request succeeded. The 390×844 page had no horizontal
-  overflow (`scrollWidth` 390) and retained the rail.
-- No owner visual acceptance, W12 work session, §20 comprehension run, or live-provider result is
-  claimed.
+| Approved behavior | Evidence | Status / limit |
+|---|---|---|
+| One projection through `replayProject`, provenance, evidence states, missing values, stale/damaged/disagreement states | `apps/web/src/work-list-model.ts`, `work-list-model.unit.test.ts` | Implemented. Projection/adversarial tests pass; malformed and incomplete log states disable writes. |
+| Fresh empty, all-clear, filtered empty, calm landing, unfiltered rail | `work-list.tsx`, browser screenshots in the local temp QA directory | Implemented. Current production build was inspected at 1440×900 and 1280×800. Captures are temporary technical QA, not owner evidence. |
+| Deterministic ordering, collapse, filters, fractional counts, full oldest-first rail | `work-list-model.unit.test.ts`, `work-list.component.test.tsx` | Implemented and covered by projection/component tests. |
+| Failure states, escalation detail, manager aging, honest resurface, line-level evidence, full re-scope diff | `work-list-model.ts`, `work-list.tsx`, focused unit/component tests | Implemented; W12 is not run. Downstream links and risk remain explicitly unavailable where the core has no facts. |
+| Master lamp, log time travel, past-write refusal, confirmed-append journey, reduced motion | `work-list-page.tsx`, `work-list-page.component.test.tsx`, component motion test | Implemented and covered. Browser reduced-motion preference and keyboard focus were exercised. |
+| Ruling session, digest, quiet suggestions/suppression, attestation, assignee lens, receipts/undo | `work-list.tsx`, projection/component/page tests | Implemented through approved commands and replay. Session and detail show per-line evidence states; receipts do not claim delivery. |
+| Server-measured worktree digest bound to evidence; mismatch/missing refusal | `apps/server/src/worktree-digest.ts`, `loopback-session.ts`, `work-list-page.component.test.tsx` | Implemented in stages 1–4; page tests cover missing and mismatched digest and ensure failed commands do not advance the projection. |
+| Agent-authored contract draft before `work.created` | `NewWorkUnavailable`; page test verifies no command request | Not available; plainly disabled/explained, with no simulated drafting. Brief service proposal follows the authorized push. |
+| Agent-side question/proposal/dispute speech acts | `docs/proposals/2026-10-04-your-move-agent-speech-acts-proposal.md` | Draft only; implementation waits for a separate owner ruling. |
+
+## Verification performed in this gate
+
+- Proposal §7 stages 1–5 passed focused RED–GREEN checks in order; stage 6 `npm run verify` exited 0.
+- Full suite results: unit **905/905**, component **182/182**, integration **150 passed / 3 skipped**,
+  contract **140/140**. Lint, formatting, typechecks, build and the remaining verification commands
+  also passed.
+- Provenance check: **429 artifacts**, **695 ledger lines**, zero missing ledger artifacts and zero
+  stale digests. The existing **131 unattributed** items remain visible in the report; this run added
+  or rewrote none. Side-effect scan found zero network, credential, deployment, destructive, or paid
+  operations.
+- Production browser checks used an ephemeral empty log and no runner. E2E, Axe accessibility, and
+  reduced-motion visual checks each passed at **1440×900** and **1280×800** (2/2 per suite). The
+  preview had no console errors, page errors, or failed requests; screenshots are temporary test
+  artifacts, not owner visual evidence. Keyboard focus and reduced-motion behavior were directly
+  checked. Axe initially found the calm screen had no level-one heading; the page-level heading was
+  corrected and both viewport checks then passed.
+- No live runner/provider, W12 session, §20 comprehension run, promotion, or owner visual acceptance
+  is claimed.

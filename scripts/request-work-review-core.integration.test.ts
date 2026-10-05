@@ -28,6 +28,7 @@ const contract = {
   stopConditions: ["turn cap"],
   definitionOfDone: "owner acceptance",
   contextRefs: [],
+  maxTurns: 5,
 };
 const env = (eventId: string, kind: string, payload: Record<string, unknown>) => ({
   schemaVersion: 1,

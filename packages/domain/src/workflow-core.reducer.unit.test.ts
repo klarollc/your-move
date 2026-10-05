@@ -118,24 +118,56 @@ const turn = (runId: string, number: number, offsetMs: number, partial = false) 
   );
 
 const toReview = () => [
-  event("event_ready", "work.transitioned", { workItemId: "work_alpha", fromRevision: 0, toState: "ready" }, 1000),
-  event("event_assigned", "work.transitioned", { workItemId: "work_alpha", fromRevision: 1, toState: "assigned" }, 2000),
-  event("event_active", "work.transitioned", { workItemId: "work_alpha", fromRevision: 2, toState: "active" }, 3000),
+  event(
+    "event_ready",
+    "work.transitioned",
+    { workItemId: "work_alpha", fromRevision: 0, toState: "ready" },
+    1000,
+  ),
+  event(
+    "event_assigned",
+    "work.transitioned",
+    { workItemId: "work_alpha", fromRevision: 1, toState: "assigned" },
+    2000,
+  ),
+  event(
+    "event_active",
+    "work.transitioned",
+    { workItemId: "work_alpha", fromRevision: 2, toState: "active" },
+    3000,
+  ),
   event(
     "event_evidence_v1",
     "evidence.recorded",
-    { evidenceId: "evidence_test", workItemId: "work_alpha", kind: "test-run", version: 1, result: "failed" },
+    {
+      evidenceId: "evidence_test",
+      workItemId: "work_alpha",
+      kind: "test-run",
+      version: 1,
+      result: "failed",
+    },
     4000,
     "manager",
   ),
   event(
     "event_evidence_v2",
     "evidence.recorded",
-    { evidenceId: "evidence_test", workItemId: "work_alpha", kind: "test-run", version: 2, result: "passed" },
+    {
+      evidenceId: "evidence_test",
+      workItemId: "work_alpha",
+      kind: "test-run",
+      version: 2,
+      result: "passed",
+    },
     4500,
     "manager",
   ),
-  event("event_review", "work.transitioned", { workItemId: "work_alpha", fromRevision: 3, toState: "review_requested" }, 5000),
+  event(
+    "event_review",
+    "work.transitioned",
+    { workItemId: "work_alpha", fromRevision: 3, toState: "review_requested" },
+    5000,
+  ),
 ];
 
 const accept = () =>
@@ -270,6 +302,8 @@ describe("workflow-core reducer", () => {
       countComplete: false,
     });
 
+    const legacyContract: Record<string, unknown> = { ...contract() };
+    delete legacyContract.maxTurns;
     const legacy = event(
       "event_legacy",
       "work.created",
@@ -278,7 +312,7 @@ describe("workflow-core reducer", () => {
         workItemId: "work_alpha",
         outcome: "Old contract",
         requiredEvidenceKinds: ["test-run"],
-        contract: { ...contract() },
+        contract: legacyContract,
       },
       0,
     );
@@ -320,7 +354,13 @@ describe("workflow-core reducer", () => {
     const changedEvidence = event(
       "event_evidence_v3",
       "evidence.recorded",
-      { evidenceId: "evidence_test", workItemId: "work_alpha", kind: "test-run", version: 3, result: "failed" },
+      {
+        evidenceId: "evidence_test",
+        workItemId: "work_alpha",
+        kind: "test-run",
+        version: 3,
+        result: "failed",
+      },
       7000,
     );
     const afterEvidence = replayProject([
@@ -340,7 +380,13 @@ describe("workflow-core reducer", () => {
       { workItemId: "work_alpha", fromRevision: 5, toState: "completed" },
       7000,
     );
-    const afterWorkChange = replayProject([created(), ...toReview(), accept(), completed, withdrawal]).work;
+    const afterWorkChange = replayProject([
+      created(),
+      ...toReview(),
+      accept(),
+      completed,
+      withdrawal,
+    ]).work;
     expect(afterWorkChange.workItems.work_alpha?.state).toBe("completed");
     expect(afterWorkChange.rulings?.ruling_alpha?.withdrawn).toBe(false);
     expect(afterWorkChange.issues.map(({ code }) => code)).toContain("RULING_WITHDRAWAL_REFUSED");

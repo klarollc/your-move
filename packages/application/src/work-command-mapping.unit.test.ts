@@ -132,3 +132,71 @@ describe("toWorkCommand: work.request_review", () => {
     if (!result.ok) expect(result.issues.join(" ")).toContain("toState");
   });
 });
+
+describe("toWorkCommand: proposal-approved workflow decisions", () => {
+  it("maps ruling inputs without accepting a browser evidence snapshot", () => {
+    expect(
+      toWorkCommand(
+        command({
+          intent: "work.record_ruling",
+          payload: { decision: "accept_with_exception", reason: "Risk accepted" },
+        }),
+      ),
+    ).toMatchObject({
+      ok: true,
+      value: {
+        intent: "record_ruling",
+        ruling: { decision: "accept_with_exception", reason: "Risk accepted" },
+      },
+    });
+    expect(
+      toWorkCommand(
+        command({
+          intent: "work.record_ruling",
+          payload: { decision: "accept", evidenceVersions: [] },
+        }),
+      ),
+    ).toMatchObject({ ok: false, code: "COMMAND_INVALID" });
+  });
+
+  it("maps turn grants, contract replacement, closure, nudge, suppression, and withdrawal", () => {
+    const cases = [
+      [
+        "work.grant_turns",
+        { turnsGranted: 7, budgetRevision: 2 },
+        { intent: "grant_turns", turnsGranted: 7, budgetRevision: 2 },
+      ],
+      [
+        "work.rescope",
+        { expectedContractRevision: 1, contract: { outcome: "new" } },
+        { intent: "rescope", expectedContractRevision: 1, contract: { outcome: "new" } },
+      ],
+      [
+        "work.close_incomplete",
+        { reason: "time cap reached" },
+        { intent: "close_incomplete", reason: "time cap reached" },
+      ],
+      [
+        "work.nudge",
+        { roleAssignmentId: "role-assignment_a", note: "Please check in" },
+        { intent: "nudge", roleAssignmentId: "role-assignment_a", note: "Please check in" },
+      ],
+      [
+        "work.suppress_nudge",
+        { disposition: "snooze" },
+        { intent: "suppress_nudge", disposition: "snooze" },
+      ],
+      [
+        "work.withdraw_ruling",
+        { rulingId: "ruling_a" },
+        { intent: "withdraw_ruling", rulingId: "ruling_a" },
+      ],
+    ] as const;
+    for (const [intent, payload, expected] of cases) {
+      expect(toWorkCommand(command({ intent, payload }))).toMatchObject({
+        ok: true,
+        value: expected,
+      });
+    }
+  });
+});

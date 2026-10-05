@@ -9,7 +9,11 @@
  * any new reducer issue, passing the reducer's code through. A candidate that does not parse is refused too, because the
  * reducer would silently drop it and the command would then report success for nothing.
  */
-import { parseProjectEvent, workContractSchema, type WorkContract } from "@cuckcode/contracts";
+import {
+  boundedWorkContractSchema,
+  parseProjectEvent,
+  type WorkContract,
+} from "@cuckcode/contracts";
 import {
   judgeDoneClaim,
   nextEventTimes,
@@ -22,11 +26,37 @@ export type WorkCommand = Readonly<{
   projectId: string;
   expectedRevision: number;
   actor: Readonly<{ actorType: "manager" | "agent"; actorId: string }>;
-  intent: "create" | "assign" | "record_evidence" | "request_review";
+  intent:
+    | "create"
+    | "assign"
+    | "record_evidence"
+    | "request_review"
+    | "record_ruling"
+    | "grant_turns"
+    | "rescope"
+    | "close_incomplete"
+    | "nudge"
+    | "suppress_nudge"
+    | "withdraw_ruling";
   workItemId: string;
   contract?: WorkContract;
   roleAssignmentId?: string;
   evidence?: WorkEvidenceInput;
+  ruling?: WorkRulingInput;
+  turnsGranted?: number;
+  budgetRevision?: number;
+  expectedContractRevision?: number;
+  reason?: string;
+  note?: string;
+  disposition?: "snooze" | "dismiss";
+  rulingId?: string;
+}>;
+
+export type WorkRulingInput = Readonly<{
+  decision: "accept" | "accept_with_exception" | "send_back" | "defer";
+  reason?: string;
+  note?: string;
+  resurfaceAt?: string;
 }>;
 
 /** An owner-run check result (workflow-proof W5f). `outputSha256` digests the saved output. */
@@ -73,9 +103,10 @@ export function executeWorkCommand(
     currentRevision: number;
     now: string;
     command: WorkCommand;
+    trustedContext?: Readonly<{ worktreeSha256?: string }>;
   }>,
 ): WorkCommandResult {
-  const { log, currentRevision, now, command } = input;
+  const { log, currentRevision, now, command, trustedContext } = input;
   if (!COMMAND_ID.test(command.commandId)) {
     return refuse("COMMAND_INVALID", "commandId is missing or malformed");
   }
@@ -92,9 +123,24 @@ export function executeWorkCommand(
       retrySafe: true,
     };
   }
+  if (trustedContext?.worktreeSha256 !== undefined && !SHA256.test(trustedContext.worktreeSha256)) {
+    return refuse(
+      "WORKTREE_DIGEST_INVALID",
+      "trusted worktree digest must be 64-character lowercase hex",
+    );
+  }
   if (command.actor.actorType !== "manager") {
     return refuse("NOT_AUTHORIZED", "only a manager may create, assign or review work");
   }
+  const commandPrefix = `event_${command.commandId}_`;
+  if (normalizeCommandEventIds(log).some((eventId) => eventId.startsWith(commandPrefix))) {
+    return refuse(
+      "COMMAND_ID_DUPLICATE",
+      `command ${command.commandId} already appears in the event log`,
+    );
+  }
+  const fields = validateCommandFields(command);
+  if (fields.length > 0) return refuse("COMMAND_INVALID", ...fields);
 
   // Judged in canonical replay order (time, then event id), the order every surface sees, not raw
   // file order: the two differ when events share or regress a timestamp.
@@ -106,14 +152,28 @@ export function executeWorkCommand(
       : command.intent === "assign"
         ? planAssign(command, item)
         : command.intent === "record_evidence"
-          ? planRecordEvidence(command, item)
-          : planRequestReview(command, item, log);
+          ? planRecordEvidence(command, item, trustedContext?.worktreeSha256)
+          : command.intent === "request_review"
+            ? planRequestReview(command, item, log)
+            : command.intent === "record_ruling"
+              ? planRuling(command, item, before, log, now, trustedContext?.worktreeSha256)
+              : command.intent === "grant_turns"
+                ? planGrantTurns(command, item)
+                : command.intent === "rescope"
+                  ? planRescope(command, item)
+                  : command.intent === "close_incomplete"
+                    ? planCloseIncomplete(command, item)
+                    : command.intent === "nudge"
+                      ? planNudge(command, item)
+                      : command.intent === "suppress_nudge"
+                        ? planSuppressNudge(command, item)
+                        : planWithdrawRuling(command, item, before);
   if (!Array.isArray(candidates)) return candidates;
 
   // Stamped after everything already in the log, so canonical replay applies them last.
   const times = nextEventTimes(log, now, candidates.length);
   let sequence = 0;
-  const events = candidates.map((candidate) => {
+  const events = candidates.map((candidate, index) => {
     sequence += 1;
     return {
       schemaVersion: 1,
@@ -126,7 +186,16 @@ export function executeWorkCommand(
       trust: "verified",
       workItemId: command.workItemId,
       ...(candidate.roleAssignmentId ? { roleAssignmentId: candidate.roleAssignmentId } : {}),
-      payload: candidate.payload,
+      payload: {
+        ...candidate.payload,
+        ...(candidate.suppressionDays === undefined
+          ? {}
+          : {
+              until: new Date(
+                Date.parse(times[index]!) + candidate.suppressionDays * 86_400_000,
+              ).toISOString(),
+            }),
+      },
     };
   });
 
@@ -164,13 +233,14 @@ type Candidate = Readonly<{
   kind: string;
   payload: Record<string, unknown>;
   roleAssignmentId?: string;
+  suppressionDays?: 2 | 3;
 }>;
 
 function planCreate(command: WorkCommand, exists: boolean): Candidate[] | WorkCommandResult {
   if (command.contract === undefined) {
     return refuse("CONTRACT_INVALID", "contract is required");
   }
-  const parsed = workContractSchema.safeParse(command.contract);
+  const parsed = boundedWorkContractSchema.safeParse(command.contract);
   if (!parsed.success) {
     return refuse(
       "CONTRACT_INVALID",
@@ -184,7 +254,7 @@ function planCreate(command: WorkCommand, exists: boolean): Candidate[] | WorkCo
     {
       kind: "work.created",
       payload: {
-        payloadVersion: 2,
+        payloadVersion: 3,
         workItemId: command.workItemId,
         outcome: parsed.data.outcome,
         requiredEvidenceKinds: parsed.data.evidenceObligations.map((entry) => entry.kind),
@@ -242,6 +312,7 @@ const MAX_NOTE = 280;
 function planRecordEvidence(
   command: WorkCommand,
   item: WorkTruthState["workItems"][string] | undefined,
+  trustedWorktreeSha256?: string,
 ): Candidate[] | WorkCommandResult {
   const evidence: unknown = command.evidence;
   const issues: string[] = [];
@@ -297,6 +368,7 @@ function planRecordEvidence(
         result: record.result,
         ...(record.note !== undefined ? { note: record.note } : {}),
         ...(record.outputSha256 !== undefined ? { outputSha256: record.outputSha256 } : {}),
+        ...(trustedWorktreeSha256 !== undefined ? { worktreeSha256: trustedWorktreeSha256 } : {}),
         recordedBy: command.actor.actorId,
       },
     },
@@ -366,6 +438,374 @@ function planRequestReview(
           waitingOn: { kind: "manager" },
           requestedAction: { kind: "approve", summary: "Accept, redirect or decline this work." },
         },
+      },
+    },
+  ];
+}
+
+const COMMAND_FIELDS: Readonly<Record<WorkCommand["intent"], readonly string[]>> = {
+  create: ["contract"],
+  assign: ["roleAssignmentId"],
+  record_evidence: ["evidence"],
+  request_review: [],
+  record_ruling: ["ruling"],
+  grant_turns: ["turnsGranted", "budgetRevision"],
+  rescope: ["contract", "expectedContractRevision"],
+  close_incomplete: ["reason"],
+  nudge: ["roleAssignmentId", "note"],
+  suppress_nudge: ["disposition"],
+  withdraw_ruling: ["rulingId"],
+};
+
+function validateCommandFields(command: WorkCommand): string[] {
+  const common = ["commandId", "projectId", "expectedRevision", "actor", "intent", "workItemId"];
+  const allowed = new Set([...common, ...(COMMAND_FIELDS[command.intent] ?? [])]);
+  const extra = Object.keys(command).filter((key) => !allowed.has(key));
+  if (extra.length > 0) return [`unexpected command fields: ${extra.sort().join(", ")}`];
+  return [];
+}
+
+function normalizeCommandEventIds(log: readonly unknown[]): string[] {
+  return log.flatMap((raw) => {
+    if (typeof raw !== "object" || raw === null) return [];
+    const eventId = (raw as Record<string, unknown>).eventId;
+    return typeof eventId === "string" ? [eventId] : [];
+  });
+}
+
+function planRuling(
+  command: WorkCommand,
+  item: WorkTruthState["workItems"][string] | undefined,
+  before: WorkTruthState,
+  log: readonly unknown[],
+  now: string,
+  trustedWorktreeSha256?: string,
+): Candidate[] | WorkCommandResult {
+  if (!item) return refuse("WORK_ITEM_NOT_FOUND", `${command.workItemId} does not exist`);
+  const ruling: unknown = command.ruling;
+  if (typeof ruling !== "object" || ruling === null || Array.isArray(ruling)) {
+    return refuse("COMMAND_INVALID", "ruling is required");
+  }
+  const data = ruling as Record<string, unknown>;
+  const allowed = ["decision", "reason", "note", "resurfaceAt"];
+  const extra = Object.keys(data).filter((key) => !allowed.includes(key));
+  const issues: string[] = [];
+  if (extra.length > 0) issues.push(`unexpected ruling fields: ${extra.sort().join(", ")}`);
+  if (
+    !(["accept", "accept_with_exception", "send_back", "defer"] as unknown[]).includes(
+      data.decision,
+    )
+  ) {
+    issues.push("ruling.decision is not supported");
+  }
+  for (const key of ["reason", "note"] as const) {
+    if (data[key] !== undefined && (typeof data[key] !== "string" || data[key].length > MAX_NOTE)) {
+      issues.push(`ruling.${key} must be a string of at most ${String(MAX_NOTE)} characters`);
+    }
+  }
+  if (
+    ["accept_with_exception", "send_back", "defer"].includes(String(data.decision)) &&
+    (typeof data.reason !== "string" || data.reason.trim().length === 0)
+  ) {
+    issues.push(`ruling.${String(data.decision)} requires a non-empty reason`);
+  }
+  if (data.decision === "defer") {
+    if (
+      typeof data.resurfaceAt !== "string" ||
+      !data.resurfaceAt.endsWith("Z") ||
+      !Number.isFinite(Date.parse(data.resurfaceAt))
+    ) {
+      issues.push("ruling.defer requires a UTC resurfaceAt");
+    } else if (Date.parse(data.resurfaceAt) <= Date.parse(now)) {
+      issues.push("ruling.resurfaceAt must be in the future");
+    }
+  } else if (data.resurfaceAt !== undefined) {
+    issues.push("ruling.resurfaceAt is only allowed for defer");
+  }
+  if (issues.length > 0) return refuse("COMMAND_INVALID", ...issues);
+
+  const decision = data.decision as WorkRulingInput["decision"];
+  if (decision === "accept") {
+    if (trustedWorktreeSha256 === undefined) {
+      return refuse("WORKTREE_DIGEST_MISSING", "final review requires a trusted worktree digest");
+    }
+    const judgement = judgeDoneClaim({ log, workItemId: command.workItemId });
+    if (!judgement.ok) {
+      return refuse(
+        "DONE_NOT_SUPPORTED",
+        "ordinary acceptance requires checked evidence for every obligation",
+      );
+    }
+    const digestIssue = finalEvidenceDigestIssue(log, before, item, trustedWorktreeSha256);
+    if (digestIssue) return refuse(digestIssue.code, digestIssue.message);
+  }
+  const evidenceVersions = Object.values(before.evidence)
+    .filter((entry) => entry.workItemId === command.workItemId)
+    .map(({ evidenceId, version }) => ({ evidenceId, version }))
+    .sort((left, right) =>
+      left.evidenceId < right.evidenceId ? -1 : left.evidenceId > right.evidenceId ? 1 : 0,
+    );
+  return [
+    {
+      kind: "work.ruling_recorded",
+      payload: {
+        workItemId: command.workItemId,
+        rulingId: `ruling_${command.commandId}`,
+        decision,
+        sourceWorkRevision: item.revision,
+        evidenceVersions,
+        ...(typeof data.reason === "string" ? { reason: data.reason } : {}),
+        ...(typeof data.note === "string" ? { note: data.note } : {}),
+        ...(typeof data.resurfaceAt === "string" ? { resurfaceAt: data.resurfaceAt } : {}),
+      },
+    },
+  ];
+}
+
+function finalEvidenceDigestIssue(
+  log: readonly unknown[],
+  state: WorkTruthState,
+  item: WorkTruthState["workItems"][string],
+  worktreeSha256: string,
+): { code: string; message: string } | undefined {
+  const obligations =
+    item.contract?.evidenceObligations ??
+    item.requiredEvidenceKinds.map((kind) => ({ kind, description: kind }));
+  const events = log
+    .flatMap((raw) => {
+      const parsed = parseProjectEvent(raw);
+      return parsed.ok ? [parsed.value] : [];
+    })
+    .sort(
+      (left, right) =>
+        left.occurredAt.localeCompare(right.occurredAt) ||
+        left.receivedAt.localeCompare(right.receivedAt) ||
+        left.eventId.localeCompare(right.eventId),
+    );
+  for (const obligation of obligations) {
+    const latest = events
+      .filter(
+        (event) =>
+          event.kind === "evidence.recorded" &&
+          event.payload.workItemId === item.workItemId &&
+          event.payload.kind === obligation.kind,
+      )
+      .at(-1);
+    if (!latest || latest.trust !== "verified" || latest.payload.result !== "passed") {
+      return {
+        code: "DONE_NOT_SUPPORTED",
+        message: `${obligation.kind} has no latest checked passing evidence`,
+      };
+    }
+    if (latest.payload.worktreeSha256 === undefined) {
+      return {
+        code: "WORKTREE_DIGEST_MISSING",
+        message: `${obligation.kind} evidence has no recorded worktree digest`,
+      };
+    }
+    if (latest.payload.worktreeSha256 !== worktreeSha256) {
+      return {
+        code: "WORKTREE_DIGEST_MISMATCH",
+        message: `${obligation.kind} evidence was recorded against a different worktree`,
+      };
+    }
+    const recorded = state.evidence[latest.payload.evidenceId as string];
+    if (!recorded || recorded.version !== latest.payload.version || recorded.trust !== "verified") {
+      return {
+        code: "DONE_NOT_SUPPORTED",
+        message: `${obligation.kind} does not resolve to the latest verified evidence record`,
+      };
+    }
+  }
+  return undefined;
+}
+
+function planGrantTurns(
+  command: WorkCommand,
+  item: WorkTruthState["workItems"][string] | undefined,
+): Candidate[] | WorkCommandResult {
+  if (!item) return refuse("WORK_ITEM_NOT_FOUND", `${command.workItemId} does not exist`);
+  if (!Number.isInteger(command.turnsGranted) || (command.turnsGranted ?? 0) <= 0) {
+    return refuse("COMMAND_INVALID", "turnsGranted must be a positive integer");
+  }
+  if (!Number.isInteger(command.budgetRevision) || (command.budgetRevision ?? 0) <= 0) {
+    return refuse("COMMAND_INVALID", "budgetRevision must be a positive integer");
+  }
+  if (
+    item.turnBudget?.budgetRecorded !== true ||
+    command.budgetRevision !== item.turnBudget.budgetRevision
+  ) {
+    return refuse(
+      "TURN_BUDGET_INVALID",
+      `expected budget revision ${String(item.turnBudget?.budgetRevision)}`,
+    );
+  }
+  return [
+    {
+      kind: "work.turns_granted",
+      payload: {
+        workItemId: command.workItemId,
+        turnsGranted: command.turnsGranted,
+        budgetRevision: command.budgetRevision,
+      },
+    },
+  ];
+}
+
+function planRescope(
+  command: WorkCommand,
+  item: WorkTruthState["workItems"][string] | undefined,
+): Candidate[] | WorkCommandResult {
+  if (!item) return refuse("WORK_ITEM_NOT_FOUND", `${command.workItemId} does not exist`);
+  if (command.contract === undefined)
+    return refuse("CONTRACT_INVALID", "replacement contract is required");
+  const contract = boundedWorkContractSchema.safeParse(command.contract);
+  if (!contract.success) {
+    return refuse(
+      "CONTRACT_INVALID",
+      ...contract.error.issues.map(
+        (found) => `${found.path.join(".") || "(root)"}: ${found.message}`,
+      ),
+    );
+  }
+  if (item.state === "active")
+    return refuse("WORK_RUN_ACTIVE", "work cannot be re-scoped while its runner is active");
+  const expectedContractRevision = command.expectedContractRevision;
+  if (
+    typeof expectedContractRevision !== "number" ||
+    !Number.isInteger(expectedContractRevision) ||
+    expectedContractRevision !== item.contractRevision
+  ) {
+    return refuse(
+      "STALE_CONTRACT_REVISION",
+      `expected contract revision ${String(item.contractRevision)}`,
+    );
+  }
+  if (!item.contract)
+    return refuse("CONTRACT_MISSING", `${command.workItemId} has no contract to re-scope`);
+  return [
+    {
+      kind: "work.rescoped",
+      payload: {
+        workItemId: command.workItemId,
+        expectedContractRevision,
+        contractRevision: expectedContractRevision + 1,
+        contract: contract.data,
+      },
+    },
+  ];
+}
+
+function planCloseIncomplete(
+  command: WorkCommand,
+  item: WorkTruthState["workItems"][string] | undefined,
+): Candidate[] | WorkCommandResult {
+  if (!item) return refuse("WORK_ITEM_NOT_FOUND", `${command.workItemId} does not exist`);
+  if (
+    typeof command.reason !== "string" ||
+    command.reason.trim().length === 0 ||
+    command.reason.length > MAX_NOTE
+  ) {
+    return refuse(
+      "COMMAND_INVALID",
+      "close-incomplete requires a non-empty reason of at most 280 characters",
+    );
+  }
+  if (
+    item.state === "completed" ||
+    item.state === "cancelled" ||
+    item.state === "closed_incomplete"
+  ) {
+    return refuse("WORK_ALREADY_TERMINAL", `${command.workItemId} is already terminal`);
+  }
+  return [
+    {
+      kind: "work.closed_incomplete",
+      payload: {
+        workItemId: command.workItemId,
+        fromRevision: item.revision,
+        reason: command.reason,
+      },
+    },
+  ];
+}
+
+function planNudge(
+  command: WorkCommand,
+  item: WorkTruthState["workItems"][string] | undefined,
+): Candidate[] | WorkCommandResult {
+  if (!item) return refuse("WORK_ITEM_NOT_FOUND", `${command.workItemId} does not exist`);
+  if (!command.roleAssignmentId || !ROLE_ASSIGNMENT_ID.test(command.roleAssignmentId)) {
+    return refuse("COMMAND_INVALID", "roleAssignmentId is missing or malformed");
+  }
+  if (
+    typeof command.note !== "string" ||
+    command.note.trim().length === 0 ||
+    command.note.length > MAX_NOTE
+  ) {
+    return refuse("COMMAND_INVALID", "nudge requires a non-empty note of at most 280 characters");
+  }
+  if (item.assignment?.roleAssignmentId !== command.roleAssignmentId) {
+    return refuse("INVALID_NUDGE", "nudge target must be the work item's current assignment");
+  }
+  return [
+    {
+      kind: "work.nudged",
+      payload: {
+        workItemId: command.workItemId,
+        roleAssignmentId: command.roleAssignmentId,
+        note: command.note,
+      },
+      roleAssignmentId: command.roleAssignmentId,
+    },
+  ];
+}
+
+function planSuppressNudge(
+  command: WorkCommand,
+  item: WorkTruthState["workItems"][string] | undefined,
+): Candidate[] | WorkCommandResult {
+  if (!item) return refuse("WORK_ITEM_NOT_FOUND", `${command.workItemId} does not exist`);
+  if (command.disposition !== "snooze" && command.disposition !== "dismiss") {
+    return refuse("COMMAND_INVALID", "disposition must be snooze or dismiss");
+  }
+  return [
+    {
+      kind: "work.nudge_suppressed",
+      payload: { workItemId: command.workItemId, disposition: command.disposition },
+      suppressionDays: command.disposition === "snooze" ? 2 : 3,
+    },
+  ];
+}
+
+function planWithdrawRuling(
+  command: WorkCommand,
+  item: WorkTruthState["workItems"][string] | undefined,
+  before: WorkTruthState,
+): Candidate[] | WorkCommandResult {
+  if (!item) return refuse("WORK_ITEM_NOT_FOUND", `${command.workItemId} does not exist`);
+  if (typeof command.rulingId !== "string" || command.rulingId.length === 0) {
+    return refuse("COMMAND_INVALID", "rulingId is required");
+  }
+  const ruling = before.rulings?.[command.rulingId];
+  if (
+    !ruling ||
+    ruling.workItemId !== command.workItemId ||
+    item.currentRulingId !== ruling.rulingId ||
+    ruling.withdrawn
+  ) {
+    return refuse(
+      "RULING_WITHDRAWAL_REFUSED",
+      "only the current, unwithdrawn ruling may be withdrawn",
+    );
+  }
+  return [
+    {
+      kind: "ruling.withdrawn",
+      payload: {
+        workItemId: command.workItemId,
+        rulingId: command.rulingId,
+        evidenceVersions: ruling.evidenceVersions,
       },
     },
   ];

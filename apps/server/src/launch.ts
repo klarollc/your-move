@@ -212,6 +212,7 @@ export async function startLogServer(args: LaunchArgs): Promise<StartResult> {
       csrfToken: `csrf_${randomBytes(12).toString("hex")}`,
       readModel: { schemaVersion: 1, projectId: args.projectId, revision: log.revision },
       logPath: args.logPath,
+      worktreeRoot: process.cwd(),
       runner,
     });
     await app.listen({ host: "127.0.0.1", port: args.port });

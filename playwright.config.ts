@@ -28,8 +28,6 @@ export default defineConfig({
     },
   ],
   /**
-   * Two servers, deliberately.
-   *
    * 4173 is the dev server every Phase 4 spec has always used; moving those would re-serve
    * owner-accepted evidence from a different build without anyone asking for that. 4174 serves the
    * production bundle and is what the Phase 5 captures use, per decision 9-E: C-11 asks for an

@@ -113,6 +113,66 @@ const assignedEvents = [
   },
 ];
 
+function reviewEvents(worktreeSha256?: string) {
+  const active = {
+    schemaVersion: 1,
+    eventId: "event_runner_active",
+    projectId: "project_surface_b",
+    kind: "work.transitioned",
+    occurredAt: at(6),
+    receivedAt: at(6),
+    source: "manager",
+    trust: "verified",
+    payload: { workItemId: "work_surface_b", fromRevision: 2, toState: "active" },
+    workItemId: "work_surface_b",
+  };
+  const evidencePayload = {
+    evidenceId: "evidence_output_1",
+    workItemId: "work_surface_b",
+    kind: "work-output",
+    version: 1,
+    result: "passed",
+    outputSha256: "b".repeat(64),
+    ...(worktreeSha256 === undefined ? {} : { worktreeSha256 }),
+  };
+  const evidence = {
+    schemaVersion: 1,
+    eventId: "event_runner_evidence",
+    projectId: "project_surface_b",
+    kind: "evidence.recorded",
+    occurredAt: at(7),
+    receivedAt: at(7),
+    source: "manager",
+    trust: "verified",
+    payload: evidencePayload,
+    workItemId: "work_surface_b",
+  };
+  const review = {
+    schemaVersion: 1,
+    eventId: "event_runner_review",
+    projectId: "project_surface_b",
+    kind: "work.transitioned",
+    occurredAt: at(8),
+    receivedAt: at(8),
+    source: "manager",
+    trust: "verified",
+    payload: {
+      payloadVersion: 3,
+      workItemId: "work_surface_b",
+      fromRevision: 3,
+      toState: "review_requested",
+      condition: {
+        reasonCode: "review_requested",
+        summary: "Evidence is ready for the manager.",
+        waitingOn: { kind: "manager" },
+        requestedAction: { kind: "approve", summary: "Accept or redirect this work." },
+      },
+    },
+    workItemId: "work_surface_b",
+  };
+  return [...assignedEvents, active, evidence, review];
+}
+
 describe("Surface B log-backed page", () => {
   it("resets an away baseline that is ahead of the current project's log", async () => {
     window.localStorage.setItem("your-move:last-seen-revision:project_surface_b", "1");
@@ -141,7 +201,7 @@ describe("Surface B log-backed page", () => {
   });
 
   it("does not claim to create work until the real agent contract-draft path exists", async () => {
-    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
       if (url === "/api/session") {
         return reply({
@@ -257,5 +317,107 @@ describe("Surface B log-backed page", () => {
       within(screen.getByRole("article", { name: "Implement feature" })).getByText("assigned"),
     ).toBeVisible();
     expect(screen.getByRole("button", { name: "Run Implement feature" })).toBeEnabled();
+  });
+
+  it("keeps the review projection unchanged until the ruling receipt appears in log readback", async () => {
+    const events = reviewEvents("a".repeat(64));
+    let resolveCommand: ((response: Response) => void) | undefined;
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url === "/api/session") {
+        return reply({
+          sessionId: "session_surface_b",
+          csrfToken: "csrf_surface_b",
+          projectId: "project_surface_b",
+          runner: { available: true, state: "idle" },
+        });
+      }
+      if (url === "/api/workflow/status") return reply({ available: true, state: "idle" });
+      if (url === "/api/log")
+        return reply({ revision: events.length, events, truncated: false, problems: [] });
+      if (url === "/api/commands" && init?.method === "POST")
+        return new Promise<Response>((resolve) => {
+          resolveCommand = resolve;
+        });
+      throw new Error(`unexpected request ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+    render(<WorkListPage />);
+    await user.click(await screen.findByRole("button", { name: "Details for Implement feature" }));
+    await user.click(screen.getByRole("button", { name: "Accept with exception" }));
+    await user.type(screen.getByLabelText("Override reason"), "Accept this specific gap.");
+    await user.click(screen.getByRole("button", { name: "Record exception ruling" }));
+
+    expect(screen.getByRole("heading", { name: "Review: Implement feature" })).toBeVisible();
+    expect(screen.getByText("Recording…")).toBeVisible();
+    const finish = resolveCommand;
+    expect(finish).toBeDefined();
+    finish?.(reply({ resultingRevision: events.length + 1, eventIds: ["event_ruling_10"] }, 202));
+
+    expect(
+      await screen.findByText(/command receipt is not present in the event-log readback/u),
+    ).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Review: Implement feature" })).toBeVisible();
+    expect(screen.getByText("Checked · passed")).toBeVisible();
+    expect(screen.queryByText(/Accepted with exception/u)).not.toBeInTheDocument();
+  });
+
+  it("refuses ordinary acceptance when checked evidence has no worktree digest", async () => {
+    const events = reviewEvents();
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/session")
+        return reply({
+          sessionId: "session_surface_b",
+          csrfToken: "csrf_surface_b",
+          projectId: "project_surface_b",
+          runner: { available: true, state: "idle" },
+        });
+      if (url === "/api/workflow/status") return reply({ available: true, state: "idle" });
+      if (url === "/api/log")
+        return reply({ revision: events.length, events, truncated: false, problems: [] });
+      throw new Error(`unexpected request ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+    render(<WorkListPage />);
+    await user.click(await screen.findByRole("button", { name: "Details for Implement feature" }));
+
+    expect(screen.getByText(/worktree SHA-256 missing/u)).toBeVisible();
+    expect(screen.getByRole("button", { name: "Accept as done" })).toBeDisabled();
+    expect(fetchMock.mock.calls.some(([url]) => String(url) === "/api/commands")).toBe(false);
+  });
+
+  it("keeps review state and evidence when the server refuses a mismatched worktree digest", async () => {
+    const events = reviewEvents("a".repeat(64));
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url === "/api/session")
+        return reply({
+          sessionId: "session_surface_b",
+          csrfToken: "csrf_surface_b",
+          projectId: "project_surface_b",
+          runner: { available: true, state: "idle" },
+        });
+      if (url === "/api/workflow/status") return reply({ available: true, state: "idle" });
+      if (url === "/api/log")
+        return reply({ revision: events.length, events, truncated: false, problems: [] });
+      if (url === "/api/commands" && init?.method === "POST")
+        return reply({ code: "WORKTREE_DIGEST_MISMATCH" }, 422);
+      throw new Error(`unexpected request ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+    render(<WorkListPage />);
+    await user.click(await screen.findByRole("button", { name: "Details for Implement feature" }));
+    await user.click(screen.getByRole("button", { name: "Accept as done" }));
+
+    expect(await screen.findByText(/different worktree/u)).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Review: Implement feature" })).toBeVisible();
+    expect(screen.getByText("Checked · passed")).toBeVisible();
   });
 });

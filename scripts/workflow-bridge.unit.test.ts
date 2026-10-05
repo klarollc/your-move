@@ -27,6 +27,7 @@ const contract = (paths: string[] = ["src/slugify.ts"]) => ({
   stopConditions: ["turn cap"],
   definitionOfDone: "owner acceptance",
   contextRefs: paths.map((path) => ({ path, sha256: "a".repeat(64) })),
+  maxTurns: 3,
 });
 
 const staffing = () => [

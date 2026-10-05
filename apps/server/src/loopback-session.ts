@@ -6,6 +6,7 @@ import Fastify, { type FastifyInstance } from "fastify";
 
 import { appendEventLog, readEventLog } from "./event-log.js";
 import type { WorkflowRunnerControl } from "./workflow-runner.js";
+import { measureWorktreeSha256 } from "./worktree-digest.js";
 
 export type LoopbackApp = FastifyInstance;
 
@@ -29,6 +30,8 @@ type LoopbackAppOptions = {
   fixtureMode?: boolean;
   /** Log mode (W5c): the append-only JSONL event log this server reads and appends to. */
   logPath?: string;
+  /** Trusted project checkout root used for server-measured evidence and final review digests. */
+  worktreeRoot?: string;
   runner?: WorkflowRunnerControl;
   now?: () => string;
 };
@@ -206,12 +209,35 @@ export function createLoopbackApp(options: LoopbackAppOptions): LoopbackApp {
       }
       const mapped = toWorkCommand(result.value);
       if (!mapped.ok) return reply.code(422).send({ code: mapped.code, issues: mapped.issues });
-      const outcome = executeWorkCommand({
+      let worktreeSha256: string | undefined;
+      const needsDigest =
+        mapped.value.intent === "record_evidence" ||
+        (mapped.value.intent === "record_ruling" && mapped.value.ruling?.decision === "accept");
+      const commandNow = (options.now ?? (() => new Date().toISOString()))();
+      let outcome = executeWorkCommand({
         log: log.events,
         currentRevision: log.revision,
-        now: (options.now ?? (() => new Date().toISOString()))(),
+        now: commandNow,
         command: mapped.value,
       });
+      // Validate the command before walking the worktree. Invalid evidence, stale revisions, and
+      // unsupported rulings should fail on their own terms without requiring a digest collector.
+      if (needsDigest && (outcome.ok || outcome.code === "WORKTREE_DIGEST_MISSING")) {
+        try {
+          worktreeSha256 = await measureWorktreeSha256(options.worktreeRoot ?? process.cwd());
+        } catch (error) {
+          const detail =
+            error instanceof Error ? error.message : "worktree digest could not be measured";
+          return reply.code(503).send({ code: "WORKTREE_DIGEST_UNAVAILABLE", detail });
+        }
+        outcome = executeWorkCommand({
+          log: log.events,
+          currentRevision: log.revision,
+          now: commandNow,
+          command: mapped.value,
+          trustedContext: { worktreeSha256 },
+        });
+      }
       if (!outcome.ok) {
         const status =
           outcome.code === "STALE_REVISION" ? 409 : outcome.code === "NOT_AUTHORIZED" ? 403 : 422;

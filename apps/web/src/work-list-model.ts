@@ -54,7 +54,7 @@ export function projectWorkList(
   optionsOrNow: WorkListProjectionOptions | string = {},
 ): WorkListProjection {
   const options = typeof optionsOrNow === "string" ? { now: optionsOrNow } : optionsOrNow;
-  const snapshot = replayProject(events);
+  const snapshot = replayProject(events, options.now ? { asOf: options.now } : {});
   const normalized = normalizeEventLog(events);
   const eventById = new Map<string, ProjectEvent>(
     normalized.events.map((event) => [event.eventId, event]),
@@ -138,7 +138,6 @@ export function projectWorkList(
       const history = eventsByWork.get(item.workItemId) ?? [];
       const latestSignal = history.at(-1);
       const attention = attentionById.get(item.workItemId);
-      const conditionEvent = item.condition ? eventById.get(item.condition.eventId) : undefined;
       const evidence: WorkListEvidence[] = Object.values(snapshot.work.evidence)
         .filter((record) => record.workItemId === item.workItemId)
         .map((record) => {
@@ -190,15 +189,20 @@ export function projectWorkList(
         });
       const failedEvidence = evidence.filter((record) => record.result === "failed").at(-1);
       const hasEvidenceFailure = failedEvidence !== undefined;
-      const needsManager = Boolean(attention) || hasEvidenceFailure;
-      const waitingAt = attention?.updatedAt ?? failedEvidence?.occurredAt ?? null;
+      const resurfaceDue = item.resurface?.due === true;
+      const needsManager = Boolean(attention) || hasEvidenceFailure || resurfaceDue;
+      const waitingAt = resurfaceDue
+        ? (item.resurface?.at ?? null)
+        : (attention?.updatedAt ?? failedEvidence?.occurredAt ?? null);
 
       return {
         workItemId: item.workItemId,
         outcome: item.outcome,
         state: item.state,
         group: groupFor(item.state, needsManager, doneVerified),
-        attentionReason: attention?.reason ?? (hasEvidenceFailure ? "verification_failed" : null),
+        attentionReason:
+          attention?.reason ??
+          (hasEvidenceFailure ? "verification_failed" : resurfaceDue ? "resurface_due" : null),
         doneVerified,
         hasEvidenceFailure,
         condition: item.condition
@@ -213,11 +217,49 @@ export function projectWorkList(
             }
           : null,
         contract: item.contract ?? null,
+        contractRevision: item.contractRevision ?? null,
+        contractHistory: item.contractHistory ?? [],
+        turnBudget: item.turnBudget ?? null,
+        resurface: item.resurface
+          ? {
+              ...item.resurface,
+              sourceRevision: revisionById.get(item.resurface.eventId) ?? null,
+            }
+          : null,
+        nudgeSuppression: item.nudgeSuppression
+          ? {
+              ...item.nudgeSuppression,
+              sourceRevision: revisionById.get(item.nudgeSuppression.eventId) ?? null,
+            }
+          : null,
+        nudgeSuppressed:
+          item.nudgeSuppression !== undefined &&
+          Number.isFinite(currentTimeMs) &&
+          currentTimeMs < Date.parse(item.nudgeSuppression.until),
+        nudges: (item.nudges ?? []).map((nudge) => ({
+          ...nudge,
+          sourceRevision: revisionById.get(nudge.eventId) ?? null,
+        })),
+        currentRulingId: item.currentRulingId ?? null,
+        rulings: Object.values(snapshot.work.rulings ?? {})
+          .filter((ruling) => ruling.workItemId === item.workItemId)
+          .map((ruling) => ({
+            rulingId: ruling.rulingId,
+            decision: ruling.decision,
+            recordedAt: ruling.recordedAt,
+            withdrawn: ruling.withdrawn,
+            eventId: ruling.eventId,
+            sourceRevision: revisionById.get(ruling.eventId) ?? null,
+            ...(ruling.reason === undefined ? {} : { reason: ruling.reason }),
+            ...(ruling.note === undefined ? {} : { note: ruling.note }),
+            ...(ruling.resurfaceAt === undefined ? {} : { resurfaceAt: ruling.resurfaceAt }),
+          })),
         waitingMs:
           waitingAt && Number.isFinite(currentTimeMs)
             ? Math.max(0, currentTimeMs - Date.parse(waitingAt))
             : null,
         assignee: assignment ? `${humanLabel(assignment.roleId)} · ${assignment.agentId}` : null,
+        roleAssignmentId: item.assignment?.roleAssignmentId ?? null,
         assignmentSourceRevision: item.assignment
           ? (revisionById.get(item.assignment.eventId) ?? null)
           : null,
@@ -285,6 +327,36 @@ function eventSummary(event: ProjectEvent): string {
   }
   if (event.kind === "work.assigned") {
     return `Assigned · ${text(payload.roleAssignmentId) ?? "role assignment missing"}`;
+  }
+  if (event.kind === "work.ruling_recorded") {
+    const decision = text(payload.decision)?.replaceAll("_", " ") ?? "ruling missing";
+    const reason = text(payload.reason);
+    const resurfaceAt = text(payload.resurfaceAt);
+    return [decision, reason, resurfaceAt ? `resurface at ${resurfaceAt}` : undefined]
+      .filter(Boolean)
+      .join(" · ");
+  }
+  if (event.kind === "ruling.withdrawn") return "Ruling withdrawn · prior work state restored";
+  if (event.kind === "work.turns_granted") {
+    const count = typeof payload.turnsGranted === "number" ? payload.turnsGranted : "unknown";
+    return `${count} more turns granted`;
+  }
+  if (event.kind === "work.rescoped") {
+    const from =
+      typeof payload.expectedContractRevision === "number"
+        ? payload.expectedContractRevision
+        : "missing";
+    const to = typeof payload.contractRevision === "number" ? payload.contractRevision : "missing";
+    return `Agreement revision ${String(from)} → ${String(to)} recorded`;
+  }
+  if (event.kind === "work.closed_incomplete") {
+    return `Closed incomplete · ${text(payload.reason) ?? "reason missing"}`;
+  }
+  if (event.kind === "work.nudged") return "Nudge recorded · visible on next check-in";
+  if (event.kind === "work.nudge_suppressed") {
+    return text(payload.disposition) === "snooze"
+      ? "Nudge suggestion snoozed · visible again after its recorded rest period"
+      : "Nudge suggestion dismissed · visible again after its recorded rest period";
   }
   return event.kind.replaceAll(".", " ");
 }

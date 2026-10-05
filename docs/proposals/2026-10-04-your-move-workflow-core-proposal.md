@@ -1,6 +1,6 @@
 # Your Move workflow-core proposal
 
-**Status: proposed for workflow-proof owner approval; no event or command changes are authorized by this document.**
+**Status: approved as written by the owner on 2026-10-04; implementation is authorized under §7.**
 **Scope:** reconcile the approved Surface B §8 behavior with the existing workflow core, including the approved worktree-digest binding. This proposal supplements the approved Your Move implementation plan; it does not authorize W12, a provider run, promotion, push, deployment, or external notification.
 
 ## 1. Decision requested
@@ -82,4 +82,7 @@ After owner approval, implementation stays in the normal workflow-proof process:
 
 ## 9. Owner decision
 
-Approve this workflow-core change set as written, amend it, or decline it. In particular confirm the explicit ruling event and exception state, the derived (not persisted) exhausted/resurfaced states, the nudge receipt wording, and the canonical digest policy before implementation.
+The owner approved this workflow-core change set **as written** on 2026-10-04. Implementation must
+follow the RED–GREEN sequence in §7. W12 and §20 remain separately gated; no live session or
+comprehension run is authorized by this approval. Agent-side speech acts are outside this proposal
+and require their own proposal and owner ruling before implementation.

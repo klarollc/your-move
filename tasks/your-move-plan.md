@@ -99,10 +99,12 @@ workflow-proof approval process before implementing the write:
 | Attested accept / send back      | `work.transitioned`, `approval.recorded`    | The present shared command route has no persisted manager ruling intent.                                 |
 | Agent-drafted contract           | `work.created` accepts a validated contract | No pre-creation agent-draft service was found; a deterministic fake must not be labelled an agent draft. |
 
-The proposed minimum reconciliation is in
-`docs/proposals/2026-10-04-your-move-workflow-core-proposal.md`. It retains existing event kinds
-where their semantics fit, extends the existing command path, and leaves writes disabled pending
-the workflow-proof owner gate. No event or command in that proposal has been implemented.
+The owner approved the minimum reconciliation in
+`docs/proposals/2026-10-04-your-move-workflow-core-proposal.md` on 2026-10-04. Implement its §7
+RED–GREEN gates in order. Contract, reducer, command, and loopback API stages have passed focused
+checks; projection/adversarial UI checks remain. The owner's seven additive UI decisions are mapped
+in `tasks/your-move-todo.md` and the approval record. They add no event kinds. Agent-side speech acts
+remain proposal-only until a separate owner ruling.
 
 ## 5. Build order
 
@@ -117,8 +119,10 @@ the workflow-proof owner gate. No event or command in that proposal has been imp
    and the two-sided ghost journey. Animate only after a confirmed event append; cancel on
    navigation and honor reduced-motion.
 4. **Round 7.** Add log-derived ruling session, away digest, nudge suggestions, attested acceptance,
-   assignee lens and receipts. Implement snooze/undo/nudge writes only after core event semantics
-   are approved. Undo is a compensating event; history is never rewritten.
+   assignee lens and receipts. The approved core command semantics are implemented through the
+   shared command path. Undo is a compensating event; history is never rewritten. Preserve the
+   approved truthfulness limits: no browser-side verification, no notification claims, per-line
+   evidence states, real future UTC defer, and full re-scope contracts with a visible diff.
 
 ## 6. Worktree-bound evidence recommendation
 

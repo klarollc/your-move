@@ -1,8 +1,5 @@
 import { parseUtcTimestamp } from "./primitives.js";
-import {
-  boundedWorkContractSchema,
-  validateWorkCreatedPayload,
-} from "./work-contract.js";
+import { boundedWorkContractSchema, validateWorkCreatedPayload } from "./work-contract.js";
 import type { WorkPayloadResult } from "./work-payloads.js";
 import { validateEvidenceRecordedPayload } from "./work-payloads.js";
 
@@ -62,14 +59,20 @@ const ASSIGNMENT_ID = /^role-assignment_[A-Za-z0-9][A-Za-z0-9._-]*$/;
 const RULING_ID = /^ruling_[A-Za-z0-9][A-Za-z0-9._-]*$/;
 const EVIDENCE_ID = /^evidence_[A-Za-z0-9][A-Za-z0-9._-]*$/;
 const MAX_TEXT = 280;
-const decisions: readonly WorkRulingDecision[] = ["accept", "accept_with_exception", "send_back", "defer"];
+const decisions: readonly WorkRulingDecision[] = [
+  "accept",
+  "accept_with_exception",
+  "send_back",
+  "defer",
+];
 
 export function validateWorkTurnsGrantedPayload(
   payload: Record<string, unknown>,
 ): WorkPayloadResult<WorkTurnsGrantedPayload> {
   const issues = fields(payload, ["workItemId", "turnsGranted", "budgetRevision"]);
   if (!matches(payload.workItemId, WORK_ID)) issues.push("workItemId is missing or malformed");
-  if (!positiveInteger(payload.turnsGranted)) issues.push("turnsGranted must be a positive integer");
+  if (!positiveInteger(payload.turnsGranted))
+    issues.push("turnsGranted must be a positive integer");
   if (!positiveInteger(payload.budgetRevision)) {
     issues.push("budgetRevision must be a positive integer");
   }
@@ -128,7 +131,8 @@ export function validateWorkClosedIncompletePayload(
   if (!matches(payload.workItemId, WORK_ID)) issues.push("workItemId is missing or malformed");
   if (!nonNegativeInteger(payload.fromRevision)) issues.push("fromRevision must be non-negative");
   if (!text(payload.reason)) issues.push("reason must be non-empty");
-  else if ((payload.reason as string).length > MAX_TEXT) issues.push("reason exceeds 280 characters");
+  else if ((payload.reason as string).length > MAX_TEXT)
+    issues.push("reason exceeds 280 characters");
   if (issues.length > 0) return { ok: false, issues };
   return {
     ok: true,
@@ -162,7 +166,8 @@ export function validateWorkRulingRecordedPayload(
   const versions = evidenceVersionList(payload.evidenceVersions, issues);
   if (payload.reason !== undefined) {
     if (!text(payload.reason)) issues.push("reason must be non-empty when present");
-    else if ((payload.reason as string).length > MAX_TEXT) issues.push("reason exceeds 280 characters");
+    else if ((payload.reason as string).length > MAX_TEXT)
+      issues.push("reason exceeds 280 characters");
   }
   if (payload.note !== undefined) {
     if (typeof payload.note !== "string") issues.push("note must be a string when present");
@@ -282,15 +287,10 @@ export function validateWorkflowCoreEventPayload(
                       ? validateWorkCreatedPayload(payload)
                       : undefined;
   if (!checked) return { ok: true, value: payload };
-  return checked.ok
-    ? { ok: true, value: checked.value as Record<string, unknown> }
-    : checked;
+  return checked.ok ? { ok: true, value: checked.value as Record<string, unknown> } : checked;
 }
 
-function evidenceVersionList(
-  value: unknown,
-  issues: string[],
-): EvidenceVersionRef[] | undefined {
+function evidenceVersionList(value: unknown, issues: string[]): EvidenceVersionRef[] | undefined {
   if (!Array.isArray(value)) {
     issues.push("evidenceVersions must be an array");
     return undefined;
@@ -303,7 +303,9 @@ function evidenceVersionList(
     }
     const extra = Object.keys(raw).filter((key) => key !== "evidenceId" && key !== "version");
     if (extra.length > 0) {
-      issues.push(`evidenceVersions.${String(index)} has unexpected fields: ${extra.sort().join(", ")}`);
+      issues.push(
+        `evidenceVersions.${String(index)} has unexpected fields: ${extra.sort().join(", ")}`,
+      );
     }
     if (!matches(raw.evidenceId, EVIDENCE_ID)) {
       issues.push(`evidenceVersions.${String(index)}.evidenceId is malformed`);
@@ -316,7 +318,8 @@ function evidenceVersionList(
     }
   }
   const ids = result.map(({ evidenceId }) => evidenceId);
-  if (new Set(ids).size !== ids.length) issues.push("evidenceVersions must not repeat an evidenceId");
+  if (new Set(ids).size !== ids.length)
+    issues.push("evidenceVersions must not repeat an evidenceId");
   if (ids.some((id, index) => index > 0 && ids[index - 1]! > id)) {
     issues.push("evidenceVersions must be sorted by evidenceId");
   }

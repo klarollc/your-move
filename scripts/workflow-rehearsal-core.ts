@@ -86,6 +86,7 @@ const contract = {
   stopConditions: ["turn cap", "the role reports blocked"],
   definitionOfDone: "owner acceptance",
   contextRefs: [{ path: "src/slugify.ts", sha256: "a".repeat(64) }],
+  maxTurns: 5,
 };
 
 const envelope = (eventId: string, kind: string, payload: Record<string, unknown>) => ({

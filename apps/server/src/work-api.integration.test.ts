@@ -1,4 +1,5 @@
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { execFileSync } from "node:child_process";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -7,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { readEventLog } from "./event-log.js";
 import { createLoopbackApp, type LoopbackApp } from "./loopback-session.js";
+import { measureWorktreeSha256 } from "./worktree-digest.js";
 
 const origin = "http://127.0.0.1:4173";
 const headers = { origin, "x-cuckcode-session": "session_t", "x-cuckcode-csrf": "csrf_t" };
@@ -57,6 +59,7 @@ const contract = {
   stopConditions: ["turn cap"],
   definitionOfDone: "owner acceptance",
   contextRefs: [],
+  maxTurns: 5,
 };
 
 const body = (over: Record<string, unknown>) => ({
@@ -73,6 +76,7 @@ const body = (over: Record<string, unknown>) => ({
 
 let dir = "";
 let logPath = "";
+let digestRoot = "";
 const apps: LoopbackApp[] = [];
 const start = async (
   events: readonly unknown[] = staffingEvents,
@@ -92,6 +96,7 @@ const start = async (
     start: (workItemId: string) => Promise<{ ok: true } | { ok: false; code: string }>;
     waitUntilIdle: () => Promise<void>;
   },
+  worktreeRoot: string = digestRoot,
 ) => {
   await writeFile(logPath, events.map((e) => `${JSON.stringify(e)}\n`).join(""), "utf8");
   const app = createLoopbackApp({
@@ -104,6 +109,7 @@ const start = async (
     csrfToken: "csrf_t",
     readModel: {},
     logPath,
+    worktreeRoot,
     ...(runner ? { runner } : {}),
     now: () => NOW,
   });
@@ -121,6 +127,12 @@ const post = (app: LoopbackApp, payload: unknown, extra: Record<string, string> 
 beforeEach(async () => {
   dir = await mkdtemp(join(tmpdir(), "cuckcode-api-"));
   logPath = join(dir, "events.jsonl");
+  digestRoot = join(dir, "digest-root");
+  await mkdir(digestRoot);
+  await writeFile(join(digestRoot, "tracked.txt"), "digest fixture\n", "utf8");
+  execFileSync("git", ["init", "--quiet"], { cwd: digestRoot });
+  execFileSync("git", ["config", "core.autocrlf", "false"], { cwd: digestRoot });
+  execFileSync("git", ["add", "tracked.txt"], { cwd: digestRoot });
 });
 afterEach(async () => {
   await Promise.all(apps.splice(0).map((app) => app.close()));
@@ -128,6 +140,34 @@ afterEach(async () => {
 });
 
 describe("work API in log mode", () => {
+  it("refuses invalid evidence before requiring a measurable worktree", async () => {
+    const app = await start(staffingEvents, undefined, dir);
+    await post(app, body({ commandId: "cmd_create" }));
+    const afterCreate = await readEventLog(logPath);
+    await post(
+      app,
+      body({
+        commandId: "cmd_assign",
+        expectedRevision: afterCreate.revision,
+        intent: "work.assign",
+        payload: { roleAssignmentId: "role-assignment_engineer" },
+      }),
+    );
+    const beforeEvidence = await readEventLog(logPath);
+    const response = await post(
+      app,
+      body({
+        commandId: "cmd_bad_evidence",
+        expectedRevision: beforeEvidence.revision,
+        intent: "work.record_evidence",
+        payload: { kind: "tset-run", result: "passed" },
+      }),
+    );
+    expect(response.statusCode).toBe(422);
+    expect(response.json()).toMatchObject({ code: "EVIDENCE_KIND_UNKNOWN" });
+    expect((await readEventLog(logPath)).revision).toBe(beforeEvidence.revision);
+  });
+
   it("reports that the live runner is unavailable unless the server is configured", async () => {
     const app = await start();
     const status = await app.inject({ method: "GET", url: "/api/workflow/status", headers });
@@ -331,6 +371,16 @@ describe("work API in log mode", () => {
     expect(await readFile(logPath, "utf8")).toBe(before);
   });
 
+  it("refuses a complete unreadable event-log line without appending around it", async () => {
+    const app = await start();
+    await writeFile(logPath, `${JSON.stringify(staffingEvents[0])}\nnot-json\n`, "utf8");
+    const before = await readFile(logPath, "utf8");
+    const res = await post(app, body({ expectedRevision: 1 }));
+    expect(res.statusCode).toBe(503);
+    expect(res.json()).toMatchObject({ code: "LOG_DAMAGED" });
+    expect(await readFile(logPath, "utf8")).toBe(before);
+  });
+
   it("records owner-run evidence from a surface command; an unknown kind is refused by name", async () => {
     const app = await start();
     await post(app, body({}));
@@ -355,6 +405,18 @@ describe("work API in log mode", () => {
     expect(bad.statusCode).toBe(422);
     expect(bad.json()).toMatchObject({ code: "EVIDENCE_KIND_UNKNOWN" });
     expect((await readEventLog(logPath)).revision).toBe(6);
+    const forgedDigest = await post(
+      app,
+      body({
+        commandId: "cmd_digest_forged",
+        expectedRevision: 6,
+        intent: "work.record_evidence",
+        payload: { kind: "test-run", result: "passed", worktreeSha256: "b".repeat(64) },
+      }),
+    );
+    expect(forgedDigest.statusCode).toBe(422);
+    expect(forgedDigest.json()).toMatchObject({ code: "EVIDENCE_INVALID" });
+    expect((await readEventLog(logPath)).revision).toBe(6);
     const good = await post(
       app,
       body({
@@ -369,6 +431,103 @@ describe("work API in log mode", () => {
     expect(log.revision).toBe(7);
     const evidence = Object.values(replayProject(log.events).work.evidence);
     expect(evidence).toMatchObject([{ kind: "test-run", result: "passed" }]);
+    expect(evidence[0]?.worktreeSha256).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("routes an attested ruling through the same command endpoint and log, then confirms by readback", async () => {
+    const digest = await measureWorktreeSha256(digestRoot);
+    const reviewEvents = [
+      {
+        schemaVersion: 1,
+        eventId: "event_create",
+        projectId: "project_alpha",
+        workItemId: "work_slug",
+        kind: "work.created",
+        occurredAt: "2026-10-04T11:59:50.000Z",
+        receivedAt: "2026-10-04T11:59:50.000Z",
+        source: "manager",
+        trust: "verified",
+        payload: {
+          payloadVersion: 3,
+          workItemId: "work_slug",
+          outcome: contract.outcome,
+          requiredEvidenceKinds: ["test-run"],
+          contract,
+        },
+      },
+      ...(["ready", "assigned", "active", "review_requested"] as const).map((toState, index) => {
+        const at = new Date(Date.parse("2026-10-04T11:59:51.000Z") + index * 1000).toISOString();
+        return {
+          schemaVersion: 1,
+          eventId: `event_state_${String(index)}`,
+          projectId: "project_alpha",
+          workItemId: "work_slug",
+          kind: "work.transitioned",
+          occurredAt: at,
+          receivedAt: at,
+          source: "manager",
+          trust: "verified",
+          payload: { workItemId: "work_slug", fromRevision: index, toState },
+        };
+      }),
+      {
+        schemaVersion: 1,
+        eventId: "event_evidence",
+        projectId: "project_alpha",
+        workItemId: "work_slug",
+        kind: "evidence.recorded",
+        occurredAt: "2026-10-04T11:59:55.000Z",
+        receivedAt: "2026-10-04T11:59:55.000Z",
+        source: "manager",
+        trust: "verified",
+        payload: {
+          evidenceId: "evidence_tests",
+          workItemId: "work_slug",
+          kind: "test-run",
+          version: 1,
+          result: "passed",
+          worktreeSha256: digest,
+        },
+      },
+    ];
+    const app = await start(reviewEvents);
+    const forged = await post(
+      app,
+      body({
+        commandId: "cmd_ruling",
+        expectedRevision: reviewEvents.length,
+        intent: "work.record_ruling",
+        payload: {
+          decision: "accept",
+          evidenceVersions: [{ evidenceId: "evidence_fake", version: 99 }],
+        },
+      }),
+    );
+    expect(forged.statusCode).toBe(422);
+    expect((await readEventLog(logPath)).revision).toBe(reviewEvents.length);
+
+    const accepted = await post(
+      app,
+      body({
+        commandId: "cmd_ruling",
+        expectedRevision: reviewEvents.length,
+        intent: "work.record_ruling",
+        payload: { decision: "accept" },
+      }),
+    );
+    expect(accepted.statusCode).toBe(202);
+    expect(accepted.json()).toMatchObject({
+      intent: "record_ruling",
+      resultingRevision: reviewEvents.length + 1,
+    });
+    const readback = await app.inject({ method: "GET", url: "/api/log", headers });
+    expect(readback.statusCode).toBe(200);
+    expect(readback.json()).toMatchObject({ revision: reviewEvents.length + 1 });
+    expect(readback.json().events.at(-1)).toMatchObject({
+      kind: "work.ruling_recorded",
+      payload: { decision: "accept" },
+    });
+    expect(replayProject(readback.json().events).work.workItems.work_slug?.state).toBe("verified");
   });
 
   it("refuses a review request on an item that is not active, by name, and appends nothing", async () => {

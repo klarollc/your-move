@@ -136,9 +136,9 @@ describe("approved workflow-core event vocabulary", () => {
       [{ ...valid, budgetRevision: -1 }, "budgetRevision"],
       [{ ...valid, workItemId: "alpha" }, "workItemId"],
     ] as const) {
-      expect(validate(coreEventValidators, "validateWorkTurnsGrantedPayload", invalid).issues).toContainEqual(
-        expect.stringContaining(field),
-      );
+      expect(
+        validate(coreEventValidators, "validateWorkTurnsGrantedPayload", invalid).issues,
+      ).toContainEqual(expect.stringContaining(field));
     }
   });
 
@@ -301,7 +301,11 @@ describe("approved workflow-core event vocabulary", () => {
   });
 
   it("withdraws only a stable ruling id and its canonical evidence snapshot", () => {
-    const valid = { workItemId: "work_alpha", rulingId: "ruling_alpha", evidenceVersions: versions };
+    const valid = {
+      workItemId: "work_alpha",
+      rulingId: "ruling_alpha",
+      evidenceVersions: versions,
+    };
     expect(validate(coreEventValidators, "validateRulingWithdrawnPayload", valid).ok).toBe(true);
     expect(
       validate(coreEventValidators, "validateRulingWithdrawnPayload", {
