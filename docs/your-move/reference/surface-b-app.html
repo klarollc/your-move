@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Move — Working Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --plaster:#11162E; --card:#1A2140; --ink:#ECEFF8; --muted:#98A1C6;
+    --line:#2B3560; --signal:#A3B2EA; --signal-deep:#C6D1F2;
+    --signal-soft:rgba(163,178,234,.14); --glow:rgba(163,178,234,.5);
+    --terra:#C07A5E; --terra-soft:rgba(192,122,94,.13); --moss:#7FA98B; --char:#0B0F26;
+    --btn-bg:#ECEFF8; --btn-fg:#11162E;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:Inter,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    background:var(--plaster); color:var(--ink); font-size:14.5px; line-height:1.6;}
+  .topbar{display:flex; align-items:center; justify-content:space-between;
+    padding:13px 24px; background:var(--char); color:#ECEFF8; position:sticky; top:0; z-index:50;
+    border-bottom:1px solid var(--line);}
+  .brand{font-family:Fraunces,Georgia,serif; font-size:18px; font-weight:600;}
+  .brand em{font-style:normal; color:var(--signal);}
+  .tag{font-family:var(--mono); font-size:10.5px; color:var(--muted); border:1px solid var(--line);
+    padding:2px 9px; border-radius:20px; margin-left:10px;}
+  .asof{font-family:var(--mono); font-size:11px; color:var(--muted); margin-right:14px;}
+  .asof b{color:var(--ink);}
+  .asof .stale{color:#E8C4B2;}
+  .btn{border:none; cursor:pointer; border-radius:8px; padding:9px 16px; font-size:13.5px; font-weight:600; font-family:inherit;}
+  .btn-go{background:var(--btn-bg); color:var(--btn-fg);}
+  .btn-go:hover{opacity:.9;}
+  .btn-quiet{background:transparent; border:1px solid var(--line); color:var(--ink);}
+  .btn-quiet:hover{border-color:var(--muted);}
+  .btn-line{background:transparent; border:1px solid var(--line); color:var(--ink); font-size:12px; padding:7px 13px;}
+  .btn-line.on{background:var(--ink); color:var(--char); border-color:var(--ink);}
+  body.offline .need .btn, body.offline #detail-body .btn, body.offline #view-work .btn-go{opacity:.4;}
+  #drift{display:none; background:#2A1210; color:#F6E9D8; padding:11px 28px; font-size:13.5px; border-bottom:2px solid var(--terra);}
+  #drift.show{display:flex; align-items:center; gap:14px;}
+  #drift .btn{margin-left:auto;}
+  #conn{display:none; background:rgba(192,122,94,.12); color:#E8C4B2; padding:11px 28px; font-size:13.5px; border-bottom:1px solid var(--terra);}
+  #conn.show{display:flex; align-items:center; gap:14px;}
+  #conn .btn{margin-left:auto;}
+  .layout{display:grid; grid-template-columns:180px 1fr 320px; min-height:calc(100vh - 55px);}
+  .layout.calm{grid-template-columns:180px 1fr;}
+  .layout.calm .rail{display:none;}
+  .layout.calm .main{max-width:none;}
+  .sidenav{border-right:1px solid var(--line); padding:20px 14px;}
+  .sidenav button{display:block; width:100%; text-align:left; background:none; border:none;
+    padding:10px 12px; border-radius:8px; font-size:13.5px; color:var(--muted); cursor:pointer; font-weight:500;}
+  .sidenav button.active{background:var(--card); color:var(--ink); font-weight:600; border:1px solid var(--line);}
+  .main{padding:28px 34px; max-width:780px;}
+  .rail{border-left:1px solid var(--line); background:var(--card); padding:22px 18px;}
+  .rail h3{font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); margin-bottom:4px; font-weight:600;}
+  .rail-sub{font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-bottom:14px;}
+  .rail-scroll{max-height:520px; overflow-y:auto; padding-right:2px;}
+  .rail-foot{margin-top:10px; padding-top:10px; border-top:1px solid var(--line); font-size:12.5px; color:var(--muted);}
+  .rail-foot a{color:var(--signal-deep); cursor:pointer; text-decoration:none;}
+  .view{display:none;} .view.active{display:block;}
+  .dayline{font-family:Fraunces,Georgia,serif; font-size:26px; font-weight:600; margin-bottom:4px;}
+  .daysub{color:var(--muted); font-size:13.5px; margin-bottom:24px;}
+  .toolbar{display:flex; gap:8px; margin-bottom:6px; flex-wrap:wrap; align-items:center;}
+  .toolbar input{background:#0E1330; border:1px solid var(--line); border-radius:8px; color:var(--ink);
+    padding:8px 12px; font-size:13px; width:220px; font-family:inherit;}
+  .chip{border:1px solid var(--line); background:var(--card); color:var(--muted); border-radius:20px;
+    padding:6px 12px; font-size:12px; cursor:pointer; font-family:inherit;}
+  .chip.on{border-color:var(--signal); color:var(--signal-deep); background:var(--signal-soft);}
+  .showing{font-family:var(--mono); font-size:11px; color:var(--muted); margin:8px 0 4px;}
+  .group{margin-bottom:26px;}
+  .ghead{display:flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:10px;}
+  .ghead h3{font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); font-weight:600; margin:0;}
+  .ghead .cnt{font-family:var(--mono); font-size:11px; color:var(--muted); font-weight:400;}
+  .ghead .ord{font-family:var(--mono); font-size:10px; color:var(--signal-deep); background:var(--signal-soft);
+    border-radius:6px; padding:2px 8px;}
+  .collapsed-row{background:var(--card); border:1px dashed var(--line); border-radius:10px; padding:10px 14px;
+    margin-bottom:8px; color:var(--muted); font-size:12.5px; display:flex; justify-content:space-between;
+    cursor:pointer; gap:10px;}
+  .collapsed-row .cnt{font-family:var(--mono); font-size:11px; color:var(--signal-deep); flex:none;}
+  .wrow{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:15px 18px;
+    margin-bottom:10px; cursor:pointer;}
+  .wrow:hover{border-color:#3D4A7D;}
+  .wrow.lit{border:1px solid var(--signal); box-shadow:0 0 26px var(--glow), inset 0 0 22px var(--signal-soft);}
+  .wrow.blocker{border:1px solid var(--terra);}
+  .wrow .t{font-weight:600; font-size:15px; margin-bottom:3px;}
+  .wrow .p{color:var(--muted); font-size:13.5px;}
+  .wrow .m{font-family:var(--mono); font-size:11px; color:var(--muted); margin-top:8px;}
+  .wrow .wait{font-family:var(--mono); font-size:11px; color:var(--signal-deep); margin-top:8px; display:block;}
+  .kdot{display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:8px; vertical-align:1px;}
+  .kdot.terra{background:var(--terra);} .kdot.moss{background:var(--moss);} .kdot.gray{background:#5A658C;}
+  .sigdot{display:inline-block; width:9px; height:9px; border-radius:50%; background:var(--signal);
+    margin-right:8px; vertical-align:1px; box-shadow:0 0 0 4px var(--signal-soft), 0 0 12px var(--glow);}
+  .kind{font-size:12.5px; font-weight:600; margin-bottom:2px;}
+  .kind.sig{color:var(--signal-deep);} .kind.terra{color:var(--terra);} .kind.moss{color:var(--moss);} .kind.gray{color:var(--muted);}
+  .flag{display:inline-block; font-size:11px; font-weight:600; letter-spacing:.05em; padding:3px 10px;
+    border-radius:6px; margin-bottom:10px; text-transform:uppercase;}
+  .flag.sig{background:var(--signal-soft); color:var(--signal-deep); border:1px solid var(--signal);}
+  .flag.terra{background:var(--terra-soft); color:#E8C4B2; border:1px solid var(--terra);}
+  .need{background:var(--card); border:1px solid var(--line); border-left:4px solid var(--signal);
+    border-radius:10px; padding:14px 16px; margin-bottom:12px;}
+  .need.lit{box-shadow:0 0 26px var(--glow), inset 0 0 22px var(--signal-soft);}
+  .need.terra{border-left-color:var(--terra);}
+  .need.current{outline:2px solid var(--signal-deep);}
+  .need h4{font-size:14px; margin-bottom:4px; cursor:pointer;}
+  .need h4:hover{text-decoration:underline;}
+  .need p{font-size:13px; color:var(--muted); margin-bottom:10px;}
+  .need .row{display:flex; gap:8px; flex-wrap:wrap;}
+  .need .wv{font-family:var(--mono); font-size:10.5px; color:var(--signal-deep); margin-bottom:8px;}
+  .backlink{background:none; border:none; color:var(--muted); cursor:pointer; font-size:13px; margin-bottom:14px; padding:0;}
+  .backlink:hover{color:var(--ink);}
+  .dtitle{font-family:Fraunces,Georgia,serif; font-size:24px; font-weight:600; margin-bottom:6px;}
+  .dstate{font-size:13.5px; color:var(--muted); margin-bottom:20px; max-width:60ch;}
+  .dstate strong{color:var(--ink);}
+  .dsince{font-family:var(--mono); font-size:11px; color:var(--muted); margin-bottom:18px;}
+  .dsec{margin-bottom:18px;}
+  .dsec>h4{font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); margin-bottom:6px;}
+  .dsec p{font-size:13.5px; max-width:62ch;}
+  .dsec p.plain{font-size:14.5px;}
+  .panel{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px 20px; margin-bottom:14px;}
+  .panel>h3{font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); margin-bottom:10px; font-weight:600;}
+  .kv{display:grid; grid-template-columns:150px 1fr; gap:7px 14px; font-size:13.5px;}
+  .kv dt{color:var(--muted);} .kv dd{margin:0;}
+  .evrow{display:flex; align-items:baseline; gap:10px; padding:8px 0; border-bottom:1px solid var(--line); font-size:13.5px;}
+  .evrow:last-child{border:none;}
+  .evstate{margin-left:auto; font-size:12px; white-space:nowrap;}
+  .evstate.ok{color:var(--moss); font-weight:600;}
+  .evstate.pend{color:var(--muted);}
+  .evstate.bad{color:var(--terra); font-weight:600;}
+  .actrow{display:flex; gap:8px; padding:8px 0; border-bottom:1px solid var(--line); font-size:13px; color:var(--muted);}
+  .actrow:last-child{border:none;}
+  .actrow .ar{font-family:var(--mono); font-size:11px; color:var(--signal-deep); min-width:44px;}
+  .actions{display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;}
+  .deferbox{display:none; margin-top:10px; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; max-width:62ch;}
+  .deferbox label{font-size:12px; color:var(--muted); display:block; margin-bottom:6px;}
+  .deferbox .req{color:var(--terra); font-size:11px; margin-left:6px;}
+  .deferbox textarea,.deferbox input{background:#0E1330; border:1px solid var(--line); border-radius:8px;
+    color:var(--ink); padding:8px 10px; font-family:inherit; font-size:13px; width:100%; margin-bottom:8px;}
+  .note{display:none; font-size:12px; color:#C9CFE8; background:#232C55; border:1px dashed #4A5890;
+    border-radius:6px; padding:8px 12px; margin-top:12px; line-height:1.55;}
+  .note b{font-family:var(--mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase;}
+  body.annotated .note{display:block;}
+  .fineprint{font-family:var(--mono); font-size:11px; color:var(--muted); margin-top:18px; border-top:1px solid var(--line); padding-top:12px;}
+  .steps{display:flex; gap:8px; margin-bottom:22px;}
+  .step{flex:1; text-align:center; font-size:12px; font-weight:600; color:var(--muted); padding:10px;
+    border:1px solid var(--line); border-radius:8px; background:var(--card);}
+  .step.on{background:var(--ink); color:var(--char); border-color:var(--ink);}
+  textarea.nl{width:100%; min-height:110px; border:1px solid var(--line); border-radius:8px; padding:13px;
+    font-size:14.5px; font-family:inherit; background:#0E1330; color:var(--ink); resize:vertical;}
+  .fld, .sel{width:100%; border:1px solid var(--line); border-radius:8px; padding:10px 12px; font-size:14px;
+    font-family:inherit; margin-bottom:10px; background:#0E1330; color:var(--ink);}
+  .sel{appearance:none;}
+  label.flabel{display:block; font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; margin:14px 0 6px;}
+  .logrow{display:grid; grid-template-columns:56px 1fr; gap:12px; padding:11px 0; border-bottom:1px solid var(--line); font-size:13.5px;}
+  .logrow .lr{font-family:var(--mono); font-size:11.5px; color:var(--muted); padding-top:3px;}
+  .logrow .le{font-weight:600;}
+  .logrow .ld{color:var(--muted); font-size:13px;}
+  .logspine{position:relative; padding-left:28px;}
+  .logspine::before{content:""; position:absolute; left:9px; top:28px; bottom:18px; width:2px; background:var(--line);}
+  .logspine-cap{display:flex; align-items:center; gap:8px; margin:0 0 10px -28px;
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; color:var(--signal-deep);}
+  .logspine-cap .live{width:9px; height:9px; border-radius:50%; background:var(--signal);
+    box-shadow:0 0 12px var(--glow); margin-left:4px; flex:none;}
+  .logspine .logrow{position:relative;}
+  .logspine .logrow::before{content:""; position:absolute; left:-24px; top:18px; width:9px; height:9px;
+    border-radius:50%; background:var(--plaster); border:2px solid var(--muted);}
+  .logspine .logrow.now::before{border-color:var(--signal); background:var(--signal); box-shadow:0 0 10px var(--glow);}
+  .loggap{border:2px dashed var(--terra); border-radius:8px; padding:10px 14px; margin:8px 0 8px -28px;
+    font-family:var(--mono); font-size:12px; color:#E8C4B2; background:rgba(192,122,94,.07);}
+  .calmwrap{min-height:62vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:48px 24px;}
+  .calm-lamp{width:44px; height:44px; border-radius:50%; background:#2B3560; margin-bottom:26px; position:relative;}
+  .calm-lamp::after{content:""; position:absolute; inset:13px; border-radius:50%; background:var(--plaster);}
+  .calmwrap h2{font-family:Fraunces,Georgia,serif; font-size:26px; font-weight:600; margin-bottom:10px; letter-spacing:-.01em;}
+  .calmwrap p{color:var(--muted); max-width:46ch; margin-bottom:28px;}
+  .calm-rev{font-family:var(--mono); font-size:11px; color:var(--muted); opacity:.75; margin-top:22px;}
+  .empty-hero{text-align:center; padding:36px 20px;}
+  .empty-hero h3{font-family:Fraunces,Georgia,serif; font-size:20px; font-weight:600; margin-bottom:8px;}
+  .empty-hero p{color:var(--muted); max-width:44ch; margin:0 auto 18px;}
+  #toast{position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:var(--char); padding:11px 20px; border-radius:8px; font-size:13px; font-weight:600;
+    opacity:0; transition:all .25s; pointer-events:none; z-index:99;}
+  #toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .protonote{font-family:var(--mono); font-size:10.5px; color:var(--muted); text-align:center; padding:16px; line-height:1.7;}
+  .masterlamp{display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 12px 4px 10px;
+    border:1px solid var(--line);border-radius:20px;background:var(--card);margin-right:14px;}
+  .masterlamp:hover{border-color:var(--muted);}
+  .masterlamp .dot{width:11px;height:11px;border-radius:50%;background:#3A4470;flex:none;transition:background .3s;}
+  .masterlamp.lit .dot{background:var(--signal);box-shadow:0 0 10px 2px var(--glow);}
+  .masterlamp .cnt{font-family:var(--mono);font-size:11px;color:var(--signal-deep);min-width:8px;}
+  .masterlamp.dim{opacity:.6;}
+  .masterlamp.dim .dot{background:transparent;border:2px solid #3A4470;box-shadow:none;}
+  @keyframes lamppulse{0%{box-shadow:0 0 0 0 var(--glow);}100%{box-shadow:0 0 0 14px transparent;}}
+  .masterlamp.pulse .dot{animation:lamppulse .6s ease-out;}
+  .ghost-flight{position:fixed;z-index:200;pointer-events:none;background:var(--card);
+    border:1px solid var(--signal);border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600;
+    box-shadow:0 0 26px var(--glow);margin:0;white-space:nowrap;overflow:hidden;}
+  .ghost-flight.tint-moss{border-color:var(--moss);box-shadow:0 0 26px rgba(127,169,139,.5);}
+  #past{display:none;background:var(--signal-soft);color:var(--signal-deep);padding:11px 28px;font-size:13.5px;border-bottom:1px solid var(--signal);}
+  #past.show{display:flex;align-items:center;gap:14px;}
+  #past .btn{margin-left:auto;}
+  .logline.future{opacity:.35;}
+  .logline.attime{border-left-color:var(--signal);background:var(--signal-soft);border-radius:0 8px 8px 0;color:var(--ink);}
+  .layout.session{grid-template-columns:180px 1fr;}
+  .layout.session .rail{display:none;}
+  .layout.session .main{max-width:none;}
+  .sess{max-width:680px;margin:0 auto;padding:20px 10px;}
+  .sess .prog{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between;}
+  .pbar{height:4px;background:var(--line);border-radius:2px;margin-bottom:22px;overflow:hidden;}
+  .pbar i{display:block;height:100%;background:var(--signal);border-radius:2px;transition:width .3s;}
+  .scard{background:var(--card);border:1px solid var(--signal);border-radius:14px;padding:22px 24px;box-shadow:0 0 30px -6px var(--glow);}
+  .scard h3{font-family:Fraunces,Georgia,serif;font-size:22px;font-weight:600;margin:8px 0 4px;}
+  .scard .dl{color:var(--muted);font-size:13.5px;margin:10px 0 14px;}
+  .attestbox{background:var(--moss-soft);border:1px solid var(--moss);border-radius:10px;padding:12px 16px;margin:0 0 14px;max-width:62ch;font-size:13px;}
+  .attestbox b{color:#B9D6C2;}
+  .attestbox ul{margin:8px 0 0 18px;color:var(--muted);font-size:12.5px;}
+  .attestbox.override{background:var(--terra-soft);border-color:var(--terra);}
+  .attestbox.override b{color:#E8C4B2;}
+  .nudge{border-style:dashed !important;}
+  .nudge .flag.quiet{background:transparent;color:var(--muted);border:1px dashed var(--muted);}
+  .digest{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;max-width:560px;margin:18px auto 0;text-align:left;}
+  .digest .dr{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px;}
+  .digest .dr:last-child{border:none;}
+  .digest .dr .k{font-family:var(--mono);font-size:11px;color:var(--signal-deep);flex:none;width:52px;padding-top:2px;}
+  .digest .dr a{color:var(--signal-deep);text-decoration:none;cursor:pointer;}
+  .digest .dr a:hover{text-decoration:underline;}
+  @media (max-width:1000px){.layout{grid-template-columns:1fr;} .sidenav{display:flex; border-right:none; border-bottom:1px solid var(--line);} .sidenav button{width:auto;} .rail{border-left:none; border-top:1px solid var(--line);}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div><span class="brand">Your Move</span><span class="tag">working prototype</span></div>
+  <div style="display:flex; align-items:center;">
+    <div class="masterlamp" id="masterlamp" onclick="lampJump()" title="Your move"><span class="dot"></span><span class="cnt" id="lampcnt"></span></div>
+    <span class="asof">as of <b id="asof-rev">r&mdash;</b></span>
+    <button class="btn-line" id="annbtn" onclick="toggleAnnotate()">Annotate</button>
+    <span style="width:10px"></span>
+    <button class="btn btn-go" onclick="go('create')">+ New work</button>
+  </div>
+</div>
+<div id="conn">
+  <span><b>Connection lost.</b> <span id="conn-text"></span></span>
+  <button class="btn btn-quiet" onclick="reconnect()">Retry now</button>
+</div>
+<div id="drift">
+  <span><b>Behind the log.</b> <span id="drift-text"></span> The log wins &mdash; refresh to see current figures.</span>
+  <button class="btn btn-go" onclick="refreshProjection()">Refresh</button>
+</div>
+<div id="past">
+  <span><b>You&rsquo;re viewing <span id="past-rev"></span> as it was.</b> The log is at <span id="past-log"></span>. The past is read-only.</span>
+  <button class="btn btn-go" onclick="returnToPresent()">Return to present</button>
+</div>
+<div class="layout">
+  <nav class="sidenav">
+    <button id="nav-work" class="active" onclick="go('work')">Today</button>
+    <button id="nav-create" onclick="go('create')">New work</button>
+    <button id="nav-log" onclick="go('log')">Log</button>
+  </nav>
+  <main class="main">
+    <section id="view-work" class="view active">
+      <div class="dayline">Today</div>
+      <div class="daysub" id="day-sub"></div>
+      <div class="toolbar">
+        <input id="fq" placeholder="Search work&hellip;" oninput="setQ(this.value)">
+        <span id="whochips" style="display:flex; gap:8px; flex-wrap:wrap;"></span>
+        <button class="btn-line" id="lensbtn" onclick="toggleLens()">By assignee</button>
+        <button class="btn-line" id="clearf" onclick="clearFilters()" style="display:none;">Clear all</button>
+      </div>
+      <div class="showing" id="showing"></div>
+      <div id="work-groups"></div>
+      <div class="note"><b>Architecture.</b> This list is a projection: every card below is folded out of the event log by a reducer. Ordering is deterministic per group &mdash; your move goes longest-waiting first, never "most relevant".</div>
+      <div class="fineprint">Projection of the log. If they disagree, the log wins.</div>
+    </section>
+    <section id="view-calm" class="view">
+      <div class="calmwrap" id="calm-body"></div>
+    </section>
+    <section id="view-detail" class="view">
+      <button class="backlink" onclick="go('work')">&larr; Today</button>
+      <div id="detail-body"></div>
+    </section>
+    <section id="view-session" class="view">
+      <div class="sess" id="session-body"></div>
+    </section>
+    <section id="view-create" class="view">
+      <div class="dayline">New work</div>
+      <div class="daysub">Describe the outcome you want. It gets drafted into an agreement &mdash; you approve it before anything exists.</div>
+      <div class="steps">
+        <div class="step on" id="cs1">1 &middot; Describe</div>
+        <div class="step" id="cs2">2 &middot; Review the draft</div>
+        <div class="step" id="cs3">3 &middot; Assign</div>
+      </div>
+      <div id="cstep1" class="panel">
+        <label class="flabel" for="nl">What should get done?</label>
+        <textarea class="nl" id="nl" placeholder="Say it the way you'd say it to a person."></textarea>
+        <div style="margin-top:12px; text-align:right;"><button class="btn btn-go" onclick="draftContract()">Draft the agreement &rarr;</button></div>
+      </div>
+      <div id="cstep2" class="panel" style="display:none;">
+        <p style="margin-bottom:6px; color:var(--muted); font-size:13px;">A draft. Change anything &mdash; nothing exists until you approve.</p>
+        <label class="flabel">Outcome</label><input class="fld" id="f-outcome" value="">
+        <label class="flabel">How we'll know it's done</label><input class="fld" id="f-accept" value="">
+        <label class="flabel">Boundaries</label><input class="fld" id="f-ceil" value="Works from their own machine. No spending. Nothing published without your sign-off.">
+        <label class="flabel">When it stops</label><input class="fld" id="f-stop" value="8 check-ins, or 3 failed verifications">
+        <label class="flabel">Assign to</label><select class="sel" id="f-who"></select>
+        <div style="margin-top:12px; display:flex; justify-content:space-between;">
+          <button class="btn btn-quiet" onclick="cstep(1)">&larr; Back</button>
+          <button class="btn btn-go" onclick="approveCreate()">Approve and assign &rarr;</button>
+        </div>
+      </div>
+      <div id="cstep3" class="panel" style="display:none; text-align:center; padding:40px 20px;">
+        <div style="font-family:Fraunces,serif; font-size:20px; font-weight:600; margin-bottom:8px;" id="c-created-title">It's on the board.</div>
+        <p style="color:var(--muted); font-size:13.5px; margin-bottom:18px;" id="c-created-sub">Recorded in the log first, then shown.</p>
+        <button class="btn btn-go" onclick="go('work')">Back to today</button>
+      </div>
+    </section>
+    <section id="view-log" class="view">
+      <div class="dayline" style="display:flex; align-items:baseline; justify-content:space-between;">
+        <span>The log</span>
+      </div>
+      <div class="daysub">Everything, in order. Read-only &mdash; this is what "checked" means. Try ruling on something in <b>Your move</b>, then watch it land here.</div>
+      <div class="panel">
+        <h3>Simulate &mdash; failure drills</h3>
+        <div class="actions" style="margin-top:0;">
+          <button class="btn-line simbtn" id="connbtn" onclick="toggleConn()">Lose connection</button>
+          <button class="btn-line simbtn" onclick="simVerifyFail()">Evidence fails verification</button>
+          <button class="btn-line simbtn" onclick="simTurns()">Turn budget exhausted</button>
+          <button class="btn-line simbtn" id="gapbtn" onclick="toggleGap()">Damage the log (gap)</button>
+          <button class="btn-line simbtn" onclick="simulateDrift()">Log moves on (stale screen)</button>
+          <button class="btn-line simbtn" onclick="previewEmpty()">Preview: empty state</button>
+          <button class="btn-line simbtn" onclick="previewAway()">Preview: while you were away</button>
+          <button class="btn-line simbtn" onclick="passTime()">Simulate: 3 days pass</button>
+        </div>
+        <p style="font-size:12.5px; color:var(--muted); margin-top:10px;">Simulations act on the log the way the world would. Your rulings still go through the normal path &mdash; and while "connection" is lost, they're disabled: rulings need the log.</p>
+      </div>
+      <div class="panel logspine" id="log-panel"></div>
+      <div class="panel" style="margin-top:14px;">
+        <h3>Time travel &mdash; scrub the log</h3>
+        <input type="range" id="scrub" min="407" max="422" value="422" style="width:100%;accent-color:#A3B2EA;" oninput="setTravel(this.value)">
+        <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:4px;">
+          <span id="scrub-min">r407</span><span id="scrub-cur" style="color:var(--signal-deep)">r422 &middot; present</span><span id="scrub-max">r422</span>
+        </div>
+        <p style="font-size:12.5px;color:var(--muted);margin-top:10px;">The whole screen re-folds at the chosen revision &mdash; list, rail, calm, everything. The past is read-only.</p>
+      </div>
+      <div class="note"><b>Truthfulness.</b> Gaps are shown, not hidden. If an event carries no hash, the row says so. The spine is honest here because this list genuinely is in revision order, newest first.</div>
+      <div class="fineprint">Append-only. The newest event sets the revision every screen reports.</div>
+    </section>
+  </main>
+  <aside class="rail">
+    <h3 id="rail-h">Your move</h3>
+    <div class="rail-sub" id="rail-sub"></div>
+    <div class="rail-scroll" id="rail-list"></div>
+    <div id="rail-foot"></div>
+    <div id="sess-entry" style="margin-top:10px;"></div>
+    <div id="nudge-list" style="margin-top:14px;"></div>
+    <p style="font-size:12px; color:var(--muted); margin-top:10px;">These stay until you rule. Nothing here clears itself.</p>
+    <div class="note"><b>Truthfulness.</b> Rulings land in the log before the rail updates &mdash; watch a card say "recording" first. The rail is a query ("whose move is mine?"), not a separate inbox.</div>
+  </aside>
+</div>
+<div class="protonote">Working prototype &middot; the log lives in memory &mdash; reload to reset.<br>Open in a desktop browser: chat previews block the scripting that makes this live.</div>
+<div id="toast"></div>
+<script>
+/* ============ THE LOG — the authority. Everything below is a projection of this. ============ */
+const Log = { rev: 422, events: [] };   // newest first
+let S = { tasks: {} };                  // read model, folded out of the log
+let seenRev = 422;                      // revision the projection has folded
+let frozen = null;                      // drift demo: screen revision when frozen
+let connected = true, downAt = null;
+let SIM = { gap: null };                // {from,to} revisions rendered unreadable
+let F = { q:'', who:'any' };            // list filters
+let collapsed = {};                     // group -> user override
+let calmDismissed = false, calmPreview = false;
+let viewingId = null;
+let travelRev = null;               // time travel: projection folded at this revision
+let lastUserNav = 0;
+let ghostEl = null;
+let TIME_OFFSET = 0;                // simulate panel can move the clock
+let LENS = 'status';                // or 'assignee'
+let SES = null;                     // ruling session
+let NUDGE_SNOOZE = {};              // taskId -> timestamp
+let pendingUndo = null, undoTimer = null;
+let awaySinceRev = 422, awayPreview = false;
+const QUIET_DAYS = 3;
+const ARRIVALS = {'work.claimed_done':1,'work.blocked':1,'work.turns_exhausted':1,'evidence.rejected':1,'work.resurfaced':1};
+function now(){ return Date.now()+TIME_OFFSET; }
+let createdCount = 0;
+const TEAM = ['J. Okafor','M. Chen','R. Patel','A. Novak'];
+const NOTES = ['Numbers reconciled with finance.','Vendor quotes collected.','Draft circulated for comment.','Open questions narrowed to two.','Final pass in progress.'];
+const COLLAPSE_AT = 8;
+
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function relTime(ts){
+  const m = Math.max(0, Math.round((now()-ts)/60000));
+  if(m < 1) return 'just now';
+  if(m < 60) return m+'m';
+  const h = Math.round(m/60);
+  if(h < 24) return h+'h';
+  return Math.round(h/24)+'d';
+}
+
+function snapRuling(t,type,rev,extra){
+  t.lastRuling=Object.assign({type:type, rev:rev,
+    snap:{status:'your-move', moveKind:t.moveKind, verifyFailed:!!t.verifyFailed, turns:t.turns?JSON.parse(JSON.stringify(t.turns)):null}
+  }, extra||{});
+}
+function applyEvent(S, e){
+  const t = S.tasks[e.task];
+  switch(e.type){
+    case 'work.created':
+      S.tasks[e.task] = { id:e.task, title:e.title, plain:e.plain, agreement:e.agreement, risk:e.risk||null,
+        assignee:null, status:'queued', step:0, of:0, lastNote:'', evidence:[],
+        rev:e.rev, createdRev:e.rev, createdTs:e.ts, options:e.options||null };
+      break;
+    case 'work.assigned':
+      t.assignee = e.to; if(t.status==='queued') t.status='underway'; t.rev=e.rev; break;
+    case 'work.checkin':
+      t.step=e.step; t.of=e.of; t.lastNote=e.note;
+      t.evidence.push({label:'Check-in '+e.step+' of '+e.of, state:'recorded'}); t.rev=e.rev; break;
+    case 'evidence.recorded':
+      t.evidence.push({label:e.label, state:'recorded'}); t.rev=e.rev; break;
+    case 'evidence.verified': {
+      const ev=t.evidence.find(x=>x.label===e.label); if(ev) ev.state='checked'; t.rev=e.rev; break; }
+    case 'evidence.rejected': {
+      const ev=t.evidence.find(x=>x.label===e.label); if(ev){ ev.state='failed'; ev.failReason=e.reason; }
+      t.status='your-move'; t.moveKind='review'; t.verifyFailed=true;
+      t.movedAt=e.rev; t.movedAtTs=e.ts; t.rev=e.rev; break; }
+    case 'work.claimed_done':
+      t.status='your-move'; t.moveKind='review'; t.verifyFailed=false;
+      t.movedAt=e.rev; t.movedAtTs=e.ts; t.rev=e.rev; break;
+    case 'work.blocked':
+      t.status='your-move'; t.moveKind='decision'; t.blockReason=e.reason;
+      t.movedAt=e.rev; t.movedAtTs=e.ts; t.rev=e.rev; break;
+    case 'work.turns_exhausted':
+      t.status='your-move'; t.moveKind='turns';
+      t.turns={used:e.used, of:e.of, done:e.done, ofCount:e.ofCount};
+      t.movedAt=e.rev; t.movedAtTs=e.ts; t.rev=e.rev; break;
+    case 'work.turns_granted':
+      snapRuling(t,'turns_granted',e.rev,{});
+      t.status='underway'; t.turns=null; t.lastNote='You granted '+e.n+' more turns.'; t.rev=e.rev; break;
+    case 'work.rescoped':
+      snapRuling(t,'rescoped',e.rev,{});
+      t.status='underway'; t.lastNote='Re-scoped by you — new terms recorded.'; t.rev=e.rev; break;
+    case 'work.closed_incomplete':
+      snapRuling(t,'closed_incomplete',e.rev,{});
+      t.status='done'; t.acceptedBy='you'; t.ruling='Closed as incomplete'; t.turns=null; t.rev=e.rev; break;
+    case 'work.deferred':
+      t.status='deferred'; t.defer={reason:e.reason, resurface:e.resurface, rev:e.rev}; t.rev=e.rev; break;
+    case 'work.resurfaced':
+      t.status='your-move'; t.defer=null; t.movedAt=e.rev; t.movedAtTs=e.ts; t.rev=e.rev; break;
+    case 'work.nudged':
+      t.lastNudgeTs=e.ts; t.rev=e.rev; break;
+    case 'ruling.withdrawn': {
+      const lr=t.lastRuling;
+      if(lr && lr.rev===e.ofRev){
+        t.status=lr.snap.status; t.moveKind=lr.snap.moveKind; t.verifyFailed=lr.snap.verifyFailed;
+        t.turns=lr.snap.turns; t.movedAt=e.rev; t.movedAtTs=e.ts;
+        (lr.unverify||[]).forEach(l=>{ const ev=t.evidence.find(x=>x.label===l); if(ev) ev.state='recorded'; });
+        t.lastRuling=null; t.rev=e.rev;
+      }
+      break; }
+    case 'review.accepted':
+      snapRuling(t,'accepted',e.rev,{unverify:e.unverify||[], ruling:e.ruling||null, attestation:e.attestation||null});
+      t.status='done'; t.acceptedBy=e.by||'you'; t.ruling=e.ruling||null; t.verifyFailed=false; t.rev=e.rev; break;
+    case 'review.sent_back':
+      snapRuling(t,'sent_back',e.rev,{});
+      t.status='underway'; t.verifyFailed=false; t.rev=e.rev; break;
+  }
+  return S;
+}
+
+/* Seed history, oldest first — then the app only ever appends. */
+const SEED = [
+  {rev:407,type:'work.created',task:'T-105',time:'Mon 9:02 AM',title:'Onboard the new contractor',plain:'Get the new contractor set up: accounts, access, and a first assignment by Friday.',
+   agreement:{Outcome:'Contractor set up with accounts, access, and a first assignment',Done:'They can log in, reach the team, and have one clear task',Boundaries:'No production access before day one',Stops:'Friday, or your sign-off'},
+   say:'Work opened',detail:'Onboard the new contractor'},
+  {rev:408,type:'work.created',task:'T-104',time:'Mon 9:20 AM',title:'File the quarterly tax estimate',plain:'Prepare and file the quarterly estimated tax payment before the deadline.',
+   agreement:{Outcome:'Quarterly estimate filed',Done:'Filing confirmation is on record',Boundaries:'Finance files only',Stops:'Deadline, or your sign-off'},
+   say:'Work opened',detail:'File the quarterly tax estimate'},
+  {rev:409,type:'work.assigned',task:'T-104',to:'R. Patel',time:'Mon 9:21 AM',say:'Assigned',detail:'File the quarterly tax estimate → R. Patel'},
+  {rev:410,type:'evidence.recorded',task:'T-104',label:'Draft return prepared',time:'Mon 2:14 PM',say:'Evidence recorded',detail:'Draft return prepared — File the quarterly tax estimate'},
+  {rev:411,type:'evidence.verified',task:'T-104',label:'Draft return prepared',time:'Mon 3:02 PM',say:'Evidence checked',detail:'Draft return prepared — verified against the agreement'},
+  {rev:412,type:'review.accepted',task:'T-104',by:'you',time:'Mon 3:40 PM',say:'You accepted the work',detail:'File the quarterly tax estimate — recorded with your name on it'},
+  {rev:413,type:'work.created',task:'T-101',time:'Tue 8:15 AM',title:'Prepare the board meeting agenda',plain:'Draft the agenda for Thursday’s board meeting: financials, hiring plan, and the lease decision.',
+   agreement:{Outcome:'Agenda draft covering financials, hiring plan, and the lease decision',Done:'Every section has an owner and a time slot; finance has reviewed the numbers',Boundaries:'No external distribution before your review',Stops:'8 check-ins, or Thursday 9 AM'},
+   say:'Work opened',detail:'Prepare the board meeting agenda'},
+  {rev:414,type:'work.assigned',task:'T-101',to:'J. Okafor',time:'Tue 8:16 AM',say:'Assigned',detail:'Prepare the board meeting agenda → J. Okafor'},
+  {rev:415,type:'evidence.recorded',task:'T-101',label:'Outline draft shared',time:'Today 9:12 AM',say:'Evidence recorded',detail:'Outline draft shared — Prepare the board meeting agenda'},
+  {rev:416,type:'work.checkin',task:'T-101',step:4,of:8,note:'Outline draft shared with finance for input.',time:'Today 9:40 AM',say:'Check-in',detail:'Step 4 of 8 — Outline draft shared with finance for input.'},
+  {rev:417,type:'work.created',task:'T-102',time:'Today 10:02 AM',title:'Review the Q3 budget draft',plain:'Finance has a draft budget for Q3. It needs a proper read-through before it goes anywhere.',
+   agreement:{Outcome:'A read-through of the Q3 budget draft with issues flagged',Done:'Every flagged issue cites a line number; nothing surprising left',Boundaries:'Read-only on finance files',Stops:'Your review'},
+   risk:'Board packet goes out Friday. A send-back likely slips it by a day.',
+   say:'Work opened',detail:'Review the Q3 budget draft'},
+  {rev:418,type:'work.assigned',task:'T-102',to:'M. Chen',time:'Today 10:03 AM',say:'Assigned',detail:'Review the Q3 budget draft → M. Chen'},
+  {rev:419,type:'evidence.recorded',task:'T-102',label:'Budget draft v3 attached',time:'Today 1:44 PM',say:'Evidence recorded',detail:'Budget draft v3 attached — Review the Q3 budget draft'},
+  {rev:420,type:'work.claimed_done',task:'T-102',time:'Today 1:47 PM',say:'M. Chen says it’s done',detail:'Review the Q3 budget draft — a claim, not evidence'},
+  {rev:421,type:'work.created',task:'T-103',time:'Today 2:20 PM',title:'Decide: renew the warehouse lease?',plain:'The warehouse lease is up in 60 days. Two options are on the table and the numbers are close.',
+   agreement:{Outcome:'A recorded decision: renew or move',Done:'Decision recorded with your reasoning',Boundaries:'Decision only — no signatures yet',Stops:'Your ruling'},
+   options:['Renew at +8%','Move to the north unit'],
+   risk:'Quoted rate is 8% above last term. Letting it lapse triggers the 90-day exit clause — the inventory move would need a new site by March.',
+   say:'Work opened',detail:'Decide: renew the warehouse lease?'},
+  {rev:422,type:'work.blocked',task:'T-103',reason:'Renew at +8%, or move to the north unit. The cost models disagree — needs your call.',time:'Today 2:22 PM',say:'Blocked',detail:'Decide: renew the warehouse lease? — waiting on your ruling'},
+];
+SEED.forEach(e => { e.ts = Date.now() - (422-e.rev)*3600000 - 1800000; Log.events.unshift(e); });
+
+/* Fold the log into the read model, up to the revision the screen has seen. */
+function fold(){
+  S = { tasks:{} };
+  const upto = travelRev!==null ? travelRev : (frozen!==null ? frozen : seenRev);
+  Log.events.filter(e=>e.rev<=upto).slice().reverse().forEach(e=>applyEvent(S,e));
+}
+
+/* Append = the only way state changes. While disconnected, the remote log still
+   advances — the projection just doesn't follow it. */
+function dispatch(type, taskId, fields){
+  let arrive=null;
+  if(ARRIVALS[type] && connected && frozen===null && travelRev===null && !reducedMotion()){
+    const t0=S.tasks[taskId];
+    arrive={r0:rectOf('.wrow[data-id="'+taskId+'"]'), title:t0?t0.title:''};
+  }
+  Log.rev += 1;
+  const e = Object.assign({rev:Log.rev, type, task:taskId, time:'just now', ts:now()}, fields||{});
+  Log.events.unshift(e);
+  if(!connected){ paintConn(); return; }
+  seenRev = Log.rev;
+  if(frozen!==null){ paintDrift(); }
+  else { fold(); render(); }
+  if(arrive){
+    if(arrive.r0){ const to=rectOf('#m-'+taskId); flyGhost(arrive.r0, to||lampRect(), arrive.title, ''); }
+    pulseLamp();
+  }
+}
+function needLog(){
+  if(travelRev!==null){ toast('You can’t rule on the past — return to the present.'); return false; }
+  if(!connected){ toast('Can’t reach the log — rulings need the log.'); return false; }
+  return true;
+}
+
+/* ============ RENDER — projections, nothing else ============ */
+function tasks(){ return Object.values(S.tasks); }
+function moves(){ return tasks().filter(t=>t.status==='your-move')
+  .sort((a,b)=>((a.movedAt||a.rev)-(b.movedAt||b.rev))); }  /* longest waiting first */
+function waitStr(t){ return 'waiting ' + (t.movedAtTs ? relTime(t.movedAtTs) : 'a while'); }
+
+function kindOf(t){
+  if(t.status==='your-move' && t.verifyFailed) return {cls:'terra', dot:'<span class="kdot terra"></span>', label:'Your move — evidence failed verification', lit:true, blocker:true};
+  if(t.status==='your-move' && t.moveKind==='turns') return {cls:'terra', dot:'<span class="kdot terra"></span>', label:'Your move — turn budget exhausted', lit:true, blocker:true};
+  if(t.status==='your-move' && t.moveKind==='review') return {cls:'sig', dot:'<span class="sigdot"></span>', label:'Your move — review needed', lit:true};
+  if(t.status==='your-move' && t.moveKind==='decision') return {cls:'terra', dot:'<span class="kdot terra"></span>', label:'Your move — decision needed', lit:true, blocker:true};
+  if(t.status==='underway') return {cls:'gray', dot:'<span class="kdot gray"></span>', label:'Underway', lit:false};
+  if(t.status==='deferred') return {cls:'gray', dot:'<span class="kdot gray"></span>', label:'Deferred by you', lit:false};
+  if(t.status==='queued') return {cls:'gray', dot:'<span class="kdot gray"></span>', label:'Queued', lit:false};
+  return {cls:'moss', dot:'<span class="kdot moss"></span>', label:'Checked and accepted', lit:false};
+}
+function subline(t){
+  if(t.status==='underway') return 'Step '+t.step+' of '+t.of+'. '+(t.lastNote||'');
+  if(t.status==='deferred') return 'Deferred: '+t.defer.reason+' (re-surfaces '+t.defer.resurface+').';
+  if(t.status==='your-move' && t.verifyFailed) return 'Evidence failed verification — '+(t.evidence.find(e=>e.state==='failed')||{}).failReason+'. Not trusted until you rule.';
+  if(t.status==='your-move' && t.moveKind==='turns') return 'Used all '+t.turns.used+' turns — '+t.turns.done+' of '+t.turns.ofCount+' deliverables verified.';
+  if(t.status==='your-move' && t.moveKind==='review') return (t.assignee||'Someone')+' says it’s finished. Nothing here is checked yet — that’s your call.';
+  if(t.status==='your-move' && t.moveKind==='decision') return t.blockReason||'Waiting on your ruling.';
+  if(t.status==='done' && t.ruling) return 'Decided: '+t.ruling+'.';
+  if(t.status==='done') return 'Checked and accepted by '+(t.acceptedBy||'you')+'.';
+  return t.plain;
+}
+function filtersActive(){ return F.q.trim()!=='' || F.who!=='any'; }
+function matchF(t){
+  if(F.who!=='any' && t.assignee!==F.who) return false;
+  const q=F.q.trim().toLowerCase();
+  if(q && !(t.title+' '+(t.plain||'')).toLowerCase().includes(q)) return false;
+  return true;
+}
+const GROUPS = [
+  ['Your move', t=>t.status==='your-move', 'longest waiting first', (a,b)=>((a.movedAt||a.rev)-(b.movedAt||b.rev))],
+  ['In progress', t=>t.status==='underway', 'most recent signal first', (a,b)=>(b.rev-a.rev)],
+  ['Deferred', t=>t.status==='deferred', 'most recent first', (a,b)=>(b.rev-a.rev)],
+  ['Queued', t=>t.status==='queued', 'oldest first', (a,b)=>((a.createdRev||a.rev)-(b.createdRev||b.rev))],
+  ['Done', t=>t.status==='done', 'most recently verified first', (a,b)=>(b.rev-a.rev)],
+];
+function headLine(name, items){
+  const f=items[0];
+  if(name==='Your move') return items.length+' items — longest waiting: “'+f.title+',” '+waitStr(f);
+  if(name==='In progress') return items.length+' items — most recent: “'+f.title+',” r'+f.rev;
+  if(name==='Deferred') return items.length+' items — latest: “'+f.title+',” deferred r'+f.rev;
+  if(name==='Queued') return items.length+' items — oldest: “'+f.title+',” queued r'+(f.createdRev||f.rev);
+  return items.length+' items — latest: “'+f.title+',” r'+f.rev;
+}
+function renderWork(){
+  const all=tasks(), shown=all.filter(matchF);
+  const filt=filtersActive();
+  if(LENS==='assignee'){
+    renderLensAssignee();
+    let sh=all.length+' items · by assignee · as of r'+(frozen!==null?frozen:seenRev);
+    if(filt) sh=shown.length+' of '+all.length+' shown · by assignee · as of r'+(frozen!==null?frozen:seenRev);
+    document.getElementById('showing').textContent=sh;
+    document.getElementById('clearf').style.display=filt?'inline-block':'none';
+    return;
+  }
+  let h='';
+  GROUPS.forEach(g=>{
+    const name=g[0], allItems=all.filter(g[1]).sort(g[3]);
+    const items=shown.filter(g[1]).sort(g[3]);
+    if(!allItems.length) return;
+    const isCollapsed = collapsed[name]!==undefined ? collapsed[name] : allItems.length>COLLAPSE_AT;
+    const cnt = filt ? '('+items.length+' of '+allItems.length+')' : '('+allItems.length+')';
+    h+='<div class="group"><div class="ghead" onclick="toggleGroup(\''+name+'\')">'
+      +'<span style="color:var(--signal);font-size:10px;">'+(isCollapsed?'▸':'▾')+'</span>'
+      +'<h3>'+name+'</h3><span class="cnt">'+cnt+'</span><span class="ord">'+g[2]+'</span></div>';
+    if(isCollapsed){
+      h+='<div class="collapsed-row" onclick="toggleGroup(\''+name+'\')"><span>'+esc(headLine(name,allItems))+'</span><span class="cnt">expand</span></div>';
+    }else{
+      items.forEach(t=>{
+        const k=kindOf(t);
+        h+='<div class="wrow'+(k.lit?' lit':'')+(k.blocker?' blocker':'')+'" data-id="'+t.id+'" onclick="openDetail(\''+t.id+'\')">'
+          +'<div class="kind '+k.cls+'">'+k.dot+k.label+'</div>'
+          +'<div class="t">'+esc(t.title)+'</div>'
+          +'<div class="p">'+esc(subline(t))+'</div>'
+          +'<div class="m">'+esc(t.assignee||'unassigned')+' · r'+t.rev+'</div>'
+          +(t.status==='your-move'?'<span class="wait">'+waitStr(t)+'</span>':'')
+          +'</div>';
+      });
+      if(filt && !items.length) h+='<p style="color:var(--muted);font-size:13px;">None in this group match.</p>';
+    }
+    h+='</div>';
+  });
+  if(all.length && !shown.length){
+    h='<div class="empty-hero"><h3>No matches'+(F.q.trim()?' for “'+esc(F.q.trim())+'”':'')+'.</h3>'
+      +'<p>'+all.length+' items exist, none match '+(filt?'these filters':'')+'. The work hasn’t gone anywhere.</p>'
+      +'<button class="btn btn-quiet" onclick="clearFilters()">Clear filters</button></div>';
+  }
+  document.getElementById('work-groups').innerHTML=h;
+  let sh = all.length+' items · as of r'+(frozen!==null?frozen:seenRev);
+  if(filt){
+    sh = shown.length+' of '+all.length+' shown';
+    if(F.q.trim()) sh+=' · search “'+F.q.trim()+'”';
+    if(F.who!=='any') sh+=' · assignee '+F.who;
+    sh+=' · as of r'+(frozen!==null?frozen:seenRev);
+  }
+  document.getElementById('showing').textContent=sh;
+  document.getElementById('clearf').style.display=filt?'inline-block':'none';
+  const m=moves().length, u=all.filter(t=>t.status==='underway').length;
+  document.getElementById('day-sub').textContent =
+    (m? ('It’s your move on '+m+' thing'+(m>1?'s':'')+'. ') : 'Nothing needs you right now. ')
+    + u + ' in progress. Nothing here is busier than it needs to be.';
+}
+function renderChips(){
+  let h='<button class="chip'+(F.who==='any'?' on':'')+'" onclick="setWho(\'any\')">Anyone</button>';
+  TEAM.forEach(w=>{ h+='<button class="chip'+(F.who===w?' on':'')+'" onclick="setWho(\''+w+'\')">'+esc(w)+'</button>'; });
+  document.getElementById('whochips').innerHTML=h;
+}
+function setQ(v){ F.q=v; renderWork(); }
+function setWho(w){ F.who=w; renderChips(); renderWork(); }
+function clearFilters(){ F={q:'',who:'any'}; document.getElementById('fq').value=''; renderChips(); renderWork(); }
+function toggleGroup(name){
+  const allItems=tasks().filter(GROUPS.find(g=>g[0]===name)[1]);
+  const cur = collapsed[name]!==undefined ? collapsed[name] : allItems.length>COLLAPSE_AT;
+  collapsed[name]=!cur; renderWork();
+}
+function viewAllMoves(){
+  clearFilters(); collapsed['Your move']=false; go('work');
+  setTimeout(()=>{ const el=document.getElementById('work-groups'); if(el) el.scrollIntoView(); },50);
+}
+
+function renderRail(){
+  const ms=moves(), filt=filtersActive();
+  let h='';
+  const vis=ms.slice(0,7);
+  vis.forEach(t=>{
+    const rev=t.moveKind==='review' && !t.verifyFailed;
+    h+='<div class="need lit'+(rev?'':' terra')+(viewingId===t.id?' current':'')+'" id="m-'+t.id+'">'
+      +'<div class="kind '+(rev?'sig':'terra')+'">'+(rev?'<span class="sigdot"></span>Your move — review':'<span class="kdot terra"></span>'+esc(kindOf(t).label.replace('Your move — ','')))+'</div>'
+      +'<h4 onclick="openDetail(\''+t.id+'\')">'+esc(t.title)+'</h4>'
+      +'<div class="wv">'+waitStr(t)+' · r'+(t.movedAt||t.rev)+(viewingId===t.id?' · viewing':'')+'</div>';
+    if(rev){
+      const rec=t.evidence.filter(e=>e.state==='recorded').length, chk=t.evidence.filter(e=>e.state==='checked').length;
+      h+='<p>'+esc(t.assignee||'Someone')+' says it’s finished. '+rec+' recorded, '+chk+' checked — accepting closes it for good.</p>'
+        +'<div class="row"><button class="btn btn-go" onclick="decide(\''+t.id+'\',\'accept\')">Accept</button>'
+        +'<button class="btn btn-quiet" onclick="decide(\''+t.id+'\',\'sendback\')">Send back</button></div>';
+    }else if(t.moveKind==='decision'){
+      h+='<p>'+esc(t.blockReason||'Waiting on your ruling.')+'</p><div class="row">';
+      (t.options||['Decide']).forEach(o=>{ h+='<button class="btn '+(o===(t.options||[])[0]?'btn-go':'btn-quiet')+'" onclick="decide(\''+t.id+'\',\'rule:'+esc(o)+'\')">'+esc(o)+'</button>'; });
+      h+='</div>';
+    }else if(t.moveKind==='turns'){
+      h+='<p>Used all '+t.turns.used+' turns — '+t.turns.done+' of '+t.turns.ofCount+' deliverables verified.</p>'
+        +'<div class="row"><button class="btn btn-go" onclick="decide(\''+t.id+'\',\'grant5\')">Grant 5 more turns</button>'
+        +'<button class="btn btn-quiet" onclick="openDetail(\''+t.id+'\')">Open</button></div>';
+    }else{
+      h+='<p>'+esc(subline(t))+'</p><div class="row"><button class="btn btn-quiet" onclick="openDetail(\''+t.id+'\')">Open</button></div>';
+    }
+    h+='<div class="note"><b>Truthfulness.</b> Rulings land in the log before this card updates — it says "recording" first.</div></div>';
+  });
+  document.getElementById('rail-list').innerHTML=h||'<p style="font-size:13px;color:var(--muted);">All clear. The lamps are off.</p>';
+  document.getElementById('rail-sub').textContent = ms.length ? (ms.length+' matter'+(ms.length>1?'s':'')+(filt?' · unfiltered':'')) : '';
+  document.getElementById('rail-foot').innerHTML = ms.length>7
+    ? '<div class="rail-foot">+ '+(ms.length-7)+' more · <a onclick="viewAllMoves()">view all in list</a></div>' : '';
+  document.getElementById('sess-entry').innerHTML = ms.length>1
+    ? '<button class="btn-line" style="width:100%;" onclick="startSession()">Rule through them &rarr;</button>' : '';
+  document.getElementById('rail-h').textContent='Your move'+(ms.length?' ('+ms.length+')':'');
+}
+
+/* ---- the calm screen ---- */
+function calmState(){
+  if(calmPreview) return 'fresh';
+  const ts=tasks();
+  if(!ts.length) return 'fresh';
+  if(!moves().length && !calmDismissed) return 'clear';
+  return null;
+}
+function showCalm(kind, preview){
+  const lay=document.querySelector('.layout');
+  lay.classList.add('calm');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-calm').classList.add('active');
+  const nav=document.getElementById('nav-work'); if(nav) nav.classList.add('active');
+  let h='<div class="calm-lamp"></div>';
+  if(kind==='fresh'){
+    h+='<h2>No work yet.</h2>'
+      +'<p>Nothing is running and nothing is waiting. When you’re ready, describe the first thing you want done — you’ll review the draft before anything starts.</p>'
+      +'<button class="btn btn-go" onclick="calmGoCreate()">Describe the first piece of work</button>'
+      +'<div class="calm-rev">projection of r'+(frozen!==null?frozen:seenRev)+' · log empty</div>';
+  }else{
+    const n=tasks().filter(t=>t.status==='underway'||t.status==='queued').length;
+    h+='<h2>Nothing needs your move.</h2>'
+      +'<p>'+n+' piece'+(n===1?'':'s')+' of work '+(n===1?'is':'are')+' in flight and none of them '+(n===1?'is':'are')+' waiting on you. This was true as of the latest revision.</p>'
+      +'<button class="btn btn-quiet" onclick="dismissCalm()">Show all work</button>'
+      +'<div class="calm-rev">projection of r'+(frozen!==null?frozen:seenRev)+' · checked just now</div>';
+  }
+  if(preview) h+='<div class="calm-rev">preview — the log is untouched</div><div style="margin-top:14px;"><button class="btn btn-quiet" onclick="endPreview()">Back to today</button></div>';
+  document.getElementById('calm-body').innerHTML=h;
+  window.scrollTo(0,0);
+}
+function calmGoCreate(){ calmPreview=false; document.querySelector('.layout').classList.remove('calm'); go('create'); }
+function dismissCalm(){ calmDismissed=true; calmPreview=false; document.querySelector('.layout').classList.remove('calm'); showView('work'); }
+function endPreview(){ calmPreview=false; document.querySelector('.layout').classList.remove('calm'); go('work'); }
+function previewEmpty(){ calmPreview=true; showCalm('fresh', true); }
+
+/* ---- detail ---- */
+function stateBanner(t){
+  if(t.status==='your-move'&&t.verifyFailed) return '<strong>Evidence failed verification.</strong> The recorded hash doesn’t match the worktree. It is not trusted until you rule.';
+  if(t.status==='your-move'&&t.moveKind==='turns') return '<strong>Turn budget exhausted — '+t.turns.used+' of '+t.turns.of+' turns used.</strong> '+t.turns.done+' of '+t.turns.ofCount+' deliverables verified. The work stopped — it did not fade.';
+  if(t.status==='your-move'&&t.moveKind==='review') return '<strong>'+esc(t.assignee||'Someone')+' says it’s done. Nothing here is checked.</strong> Your review is the gate.';
+  if(t.status==='your-move'&&t.moveKind==='decision') return '<strong>Nothing has moved since r'+t.rev+', and the screen says exactly that.</strong> It waits, visibly, for your ruling.';
+  if(t.status==='deferred') return '<strong>Deferred by you:</strong> '+esc(t.defer.reason)+' Re-surfaces '+esc(t.defer.resurface)+'.';
+  if(t.status==='underway') return '<strong>Underway — step '+t.step+' of '+t.of+'.</strong> '+(t.lastNote?esc(t.lastNote):'');
+  if(t.status==='queued') return '<strong>Queued — not started.</strong> An entry with no events makes no claims about itself.';
+  if(t.ruling) return '<strong>Decided: '+esc(t.ruling)+'.</strong> Ruled by you, recorded in the log.';
+  return '<strong>Checked and accepted.</strong> This is the only green on the screen, and it says by whom.';
+}
+function decideLine(t){
+  if(t.verifyFailed) return 'The recorded hash doesn’t match the worktree. The evidence is shown below — it is not trusted. Accept anyway, or send it back.';
+  if(t.moveKind==='turns') return (t.assignee||'Someone')+' used all '+t.turns.used+' turns. '+t.turns.done+' of '+t.turns.ofCount+' deliverables are recorded and verified; the rest are not started. Grant more turns, re-scope, or close as incomplete.';
+  if(t.moveKind==='review') return (t.assignee||'Someone')+' says it’s done. Accept it as done, or send it back with notes.';
+  return t.blockReason||'Waiting on your ruling.';
+}
+function openDetail(id){
+  const t=S.tasks[id]; if(!t) return;
+  if(t.status==='your-move'){ openEscalation(id); return; }
+  viewingId=null;
+  const k=kindOf(t);
+  let h='<div class="dtitle">'+esc(t.title)+'</div>'
+    +'<div class="kind '+k.cls+'">'+k.dot+k.label+'</div>'
+    +'<div class="dstate" style="margin-top:10px;">'+stateBanner(t)+'</div>'
+    +'<div class="panel"><h3>The agreement</h3><dl class="kv">';
+  Object.keys(t.agreement||{}).forEach(key=>{ h+='<dt>'+esc(key)+'</dt><dd>'+esc(t.agreement[key])+'</dd>'; });
+  h+='</dl></div><div class="panel"><h3>Evidence</h3>';
+  if(!t.evidence.length) h+='<p style="color:var(--muted);font-size:13px;">No evidence recorded yet.</p>';
+  t.evidence.forEach(e=>{
+    h+='<div class="evrow"><span>'+esc(e.label)+'</span><span class="evstate '+(e.state==='checked'?'ok':e.state==='failed'?'bad':'pend')+'">'
+      +(e.state==='checked'?'checked':e.state==='failed'?'failed verification':e.state==='recorded'?'recorded — not yet checked':'not recorded yet')+'</span></div>';
+  });
+  h+='<div class="note"><b>Spirit.</b> Technical detail lives one deliberate step away. The activity below is filtered straight from the log — provenance, not summary.</div></div>';
+  h+='<div class="panel"><h3>Activity</h3>';
+  Log.events.filter(e=>e.task===id).slice(0,6).forEach(e=>{
+    h+='<div class="actrow"><span class="ar">r'+e.rev+'</span><span>'+esc(e.say)+' — '+esc(e.detail)+'</span></div>';
+  });
+  h+='</div><div class="actions">';
+  if(t.status==='underway'){
+    h+='<button class="btn btn-quiet" onclick="checkin(\''+t.id+'\')">Log a check-in</button>'
+      +'<button class="btn btn-quiet" onclick="claimDone(\''+t.id+'\')">Say it’s done</button>';
+  }
+  if(t.status==='queued'){
+    h+='<select class="sel" id="assign-'+t.id+'" style="max-width:220px;margin:0;">'+TEAM.map(w=>'<option>'+w+'</option>').join('')+'</select>'
+      +'<button class="btn btn-go" onclick="assignStart(\''+t.id+'\')">Assign &amp; start</button>';
+  }
+  if(t.status==='deferred'){
+    h+='<button class="btn btn-go" onclick="resurface(\''+t.id+'\')">Re-surface now</button>';
+  }
+  h+='</div>';
+  h+='<div class="fineprint">Folio '+t.id+' · figures as of r'+(frozen!==null?frozen:seenRev)+'</div>';
+  document.getElementById('detail-body').innerHTML=h;
+  showView('detail');
+}
+function openEscalation(id){
+  const t=S.tasks[id]; if(!t||t.status!=='your-move') return;
+  viewingId=id; renderRail();
+  const flag = t.verifyFailed ? '<span class="flag terra">Evidence failed verification</span>'
+    : t.moveKind==='turns' ? '<span class="flag terra">Turn budget exhausted</span>'
+    : t.moveKind==='decision' ? '<span class="flag terra">Blocked — needs your ruling</span>'
+    : '<span class="flag sig">Needs your review</span>';
+  let h='<span class="backlink" onclick="go(\'work\')">&larr; Today</span><br>'+flag
+    +'<div class="dtitle">'+esc(t.title)+'</div>'
+    +'<div class="dsince">your move since r'+(t.movedAt||t.rev)+' · '+waitStr(t)+' · '+t.id+'</div>'
+    +'<div class="dsec"><h4>What needs deciding</h4><p class="plain">'+esc(decideLine(t))+'</p></div>'
+    +'<div class="dsec"><h4>The agreement</h4><div class="panel" style="margin:0;max-width:62ch;"><dl class="kv">';
+  Object.keys(t.agreement||{}).forEach(key=>{ h+='<dt>'+esc(key)+'</dt><dd>'+esc(t.agreement[key])+'</dd>'; });
+  h+='</dl></div></div>'
+    +'<div class="dsec"><h4>Evidence</h4>';
+  if(!t.evidence.length) h+='<p style="color:var(--muted);">No evidence recorded yet.</p>';
+  t.evidence.forEach(e=>{
+    h+='<div class="evrow" style="max-width:62ch;"><span>'+esc(e.label)
+      +(e.state==='failed'&&e.failReason?' <span style="color:var(--muted);font-size:12px;">— '+esc(e.failReason)+'</span>':'')
+      +'</span><span class="evstate '+(e.state==='checked'?'ok':e.state==='failed'?'bad':'pend')+'">'
+      +(e.state==='checked'?'checked':e.state==='failed'?'failed verification':e.state==='recorded'?'recorded — not yet checked':'not recorded yet')+'</span></div>';
+  });
+  h+='</div>'
+    +'<div class="dsec"><h4>Risk</h4><p>'+esc(t.risk||'No risk recorded.')+'</p></div>'
+    +'<div class="dsec"><h4>Your ruling</h4>'
+    +((t.moveKind==='review')?attestationHTML(t):'')
+    +'<div class="actions" style="margin-top:0;">';
+  if(t.verifyFailed){
+    h+='<button class="btn btn-go" onclick="decide(\''+t.id+'\',\'accept_anyway\')">Accept anyway</button>'
+      +'<button class="btn btn-quiet" onclick="decide(\''+t.id+'\',\'sendback\')">Send back</button>';
+  }else if(t.moveKind==='turns'){
+    h+='<button class="btn btn-go" onclick="decide(\''+t.id+'\',\'grant5\')">Grant 5 more turns</button>'
+      +'<button class="btn btn-quiet" onclick="decide(\''+t.id+'\',\'rescope\')">Re-scope the work</button>'
+      +'<button class="btn btn-quiet" onclick="decide(\''+t.id+'\',\'close_inc\')">Close as incomplete</button>';
+  }else if(t.moveKind==='decision'){
+    (t.options||['Decide']).forEach(o=>{ h+='<button class="btn '+(o===(t.options||[])[0]?'btn-go':'btn-quiet')+'" onclick="decide(\''+t.id+'\',\'rule:'+esc(o)+'\')">'+esc(o)+'</button>'; });
+  }else{
+    h+='<button class="btn btn-go" onclick="decide(\''+t.id+'\',\'accept\')">Accept as done</button>'
+      +'<button class="btn btn-quiet" onclick="decide(\''+t.id+'\',\'sendback\')">Send back with notes</button>';
+  }
+  if(!t.verifyFailed && t.moveKind!=='turns') h+='<button class="btn btn-quiet" onclick="toggleDefer()">Defer with reason ▾</button>';
+  h+='</div>'
+    +'<input id="rule-note" class="fld" style="margin-top:10px;max-width:62ch;" placeholder="Add a note to the ruling (optional)">'
+    +'<div class="deferbox" id="deferbox"><label>Reason <span class="req">required — a defer without one is just snoozing</span></label>'
+    +'<textarea id="defer-reason" rows="2" placeholder="Why is this waiting, and what changes that?"></textarea>'
+    +'<label>Re-surface</label><input id="defer-when" value="in 2 days">'
+    +'<button class="btn btn-go" onclick="deferMatter(\''+t.id+'\')">Defer</button></div>'
+    +'</div>'
+    +'<div class="dsec"><h4>Trail — this matter</h4><div class="panel" style="margin:0;max-width:62ch;">';
+  Log.events.filter(e=>e.task===id).slice(0,8).forEach(e=>{
+    h+='<div class="actrow"><span class="ar">r'+e.rev+'</span><span>'+esc(e.say)+' — '+esc(e.detail)+'</span></div>';
+  });
+  h+='</div></div>'
+    +'<div class="fineprint">Folio '+t.id+' · figures as of r'+(frozen!==null?frozen:seenRev)+'</div>';
+  document.getElementById('detail-body').innerHTML=h;
+  showView('detail');
+}
+function attestationHTML(t){
+  let h='<div class="attestbox"><b>By accepting, you attest:</b><ul>';
+  t.evidence.forEach(e=>{
+    h+='<li>'+esc(e.label)+' — '+(e.state==='checked'?'checked':e.state==='failed'?'failed verification':'recorded, not checked')+'</li>';
+  });
+  if(!t.evidence.length) h+='<li>No evidence recorded — you attest the outcome on your word alone.</li>';
+  h+='</ul></div>';
+  if(t.verifyFailed){
+    const f=t.evidence.find(e=>e.state==='failed');
+    h+='<div class="attestbox override"><b>Override.</b> You are accepting despite failed verification'
+      +(f?(' on “'+esc(f.label)+'” ('+esc(f.failReason||'mismatch')+')'):'')+'. Your name is on the override.</div>';
+  }
+  return h;
+}
+/* ---- ruling session: court is in session ---- */
+function startSession(){
+  const ms=moves();
+  if(!ms.length){ toast('Nothing to rule on.'); return; }
+  SES={queue:ms.map(t=>t.id), idx:0, skipped:new Set(), res:{accepted:0,sent_back:0,deferred:0,skipped:0}, newArrivals:0};
+  document.querySelector('.layout').classList.add('session');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-session').classList.add('active');
+  const nav=document.getElementById('nav-work'); if(nav) nav.classList.add('active');
+  window.scrollTo(0,0);
+  renderSession();
+}
+function sessHowLabel(how){
+  if(how==='accept'||how==='accept_anyway') return 'accepted';
+  if(how==='sendback') return 'sent_back';
+  return 'deferred';
+}
+function renderSession(){
+  if(!SES) return;
+  while(SES.idx<SES.queue.length){
+    const t=S.tasks[SES.queue[SES.idx]];
+    if(t&&t.status==='your-move') break;
+    SES.idx++;
+  }
+  const body=document.getElementById('session-body');
+  const total=SES.queue.length;
+  if(SES.idx>=total){
+    const r=SES.res;
+    const parts=[];
+    if(r.accepted)parts.push(r.accepted+' accepted'); if(r.sent_back)parts.push(r.sent_back+' sent back');
+    if(r.deferred)parts.push(r.deferred+' deferred'); if(r.skipped)parts.push(r.skipped+' skipped');
+    body.innerHTML='<div class="calmwrap"><div class="calm-lamp"></div><h2>Session complete.</h2>'
+      +'<p>'+(parts.length?parts.join(', ')+'.':'No rulings — everything is still your move.')+' The log holds the receipts.</p>'
+      +'<button class="btn btn-go" onclick="endSession()">Back to today</button></div>';
+    return;
+  }
+  const t=S.tasks[SES.queue[SES.idx]];
+  const flag=t.verifyFailed?'<span class="flag terra">Evidence failed verification</span>'
+    :t.moveKind==='turns'?'<span class="flag terra">Turn budget exhausted</span>'
+    :t.moveKind==='decision'?'<span class="flag terra">Blocked — needs your ruling</span>'
+    :'<span class="flag sig">Needs your review</span>';
+  const chk=t.evidence.filter(e=>e.state==='checked').length, rec=t.evidence.filter(e=>e.state==='recorded').length;
+  let h='<div class="prog"><span>Matter '+(SES.idx+1)+' of '+total+'</span><span>longest waiting first</span></div>'
+    +'<div class="pbar"><i style="width:'+Math.round(SES.idx/total*100)+'%"></i></div>'
+    +'<div class="scard">'+flag+'<h3>'+esc(t.title)+'</h3>'
+    +'<div class="dl">'+esc(decideLine(t))+'</div>'
+    +'<div class="evmini" style="font-size:12.5px;color:var(--muted);margin-bottom:14px;">'
+    +(chk?'<span style="color:var(--moss)">✓ '+chk+' checked</span> ':'')+(rec?'<span>○ '+rec+' recorded</span>':'')+(!chk&&!rec?'no evidence recorded':'')
+    +' · <span style="font-family:var(--mono);font-size:11px;">'+waitStr(t)+'</span></div>'
+    +'<input id="sess-note" class="fld" placeholder="Add a note to the ruling (optional)">'
+    +'<div class="sactions">';
+  if(t.verifyFailed){
+    h+='<button class="btn btn-go" onclick="sessRule(\'accept_anyway\')">Accept anyway</button><button class="btn btn-quiet" onclick="sessRule(\'sendback\')">Send back</button>';
+  }else if(t.moveKind==='turns'){
+    h+='<button class="btn btn-go" onclick="sessRule(\'grant5\')">Grant 5 more turns</button><button class="btn btn-quiet" onclick="sessRule(\'rescope\')">Re-scope</button><button class="btn btn-quiet" onclick="sessRule(\'close_inc\')">Close as incomplete</button>';
+  }else if(t.moveKind==='decision'){
+    (t.options||['Decide']).forEach(o=>{ h+='<button class="btn '+(o===(t.options||[])[0]?'btn-go':'btn-quiet')+'" onclick="sessRule(\'rule:'+esc(o)+'\')">'+esc(o)+'</button>'; });
+  }else{
+    h+='<button class="btn btn-go" onclick="sessRule(\'accept\')">Accept</button><button class="btn btn-quiet" onclick="sessRule(\'sendback\')">Send back</button>';
+  }
+  h+='<button class="btn btn-quiet" onclick="sessDefer()">Defer ▾</button>'
+    +'<button class="btn btn-quiet skip" onclick="sessSkip()">Skip →</button></div>'
+    +'<div class="deferbox" id="sessdefer" style="margin-top:10px;"><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px;">Reason <span style="color:var(--terra);font-size:11px;">required</span></label>'
+    +'<textarea id="sess-defer-reason" rows="2" style="width:100%;background:#0E1330;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:8px 10px;font-family:inherit;font-size:13px;margin-bottom:8px;"></textarea>'
+    +'<button class="btn btn-go" onclick="sessDeferGo()">Defer</button></div>'
+    +'</div>'
+    +'<div style="text-align:center;margin-top:14px;"><button class="btn btn-quiet" style="font-size:12px;" onclick="endSession()">End session</button></div>';
+  if(SES.newArrivals) h+='<p style="text-align:center;color:var(--muted);font-size:12px;margin-top:10px;">'+SES.newArrivals+' new matter'+(SES.newArrivals>1?'s':'')+' arrived — '+(SES.newArrivals>1?'they join':'it joins')+' the end of the queue.</p>';
+  body.innerHTML=h;
+}
+function sessRule(how){
+  const id=SES.queue[SES.idx];
+  SES.newArrivals=0;
+  applyRuling(id, how, ()=>{ SES.res[sessHowLabel(how)]++; SES.idx++; renderSession(); });
+}
+function sessSkip(){
+  const id=SES.queue[SES.idx];
+  if(SES.skipped.has(id)){ SES.queue.splice(SES.idx,1); }
+  else{ SES.skipped.add(id); SES.queue.push(SES.queue.splice(SES.idx,1)[0]); }
+  SES.res.skipped++;
+  renderSession();
+}
+function sessDefer(){
+  const d=document.getElementById('sessdefer'); d.style.display=d.style.display==='block'?'none':'block';
+}
+function sessDeferGo(){
+  const id=SES.queue[SES.idx];
+  const reason=document.getElementById('sess-defer-reason').value.trim();
+  if(!reason){ toast('A deferral needs a reason — that’s the rule.'); return; }
+  if(!needLog()) return;
+  dispatch('work.deferred', id, {reason:reason, resurface:'in 2 days', say:'You deferred it', detail:S.tasks[id].title+' — deferred: '+reason});
+  toast('Deferred — it re-surfaces in 2 days');
+  SES.res.deferred++; SES.idx++; renderSession();
+}
+function endSession(){
+  SES=null;
+  document.querySelector('.layout').classList.remove('session');
+  go('work');
+}
+function toggleDefer(){ const d=document.getElementById('deferbox'); d.style.display=d.style.display==='block'?'none':'block'; }
+function deferMatter(id){
+  if(!needLog()) return;
+  const reason=document.getElementById('defer-reason').value.trim();
+  if(!reason){ toast('A deferral needs a reason — that’s the rule.'); return; }
+  const resurface=document.getElementById('defer-when').value.trim()||'in 2 days';
+  dispatch('work.deferred', id, {reason:reason, resurface:resurface, say:'You deferred it', detail:S.tasks[id].title+' — deferred: '+reason});
+  toast('Deferred — it re-surfaces '+resurface);
+  go('work');
+}
+function resurface(id){
+  if(!needLog()) return;
+  dispatch('work.resurfaced', id, {say:'Re-surfaced', detail:S.tasks[id].title+' — back on your move'});
+  openEscalation(id);
+}
+function renderLog(){
+  const t=travelRev;
+  let h='<div class="logspine-cap"><span class="live"></span>r'+Log.rev+' · latest — append-only</div>';
+  let gapShown=false;
+  Log.events.forEach((e,i)=>{
+    if(SIM.gap && e.rev<=SIM.gap.to && e.rev>=SIM.gap.from){
+      if(!gapShown){ h+='<div class="loggap">r'+SIM.gap.from+'–r'+SIM.gap.to+' · unreadable — shown as a gap. Nothing is inferred across it. (simulated)</div>'; gapShown=true; }
+      return;
+    }
+    const isFuture=t!==null&&e.rev>t, isAt=t!==null&&e.rev===t;
+    h+='<div class="logrow'+(i===0&&t===null?' now':'')+(isFuture?' future':'')+(isAt?' attime':'')+'"><span class="lr">r'+e.rev+'</span><div><div class="le">'+esc(e.say)+(isAt?' <span style="color:var(--signal-deep)">◀ you are here</span>':'')+'</div><div class="ld">'+esc(e.detail)+' · '+esc(e.time)+'</div></div></div>';
+  });
+  document.getElementById('log-panel').innerHTML=h;
+  const sc=document.getElementById('scrub');
+  if(sc){
+    const first=Log.events.length?Log.events[Log.events.length-1].rev:Log.rev;
+    sc.min=first; sc.max=Log.rev;
+    document.getElementById('scrub-min').textContent='r'+first;
+    document.getElementById('scrub-max').textContent='r'+Log.rev;
+    if(t===null){ sc.value=Log.rev; document.getElementById('scrub-cur').textContent='r'+Log.rev+' · present'; }
+    else document.getElementById('scrub-cur').textContent='r'+t+' · viewing';
+  }
+}
+function setTravel(v){
+  v=parseInt(v,10);
+  travelRev=(v>=Log.rev)?null:v;
+  const pb=document.getElementById('past');
+  if(travelRev!==null){
+    document.getElementById('past-rev').textContent='r'+travelRev;
+    document.getElementById('past-log').textContent='r'+Log.rev;
+    pb.classList.add('show');
+  }else pb.classList.remove('show');
+  fold(); render();
+}
+function returnToPresent(){
+  const s=document.getElementById('scrub'); if(s) s.value=Log.rev;
+  setTravel(Log.rev);
+  toast('Back to the present — r'+Log.rev);
+}
+function renderAsof(){
+  const el=document.getElementById('asof-rev');
+  if(travelRev!==null){
+    el.innerHTML='<span style="color:var(--signal-deep)">viewing r'+travelRev+'</span> <span class="stale">· log r'+Log.rev+'</span>';
+    return;
+  }
+  const r=frozen!==null?frozen:seenRev;
+  el.innerHTML='r'+r+(connected?'':' <span class="stale">· stale</span>');
+}
+function renderLamp(){
+  const ml=document.getElementById('masterlamp'); if(!ml||!ml.classList) return;
+  const n=moves().length;
+  const stale=!connected||frozen!==null;
+  ml.classList.toggle('lit', n>0 && !stale);
+  ml.classList.toggle('dim', stale);
+  const c=document.getElementById('lampcnt'); if(c) c.textContent=n ? n+(stale?'?':'') : '';
+  ml.title=n ? n+' need your move'+(stale?' (stale)':'') : (stale?'Connection lost':'Nothing needs your move');
+}
+function lampJump(){
+  collapsed['Your move']=false;
+  go('work');
+  const r=document.querySelector('.rail'); if(r&&r.scrollIntoView) r.scrollIntoView();
+}
+function pulseLamp(){
+  const ml=document.getElementById('masterlamp'); if(!ml||!ml.classList) return;
+  ml.classList.remove('pulse');
+  setTimeout(()=>ml.classList.add('pulse'),30);
+  setTimeout(()=>ml.classList.remove('pulse'),700);
+}
+/* ---- the journey: ghost flights, never on intent ---- */
+function reducedMotion(){ return !!((typeof window!=='undefined') && window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
+function rectOf(sel){
+  const el=document.querySelector(sel); if(!el||!el.getBoundingClientRect) return null;
+  const r=el.getBoundingClientRect(); if(!r.width&&!r.height) return null;
+  return {x:r.left,y:r.top,w:r.width,h:r.height};
+}
+function lampRect(){ return rectOf('#masterlamp'); }
+function cancelGhost(){ if(ghostEl){ if(ghostEl.remove) ghostEl.remove(); ghostEl=null; } }
+function flyGhost(from,to,title,tint){
+  cancelGhost();
+  if(!from||!to||reducedMotion()) return;
+  const g=document.createElement('div');
+  if(!g.animate || !document.body.appendChild) return;
+  g.className='ghost-flight'+(tint?' tint-'+tint:'');
+  g.textContent=title;
+  g.style.left=from.x+'px'; g.style.top=from.y+'px'; g.style.width=from.w+'px';
+  document.body.appendChild(g);
+  ghostEl=g;
+  const a=g.animate([
+    {left:from.x+'px',top:from.y+'px',transform:'scale(.92)',opacity:1,offset:0},
+    {opacity:1,offset:.72},
+    {left:to.x+'px',top:to.y+'px',transform:'scale(.92)',opacity:0}
+  ],{duration:550,easing:'cubic-bezier(.22,.8,.3,1)'});
+  a.onfinish=()=>{ if(g.parentNode)g.remove(); if(ghostEl===g)ghostEl=null; };
+}
+function finishFlight(id,fromRect,title,tint){
+  if(!fromRect||reducedMotion()) return false;
+  const toRect=rectOf('.wrow[data-id="'+id+'"]')||lampRect();
+  if(!toRect) return false;
+  flyGhost(fromRect,toRect,title,tint);
+  return true;
+}
+function render(){
+  const m=moves().length; if(m>0) calmDismissed=false;
+  renderWork(); renderRail(); renderLog(); renderAsof(); renderChips(); renderLamp(); renderNudges();
+  if(travelRev!==null){ const pl=document.getElementById('past-log'); if(pl) pl.textContent='r'+Log.rev; }
+  if(SES){
+    const have=new Set(SES.queue);
+    moves().forEach(t=>{ if(!have.has(t.id)){ SES.queue.push(t.id); SES.newArrivals=(SES.newArrivals||0)+1; } });
+    if(document.getElementById('view-session').classList.contains('active')) renderSession();
+  }
+  const lay=document.querySelector('.layout');
+  if(lay.classList.contains('calm')){
+    const c=calmState();
+    if(c) showCalm(c, calmPreview && c==='fresh');
+    else { lay.classList.remove('calm'); calmPreview=false; showView('work'); }
+  }
+  if(!connected) paintConn();
+}
+
+/* ============ INTERACTIONS — every one appends to the log ============ */
+function showView(view){
+  lastUserNav=Date.now(); cancelGhost();
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.sidenav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  const nav=document.getElementById('nav-'+(view==='detail'||view==='calm'?'work':view));
+  if(nav) nav.classList.add('active');
+  window.scrollTo(0,0);
+}
+function go(view){
+  viewingId=null; calmPreview=false;
+  lastUserNav=Date.now(); cancelGhost();
+  document.querySelector('.layout').classList.remove('calm');
+  if(view==='work'){
+    const c=calmState();
+    if(c){ showCalm(c); renderRail(); renderAsof(); renderLamp(); return; }
+  }
+  showView(view);
+}
+function attestationFor(t){
+  const parts=t.evidence.map(e=>e.label+' — '+(e.state==='checked'?'checked':e.state==='failed'?'failed verification':'recorded, not checked'));
+  if(t.verifyFailed){
+    const f=t.evidence.find(e=>e.state==='failed');
+    parts.push('OVERRIDE: accepting despite failed verification'+(f?(' on "'+f.label+'" ('+(f.failReason||'mismatch')+')'):'')+'.');
+  }
+  return parts.join(' | ');
+}
+function ruleNote(){
+  const a=document.getElementById('rule-note'), b=document.getElementById('sess-note');
+  const v=(a&&a.value?a.value:(b&&b.value?b.value:'')).trim();
+  return v;
+}
+function decide(id, how){ applyRuling(id, how, null); }
+function applyRuling(id, how, done){
+  if(!needLog()) return;
+  const t=S.tasks[id];
+  const note=ruleNote();
+  const noted=note?' — “'+note+'”':'';
+  const card=document.getElementById('m-'+id);
+  const row=card?card.querySelector('.row'):null;
+  if(row) row.innerHTML='<span style="font-size:12.5px;color:var(--muted);">Recording in the log…</span>';
+  setTimeout(()=>{
+    const fromRect=rectOf('#m-'+id);
+    const title=t.title;
+    const navAt=Date.now();
+    const who=t.assignee||'Someone';
+    if(how==='accept'){
+      const labels=t.evidence.filter(e=>e.state==='recorded').map(e=>e.label);
+      labels.forEach(l=>{ dispatch('evidence.verified', id, {label:l, say:'Evidence checked', detail:l+' — verified on your acceptance'}); });
+      dispatch('review.accepted', id, {by:'you', unverify:labels, attestation:attestationFor(t),
+        say:'You accepted the work', detail:t.title+' — recorded with your name on it'+noted});
+      rulingDone(id,'Accepted',Log.rev,'Accepted at r'+Log.rev+' — '+who+' notified · work closed'+noted);
+    }else if(how==='accept_anyway'){
+      const failed=t.evidence.find(e=>e.state==='failed');
+      const labels=failed?[failed.label]:[];
+      labels.forEach(l=>{ dispatch('evidence.verified', id, {label:l, say:'Evidence checked', detail:l+' — accepted despite failed verification'}); });
+      dispatch('review.accepted', id, {by:'you', ruling:'Accepted despite failed verification', unverify:labels, attestation:attestationFor(t),
+        say:'You accepted despite failed verification', detail:t.title+' — recorded with your name on it'+noted});
+      rulingDone(id,'Accepted',Log.rev,'Accepted despite failed verification at r'+Log.rev+' — your name is on it'+noted);
+    }else if(how==='sendback'){
+      dispatch('review.sent_back', id, {say:'You sent it back', detail:t.title+' — returned for another pass'+noted});
+      rulingDone(id,'Sent back',Log.rev,'Sent back at r'+Log.rev+' — '+who+' notified · work resumed · evidence stays on record'+noted);
+    }else if(how==='grant5'){
+      dispatch('work.turns_granted', id, {n:5, say:'You granted 5 more turns', detail:t.title+' — turn budget extended'+noted});
+      rulingDone(id,'Turns granted',Log.rev,'5 more turns granted at r'+Log.rev+' — '+who+' notified'+noted);
+    }else if(how==='rescope'){
+      dispatch('work.rescoped', id, {say:'You re-scoped the work', detail:t.title+' — new terms recorded'+noted});
+      rulingDone(id,'Re-scoped',Log.rev,'Re-scoped at r'+Log.rev+' — recorded'+noted);
+    }else if(how==='close_inc'){
+      const tn=t.turns? t.turns.done+' of '+t.turns.ofCount+' deliverables stand.' : '';
+      dispatch('work.closed_incomplete', id, {say:'You closed it as incomplete', detail:t.title+' — '+tn+noted});
+      rulingDone(id,'Closed',Log.rev,'Closed as incomplete at r'+Log.rev+' — recorded honestly'+noted);
+    }else if(how.indexOf('rule:')===0){
+      const ruling=how.slice(5);
+      dispatch('review.accepted', id, {by:'you', ruling:ruling, say:'You ruled: '+ruling, detail:t.title+' — decided'+noted});
+      rulingDone(id,'Ruled',Log.rev,'Ruled: '+ruling+' at r'+Log.rev+' — recorded'+noted);
+    }
+    if(done){ done(); return; }
+    const tint=(how==='accept'||how==='accept_anyway'||how==='close_inc')?'moss':'';
+    const flew=finishFlight(id,fromRect,title,tint);
+    if(flew) setTimeout(()=>{ if(lastUserNav<navAt) openDetail(id); },650);
+    else openDetail(id);
+  }, 900);
+}
+function assignStart(id){
+  if(!needLog()) return;
+  const who=document.getElementById('assign-'+id).value;
+  dispatch('work.assigned', id, {to:who, say:'Assigned', detail:S.tasks[id].title+' → '+who});
+  toast('Assigned to '+who+' — underway');
+  openDetail(id);
+}
+function checkin(id){
+  if(!needLog()) return;
+  const t=S.tasks[id];
+  const step=t.step+1, of=t.of||8, note=NOTES[(step-1)%NOTES.length];
+  if(step>=of){
+    dispatch('work.checkin', id, {step:step,of:of,note:note,say:'Check-in',detail:'Step '+step+' of '+of+' — '+note});
+    dispatch('work.claimed_done', id, {say:(t.assignee||'Someone')+' says it’s done', detail:t.title+' — a claim, not evidence'});
+    toast('Final check-in — now it’s your move');
+  }else{
+    dispatch('work.checkin', id, {step:step,of:of,note:note,say:'Check-in',detail:'Step '+step+' of '+of+' — '+note});
+    toast('Check-in recorded at r'+Log.rev);
+  }
+  openDetail(id);
+}
+function claimDone(id){
+  if(!needLog()) return;
+  const t=S.tasks[id];
+  dispatch('work.claimed_done', id, {say:(t.assignee||'Someone')+' says it’s done', detail:t.title+' — a claim, not evidence'});
+  toast('Claim recorded — now it’s your move');
+  go('work');
+}
+function cstep(n){
+  [1,2,3].forEach(i=>{
+    document.getElementById('cstep'+i).style.display=i===n?'block':'none';
+    document.getElementById('cs'+i).classList.toggle('on',i===n);
+  });
+}
+function draftContract(){
+  const v=document.getElementById('nl').value.trim();
+  const base=(v||'Get this done properly.').split('.')[0]+'.';
+  document.getElementById('f-outcome').value=base;
+  document.getElementById('f-accept').value='The result exists, it matches the description, and there are no surprises left.';
+  document.getElementById('f-who').innerHTML=TEAM.map(w=>'<option>'+w+'</option>').join('');
+  cstep(2);
+  toast('A draft, not a commitment — nothing exists until you approve');
+}
+function approveCreate(){
+  if(!needLog()) return;
+  const id='T-'+(106+createdCount); createdCount++;
+  const who=document.getElementById('f-who').value;
+  const title=document.getElementById('f-outcome').value.split('.')[0]+'.';
+  dispatch('work.created', id, {title:title,
+    plain:document.getElementById('nl').value.trim()||'New work.',
+    agreement:{Outcome:document.getElementById('f-outcome').value, Done:document.getElementById('f-accept').value,
+      Boundaries:document.getElementById('f-ceil').value, Stops:document.getElementById('f-stop').value},
+    say:'Work opened', detail:title});
+  dispatch('work.assigned', id, {to:who, say:'Assigned', detail:title+' → '+who});
+  document.getElementById('c-created-title').textContent=title;
+  document.getElementById('c-created-sub').textContent='Recorded in the log first ('+id+'), then shown. Assigned to '+who+'.';
+  document.getElementById('nl').value='';
+  cstep(3);
+}
+function toggleAnnotate(){
+  const on=document.body.classList.toggle('annotated');
+  document.getElementById('annbtn').classList.toggle('on',on);
+}
+
+/* ---- while you were away: a digest of the log since you last looked ---- */
+function previewAway(){
+  awayPreview=true;
+  const lay=document.querySelector('.layout');
+  lay.classList.add('calm');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-calm').classList.add('active');
+  const evs=Log.events.filter(e=>e.rev>awaySinceRev).slice(0,40);
+  let h='<div class="calm-lamp"></div><h2>While you were away.</h2>';
+  if(!evs.length){
+    h+='<p>Nothing happened since r'+awaySinceRev+'. The log is quiet — and says so.</p>';
+  }else{
+    h+='<p>Since r'+awaySinceRev+' — '+evs.length+' events, in plain words:</p><div class="digest">';
+    const kinds={yours:[],ev:[],motion:[],quiet:[]};
+    evs.forEach(e=>{
+      if(/claimed_done|work\.blocked|turns_exhausted|evidence\.rejected|resurfaced/.test(e.type)) kinds.yours.push(e);
+      else if(/evidence/.test(e.type)) kinds.ev.push(e);
+      else if(/checkin|created|assigned/.test(e.type)) kinds.motion.push(e);
+    });
+    const line=(e,tag)=>'<div class="dr"><span class="k">'+tag+'</span><span><a onclick="openDetail(\''+e.task+'\')">'+esc(e.detail.split('—')[0].trim())+'</a> — '+esc(e.say.toLowerCase())+' · r'+e.rev+'</span></div>';
+    kinds.yours.slice(0,3).forEach(e=>{ h+=line(e,'yours'); });
+    kinds.ev.slice(0,2).forEach(e=>{ h+=line(e,'r'+e.rev); });
+    kinds.motion.slice(0,2).forEach(e=>{ h+=line(e,'r'+e.rev); });
+    h+='</div>';
+  }
+  h+='<div style="margin-top:22px;"><button class="btn btn-quiet" onclick="endAway()">Show me everything</button></div>'
+    +'<div class="calm-rev">digest of r'+awaySinceRev+'–r'+Log.rev+' · from the log, nothing inferred</div>'
+    +'<div class="calm-rev">preview — the log is untouched</div>';
+  document.getElementById('calm-body').innerHTML=h;
+  window.scrollTo(0,0);
+}
+function endAway(){ awayPreview=false; document.querySelector('.layout').classList.remove('calm'); go('work'); }
+
+/* ---- nudge the quiet ones ---- */
+function lastSignalTs(t){
+  const e=Log.events.find(e=>e.rev===t.rev);
+  return e&&e.ts?e.ts:(t.createdTs||now());
+}
+function nudgeSuggestions(){
+  const t0=now(), cutoff=QUIET_DAYS*864e5;
+  return tasks().filter(x=>x.status==='underway'
+    && (t0-lastSignalTs(x))>cutoff
+    && !(NUDGE_SNOOZE[x.id]&&NUDGE_SNOOZE[x.id]>t0)
+    && !(x.lastNudgeTs&&(t0-x.lastNudgeTs)<cutoff));
+}
+function renderNudges(){
+  const ss=nudgeSuggestions();
+  let h='';
+  if(ss.length){
+    h='<div style="font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:600;margin-bottom:10px;">Suggested</div>';
+    ss.forEach(t=>{
+      h+='<div class="need nudge" id="n-'+t.id+'">'
+        +'<div class="kind gray"><span class="flag quiet">Quiet — suggested</span></div>'
+        +'<h4 style="margin-top:8px;">'+esc(t.title)+'</h4>'
+        +'<div class="wv">no signal for '+relTime(lastSignalTs(t))+' · with '+esc(t.assignee||'unassigned')+'</div>'
+        +'<div class="row"><button class="btn btn-go" onclick="sendNudge(\''+t.id+'\')">Send nudge</button>'
+        +'<button class="btn btn-quiet" onclick="snoozeNudge(\''+t.id+'\')">Snooze 2d</button></div></div>';
+    });
+  }
+  document.getElementById('nudge-list').innerHTML=h;
+}
+function sendNudge(id){
+  if(!needLog()) return;
+  const t=S.tasks[id];
+  dispatch('work.nudged', id, {say:'You nudged '+(t.assignee||'them'), detail:t.title+' — asked for a check-in'});
+  toast('Nudge sent at r'+Log.rev+' — logged, the quiet-clock restarts');
+}
+function snoozeNudge(id){
+  NUDGE_SNOOZE[id]=now()+2*864e5;
+  renderNudges();
+  toast('Snoozed — the suggestion rests for 2 days');
+}
+function passTime(){
+  TIME_OFFSET+=3*864e5;
+  fold(); render();
+  toast('3 days passed — waiting clocks and quiet detection moved with it');
+}
+
+/* ---- assignee lens ---- */
+function toggleLens(){
+  LENS=LENS==='status'?'assignee':'status';
+  document.getElementById('lensbtn').textContent=LENS==='status'?'By assignee':'By status';
+  renderWork();
+}
+function renderLensAssignee(){
+  const shown=tasks().filter(matchF);
+  const people=[...TEAM,'Unassigned'];
+  let h='';
+  people.forEach(p=>{
+    const items=shown.filter(t=>(t.assignee||'Unassigned')===p);
+    if(!items.length) return;
+    const up=items.filter(t=>t.status==='underway').length;
+    const mine=items.filter(t=>t.status==='your-move').length;
+    const quiet=items.filter(t=>t.status==='underway'&&(now()-lastSignalTs(t))>QUIET_DAYS*864e5);
+    items.sort((a,b)=>((a.status==='your-move'?0:1)-(b.status==='your-move'?0:1))||(b.rev-a.rev));
+    h+='<div class="group"><div class="ghead"><h3>'+esc(p)+'</h3><span class="cnt">('+items.length+')</span></div>'
+      +'<div class="showing" style="margin:0 0 8px;">'+up+' underway · '+mine+' need you'+(quiet.length?' · quiet '+relTime(Math.min(...quiet.map(lastSignalTs)))+' on '+quiet[0].id:'')+'</div>';
+    items.forEach(t=>{
+      const k=kindOf(t);
+      h+='<div class="wrow'+(k.lit?' lit':'')+(k.blocker?' blocker':'')+'" data-id="'+t.id+'" onclick="openDetail(\''+t.id+'\')">'
+        +'<div class="kind '+k.cls+'">'+k.dot+k.label+'</div>'
+        +'<div class="t">'+esc(t.title)+'</div>'
+        +'<div class="m">'+t.id+' · r'+t.rev+(t.status==='your-move'?' · '+waitStr(t):'')+'</div></div>';
+    });
+    h+='</div>';
+  });
+  if(!h) h='<div class="empty-hero"><h3>No matches.</h3><p>The lens is honest — nothing hidden, just filtered.</p><button class="btn btn-quiet" onclick="clearFilters()">Clear filters</button></div>';
+  document.getElementById('work-groups').innerHTML=h;
+}
+
+/* ---- failure drills ---- */
+function paintDrift(){
+  document.getElementById('drift-text').textContent='This screen shows r'+frozen+'; the log is at r'+Log.rev+'.';
+}
+function simulateDrift(){
+  frozen=seenRev;
+  document.getElementById('drift').classList.add('show');
+  paintDrift(); renderLamp();
+  toast('Screen frozen at r'+frozen+' — the log keeps moving');
+  window.scrollTo(0,0);
+}
+function refreshProjection(){
+  frozen=null;
+  if(connected) seenRev=Log.rev;
+  document.getElementById('drift').classList.remove('show');
+  fold(); render();
+  toast('Refreshed — screen and log agree at r'+seenRev);
+}
+function paintConn(){
+  const age=downAt?relTime(downAt):'just now';
+  document.getElementById('conn-text').textContent=
+    'Showing the projection of r'+seenRev+' — '+age+' old. The log is at r'+Log.rev+'. Nothing here is current.';
+}
+function toggleConn(){
+  if(connected){
+    connected=false; downAt=Date.now();
+    document.body.classList.add('offline');
+    document.getElementById('conn').classList.add('show');
+    document.getElementById('connbtn').textContent='Reconnect';
+    paintConn(); renderAsof(); renderLamp();
+    toast('Connection lost — writes are disabled. Rulings need the log.');
+  }else reconnect();
+}
+function reconnect(){
+  connected=true; downAt=null; seenRev=Log.rev;
+  document.body.classList.remove('offline');
+  document.getElementById('conn').classList.remove('show');
+  document.getElementById('connbtn').textContent='Lose connection';
+  fold(); render();
+  toast('Reconnected — caught up to r'+Log.rev);
+}
+function simVerifyFail(){
+  const t=moves().find(x=>x.moveKind==='review'&&!x.verifyFailed);
+  if(!t){ toast('Needs a your-move review first — try “Say it’s done” on an underway task.'); return; }
+  const ev=t.evidence.find(e=>e.state==='recorded')||t.evidence[0];
+  const label=ev?ev.label:'Deliverable';
+  dispatch('evidence.rejected', t.id, {label:label, reason:'hash mismatch',
+    say:'Evidence failed verification', detail:label+' — recorded hash doesn’t match the worktree'});
+  toast('Verification failed on '+t.id+' — it’s your move');
+  openDetail(t.id);
+}
+function simTurns(){
+  const t=tasks().find(x=>x.status==='underway');
+  if(!t){ toast('Needs an underway task first — assign something from Queued.'); return; }
+  dispatch('work.turns_exhausted', t.id, {used:10, of:10, done:3, ofCount:5,
+    say:'Turn budget exhausted', detail:t.title+' — 10 of 10 turns used, 3 of 5 deliverables verified'});
+  toast('Turn budget exhausted on '+t.id+' — it’s your move');
+  openDetail(t.id);
+}
+function toggleGap(){
+  if(SIM.gap){ SIM.gap=null; document.getElementById('gapbtn').textContent='Damage the log (gap)'; }
+  else{ SIM.gap={from:Log.rev-1, to:Log.rev}; document.getElementById('gapbtn').textContent='Repair the log'; }
+  renderLog();
+}
+setInterval(()=>{ if(!connected) paintConn(); }, 20000);
+
+let toastT;
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2800);
+}
+function toastHTML(html, ms){
+  const t=document.getElementById('toast'); t.innerHTML=html; t.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'), ms||6000);
+}
+/* ---- undo: a ruling can be withdrawn within 60s, as a compensating event ---- */
+function rulingDone(id, verb, rev, receipt){
+  clearTimeout(undoTimer);
+  pendingUndo={id:id, verb:verb, rev:rev};
+  toastHTML(receipt+' <button class="btn btn-go" style="padding:6px 14px;font-size:12px;margin-left:10px;" onclick="undoRuling()">Undo</button> <span style="font-weight:400;font-size:11px;">60s</span>', 62000);
+  undoTimer=setTimeout(()=>{ pendingUndo=null; }, 60000);
+}
+function undoRuling(){
+  if(!pendingUndo) return;
+  if(!needLog()) return;
+  const p=pendingUndo; pendingUndo=null; clearTimeout(undoTimer);
+  dispatch('ruling.withdrawn', p.id, {ofRev:p.rev, say:p.verb+' withdrawn', detail:'You withdrew the ruling — history stands, the task is your move again'});
+  toast(p.verb+' withdrawn at r'+Log.rev+' — recorded as a new event');
+  openDetail(p.id);
+}
+fold();
+renderChips();
+render();
+</script>
+</body>
+</html>

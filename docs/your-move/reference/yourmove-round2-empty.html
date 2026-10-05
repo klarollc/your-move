@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Move — Round 2: Empty States</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --plaster:#11162E; --card:#1A2140; --ink:#ECEFF8; --muted:#98A1C6;
+  --line:#2B3560; --signal:#A3B2EA; --signal-deep:#C6D1F2;
+  --signal-soft:rgba(163,178,234,.14); --glow:rgba(163,178,234,.5);
+  --terra:#C07A5E; --moss:#7FA98B; --char:#0B0F26;
+  --amber:#D9A441;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--char);color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:14px;line-height:1.5;padding:32px;min-height:100vh}
+.page{max-width:1180px;margin:0 auto}
+h1{font-family:'Fraunces',serif;font-weight:600;font-size:30px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:6px 0 28px;max-width:70ch}
+h2{font-family:'Fraunces',serif;font-weight:600;font-size:21px;margin:40px 0 4px;display:flex;align-items:center;gap:10px}
+h2 .n{display:inline-flex;width:26px;height:26px;border-radius:50%;background:var(--signal-soft);border:1px solid var(--signal);color:var(--signal-deep);font-family:'Inter';font-size:13px;font-weight:600;align-items:center;justify-content:center;flex:none}
+.state-desc{color:var(--muted);margin-bottom:14px;max-width:72ch}
+.mock{background:var(--plaster);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:8px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--line)}
+.brand{font-weight:600;font-size:15px;letter-spacing:.01em}
+.brand em{font-style:normal;color:var(--muted);font-weight:400;font-size:12px;margin-left:8px}
+.topmeta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);display:flex;gap:14px}
+.body{display:grid;grid-template-columns:1fr 300px;min-height:340px}
+.listcol{padding:22px}
+.railcol{border-left:1px solid var(--line);padding:22px 18px;background:rgba(11,15,38,.5)}
+.rail-title{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.lamp{width:11px;height:11px;border-radius:50%;background:#3A4470;flex:none}
+.lamp.lit{background:var(--signal);box-shadow:0 0 10px 2px var(--glow)}
+.empty-hero{text-align:center;padding:44px 20px 36px}
+.lamp-big{width:34px;height:34px;border-radius:50%;background:#2B3560;margin:0 auto 18px;position:relative}
+.lamp-big::after{content:"";position:absolute;inset:10px;border-radius:50%;background:#1A2140}
+.empty-hero h3{font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin-bottom:8px}
+.empty-hero p{color:var(--muted);max-width:44ch;margin:0 auto 20px}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--signal);color:#11162E;border:none;border-radius:9px;padding:10px 18px;font-family:'Inter';font-size:13.5px;font-weight:600;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--signal-deep);border:1px solid var(--line)}
+.revline{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);text-align:center;margin-top:26px}
+.allclear{text-align:center;padding:52px 20px}
+.allclear h3{font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin-bottom:8px}
+.allclear p{color:var(--muted);max-width:46ch;margin:0 auto}
+.rail-empty{color:var(--muted);font-size:13px}
+.rail-empty .asof{font-family:'IBM Plex Mono',monospace;font-size:11px;display:block;margin-top:8px;color:var(--muted)}
+.task{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.task .t{font-weight:600;font-size:13.5px}
+.task .m{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px}
+.group{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px}
+.group:first-child{margin-top:0}
+.searchbar{display:flex;gap:8px;margin-bottom:18px}
+.searchbar input{flex:1;background:var(--char);border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:9px 12px;font-family:'Inter';font-size:13px}
+.notes{background:rgba(163,178,234,.05);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-top:10px}
+.notes li{margin:6px 0 6px 18px;color:var(--muted);font-size:13px}
+.notes li b{color:var(--ink);font-weight:600}
+.notes .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--signal-deep);margin-right:6px}
+.rule{border-top:1px solid var(--line);margin:44px 0 0;padding-top:8px}
+.kicker{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--signal);margin:40px 0 4px}
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>Your Move — Round 2: Empty States</h1>
+<p class="sub">Three ways the product can be empty, and they are not the same state. Each gets its own honest rendering. Palette: Dusk. Annotations below each mock carry the truthfulness rationale.</p>
+
+<!-- ============ STATE A ============ -->
+<h2><span class="n">A</span> Fresh empty — no work exists at all</h2>
+<p class="state-desc">First run, or everything archived. The lamp is unlit because there is nothing to need you — and the screen says plainly that the log is empty, not that "you're all caught up."</p>
+<div class="mock">
+  <div class="topbar">
+    <div><span class="brand">Your Move</span><em>round 2 mock</em></div>
+    <div class="topmeta"><span>r000</span><span>log: 0 events</span></div>
+  </div>
+  <div class="body">
+    <div class="listcol">
+      <div class="empty-hero">
+        <div class="lamp-big"></div>
+        <h3>No work yet.</h3>
+        <p>Work enters Your Move one way: you describe it, review the draft, and approve it. Nothing is running, nothing is waiting — the log is empty.</p>
+        <button class="btn">Describe the first piece of work</button>
+      </div>
+      <div class="revline">projection of revision r000 · 0 events appended</div>
+    </div>
+    <div class="railcol">
+      <div class="rail-title"><span class="lamp"></span>Your move</div>
+      <div class="rail-empty">Nothing here yet.<span class="asof">as of r000 · log empty</span></div>
+    </div>
+  </div>
+</div>
+<ul class="notes">
+  <li><span class="tag">A1</span><b>Empty log, stated.</b> "The log is empty" is a fact about the event log, not a vibe. It rules out the failure mode where the UI shows a friendly empty state while events failed to load.</li>
+  <li><span class="tag">A2</span><b>The CTA teaches the write path.</b> The only button starts the describe → draft → approve flow — reinforcing that creation is owner-approved, never ambient.</li>
+  <li><span class="tag">A3</span><b>Unlit lamp, dimmed.</b> The lamp reads "off," not "broken." No glow anywhere on screen — one signal color, one meaning, even at zero.</li>
+</ul>
+
+<!-- ============ STATE B ============ -->
+<h2><span class="n">B</span> All clear — work exists, nothing needs you</h2>
+<p class="state-desc">The healthy steady state. Items sit calmly in their groups; the rail confirms the all-clear <em>as of a revision</em> rather than claiming a permanent condition.</p>
+<div class="mock">
+  <div class="topbar">
+    <div><span class="brand">Your Move</span><em>round 2 mock</em></div>
+    <div class="topmeta"><span>r431</span><span>log: 58 events</span></div>
+  </div>
+  <div class="body">
+    <div class="listcol">
+      <div class="group">In progress</div>
+      <div class="task"><div class="t">Review the Q3 budget draft</div><div class="m">T-102 · with Dana · no signal since r429</div></div>
+      <div class="task"><div class="t">File the quarterly tax estimate</div><div class="m">T-104 · with Priya · check-in r431</div></div>
+      <div class="group">Queued</div>
+      <div class="task"><div class="t">Onboard a new contractor</div><div class="m">T-105 · unassigned</div></div>
+      <div class="group">Done</div>
+      <div class="task"><div class="t">Prepare the board meeting agenda</div><div class="m">T-101 · verified r428</div></div>
+    </div>
+    <div class="railcol">
+      <div class="rail-title"><span class="lamp"></span>Your move</div>
+      <div class="rail-empty">Nothing needs your move.<span class="asof">as of r431 · checked just now</span></div>
+    </div>
+  </div>
+</div>
+<ul class="notes">
+  <li><span class="tag">B1</span><b>"Nothing needs your move," not "all caught up."</b> The rail describes the queue's state, not the manager's virtue. Timestamped to the revision — if the projection goes stale, this line is what goes stale with it.</li>
+  <li><span class="tag">B2</span><b>Calm list, honest rows.</b> "No signal since r429" instead of "idle." "Verified r428" instead of a bare checkmark. Every row still exposes its source revision, even when nothing is wrong.</li>
+  <li><span class="tag">B3</span><b>Lamp off everywhere.</b> The unlit lamp in the rail title matches the unlit rows — the whole screen agrees about whose move it isn't.</li>
+</ul>
+
+<!-- ============ STATE C ============ -->
+<h2><span class="n">C</span> Filtered empty — the filter hides everything</h2>
+<p class="state-desc">The dangerous one: an empty screen that could be misread as "no work." It names the filter and offers the one-click exit back to reality.</p>
+<div class="mock">
+  <div class="topbar">
+    <div><span class="brand">Your Move</span><em>round 2 mock</em></div>
+    <div class="topmeta"><span>r431</span><span>log: 58 events</span></div>
+  </div>
+  <div class="body">
+    <div class="listcol">
+      <div class="searchbar"><input value="warehouse" readonly><button class="btn ghost">Clear</button></div>
+      <div class="empty-hero" style="padding-top:24px">
+        <h3 style="font-size:18px">No matches for "warehouse".</h3>
+        <p>5 items exist, none match this search. The work hasn't gone anywhere.</p>
+        <button class="btn ghost">Clear search</button>
+      </div>
+    </div>
+    <div class="railcol">
+      <div class="rail-title"><span class="lamp"></span>Your move</div>
+      <div class="rail-empty">Nothing needs your move.<span class="asof">as of r431</span></div>
+    </div>
+  </div>
+</div>
+<ul class="notes">
+  <li><span class="tag">C1</span><b>Counts the hidden items.</b> "5 items exist, none match" — the screen refuses to let a filter masquerade as an empty world. This is the truthfulness rule about missing evidence, applied to search.</li>
+  <li><span class="tag">C2</span><b>Rail stays global.</b> The rail is not filtered by the list's search — your move is your move regardless of what you're looking at. Filtering the rail would be lying by omission.</li>
+  <li><span class="tag">C3</span><b>One click out.</b> "Clear search" is adjacent to the claim, so the correction is always within reach.</li>
+</ul>
+
+<div class="rule"></div>
+<p class="kicker">Decisions for you</p>
+<h2 style="margin-top:6px">Rule on these</h2>
+<ul class="notes">
+  <li><b>1.</b> Fresh-empty copy: "No work yet" + the log-empty statement. Too stark, or the right honesty?</li>
+  <li><b>2.</b> All-clear rail line: "Nothing needs your move — as of r431." Keep the revision stamp on the calm state, or is it noise when nothing is wrong?</li>
+  <li><b>3.</b> Filtered-empty names the hidden count ("5 items exist, none match"). Worth the extra query, or overkill?</li>
+</ul>
+
+</div>
+</body>
+</html>

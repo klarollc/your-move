@@ -47,6 +47,24 @@ test("the position record agrees with every checklist it names", () => {
   assert.deepEqual(recordProblems(readRecord(), read), []);
 });
 
+test("records superseded work as superseded, without counting it as complete", () => {
+  const record = {
+    schemaVersion: 1,
+    workstreams: [
+      {
+        id: "X",
+        state: "superseded",
+        checklist: "x.md",
+        tasks: [{ id: "1", state: "superseded" }],
+      },
+    ],
+  };
+  assert.deepEqual(
+    recordProblems(record, () => "- [ ] Task 1 — superseded by the current spec\n"),
+    [],
+  );
+});
+
 test("every commit the record cites exists", () => {
   for (const commit of citedCommits(readRecord())) {
     assert.doesNotThrow(

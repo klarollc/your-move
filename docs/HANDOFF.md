@@ -1,30 +1,43 @@
 # Handoff — state, next action, and what would otherwise be relearned expensively
 
-Written 2026-09-18, last updated 2026-10-04 for workflow-proof W6 and DF-047 closeout. Read `AGENTS.md` first for authority; this document is the
+Written 2026-09-18, last updated 2026-10-04 for the Your Move package. Read `AGENTS.md` first for authority; this document is the
 live state, the next action, and the things a fresh session pays for twice if nobody wrote them down.
 
-## Owner amendment — 2026-10-04: Surface B is primary
+## Owner amendment — 2026-10-04: Your Move supersedes W7
 
-The office-first thesis is dead. Surface B (the simple work list) is the primary surface; W7 is
-authorized and top priority without the Task 6 gate. W8 is shelved, not deleted; no office-surface
+The office-first thesis is dead. The approved Your Move package in `docs/your-move/reference/` is
+the current Surface B specification; `surface-b-ui-spec.md` is authoritative, the app HTML is a
+behavior reference only, and the round HTML is visual reference. Product name: Your Move; CuckCode
+remains the repo/codename. W7 is marked **superseded, not failed**. Carry forward conforming code
+from W7 and rebuild the rest under the new package. W8 is shelved, not deleted; no office-surface
 work until the owner reopens it. The shared core remains one `executeWorkCommand` path, one
 `replayProject` reducer, and one event log. W0–W6 and W9–W11 stand as built. W12 now requires a real
 create → assign → execute → evidence → review session driven entirely from Surface B, including
 assignment. The §20 comprehension gate targets Surface B; its existing materials carry over, with
 the target surface changed only. No live run, promotion, push, or external effect is authorized.
 
-**W7 implementation status — 2026-10-04:** the default Surface B list, canonical-log projection,
+**Prior W7 implementation status — 2026-10-04:** the default Surface B list, canonical-log projection,
 shared command actions, evidence digest display, and loopback runner-start endpoint are implemented.
 Focused tests and the production build pass. Current-build screenshots were reviewed at 1440×900 and
 1280×800, keyboard focus was exercised through create and back to its trigger, the fake-log preview
 had no captured console warnings/errors or failed requests, and reduced-motion emulation produced no
-animations or transitions. W7 remains in progress pending owner review; screenshots are temporary
-review captures, not owner acceptance evidence. The owner reports a runner was started separately;
-this W7 session has not connected to it or submitted work.
+animations or transitions. This is historical W7 evidence, not Your Move acceptance evidence. The
+existing behavior has not been submitted to the separately started runner.
 
-**Immediate next action:** prepare the W7 implementation and browser-check result for owner review.
-Keep W8 shelved. Do not do further office-surface work or submit a live work command until W12 is
-authorized.
+**Approval and current state — 2026-10-04:** the owner approved the MDD amendment,
+`tasks/your-move-plan.md`, and `tasks/your-move-todo.md` with “Approve + bind digest.” The current
+branch implements substantial read-model and Surface B behavior, with focused tests/build and
+current-build browser review recorded in `docs/your-move/behavior-evidence-matrix.md`. A project-
+scoped away-digest regression was fixed after browser review. The full §8 package is not complete.
+
+**Immediate next gate:** review and approve or amend
+`docs/proposals/2026-10-04-your-move-workflow-core-proposal.md`. It reconciles new ruling, turn,
+defer, nudge, undo and worktree-digest semantics against the canonical workflow core. No new event,
+command, or evidence digest field has been added while that gate is pending. The separate real
+agent-authored contract-draft service is also absent; the Surface B create view truthfully refuses
+to create work without it. Keep W8 shelved; do not start a live provider session, promote, push, or
+cause an external effect. W12 and the §20 Surface B comprehension run remain separately gated owner
+actions.
 
 ---
 

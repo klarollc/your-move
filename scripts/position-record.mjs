@@ -15,6 +15,7 @@ export const WORKSTREAM_STATES = [
   "complete",
   "accepted",
   "closed",
+  "superseded",
 ];
 export const TASK_STATES = [
   "proposed",
@@ -25,9 +26,10 @@ export const TASK_STATES = [
   "pending_owner",
   "accepted",
   "blocked",
+  "superseded",
 ];
 const CHECKED = new Set(["done", "accepted"]);
-const FINISHED_WORKSTREAMS = new Set(["complete", "accepted", "closed"]);
+const FINISHED_WORKSTREAMS = new Set(["complete", "accepted", "closed", "superseded"]);
 
 /** Checklist tasks as { id, checked }, in either of the repository's two checklist styles. */
 export function checklistTasks(text) {

@@ -1,7 +1,9 @@
 # Workflow-proof W7 — Surface B primary list
 
-Status: authorized by the owner 2026-10-04. RED–GREEN–REFACTOR is required for every behavior.
-No live provider run, promotion, push, or visual owner acceptance is authorized by this checklist.
+Status: **superseded by the Your Move package on 2026-10-04 — not failed.** This checklist is
+historical; conforming implementation may be carried forward under `tasks/your-move-plan.md`.
+RED–GREEN–REFACTOR remains required. No live provider run, promotion, push, or visual owner
+acceptance is authorized by this historical checklist.
 
 Implementation note — 2026-10-04: the Surface B list, shared command actions, and server-owned
 runner-start endpoint are implemented. Focused component, projection, runner, API, launch, route,
@@ -10,8 +12,8 @@ and 1280×800 against the current production build; keyboard focus was exercised
 back to its trigger. The fake-log preview had no captured console warnings/errors or failed requests;
 reduced-motion emulation produced no animations or transitions. The runner was unavailable in this
 fake-log browser session. The owner reports starting a runner separately; this W7 verification did
-not connect to it or submit a command. This task remains in progress pending owner review. The
-temporary screenshots are not owner acceptance evidence.
+not connect to it or submit a command. This task was in progress pending owner review before it was
+superseded. The temporary screenshots are not owner acceptance evidence.
 
 - [ ] Task 7 — Surface B primary list and execution path
   - RED: tests prove `/` renders the list by default, partial records are called partial, and the

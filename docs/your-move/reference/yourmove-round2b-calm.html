@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Move — Round 2b: The Calm Screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --plaster:#11162E; --card:#1A2140; --ink:#ECEFF8; --muted:#98A1C6;
+  --line:#2B3560; --signal:#A3B2EA; --signal-deep:#C6D1F2;
+  --signal-soft:rgba(163,178,234,.14); --glow:rgba(163,178,234,.5);
+  --terra:#C07A5E; --moss:#7FA98B; --char:#0B0F26;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--char);color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:14px;line-height:1.5;padding:32px;min-height:100vh}
+.page{max-width:1180px;margin:0 auto}
+h1{font-family:'Fraunces',serif;font-weight:600;font-size:30px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:6px 0 28px;max-width:70ch}
+h2{font-family:'Fraunces',serif;font-weight:600;font-size:21px;margin:40px 0 4px;display:flex;align-items:center;gap:10px}
+h2 .n{display:inline-flex;width:26px;height:26px;border-radius:50%;background:var(--signal-soft);border:1px solid var(--signal);color:var(--signal-deep);font-family:'Inter';font-size:13px;font-weight:600;align-items:center;justify-content:center;flex:none}
+.state-desc{color:var(--muted);margin-bottom:14px;max-width:72ch}
+.mock{background:var(--plaster);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:8px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--line)}
+.brand{font-weight:600;font-size:15px;letter-spacing:.01em}
+.brand em{font-style:normal;color:var(--muted);font-weight:400;font-size:12px;margin-left:8px}
+.topmeta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);display:flex;gap:14px}
+/* ---- the calm screen ---- */
+.calm{min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:48px 24px;position:relative;
+  background:radial-gradient(ellipse 60% 50% at 50% 42%, rgba(163,178,234,.05), transparent 70%)}
+.calm .lamp-big{width:44px;height:44px;border-radius:50%;background:#2B3560;margin-bottom:26px;position:relative;transition:background .3s}
+.calm .lamp-big::after{content:"";position:absolute;inset:13px;border-radius:50%;background:var(--plaster)}
+.calm h3{font-family:'Fraunces',serif;font-size:26px;font-weight:600;margin-bottom:10px;letter-spacing:-.01em}
+.calm p{color:var(--muted);max-width:46ch;margin-bottom:28px}
+.calm .btn{margin-bottom:22px}
+.calm .revline{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);opacity:.75}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--signal);color:#11162E;border:none;border-radius:9px;padding:11px 20px;font-family:'Inter';font-size:13.5px;font-weight:600;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--signal-deep);border:1px solid var(--line)}
+.notes{background:rgba(163,178,234,.05);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-top:10px}
+.notes li{margin:6px 0 6px 18px;color:var(--muted);font-size:13px}
+.notes li b{color:var(--ink);font-weight:600}
+.notes .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--signal-deep);margin-right:6px}
+.rule{border-top:1px solid var(--line);margin:44px 0 0;padding-top:8px}
+.kicker{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--signal);margin:40px 0 4px}
+/* revealed state (compact) */
+.body{display:grid;grid-template-columns:1fr 300px;min-height:300px}
+.listcol{padding:22px}
+.railcol{border-left:1px solid var(--line);padding:22px 18px;background:rgba(11,15,38,.5)}
+.rail-title{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.lamp{width:11px;height:11px;border-radius:50%;background:#3A4470;flex:none}
+.rail-empty{color:var(--muted);font-size:13px}
+.rail-empty .asof{font-family:'IBM Plex Mono',monospace;font-size:11px;display:block;margin-top:8px}
+.task{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.task .t{font-weight:600;font-size:13.5px}
+.task .m{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px}
+.group{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px}
+.group:first-child{margin-top:0}
+.flow{display:flex;align-items:center;gap:10px;margin:18px 0 4px;color:var(--muted);font-size:12.5px}
+.flow .arrow{color:var(--signal);font-size:16px}
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>Your Move — Round 2b: The Calm Screen</h1>
+<p class="sub">Revision of round 2 per your note: A and B each get a full-bleed calm visual that obscures the rail entirely — no split pane, no unlit lamp sitting next to an empty list. One button closes it in both cases. C (filtered empty) is untouched.</p>
+
+<!-- ============ A' ============ -->
+<h2><span class="n">A&prime;</span> Fresh empty — the calm screen <em>is</em> the state</h2>
+<p class="state-desc">Replaces round-2's A. There is no list and no rail to show, so the calm screen doesn't hide anything — it simply doesn't invent chrome for a world with no work in it. The button enters the describe flow.</p>
+<div class="mock">
+  <div class="topbar">
+    <div><span class="brand">Your Move</span><em>round 2b mock</em></div>
+    <div class="topmeta"><span>r000</span><span>log: 0 events</span></div>
+  </div>
+  <div class="calm">
+    <div class="lamp-big"></div>
+    <h3>No work yet.</h3>
+    <p>Nothing is running and nothing is waiting. When you're ready, describe the first thing you want done — you'll review the draft before anything starts.</p>
+    <button class="btn">Describe the first piece of work</button>
+    <div class="revline">projection of r000 · log empty</div>
+  </div>
+</div>
+<ul class="notes">
+  <li><span class="tag">A1</span><b>The log-empty fact survives, shrunk.</b> "Projection of r000 · log empty" sits under the button in mono — the honesty without the starkness. If events ever fail to load, this line is what contradicts the calm.</li>
+  <li><span class="tag">A2</span><b>No rail, no list, no apology.</b> A split pane with two empty columns says "something is missing." One centered lamp says "there is nothing, and that's fine."</li>
+  <li><span class="tag">A3</span><b>The button is the close.</b> It doesn't dismiss to another empty view — it enters the describe flow, the only thing there is to do here.</li>
+</ul>
+
+<!-- ============ B' step 1 ============ -->
+<h2><span class="n">B&prime;-1</span> All clear — calm screen as the first step</h2>
+<p class="state-desc">New first step for B. When nothing needs your move, you land here — the rail is obscured, not shown unlit. The button reveals the full working view (B&prime;-2).</p>
+<div class="mock">
+  <div class="topbar">
+    <div><span class="brand">Your Move</span><em>round 2b mock</em></div>
+    <div class="topmeta"><span>r431</span><span>log: 58 events</span></div>
+  </div>
+  <div class="calm">
+    <div class="lamp-big"></div>
+    <h3>Nothing needs your move.</h3>
+    <p>Four pieces of work are in flight and none of them are waiting on you. This was true as of the latest revision.</p>
+    <button class="btn ghost">Show all work</button>
+    <div class="revline">projection of r431 · checked just now</div>
+  </div>
+</div>
+<ul class="notes">
+  <li><span class="tag">B1</span><b>It counts the calm.</b> "Four pieces of work are in flight" — the screen proves it looked, rather than asserting a vibe. The number comes from the projection, like everything else.</li>
+  <li><span class="tag">B2</span><b>Revision-stamped, like the rail was.</b> "Projection of r431 · checked just now" keeps the staleness contract: if the feed drops, this line ages instead of the screen lying.</li>
+  <li><span class="tag">B3</span><b>The calm screen is a projection too.</b> If a new event makes something your move while this is up, the lamp lights and the calm yields — it never sits on top of a lit state. (Behavioral rule for the build, shown statically here.)</li>
+</ul>
+
+<!-- ============ B' step 2 ============ -->
+<h2><span class="n">B&prime;-2</span> After "Show all work" — the full view</h2>
+<p class="state-desc">What the button reveals: the round-2 B state, unchanged. The rail's "nothing needs your move" line now reads as a continuation of the calm screen, not a restatement.</p>
+<div class="mock">
+  <div class="topbar">
+    <div><span class="brand">Your Move</span><em>round 2b mock</em></div>
+    <div class="topmeta"><span>r431</span><span>log: 58 events</span></div>
+  </div>
+  <div class="body">
+    <div class="listcol">
+      <div class="group">In progress</div>
+      <div class="task"><div class="t">Review the Q3 budget draft</div><div class="m">T-102 · with Dana · no signal since r429</div></div>
+      <div class="task"><div class="t">File the quarterly tax estimate</div><div class="m">T-104 · with Priya · check-in r431</div></div>
+      <div class="group">Queued</div>
+      <div class="task"><div class="t">Onboard a new contractor</div><div class="m">T-105 · unassigned</div></div>
+      <div class="group">Done</div>
+      <div class="task"><div class="t">Prepare the board meeting agenda</div><div class="m">T-101 · verified r428</div></div>
+    </div>
+    <div class="railcol">
+      <div class="rail-title"><span class="lamp"></span>Your move</div>
+      <div class="rail-empty">Nothing needs your move.<span class="asof">as of r431</span></div>
+    </div>
+  </div>
+</div>
+<div class="flow"><span>A&prime; calm</span><span class="arrow">→</span><span>describe flow (work now exists)</span><span class="arrow">→</span><span>B&prime;-1 calm</span><span class="arrow">→</span><span>Show all work</span><span class="arrow">→</span><span>B&prime;-2 full view</span></div>
+<ul class="notes">
+  <li><span class="tag">B4</span><b>One calm screen, two jobs.</b> A&prime; and B&prime;-1 are the same component with different copy and counts — the build gets one "calm" projection state, not two bespoke screens.</li>
+</ul>
+
+<div class="rule"></div>
+<p class="kicker">Decisions for you</p>
+<h2 style="margin-top:6px">Rule on these</h2>
+<ul class="notes">
+  <li><b>1.</b> B&prime;-1 appears <b>every time</b> you land on an all-clear, or does dismissing it stick (per session / a setting)? Every-time is calmer; sticky is faster for heavy users.</li>
+  <li><b>2.</b> New your-move event while the calm screen is up: <b>interrupt immediately</b> (lamp lights, calm yields — recommended) or surface quietly and let the calm stand until dismissed?</li>
+  <li><b>3.</b> A&prime; keeps the "log empty · r000" microcopy. Keep it, or does even that break the calm?</li>
+</ul>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Move — Round 4: Failure States</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --plaster:#11162E; --card:#1A2140; --ink:#ECEFF8; --muted:#98A1C6;
+  --line:#2B3560; --signal:#A3B2EA; --signal-deep:#C6D1F2;
+  --signal-soft:rgba(163,178,234,.14); --glow:rgba(163,178,234,.5);
+  --terra:#C07A5E; --terra-soft:rgba(192,122,94,.13); --moss:#7FA98B; --char:#0B0F26;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--char);color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:14px;line-height:1.5;padding:32px;min-height:100vh}
+.page{max-width:1180px;margin:0 auto}
+h1{font-family:'Fraunces',serif;font-weight:600;font-size:30px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:6px 0 28px;max-width:70ch}
+h2{font-family:'Fraunces',serif;font-weight:600;font-size:21px;margin:40px 0 4px;display:flex;align-items:center;gap:10px}
+h2 .n{display:inline-flex;width:26px;height:26px;border-radius:50%;background:var(--signal-soft);border:1px solid var(--signal);color:var(--signal-deep);font-family:'Inter';font-size:13px;font-weight:600;align-items:center;justify-content:center;flex:none}
+.state-desc{color:var(--muted);margin-bottom:14px;max-width:72ch}
+.mock{background:var(--plaster);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:8px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--line)}
+.brand{font-weight:600;font-size:15px;letter-spacing:.01em}
+.brand em{font-style:normal;color:var(--muted);font-weight:400;font-size:12px;margin-left:8px}
+.topmeta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);display:flex;gap:14px}
+.banner{padding:10px 18px;font-size:13px;display:flex;align-items:center;gap:10px;justify-content:space-between}
+.banner.warn{background:rgba(192,122,94,.12);border-bottom:1px solid var(--terra);color:#E8C4B2}
+.banner.info{background:var(--signal-soft);border-bottom:1px solid var(--signal);color:var(--signal-deep)}
+.banner .btn{padding:6px 12px;font-size:12px}
+.body{display:grid;grid-template-columns:1fr 300px;min-height:300px}
+.listcol{padding:18px 22px}
+.railcol{border-left:1px solid var(--line);padding:18px;background:rgba(11,15,38,.5)}
+.rail-title{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.lamp{width:11px;height:11px;border-radius:50%;background:#3A4470;flex:none}
+.lamp.lit{background:var(--signal);box-shadow:0 0 10px 2px var(--glow)}
+.stale .railcol,.stale .listcol{opacity:.82}
+.task{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.task.ym{border-color:var(--signal);box-shadow:inset 0 0 0 1px var(--signal-soft), 0 0 14px -4px var(--glow)}
+.task.blocker{border-color:var(--terra);box-shadow:inset 0 0 0 1px var(--terra-soft)}
+.task .t{font-weight:600;font-size:13.5px}
+.task .m{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px}
+.task .flag{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;padding:2px 8px;border-radius:5px;margin-bottom:6px}
+.flag.terra{background:var(--terra-soft);color:#E8C4B2;border:1px solid var(--terra)}
+.task p.desc{color:var(--muted);font-size:12.5px;margin:6px 0 10px}
+.rowbtns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--signal);color:#11162E;border:none;border-radius:8px;padding:8px 14px;font-family:'Inter';font-size:12.5px;font-weight:600;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--signal-deep);border:1px solid var(--line)}
+.btn.terraghost{background:transparent;color:#E8C4B2;border:1px solid var(--terra)}
+.outbox{margin-top:12px;background:var(--signal-soft);border:1px dashed var(--signal);border-radius:10px;padding:10px 14px;font-size:12.5px;color:var(--signal-deep)}
+.outbox .mono{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);display:block;margin-top:4px}
+.rail-item{background:var(--card);border:1px solid var(--signal);border-radius:10px;padding:10px 12px;margin-bottom:8px;box-shadow:0 0 14px -4px var(--glow)}
+.rail-item.stilllit{border-style:dashed}
+.rail-item .t{font-weight:600;font-size:12.5px}
+.rail-item .w{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--signal-deep);margin-top:3px}
+.rail-item .held{font-size:11.5px;color:var(--signal-deep);margin-top:6px}
+.logview{padding:18px 22px;font-family:'IBM Plex Mono',monospace;font-size:12px}
+.logline{padding:8px 12px;border-left:2px solid var(--line);margin-bottom:6px;color:var(--muted)}
+.logline .r{color:var(--signal-deep)}
+.logline.gap{border-left:2px dashed var(--terra);color:#E8C4B2;background:rgba(192,122,94,.07);border-radius:0 8px 8px 0}
+.notes{background:rgba(163,178,234,.05);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-top:10px}
+.notes li{margin:6px 0 6px 18px;color:var(--muted);font-size:13px}
+.notes li b{color:var(--ink);font-weight:600}
+.notes .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--signal-deep);margin-right:6px}
+.rule{border-top:1px solid var(--line);margin:44px 0 0;padding-top:8px}
+.kicker{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--signal);margin:40px 0 4px}
+.group{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px}
+.group:first-child{margin-top:0}
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>Your Move — Round 4: Failure States</h1>
+<p class="sub">Where the truthfulness rules earn their keep. Four failures, each rendered as a fact about the world — never as a spinner, a guess, or a silently retried hope.</p>
+
+<!-- ============ A: disconnect ============ -->
+<h2><span class="n">A</span> Runtime disconnect — the projection goes stale</h2>
+<p class="state-desc">The event feed drops mid-session. The screen says exactly how old its truth is, and a ruling made while offline is held in an outbox — the matter stays lit until the log actually appends.</p>
+<div class="mock stale">
+  <div class="topbar">
+    <div><span class="brand">Your Move</span><em>round 4 mock</em></div>
+    <div class="topmeta"><span>r512</span><span style="color:#E8C4B2">disconnected · 4 min</span><span>outbox: 1</span></div>
+  </div>
+  <div class="banner warn"><span><b>Connection lost.</b> Showing the projection of r512 — 4 minutes old. Nothing here is current.</span><button class="btn ghost">Retry now</button></div>
+  <div class="body">
+    <div class="listcol">
+      <div class="group">Your move</div>
+      <div class="task ym">
+        <div class="t">Review: Q3 budget draft</div>
+        <div class="m">T-102 · waiting 1d · r509</div>
+        <div class="outbox">Your ruling ("accept") is held — not yet in the log.<span class="mono">It will append when the connection returns. This stays your move until then.</span></div>
+      </div>
+      <div class="group">In progress</div>
+      <div class="task"><div class="t">File the quarterly tax estimate</div><div class="m">T-104 · with Priya · check-in r512</div></div>
+    </div>
+    <div class="railcol">
+      <div class="rail-title"><span class="lamp lit"></span>Your move</div>
+      <div class="rail-item stilllit"><div class="t">Review: Q3 budget draft</div><div class="w">waiting 1d · r509</div><div class="held">Ruling held in outbox — not recorded yet.</div></div>
+    </div>
+  </div>
+</div>
+<ul class="notes">
+  <li><span class="tag">A1</span><b>The banner ages the truth.</b> "Projection of r512 — 4 minutes old" is the staleness contract made visible. No spinner pretending the world is loading; the world is simply not arriving.</li>
+  <li><span class="tag">A2</span><b>The lamp doesn't go out on intent.</b> Your ruling sits in the outbox and the matter stays lit — dashed border, "not recorded yet." The glow extinguishes when the log appends, not when you click. This is rule 5 (no optimistic UI) applied to the outage.</li>
+  <li><span class="tag">A3</span><b>Outbox is counted, not hidden.</b> "Outbox: 1" in the topbar — held rulings are first-class facts, visible from every view.</li>
+</ul>
+
+<!-- ============ B: verification failure ============ -->
+<h2><span class="n">B</span> Verification failure — evidence that doesn't check out</h2>
+<p class="state-desc">A done-claim whose evidence fails verification. It is not "done," not "claimed" — it's a blocker, rendered in terra, and it's your move until ruled.</p>
+<div class="mock">
+  <div class="topbar">
+    <div><span class="brand">Your Move</span><em>round 4 mock</em></div>
+    <div class="topmeta"><span>r520</span><span>log: 240 events</span></div>
+  </div>
+  <div class="body">
+    <div class="listcol">
+      <div class="group">Your move</div>
+      <div class="task ym blocker">
+        <span class="flag terra">Evidence failed verification</span>
+        <div class="t">Prepare the board meeting agenda</div>
+        <p class="desc">Dana claimed done at r519, but the recorded hash doesn't match the worktree. The evidence is shown below — it is not trusted.</p>
+        <div class="m">T-101 · claimed r519 · hash mismatch · run w-8814</div>
+        <div class="rowbtns" style="margin-top:10px"><button class="btn">Accept anyway</button><button class="btn terraghost">Send back</button><button class="btn ghost">Defer with reason</button></div>
+      </div>
+    </div>
+    <div class="railcol">
+      <div class="rail-title"><span class="lamp lit"></span>Your move</div>
+      <div class="rail-item"><div class="t">Prepare the board meeting agenda</div><div class="w">evidence failed verification · r520</div></div>
+    </div>
+  </div>
+</div>
+<ul class="notes">
+  <li><span class="tag">B1</span><b>Failed verification is a blocker, not a fourth color.</b> Terra already means "needs a ruling to proceed" — a hash mismatch is exactly that. The palette stays at three signals; the copy carries the specifics.</li>
+  <li><span class="tag">B2</span><b>"Accept anyway" is a ruling, not a shrug.</b> It appends an event with the manager's name on it — the log records that a human overrode a failed check, deliberately.</li>
+  <li><span class="tag">B3</span><b>Provenance travels with the accusation.</b> Run, worktree, revision — the failure is inspectable, not just announced.</li>
+</ul>
+
+<!-- ============ C: turn budget ============ -->
+<h2><span class="n">C</span> Turn-budget exhaustion — the worker ran out of road</h2>
+<p class="state-desc">The bounded work contract hit its limit with the work incomplete. The screen states what was used, what got done, and hands the decision back — no auto-extension, no silent stop.</p>
+<div class="mock">
+  <div class="topbar">
+    <div><span class="brand">Your Move</span><em>round 4 mock</em></div>
+    <div class="topmeta"><span>r522</span><span>log: 244 events</span></div>
+  </div>
+  <div class="body">
+    <div class="listcol">
+      <div class="group">Your move</div>
+      <div class="task ym">
+        <span class="flag terra">Turn budget exhausted</span>
+        <div class="t">Reconcile the budget variances</div>
+        <p class="desc">Dana used all 10 turns. 3 of 5 deliverables are recorded and verified; 2 are not started. The work stopped — it did not fade.</p>
+        <div class="m">T-120 · 10/10 turns · 3 of 5 deliverables verified · r522</div>
+        <div class="rowbtns" style="margin-top:10px"><button class="btn">Grant 5 more turns</button><button class="btn ghost">Re-scope the work</button><button class="btn ghost">Close as incomplete</button></div>
+      </div>
+    </div>
+    <div class="railcol">
+      <div class="rail-title"><span class="lamp lit"></span>Your move</div>
+      <div class="rail-item"><div class="t">Reconcile the budget variances</div><div class="w">turn budget exhausted · r522</div></div>
+    </div>
+  </div>
+</div>
+<ul class="notes">
+  <li><span class="tag">C1</span><b>Partial progress is itemized.</b> "3 of 5 deliverables verified" — the manager rules on the actual remainder, not on a vague "incomplete."</li>
+  <li><span class="tag">C2</span><b>Granting turns is a bounded ruling.</b> "Grant 5 more turns" — a number, appended to the log. The budget stays a contract; it just gets renegotiated in the open.</li>
+  <li><span class="tag">C3</span><b>"Close as incomplete" is allowed.</b> Ending honestly beats dragging silently. The log keeps the 3 verified deliverables; the closure names the 2 that never happened.</li>
+</ul>
+
+<!-- ============ D: damaged log ============ -->
+<h2><span class="n">D</span> Damaged log — the log disagrees with the view</h2>
+<p class="state-desc">Rule 7 in action: the projection and the log diverge, and a stretch of events is unreadable. The UI announces the disagreement and renders the gap as a gap — never interpolated.</p>
+<div class="mock">
+  <div class="topbar">
+    <div><span class="brand">Your Move</span><em>round 4 mock</em></div>
+    <div class="topmeta"><span>r512</span><span style="color:#E8C4B2">log at r515</span></div>
+  </div>
+  <div class="banner info"><span><b>The log disagrees with this view.</b> You're seeing the projection of r512; the log is at r515.</span><button class="btn">Refresh</button></div>
+  <div class="logview">
+    <div style="color:var(--muted);font-family:'Inter';font-size:11px;font-weight:600;letter-spacing:.07em;margin-bottom:10px">LOG VIEW — newest first</div>
+    <div class="logline"><span class="r">r515</span> · check-in appended · T-104 · Priya</div>
+    <div class="logline gap">r513–r514 · unreadable — shown as a gap. Nothing is inferred across it.</div>
+    <div class="logline"><span class="r">r512</span> · evidence recorded · T-101 · Dana</div>
+    <div class="logline"><span class="r">r511</span> · work assigned · T-111 · to Dana</div>
+  </div>
+</div>
+<ul class="notes">
+  <li><span class="tag">D1</span><b>The banner states both revisions.</b> "Projection r512, log r515" — the disagreement is quantified, and Refresh is the only action. No auto-reload that might yank the rug mid-ruling.</li>
+  <li><span class="tag">D2</span><b>Gaps are named, dashed, terra-tinted.</b> "r513–r514 · unreadable" sits in revision order with its neighbors. The spine stays honest because the gap is part of it.</li>
+  <li><span class="tag">D3</span><b>"Nothing is inferred across it."</b> The one sentence that carries the whole rule: the UI will not bridge what it cannot read.</li>
+</ul>
+
+<div class="rule"></div>
+<p class="kicker">Decisions for you</p>
+<h2 style="margin-top:6px">Rule on these</h2>
+<ul class="notes">
+  <li><b>1.</b> Disconnected rulings: <b>outbox-and-hold</b> (matter stays lit until the log appends — mock A) vs. <b>disable writes</b> while offline?</li>
+  <li><b>2.</b> Failed verification rendered as a <b>terra blocker</b> (mock B) — or does it deserve its own visual treatment distinct from blockers?</li>
+  <li><b>3.</b> Log gaps: named, dashed, never interpolated (mock D). Any objection — or anything missing from the failure set?</li>
+</ul>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Surface B — Studio Concept</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --plaster:#F5F1EA; --card:#FDFCF8; --ink:#1E2347; --muted:#5C6285;
+    --line:#E3E1D6; --signal:#6E7FC9; --signal-deep:#4A5DA8;
+    --signal-soft:rgba(110,127,201,.13); --glow:rgba(110,127,201,.45);
+    --terra:#A34F3A; --moss:#4E7A5A; --char:#1E2347;
+    --btn-bg:#1E2347; --btn-fg:#F5F1EA;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  :root:has(#pp-dusk:checked){
+    --plaster:#11162E; --card:#1A2140; --ink:#ECEFF8; --muted:#98A1C6;
+    --line:#2B3560; --signal:#A3B2EA; --signal-deep:#C6D1F2;
+    --signal-soft:rgba(163,178,234,.14); --glow:rgba(163,178,234,.5);
+    --terra:#C07A5E; --moss:#7FA98B; --char:#0B0F26;
+    --btn-bg:#ECEFF8; --btn-fg:#11162E;
+  }
+  :root:has(#pp-mist:checked){
+    --plaster:#E9EDF3; --card:#F6F8FB; --ink:#232B45; --muted:#68728E;
+    --line:#D6DCE8; --signal:#5A72C4; --signal-deep:#3F57A3;
+    --signal-soft:rgba(90,114,196,.12); --glow:rgba(90,114,196,.4);
+    --terra:#9E5238; --moss:#4E7A5A; --char:#232B45;
+    --btn-bg:#232B45; --btn-fg:#F6F8FB;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:Inter,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    background:var(--plaster); color:var(--ink); font-size:14.5px; line-height:1.6;}
+  .topbar{display:flex; align-items:center; justify-content:space-between;
+    padding:13px 24px; background:var(--char); color:#F4EFE3; position:sticky; top:0; z-index:50;}
+  .brand{font-family:Fraunces,Georgia,serif; font-size:18px; font-weight:600;}
+  .brand em{font-style:normal; color:#D9B36A;}
+  .asof{font-family:var(--mono); font-size:11px; color:#A99B7E; margin-right:14px;}
+  .asof b{color:#F4EFE3;}
+  .btn{border:none; cursor:pointer; border-radius:8px; padding:9px 16px; font-size:13.5px; font-weight:600; font-family:inherit;}
+  .btn-amber{background:var(--btn-bg); color:var(--btn-fg);}
+  .btn-amber:hover{opacity:.88;}
+  .btn-quiet{background:transparent; border:1px solid var(--line); color:var(--ink);}
+  .btn-line{background:transparent; border:1px solid rgba(244,239,227,.35); color:#F4EFE3; font-size:12px; padding:7px 13px;}
+  .btn-line.on{background:#F4EFE3; color:#211A12; border-color:#F4EFE3;}
+  #drift{display:none; background:#3A1410; color:#F6E9D8; padding:11px 28px; font-size:13.5px; border-bottom:2px solid var(--terra);}
+  #drift.show{display:flex; align-items:center; gap:14px;}
+  #drift .btn{margin-left:auto;}
+  .layout{display:grid; grid-template-columns:180px 1fr 320px; min-height:calc(100vh - 55px);}
+  .sidenav{border-right:1px solid var(--line); padding:20px 14px;}
+  .sidenav button{display:block; width:100%; text-align:left; background:none; border:none;
+    padding:10px 12px; border-radius:8px; font-size:13.5px; color:var(--muted); cursor:pointer; font-weight:500;}
+  .sidenav button.active{background:var(--card); color:var(--ink); font-weight:600; border:1px solid var(--line);}
+  .main{padding:28px 34px; max-width:780px;}
+  .rail{border-left:1px solid var(--line); background:var(--card); padding:22px 18px;}
+  .rail h3{font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); margin-bottom:14px; font-weight:600;}
+  .view{display:none;} .view.active{display:block;}
+  .dayline{font-family:Fraunces,Georgia,serif; font-size:26px; font-weight:600; margin-bottom:4px;}
+  .daysub{color:var(--muted); font-size:13.5px; margin-bottom:24px;}
+  .group{margin-bottom:26px;}
+  .group>h3{font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); margin-bottom:10px; font-weight:600;}
+  .wrow{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:15px 18px;
+    margin-bottom:10px; cursor:pointer;}
+  .wrow:hover{border-color:#C9BC9C; box-shadow:0 2px 8px rgba(60,45,20,.07);}
+  .wrow .t{font-weight:600; font-size:15px; margin-bottom:3px;}
+  .wrow .p{color:var(--muted); font-size:13.5px;}
+  .wrow .m{font-family:var(--mono); font-size:11px; color:var(--muted); margin-top:8px;}
+  .kdot{display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:8px; vertical-align:1px;}
+  .kdot.amber{background:var(--signal);} .kdot.terra{background:var(--terra);}
+  .kdot.moss{background:var(--moss);} .kdot.gray{background:#B9AE97;}
+  .sigdot{display:inline-block; width:9px; height:9px; border-radius:50%; background:var(--signal);
+    margin-right:8px; vertical-align:1px; box-shadow:0 0 0 4px var(--signal-soft), 0 0 12px var(--glow);}
+  .kind{font-size:12.5px; font-weight:600; margin-bottom:2px;}
+  .kind.amber{color:var(--signal-deep);} .kind.terra{color:var(--terra);} .kind.moss{color:var(--moss);} .kind.gray{color:var(--muted);}
+  /* attention cards — calm, one action each */
+  .need{background:var(--card); border:1px solid var(--line); border-left:4px solid var(--signal);
+    border-radius:10px; padding:14px 16px; margin-bottom:12px;}
+  .need.terra{border-left-color:var(--terra);}
+  .need h4{font-size:14px; margin-bottom:4px;}
+  .need p{font-size:13px; color:var(--muted); margin-bottom:10px;}
+  .need .row{display:flex; gap:8px;}
+  .need.done{opacity:.55; border-left-color:var(--moss);}
+  /* detail — one focused panel */
+  .backlink{background:none; border:none; color:var(--muted); cursor:pointer; font-size:13px; margin-bottom:14px; padding:0;}
+  .backlink:hover{color:var(--ink);}
+  .dtitle{font-family:Fraunces,Georgia,serif; font-size:24px; font-weight:600; margin-bottom:6px;}
+  .dstate{font-size:13.5px; color:var(--muted); margin-bottom:20px; max-width:60ch;}
+  .dstate strong{color:var(--ink);}
+  .panel{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px 20px; margin-bottom:14px;}
+  .panel>h3{font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); margin-bottom:10px; font-weight:600;}
+  .panel p{font-size:14px;}
+  details.drill{border-top:1px solid var(--line); padding:12px 0;}
+  details.drill:first-of-type{border-top:none;}
+  details.drill summary{cursor:pointer; font-weight:600; font-size:14px; list-style:none;}
+  details.drill summary::-webkit-details-marker{display:none;}
+  details.drill summary::before{content:"+ "; color:var(--muted); font-weight:400;}
+  details.drill[open] summary::before{content:"\2212  ";}
+  details.drill .inner{padding:10px 0 4px; font-size:13.5px; color:var(--muted);}
+  .kv{display:grid; grid-template-columns:150px 1fr; gap:7px 14px; font-size:13.5px;}
+  .kv dt{color:var(--muted);} .kv dd{margin:0;}
+  .evrow{display:flex; align-items:baseline; gap:10px; padding:8px 0; border-bottom:1px solid var(--line); font-size:13.5px;}
+  .evrow:last-child{border:none;}
+  .evstate{margin-left:auto; font-size:12px; white-space:nowrap;}
+  .evstate.ok{color:var(--moss); font-weight:600;}
+  .evstate.pend{color:var(--muted);}
+  .hash{font-family:var(--mono); font-size:11px; background:#EFE8D3; border:1px solid var(--line); border-radius:4px; padding:1px 7px;}
+  .hash.none{background:transparent; border-style:dashed; color:var(--muted);}
+  .rev{font-family:var(--mono); font-size:11px; color:var(--muted);}
+  /* truthfulness + spirit annotations */
+  .note{display:none; font-size:12px; color:#6E5F42; background:#FBF5E4; border:1px dashed #C6AD72;
+    border-radius:6px; padding:8px 12px; margin-top:12px; line-height:1.55;}
+  .note b{font-family:var(--mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase;}
+  body.annotated .note{display:block;}
+  .fineprint{font-family:var(--mono); font-size:11px; color:var(--muted); margin-top:18px; border-top:1px solid var(--line); padding-top:12px;}
+  /* create */
+  .steps{display:flex; gap:8px; margin-bottom:22px;}
+  .step{flex:1; text-align:center; font-size:12px; font-weight:600; color:var(--muted); padding:10px;
+    border:1px solid var(--line); border-radius:8px; background:var(--card);}
+  .step.on{background:var(--char); color:#F4EFE3; border-color:var(--char);}
+  textarea.nl{width:100%; min-height:110px; border:1px solid var(--line); border-radius:8px; padding:13px;
+    font-size:14.5px; font-family:inherit; background:#fff; resize:vertical;}
+  .fld{width:100%; border:1px solid var(--line); border-radius:8px; padding:10px 12px; font-size:14px; font-family:inherit; margin-bottom:10px; background:#fff;}
+  label.flabel{display:block; font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; margin:14px 0 6px;}
+  /* log */
+  .logrow{display:grid; grid-template-columns:56px 1fr; gap:12px; padding:11px 0; border-bottom:1px solid var(--line); font-size:13.5px;}
+  .logrow .lr{font-family:var(--mono); font-size:11.5px; color:var(--muted); padding-top:3px;}
+  .logrow .le{font-weight:600;}
+  .logrow .ld{color:var(--muted); font-size:13px;}
+  #toast{position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--char); color:#F4EFE3; padding:11px 20px; border-radius:8px; font-size:13px;
+    opacity:0; transition:all .25s; pointer-events:none; z-index:99;}
+  #toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .lit{border:1px solid var(--signal); box-shadow:0 0 26px var(--glow), inset 0 0 22px var(--signal-soft);}
+  .pswitch{display:flex; gap:6px; margin-right:12px; align-items:center;}
+  .palradio{position:absolute; opacity:0; width:0; height:0; pointer-events:none;}
+  .pswitch label{background:transparent; border:1px solid rgba(244,239,227,.3); color:#F4EFE3;
+    font-size:11px; font-weight:600; padding:5px 11px; border-radius:20px; cursor:pointer;}
+  #pp-paper:checked ~ label[for="pp-paper"],
+  #pp-dusk:checked ~ label[for="pp-dusk"],
+  #pp-mist:checked ~ label[for="pp-mist"]{background:#F4EFE3; color:#211A12; border-color:#F4EFE3;}
+  .palcap{display:none; font-size:12px; color:var(--muted); padding:8px 24px; border-bottom:1px solid var(--line); background:var(--card);}
+  .palcap strong{color:var(--ink);}
+  :root:has(#pp-paper:checked) #cap-paper{display:block;}
+  :root:has(#pp-dusk:checked) #cap-dusk{display:block;}
+  :root:has(#pp-mist:checked) #cap-mist{display:block;}
+  .logspine{position:relative; padding-left:28px;}
+  .logspine::before{content:""; position:absolute; left:9px; top:28px; bottom:18px; width:2px; background:var(--line);}
+  .logspine-cap{display:flex; align-items:center; gap:8px; margin:0 0 10px -28px;
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; color:var(--signal-deep);}
+  .logspine-cap .live{width:9px; height:9px; border-radius:50%; background:var(--signal);
+    box-shadow:0 0 12px var(--glow); margin-left:4px; flex:none;}
+  .logspine .logrow{position:relative;}
+  .logspine .logrow::before{content:""; position:absolute; left:-24px; top:18px; width:9px; height:9px;
+    border-radius:50%; background:var(--plaster); border:2px solid var(--muted);}
+  .logspine .logrow.now::before{border-color:var(--signal); background:var(--signal); box-shadow:0 0 10px var(--glow);}
+  .mocknote{font-family:var(--mono); font-size:10.5px; color:var(--muted); text-align:center; padding:16px;}
+  @media (max-width:1000px){.layout{grid-template-columns:1fr;} .sidenav{display:flex; border-right:none; border-bottom:1px solid var(--line);} .sidenav button{width:auto;} .rail{border-left:none; border-top:1px solid var(--line);}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div><span class="brand">CuckCode <em>&middot; Surface B</em></span></div>
+  <div style="display:flex; align-items:center;">
+    <div class="pswitch">
+      <input class="palradio" type="radio" name="pal" id="pp-paper" checked>
+      <input class="palradio" type="radio" name="pal" id="pp-dusk">
+      <input class="palradio" type="radio" name="pal" id="pp-mist">
+      <label for="pp-paper">Paper</label>
+      <label for="pp-dusk">Dusk</label>
+      <label for="pp-mist">Mist</label>
+    </div>
+    <span class="asof">as of <b>r418</b></span>
+    <button class="btn-line" id="annbtn" onclick="toggleAnnotate()">Annotate</button>
+    <span style="width:10px"></span>
+    <button class="btn btn-amber" onclick="go('create')">+ New work</button>
+  </div>
+</div>
+<div class="palcap" id="cap-paper"><strong>Paper.</strong> Daylight paper in ink and periwinkle &mdash; the signal glows exactly where it&rsquo;s your move, nowhere else.</div>
+<div class="palcap" id="cap-dusk"><strong>Dusk.</strong> After hours &mdash; deep ink, and the signal carries further in the dark.</div>
+<div class="palcap" id="cap-mist"><strong>Mist.</strong> Cool gray-blue &mdash; a quieter light for quieter days.</div>
+<div id="drift">
+  <span><b>Behind the log.</b> This screen shows r416; the log is at r418. The log wins &mdash; refresh to see current figures.</span>
+  <button class="btn btn-amber" onclick="refreshProjection()">Refresh</button>
+</div>
+<div class="layout">
+  <nav class="sidenav">
+    <button id="nav-work" class="active" onclick="go('work')">Today</button>
+    <button id="nav-create" onclick="go('create')">New work</button>
+    <button id="nav-log" onclick="go('log')">Log</button>
+  </nav>
+  <main class="main">
+    <section id="view-work" class="view active">
+      <div class="dayline">Today</div>
+      <div class="daysub">It&rsquo;s your move on two things. One is in progress. Nothing here is busier than it needs to be.</div>
+      <div class="group">
+        <h3>Your move</h3>
+        <div class="wrow lit" onclick="openDetail('w2')">
+          <div class="kind amber"><span class="sigdot"></span>Your move &mdash; review needed</div>
+          <div class="t">Record tracer attempt 3</div>
+          <div class="p">The agent says it's finished. Its evidence hasn't been checked yet &mdash; that's your call.</div>
+          <div class="m">Implementation Engineer &middot; r416</div>
+        </div>
+        <div class="wrow lit" onclick="openDetail('w3')">
+          <div class="kind terra"><span class="kdot terra"></span>Your move &mdash; decision needed</div>
+          <div class="t">Bind worktree digest into evidence.recorded</div>
+          <div class="p">Should recorded evidence carry a digest of the worktree it came from? Nothing moves until you rule.</div>
+          <div class="m">Unassigned &middot; r414</div>
+        </div>
+      </div>
+      <div class="group">
+        <h3>In progress</h3>
+        <div class="wrow" onclick="openDetail('w1')">
+          <div class="kind gray"><span class="kdot gray"></span>Underway</div>
+          <div class="t">Implement DF-007 timestamp test</div>
+          <div class="p">Turn 6 of 10. Last check-in: partial run, 41 of 44 green.</div>
+          <div class="m">Implementation Engineer &middot; r418</div>
+        </div>
+      </div>
+      <div class="group">
+        <h3>Done</h3>
+        <div class="wrow" onclick="openDetail('w5')">
+          <div class="kind moss"><span class="kdot moss"></span>Checked and accepted</div>
+          <div class="t">Tracer attempt 2</div>
+          <div class="p">Evidence checked against the agreement and accepted by you at 9:38 PM.</div>
+          <div class="m">Implementation Engineer &middot; r414</div>
+        </div>
+      </div>
+      <div class="note"><b>Spirit &amp; truthfulness.</b> Plain words first &mdash; the state of each item reads like a sentence, not a status code. One signal color, one meaning: periwinkle glows only where it&rsquo;s <i>your move</i>. Revisions ride quietly in mono, one honest label per entry; the screen never presents a timeless fact.</div>
+      <div class="fineprint">This screen is a projection of the log as of r418. If they disagree, the log wins.</div>
+    </section>
+
+    <section id="view-detail" class="view">
+      <button class="backlink" onclick="go('work')">&larr; Today</button>
+      <div id="detail-body"></div>
+    </section>
+
+    <section id="view-create" class="view">
+      <div class="dayline">New work</div>
+      <div class="daysub">Describe the outcome you want. The agent drafts the agreement &mdash; you approve it.</div>
+      <div class="steps">
+        <div class="step on" id="cs1">1 &middot; Describe</div>
+        <div class="step" id="cs2">2 &middot; Review the draft</div>
+        <div class="step" id="cs3">3 &middot; Assign</div>
+      </div>
+      <div id="cstep1" class="panel">
+        <label class="flabel" for="nl">What should get done?</label>
+        <textarea class="nl" id="nl" placeholder="Say it the way you'd say it to a person."></textarea>
+        <div style="margin-top:12px; text-align:right;"><button class="btn btn-amber" onclick="draftContract()">Draft the agreement &rarr;</button></div>
+      </div>
+      <div id="cstep2" class="panel" style="display:none;">
+        <p style="margin-bottom:6px; color:var(--muted); font-size:13px;">The agent's draft. Change anything &mdash; nothing is written until you approve.</p>
+        <label class="flabel">Outcome</label><input class="fld" id="f-outcome" value="">
+        <label class="flabel">How we'll know it's done</label><input class="fld" id="f-accept" value="">
+        <label class="flabel">Boundaries</label><input class="fld" id="f-ceil" value="Works in the repo only. No network. Nothing published.">
+        <label class="flabel">When it stops</label><input class="fld" id="f-stop" value="After 10 turns, or 3 failed checks">
+        <div style="margin-top:12px; display:flex; justify-content:space-between;">
+          <button class="btn btn-quiet" onclick="cstep(1)">&larr; Back</button>
+          <button class="btn btn-amber" onclick="cstep(3)">Approve and assign &rarr;</button>
+        </div>
+      </div>
+      <div id="cstep3" class="panel" style="display:none; text-align:center; padding:40px 20px;">
+        <div style="font-family:Fraunces,serif; font-size:20px; font-weight:600; margin-bottom:8px;">It's on the board.</div>
+        <p style="color:var(--muted); font-size:13.5px; margin-bottom:18px;">Recorded in the log first, then shown. You'll hear about it the moment it needs you &mdash; not before.</p>
+        <button class="btn btn-amber" onclick="go('work')">Back to today</button>
+      </div>
+    </section>
+
+    <section id="view-log" class="view">
+      <div class="dayline" style="display:flex; align-items:baseline; justify-content:space-between;">
+        <span>The log</span>
+        <button class="btn btn-quiet" style="font-size:12px;" onclick="simulateDrift()">Simulate a stale screen</button>
+      </div>
+      <div class="daysub">Everything, in order. Read-only &mdash; this is what "checked" means.</div>
+      <div class="panel logspine">
+        <div class="logspine-cap"><span class="live"></span>r418 &middot; latest &mdash; append-only</div>
+        <div class="logrow now"><span class="lr">r418</span><div><div class="le">Evidence recorded</div><div class="ld">Tracer attempt 3 &middot; 41 of 44 checks green &middot; <span class="hash">9f2c&hellip;71ab</span></div></div></div>
+        <div class="logrow"><span class="lr">r417</span><div><div class="le">Agent declared its position</div><div class="ld">Asked for network access, granted none &middot; the refusal names what differed</div></div></div>
+        <div class="logrow"><span class="lr">r416</span><div><div class="le">Agent said it's done</div><div class="ld">Tracer attempt 3 &middot; a claim, not evidence &middot; <span class="hash none">no hash recorded</span></div></div></div>
+        <div class="logrow"><span class="lr">r415</span><div><div class="le">Evidence checked and accepted</div><div class="ld">Tracer attempt 2 &middot; accepted by you</div></div></div>
+        <div class="logrow"><span class="lr">r414</span><div><div class="le">You accepted the work</div><div class="ld">Tracer attempt 2 &middot; recorded with your name on it</div></div></div>
+        <div class="logrow" style="border:none;"><span class="lr">r413</span><div><div class="le">Work assigned</div><div class="ld">DF-007 timestamp test &rarr; Implementation Engineer &middot; 10-turn budget</div></div></div>
+      </div>
+      <div class="note"><b>Truthfulness.</b> The gap at r416 &mdash; <i>no hash recorded</i> &mdash; is shown, not smoothed over. A missing record is itself a record. Event language stays human ("said it's done") while the mono revision keeps it precise.</div>
+      <div class="fineprint">Append-only. The spine at left is honest here &mdash; this list genuinely is in revision order, newest first. If this screen ever disagrees with the log, the log wins and the screen says so &mdash; try "Simulate a stale screen".</div>
+    </section>
+  </main>
+
+  <aside class="rail">
+    <h3>Your move</h3>
+    <div class="need lit" id="n1">
+      <div class="kind amber"><span class="sigdot"></span>Your move &mdash; review</div>
+      <h4>Tracer attempt 3</h4>
+      <p>The agent says it's finished. 41 of 44 checks green, 3 flagged &mdash; recorded but not checked. Accepting closes it for good.</p>
+      <div class="row">
+        <button class="btn btn-amber" onclick="decide('n1','Accepted \u2014 recorded in the log')">Accept</button>
+        <button class="btn btn-quiet" onclick="decide('n1','Sent back with notes')">Send back</button>
+      </div>
+      <div class="note"><b>Truthfulness.</b> One action at a time, in plain words. The rail updates when the ruling lands in the log &mdash; never on the click. Watch: it says "recording" first.</div>
+    </div>
+    <div class="need terra lit" id="n2">
+      <div class="kind terra"><span class="kdot terra"></span>Your move &mdash; decision</div>
+      <h4>Worktree digest on evidence?</h4>
+      <p>Without it, nothing proves evidence came from the final worktree. With it, every record carries a fingerprint.</p>
+      <div class="row">
+        <button class="btn btn-amber" onclick="decide('n2','Digest required')">Require it</button>
+        <button class="btn btn-quiet" onclick="decide('n2','Accepted as-is')">Keep as-is</button>
+      </div>
+    </div>
+    <p style="font-size:12px; color:var(--muted); margin-top:10px;">These stay until you rule. Nothing here clears itself.</p>
+  </aside>
+</div>
+<div class="mocknote">Concept mockup &middot; static &middot; toggle "Annotate" for the reasoning behind each choice</div>
+<div id="toast"></div>
+<script>
+const FOLIOS={
+ w1:{kind:'<span class="kdot gray"></span>Underway',cls:'gray',title:'Implement DF-007 timestamp test',
+  state:'<strong>Underway &mdash; turn 6 of 10.</strong> The last thing recorded is a partial run: 41 of 44 green. Anything newer than r418 isn\u2019t shown until it\u2019s recorded.',
+  plain:'Write a test that asserts every canonical record type carries a validated timestamp.',
+  agreement:[['Outcome','A test file asserting validated timestamps on all canonical record types'],['How we\u2019ll know it\u2019s done','Fails loudly on any missing or invalid timestamp; passes on the current tree'],['Boundaries','Works in the repo only. No network. Nothing published.'],['When it stops','After 10 turns, or 3 failed checks']],
+  evidence:[['Turns 1\u20135','checked'],['Partial run, 41 of 44 green','recorded \u2014 not yet checked'],['Final run','not recorded yet']],
+  note:'The middle state matters: "recorded \u2014 not yet checked" is neither green nor hidden. The UI holds all three honestly.'},
+ w2:{kind:'<span class="sigdot"></span>Your move &mdash; review needed',cls:'amber',title:'Record tracer attempt 3',
+  state:'<strong>The agent says it\u2019s done. Nothing here is checked.</strong> Its evidence is recorded at r418 but hasn\u2019t been measured against the agreement. Your review is the gate.',
+  plain:'Record the third tracer attempt and its output in the register.',
+  agreement:[['Outcome','Attempt-3 record and output in the register'],['How we\u2019ll know it\u2019s done','The register entry cites the run output by hash'],['Boundaries','Register and run output only']],
+  evidence:[['Run output, 41 of 44 green','recorded \u2014 not yet checked'],['Hash in the register entry','not recorded yet'],['Measured against the agreement','not recorded yet']],
+  note:'The claim is shown \u2014 hiding it would also be a lie \u2014 but fenced in plain words: "says it\u2019s done", never "done".'},
+ w3:{kind:'<span class="kdot terra"></span>Your move \u2014 decision needed',cls:'terra',title:'Bind worktree digest into evidence.recorded',
+  state:'<strong>Nothing has happened since r414, and the screen says exactly that.</strong> It doesn\u2019t relabel the silence as "idle" or "waiting" \u2014 it waits, visibly, for your ruling.',
+  plain:'Decide whether recorded evidence must carry a fingerprint of the worktree it came from.',
+  agreement:[['Outcome','A recorded ruling, with your reasoning'],['When it stops','When you rule in "Needs you"']],
+  evidence:[['Review finding 4 (the open question)','recorded']],
+  note:'Blockers get the strongest treatment \u2014 terracotta, not amber \u2014 because "stuck" and "needs a look" are different things. Your AR asked for exactly this distinction.'},
+ w5:{kind:'<span class="kdot moss"></span>Checked and accepted',cls:'moss',title:'Tracer attempt 2',
+  state:'<strong>Checked against the agreement and accepted by you at 9:38 PM.</strong> This is the only green on the screen, and it says when, and by whom.',
+  plain:'Record the second tracer attempt and its output.',
+  agreement:[['Outcome','Attempt-2 record and output in the register'],['How we\u2019ll know it\u2019s done','The register entry cites the run output by hash']],
+  evidence:[['Run output','checked'],['Hash in the register entry','checked'],['Measured against the agreement','checked']],
+  note:'Green is earned and attributed. One green on the whole screen \u2014 calm, because there\u2019s nothing to shout about.'}
+};
+function go(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.sidenav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  const nav=document.getElementById('nav-'+(view==='detail'?'work':view));
+  if(nav)nav.classList.add('active');
+  window.scrollTo(0,0);
+}
+function openDetail(id){
+  const d=FOLIOS[id];
+  let h='<button class="backlink" onclick="go(\'work\')">&larr; Today</button>';
+  h+='<div class="dtitle">'+d.title+'</div>';
+  h+='<div class="kind '+d.cls+'">'+d.kind+'</div>';
+  h+='<div class="dstate" style="margin-top:10px;">'+d.state+'</div>';
+  h+='<div class="panel"><h3>The agreement</h3><dl class="kv">';
+  d.agreement.forEach(a=>{h+='<dt>'+a[0]+'</dt><dd>'+a[1]+'</dd>';});
+  h+='</dl><div class="note">'+d.note+'</div></div>';
+  h+='<div class="panel"><h3>Evidence</h3>';
+  d.evidence.forEach(e=>{
+    const cls=e[1]==='checked'?'ok':'pend';
+    h+='<div class="evrow"><span>'+e[0]+'</span><span class="evstate '+cls+'">'+e[1]+'</span></div>';
+  });
+  h+='<div class="note"><b>Spirit.</b> Technical detail lives one deliberate step away \u2014 hashes, revisions, worktrees appear here, in the drill-down, not on the Today screen. Humanist words up top, restrained mono down here.</div></div>';
+  document.getElementById('detail-body').innerHTML=h;
+  go('detail');
+}
+function decide(id,how){
+  const el=document.getElementById(id);
+  const row=el.querySelector('.row');
+  row.innerHTML='<span style="font-size:12.5px;color:var(--muted);">Recording in the log\u2026</span>';
+  setTimeout(()=>{
+    el.classList.add('done');
+    row.innerHTML='<span style="font-size:13px;color:var(--moss);font-weight:600;">'+how+'</span>';
+    const n=document.querySelectorAll('.need:not(.done)').length;
+    document.querySelector('.rail h3').innerHTML='Your move'+(n?(' <span style="font-weight:400;color:var(--muted);">('+n+' remaining)</span>'):'');
+    toast('Ruling recorded \u2014 the rail updated from the log, not the click');
+  },1200);
+}
+function cstep(n){
+  [1,2,3].forEach(i=>{
+    document.getElementById('cstep'+i).style.display=i===n?'block':'none';
+    document.getElementById('cs'+i).classList.toggle('on',i===n);
+  });
+}
+function draftContract(){
+  const v=document.getElementById('nl').value.trim();
+  const base=(v||'Write a test that checks every record type carries a validated timestamp.').split('.')[0]+'.';
+  document.getElementById('f-outcome').value=base;
+  document.getElementById('f-accept').value='It passes on the current tree, and fails loudly on any violation.';
+  cstep(2);
+  toast('A draft, not a commitment \u2014 nothing is written until you approve');
+}
+function toggleAnnotate(){
+  const on=document.body.classList.toggle('annotated');
+  document.getElementById('annbtn').classList.toggle('on',on);
+}
+function simulateDrift(){
+  document.getElementById('drift').classList.add('show');
+  toast('Screen frozen at r416 \u2014 the log is at r418');
+  window.scrollTo(0,0);
+}
+function refreshProjection(){
+  document.getElementById('drift').classList.remove('show');
+  toast('Refreshed \u2014 screen and log agree at r418');
+}
+let toastT;
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2800);
+}
+</script>
+</body>
+</html>

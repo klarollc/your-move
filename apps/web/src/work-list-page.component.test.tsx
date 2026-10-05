@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -8,6 +8,8 @@ import { WorkListPage } from "./work-list-page.js";
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  window.localStorage.clear();
+  window.sessionStorage.clear();
 });
 
 const reply = (value: unknown, status = 200) =>
@@ -112,7 +114,33 @@ const assignedEvents = [
 ];
 
 describe("Surface B log-backed page", () => {
-  it("creates work through the shared command API using the connected project revision", async () => {
+  it("resets an away baseline that is ahead of the current project's log", async () => {
+    window.localStorage.setItem("your-move:last-seen-revision:project_surface_b", "1");
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/session") {
+        return reply({
+          sessionId: "session_surface_b",
+          csrfToken: "csrf_surface_b",
+          projectId: "project_surface_b",
+          runner: { available: false, state: "unavailable" },
+        });
+      }
+      if (url === "/api/workflow/status") return reply({ available: false, state: "unavailable" });
+      if (url === "/api/log")
+        return reply({ revision: 0, events: [], truncated: false, problems: [] });
+      throw new Error(`unexpected request ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<WorkListPage />);
+
+    expect(await screen.findByRole("heading", { name: "No work yet." })).toBeVisible();
+    expect(screen.queryByRole("heading", { name: "While you were away" })).not.toBeInTheDocument();
+    expect(window.localStorage.getItem("your-move:last-seen-revision:project_surface_b")).toBe("0");
+  });
+
+  it("does not claim to create work until the real agent contract-draft path exists", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
       if (url === "/api/session") {
@@ -128,7 +156,6 @@ describe("Surface B log-backed page", () => {
       }
       if (url === "/api/log")
         return reply({ revision: 0, events: [], truncated: false, problems: [] });
-      if (url === "/api/commands" && init?.method === "POST") return reply({ accepted: true }, 202);
       throw new Error(`unexpected request ${url}`);
     });
     vi.stubGlobal("fetch", fetchMock);
@@ -136,23 +163,10 @@ describe("Surface B log-backed page", () => {
     const user = userEvent.setup();
     render(<WorkListPage />);
     await user.click(await screen.findByRole("button", { name: "New work" }));
-    const dialog = screen.getByRole("region", { name: "Create work" });
-    await user.type(within(dialog).getByLabelText("Outcome"), "Prepare release note");
-    await user.type(within(dialog).getByLabelText(/Acceptance criteria/), "The note is reviewed");
-    await user.click(within(dialog).getByRole("button", { name: "Create work" }));
-
-    await waitFor(() => {
-      const commandCall = fetchMock.mock.calls.find(([url]) => String(url) === "/api/commands");
-      expect(commandCall).toBeDefined();
-      const command = JSON.parse(String(commandCall?.[1]?.body)) as Record<string, unknown>;
-      expect(command).toMatchObject({
-        projectId: "project_surface_b",
-        expectedRevision: 0,
-        actor: { actorType: "manager", actorId: "manager_surface_b" },
-        intent: "work.create",
-        payload: { contract: { outcome: "Prepare release note" } },
-      });
-    });
+    expect(screen.getByRole("region", { name: "Describe the outcome" })).toHaveTextContent(
+      "The current workflow core has no draft service, so this view will not create work.",
+    );
+    expect(fetchMock.mock.calls.some(([url]) => String(url) === "/api/commands")).toBe(false);
   });
 
   it("starts the loopback runner with only the selected work-item id", async () => {
@@ -190,6 +204,7 @@ describe("Surface B log-backed page", () => {
 
     const user = userEvent.setup();
     render(<WorkListPage />);
+    await user.click(await screen.findByRole("button", { name: "Show all work" }));
     await user.click(await screen.findByRole("button", { name: "Run Implement feature" }));
 
     await waitFor(() => {
@@ -197,5 +212,50 @@ describe("Surface B log-backed page", () => {
       expect(runCall).toBeDefined();
       expect(JSON.parse(String(runCall?.[1]?.body))).toEqual({ workItemId: "work_surface_b" });
     });
+  });
+
+  it("replays the whole work projection at a visited log revision and disables past actions", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/session") {
+        return reply({
+          sessionId: "session_surface_b",
+          csrfToken: "csrf_surface_b",
+          projectId: "project_surface_b",
+          runner: { available: true, state: "idle" },
+        });
+      }
+      if (url === "/api/workflow/status") return reply({ available: true, state: "idle" });
+      if (url === "/api/log") {
+        return reply({
+          revision: assignedEvents.length,
+          events: assignedEvents,
+          truncated: false,
+          problems: [],
+        });
+      }
+      throw new Error(`unexpected request ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+    render(<WorkListPage />);
+    await user.click(await screen.findByRole("button", { name: "Log" }));
+    fireEvent.change(screen.getByRole("slider", { name: "Visit a log revision" }), {
+      target: { value: "3" },
+    });
+
+    expect(screen.getByText("Viewing the past · r3. You cannot rule on the past.")).toBeVisible();
+    expect(screen.getByText("◀ you are here")).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Today" }));
+    await user.click(screen.getByRole("button", { name: "Show all work" }));
+    expect(screen.getByText("draft")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Assign" })).toBeDisabled();
+
+    await user.click(screen.getByRole("button", { name: "Return to present · r6" }));
+    expect(
+      within(screen.getByRole("article", { name: "Implement feature" })).getByText("assigned"),
+    ).toBeVisible();
+    expect(screen.getByRole("button", { name: "Run Implement feature" })).toBeEnabled();
   });
 });

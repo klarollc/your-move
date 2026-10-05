@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Move — Round 5: Escalation Detail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --plaster:#11162E; --card:#1A2140; --ink:#ECEFF8; --muted:#98A1C6;
+  --line:#2B3560; --signal:#A3B2EA; --signal-deep:#C6D1F2;
+  --signal-soft:rgba(163,178,234,.14); --glow:rgba(163,178,234,.5);
+  --terra:#C07A5E; --terra-soft:rgba(192,122,94,.13); --moss:#7FA98B; --moss-soft:rgba(127,169,139,.12); --char:#0B0F26;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--char);color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:14px;line-height:1.5;padding:32px;min-height:100vh}
+.page{max-width:1180px;margin:0 auto}
+h1{font-family:'Fraunces',serif;font-weight:600;font-size:30px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:6px 0 28px;max-width:70ch}
+h2{font-family:'Fraunces',serif;font-weight:600;font-size:21px;margin:40px 0 4px;display:flex;align-items:center;gap:10px}
+h2 .n{display:inline-flex;width:26px;height:26px;border-radius:50%;background:var(--signal-soft);border:1px solid var(--signal);color:var(--signal-deep);font-family:'Inter';font-size:13px;font-weight:600;align-items:center;justify-content:center;flex:none}
+.state-desc{color:var(--muted);margin-bottom:14px;max-width:72ch}
+.mock{background:var(--plaster);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:8px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--line)}
+.brand{font-weight:600;font-size:15px;letter-spacing:.01em}
+.brand em{font-style:normal;color:var(--muted);font-weight:400;font-size:12px;margin-left:8px}
+.topmeta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);display:flex;gap:14px}
+.body{display:grid;grid-template-columns:1fr 300px;min-height:420px}
+.detail{padding:22px 26px;border-right:1px solid var(--line)}
+.railcol{padding:18px;background:rgba(11,15,38,.5)}
+.rail-title{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.lamp{width:11px;height:11px;border-radius:50%;background:#3A4470;flex:none}
+.lamp.lit{background:var(--signal);box-shadow:0 0 10px 2px var(--glow)}
+.back{font-size:12.5px;color:var(--muted);margin-bottom:14px;display:inline-block}
+.flag{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.05em;padding:3px 10px;border-radius:6px;margin-bottom:10px;text-transform:uppercase}
+.flag.sig{background:var(--signal-soft);color:var(--signal-deep);border:1px solid var(--signal)}
+.flag.terra{background:var(--terra-soft);color:#E8C4B2;border:1px solid var(--terra)}
+.detail h3{font-family:'Fraunces',serif;font-size:24px;font-weight:600;letter-spacing:-.01em;margin-bottom:4px}
+.since{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:18px}
+.dsec{margin-bottom:18px}
+.dsec h4{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.dsec p{font-size:13.5px;max-width:62ch}
+.dsec p.plain{font-size:14.5px}
+.agree{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--muted);max-width:62ch}
+.agree b{color:var(--ink)}
+.ev{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:8px;max-width:62ch;display:flex;gap:10px;align-items:baseline}
+.ev .st{font-size:11px;font-weight:600;letter-spacing:.04em;flex:none;padding:2px 8px;border-radius:5px;text-transform:uppercase}
+.st.verified{background:var(--moss-soft);color:#B9D6C2;border:1px solid var(--moss)}
+.st.recorded{background:rgba(152,161,198,.1);color:var(--muted);border:1px dashed var(--muted)}
+.st.claimed{background:transparent;color:var(--muted);border:1px dashed var(--line)}
+.ev .tx{font-size:13px}
+.ev .pv{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--muted);margin-top:2px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--signal);color:#11162E;border:none;border-radius:8px;padding:10px 16px;font-family:'Inter';font-size:13px;font-weight:600;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--signal-deep);border:1px solid var(--line)}
+.btn.terraghost{background:transparent;color:#E8C4B2;border:1px solid var(--terra)}
+.deferbox{margin-top:10px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;max-width:62ch}
+.deferbox label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}
+.deferbox input,.deferbox textarea{background:var(--char);border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:8px 10px;font-family:'Inter';font-size:13px;width:100%;margin-bottom:8px}
+.deferbox .req{color:var(--terra);font-size:11px;margin-left:6px}
+.hist{margin-top:4px;max-width:62ch}
+.hline{display:flex;gap:12px;padding:7px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.hline:last-child{border-bottom:none}
+.hline .r{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--signal-deep);flex:none;width:44px}
+.hline .e{color:var(--muted)}
+.rail-item{background:var(--card);border:1px solid var(--signal);border-radius:10px;padding:10px 12px;margin-bottom:8px;box-shadow:0 0 14px -4px var(--glow)}
+.rail-item.current{outline:2px solid var(--signal-deep)}
+.rail-item .t{font-weight:600;font-size:12.5px}
+.rail-item .w{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--signal-deep);margin-top:3px}
+.rail-note{font-size:11.5px;color:var(--muted);margin-top:10px}
+.notes{background:rgba(163,178,234,.05);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-top:10px}
+.notes li{margin:6px 0 6px 18px;color:var(--muted);font-size:13px}
+.notes li b{color:var(--ink);font-weight:600}
+.notes .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--signal-deep);margin-right:6px}
+.rule{border-top:1px solid var(--line);margin:44px 0 0;padding-top:8px}
+.kicker{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--signal);margin:40px 0 4px}
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>Your Move — Round 5: Escalation Detail</h1>
+<p class="sub">Persistent-until-dispositioned needs a full view. The detail panel replaces the list column — the rail stays omnipresent, and the matter you're ruling on is marked <em>in</em> the rail. One focused panel, never a dashboard.</p>
+
+<!-- ============ A: review escalation ============ -->
+<h2><span class="n">A</span> Review escalation — the detail panel</h2>
+<p class="state-desc">A done-claim awaiting your ruling. Plain-words decision first, the agreement, evidence with verification states, risk, actions, and the matter's own trail — in that order.</p>
+<div class="mock">
+  <div class="topbar">
+    <div><span class="brand">Your Move</span><em>round 5 mock</em></div>
+    <div class="topmeta"><span>r519</span><span>log: 238 events</span></div>
+  </div>
+  <div class="body">
+    <div class="detail">
+      <span class="back">← All work</span><br>
+      <span class="flag sig">Needs your review</span>
+      <h3>Review: Q3 budget draft</h3>
+      <div class="since">your move since r509 · waiting 1d · T-102</div>
+      <div class="dsec"><h4>What needs deciding</h4><p class="plain">Dana says the Q3 budget draft is done. Accept it as done, or send it back with notes.</p></div>
+      <div class="dsec"><h4>The agreement</h4><div class="agree">Deliver a <b>Q3 budget draft</b> covering all departments, with variance notes against Q2 actuals. Done means <b>recorded draft + your acceptance</b> — a claim alone never closes it.</div></div>
+      <div class="dsec"><h4>Evidence</h4>
+        <div class="ev"><span class="st verified">Verified</span><div><div class="tx">Draft v3 recorded</div><div class="pv">hash a91f…c4 · worktree w-8814 · r518</div></div></div>
+        <div class="ev"><span class="st recorded">Recorded</span><div><div class="tx">Reviewer comments from Sam</div><div class="pv">r519 · not yet checked</div></div></div>
+        <div class="ev"><span class="st claimed">Claimed</span><div><div class="tx">"All departments covered" — Dana's done-claim</div><div class="pv">r519 · not recorded as evidence</div></div></div>
+      </div>
+      <div class="dsec"><h4>Risk</h4><p>Board packet goes out Friday. A send-back likely slips it by a day.</p></div>
+      <div class="dsec"><h4>Your ruling</h4>
+        <div class="actions"><button class="btn">Accept as done</button><button class="btn ghost">Send back with notes</button><button class="btn ghost">Defer with reason ▾</button></div>
+        <div class="deferbox"><label>Reason <span class="req">required — a defer without one is just snoozing</span></label><textarea rows="2" placeholder="Why is this waiting, and what changes that?"></textarea><label>Re-surface</label><input value="in 2 days"></div>
+      </div>
+      <div class="dsec"><h4>Trail — this matter</h4>
+        <div class="hist">
+          <div class="hline"><span class="r">r519</span><span class="e">Dana claimed done</span></div>
+          <div class="hline"><span class="r">r518</span><span class="e">Evidence recorded — draft v3, hash a91f…c4</span></div>
+          <div class="hline"><span class="r">r512</span><span class="e">Check-in — "two departments left"</span></div>
+          <div class="hline"><span class="r">r505</span><span class="e">Work assigned to Dana</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="railcol">
+      <div class="rail-title"><span class="lamp lit"></span>Your move</div>
+      <div class="rail-item current"><div class="t">Review: Q3 budget draft</div><div class="w">viewing · r519</div></div>
+      <div class="rail-item"><div class="t">Rule on the blocked warehouse decision</div><div class="w">waiting 3d · r501</div></div>
+      <div class="rail-note">The rail stays live — a new matter can interrupt while you rule.</div>
+    </div>
+  </div>
+</div>
+<ul class="notes">
+  <li><span class="tag">A1</span><b>Decision first, evidence second, trail last.</b> The panel is ordered by what the ruling needs: plain-words question → the agreement it answers to → evidence with verification states → risk → actions. The trail is context, not the argument.</li>
+  <li><span class="tag">A2</span><b>Three epistemic states, side by side.</b> Verified / recorded-not-checked / claimed in one evidence list — the hard rule made visible exactly where the ruling happens.</li>
+  <li><span class="tag">A3</span><b>Defer requires a reason and a re-surface.</b> "In 2 days" re-lights the matter — deferral is a ruling with a fuse, not a dismissal. The required-reason copy says the quiet part out loud.</li>
+  <li><span class="tag">A4</span><b>The rail marks what you're viewing.</b> "Viewing · r519" on the current matter — the omnipresent rail and the focused panel never disagree about where you are.</li>
+</ul>
+
+<!-- ============ B: blocker escalation ============ -->
+<h2><span class="n">B</span> Blocker escalation — the terra variant</h2>
+<p class="state-desc">Same panel, blocker treatment. The decision is a fork with named consequences — the panel shows what each path costs.</p>
+<div class="mock">
+  <div class="topbar">
+    <div><span class="brand">Your Move</span><em>round 5 mock</em></div>
+    <div class="topmeta"><span>r521</span><span>log: 241 events</span></div>
+  </div>
+  <div class="body">
+    <div class="detail">
+      <span class="back">← All work</span><br>
+      <span class="flag terra">Blocked — needs your ruling</span>
+      <h3>Decide: renew the warehouse lease?</h3>
+      <div class="since">your move since r501 · waiting 3d · T-103</div>
+      <div class="dsec"><h4>What needs deciding</h4><p class="plain">The lease decision blocks two downstream items (T-118 inventory move, T-121 staffing plan). Renew at the quoted rate, renegotiate, or let it lapse.</p></div>
+      <div class="dsec"><h4>What's at stake</h4><p>Quoted rate is 8% above last term. Letting it lapse triggers the 90-day exit clause — the inventory move would need a new site by March.</p></div>
+      <div class="dsec"><h4>Evidence</h4>
+        <div class="ev"><span class="st verified">Verified</span><div><div class="tx">Lease quote from the landlord</div><div class="pv">r498 · terms match the agreement</div></div></div>
+        <div class="ev"><span class="st recorded">Recorded</span><div><div class="tx">Dana's cost comparison — renew vs. relocate</div><div class="pv">r500 · not yet checked</div></div></div>
+      </div>
+      <div class="dsec"><h4>Your ruling</h4>
+        <div class="actions"><button class="btn">Renew at quoted rate</button><button class="btn terraghost">Renegotiate</button><button class="btn ghost">Let it lapse</button><button class="btn ghost">Defer with reason ▾</button></div>
+      </div>
+      <div class="dsec"><h4>Trail — this matter</h4>
+        <div class="hist">
+          <div class="hline"><span class="r">r501</span><span class="e">Blocked — awaiting lease decision</span></div>
+          <div class="hline"><span class="r">r500</span><span class="e">Evidence recorded — cost comparison</span></div>
+          <div class="hline"><span class="r">r498</span><span class="e">Evidence recorded — landlord quote</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="railcol">
+      <div class="rail-title"><span class="lamp lit"></span>Your move</div>
+      <div class="rail-item current"><div class="t">Decide: renew the warehouse lease?</div><div class="w">viewing · r521</div></div>
+      <div class="rail-item"><div class="t">Review: Q3 budget draft</div><div class="w">waiting 1d · r509</div></div>
+    </div>
+  </div>
+</div>
+<ul class="notes">
+  <li><span class="tag">B1</span><b>Blockers name what they block.</b> "Blocks T-118, T-121" — the blast radius is part of the decision, not trivia for the trail.</li>
+  <li><span class="tag">B2</span><b>Options are rulings, not buttons.</b> Each action is a fork with a named consequence; all three append events. "Let it lapse" is shown honestly as a choice, not buried.</li>
+  <li><span class="tag">B3</span><b>Same panel, same order.</b> Review and blocker escalations share the component — the flag and the actions differ, the structure doesn't.</li>
+</ul>
+
+<div class="rule"></div>
+<p class="kicker">Decisions for you</p>
+<h2 style="margin-top:6px">Rule on these</h2>
+<ul class="notes">
+  <li><b>1.</b> Detail replaces the list column; the rail stays omnipresent and marks the viewed matter. The alternative is a full-screen takeover — but that would break the rail's "visible from every view" rule.</li>
+  <li><b>2.</b> Defer requires a reason + a re-surface point (a ruling with a fuse). Too strict, or the right price for snoozing?</li>
+  <li><b>3.</b> Matter-scoped trail lives in the panel; the Log view stays global. Any objection to the split?</li>
+</ul>
+
+</div>
+</body>
+</html>

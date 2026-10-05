@@ -368,17 +368,49 @@
     {
       "id": "workflow-proof-w7",
       "title": "Workflow proof W7, Surface B primary list",
-      "state": "in_progress",
+      "state": "superseded",
       "spec": "docs/proposals/2026-10-03-workflow-proof-spec.md",
       "checklist": "tasks/workflow-proof-w7-todo.md",
       "tasks": [
         {
           "id": "7",
-          "state": "in_progress",
-          "note": "Implementation, focused tests, typecheck and production build pass. Temporary current-build captures cover 1440x900 and 1280x800; keyboard create/cancel focus was exercised. Fake-log preview had no captured console warnings/errors or failed requests; reduced-motion emulation produced no animations or transitions. Owner review remains. Owner reports starting a runner separately; this worktree did not connect to it or submit a command."
+          "state": "superseded",
+          "note": "Superseded by the approved Your Move package on 2026-10-04, not failed. Existing implementation and verification remain available for carry-over review; replacement plan: tasks/your-move-plan.md."
         }
       ],
-      "note": "Owner authorized Surface B as primary on 2026-10-04; W7 proceeds without the Task 6 office gate. W8 is shelved; W9 and W10–W11 stand as built. W7 implementation is in progress pending remaining browser checks and owner review. No live provider run is authorized."
+      "note": "Superseded, not failed, by Your Move. Preserve conforming W7 behavior and rebuild the rest under the new approved package. W8 remains shelved; W0–W6 and W9–W11 stand as built."
+    },
+    {
+      "id": "your-move",
+      "title": "Your Move, Surface B product implementation",
+      "state": "in_progress",
+      "spec": "docs/your-move/reference/surface-b-ui-spec.md",
+      "plan": "tasks/your-move-plan.md",
+      "checklist": "tasks/your-move-todo.md",
+      "tasks": [
+        {
+          "id": "6",
+          "state": "approved",
+          "note": "Owner approved the MDD amendment, plan and task breakdown on 2026-10-04; response: Approve + bind digest."
+        },
+        {
+          "id": "7",
+          "state": "pending_owner",
+          "note": "Workflow-core proposal is prepared at docs/proposals/2026-10-04-your-move-workflow-core-proposal.md; no proposed event, command or digest field has been implemented."
+        },
+        { "id": "8", "state": "in_progress" },
+        { "id": "9", "state": "in_progress" },
+        { "id": "10", "state": "in_progress" },
+        { "id": "11", "state": "in_progress" },
+        { "id": "12", "state": "in_progress" },
+        { "id": "13", "state": "in_progress" },
+        {
+          "id": "14",
+          "state": "in_progress",
+          "note": "Behavior/evidence matrix and partial browser checks are recorded; the full §8 package and owner visual review remain incomplete."
+        }
+      ],
+      "note": "Implementation authorized by owner 2026-10-04 under the Your Move plan. Substantial read-model/UI code is present; new workflow events, ruling writes and evidence digest schema remain behind Task 7 owner approval. Agent-authored draft service, W12, and §20 are not authorized here."
     },
     {
       "id": "df-047",
@@ -515,7 +547,7 @@
       "Documentation, plans and proposals",
       "Scripts and tests outside the frozen paths",
       "Backend changes that do not change what the office shows",
-      "Workflow proof W7 Surface B list and loopback runner-start affordance, without launching a live run"
+      "Your Move Surface B implementation under the owner-approved plan; workflow-core mutations remain subject to workflow-proof, without launching a live run"
     ],
     "ownerRunOnly": [
       "Evidence writes (npm run phase5:provenance:write)",

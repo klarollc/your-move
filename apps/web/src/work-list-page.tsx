@@ -1,7 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { projectWorkList } from "./work-list-model.js";
-import { WorkList, type SurfaceBCommandApi, type WorkListRunner } from "./work-list.js";
+import { projectWorkList, type WorkListProjectionOptions } from "./work-list-model.js";
+import {
+  WorkList,
+  type SurfaceBCommandApi,
+  type WorkListJourney,
+  type WorkListRunner,
+} from "./work-list.js";
 
 type WorkflowRunnerStatus = WorkListRunner;
 
@@ -18,6 +23,8 @@ type LogResponse = Readonly<{
   truncated: boolean;
   problems: readonly unknown[];
 }>;
+
+type LogRead = WorkListProjectionOptions;
 
 const isBusy = (state: WorkListRunner["state"]) => state === "starting" || state === "running";
 
@@ -57,18 +64,78 @@ export function WorkListPage() {
   const [events, setEvents] = useState<readonly unknown[]>([]);
   const [revision, setRevision] = useState(0);
   const [runner, setRunner] = useState<WorkListRunner>({ available: false, state: "unavailable" });
-  const [partialLog, setPartialLog] = useState(false);
+  const [logRead, setLogRead] = useState<LogRead>({
+    revision: 0,
+    truncated: false,
+    problems: [],
+    connected: false,
+  });
+  const [visitedRevision, setVisitedRevision] = useState<number | null>(null);
+  const [journey, setJourney] = useState<WorkListJourney | null>(null);
+  const priorEventsRef = useRef<readonly unknown[]>([]);
+  const journeyIdRef = useRef(0);
+  const [projectionNow, setProjectionNow] = useState(() => new Date().toISOString());
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refreshLog = useCallback(async (activeSession: SurfaceBSession) => {
-    const response = await fetch("/api/log", {
-      headers: { "x-cuckcode-session": activeSession.sessionId },
-    });
-    const log = await responseJson<LogResponse>(response);
-    setEvents(log.events);
-    setRevision(log.revision);
-    setPartialLog(log.truncated || log.problems.length > 0);
+    try {
+      const response = await fetch("/api/log", {
+        headers: { "x-cuckcode-session": activeSession.sessionId },
+      });
+      const log = await responseJson<LogResponse>(response);
+      const priorEvents = priorEventsRef.current;
+      if (
+        priorEvents.length > 0 &&
+        log.events.length > priorEvents.length &&
+        !log.truncated &&
+        log.problems.length === 0 &&
+        log.revision === log.events.length
+      ) {
+        const before = projectWorkList(priorEvents).items;
+        const after = projectWorkList(log.events).items;
+        const beforeById = new Map(before.map((item) => [item.workItemId, item]));
+        const changed = after.find((item) => {
+          const wasAttention = beforeById.get(item.workItemId)?.group === "your-move";
+          return wasAttention !== (item.group === "your-move");
+        });
+        if (changed) {
+          const direction =
+            beforeById.get(changed.workItemId)?.group === "your-move" ? "departure" : "arrival";
+          const source =
+            direction === "arrival"
+              ? document.getElementById(changed.workItemId)
+              : document.querySelector<HTMLElement>(
+                  `.workflow-rail-item[data-work-item-id="${changed.workItemId}"]`,
+                );
+          const bounds = source?.getBoundingClientRect();
+          if (bounds) {
+            journeyIdRef.current += 1;
+            setJourney({
+              id: journeyIdRef.current,
+              workItemId: changed.workItemId,
+              direction,
+              tint: direction === "departure" && changed.doneVerified ? "moss" : "plain",
+              title: changed.outcome,
+              from: { x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height },
+            });
+          }
+        }
+      }
+      priorEventsRef.current = log.events;
+      setEvents(log.events);
+      setRevision(log.revision);
+      setLogRead({
+        revision: log.revision,
+        truncated: log.truncated,
+        problems: log.problems,
+        connected: true,
+        fetchedAt: new Date().toISOString(),
+      });
+    } catch (cause) {
+      setLogRead((current) => ({ ...current, connected: false }));
+      throw cause;
+    }
   }, []);
 
   const refreshRunner = useCallback(async (activeSession: SurfaceBSession) => {
@@ -107,6 +174,11 @@ export function WorkListPage() {
     void connect();
     return () => controller.abort();
   }, [refreshLog, refreshRunner]);
+
+  useEffect(() => {
+    const timer = setInterval(() => setProjectionNow(new Date().toISOString()), 60_000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (!session || !isBusy(runner.state)) return;
@@ -173,43 +245,12 @@ export function WorkListPage() {
     [refreshLog, revision, session],
   );
 
-  const onCreate: SurfaceBCommandApi["onCreate"] = async ({ outcome, acceptanceCriteria }) => {
-    try {
-      const workItemId = newId("work");
-      await sendCommand("work.create", workItemId, {
-        contract: {
-          outcome,
-          exclusions: [],
-          acceptanceCriteria,
-          dependencies: [],
-          evidenceObligations: [
-            { kind: "work-output", description: "Saved work output and review evidence" },
-          ],
-          permissionCeiling: {
-            sandboxMode: "workspace-write",
-            approvalPolicy: "never",
-            networkAccess: false,
-            windowsSandbox: "unelevated",
-          },
-          stopConditions: [
-            "Stop if the granted posture differs from the requested posture.",
-            "Stop if work would exceed the permission ceiling.",
-          ],
-          definitionOfDone:
-            "The manager reviews inspectable passing evidence and records a disposition.",
-          contextRefs: [],
-        },
-      });
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Could not create work.");
-    }
-  };
-
   const onAssign: SurfaceBCommandApi["onAssign"] = async (workItemId, roleAssignmentId) => {
     try {
       await sendCommand("work.assign", workItemId, { roleAssignmentId });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Could not assign work.");
+      throw cause;
     }
   };
 
@@ -218,6 +259,7 @@ export function WorkListPage() {
       await sendCommand("work.record_evidence", workItemId, evidence);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Could not record evidence.");
+      throw cause;
     }
   };
 
@@ -226,6 +268,7 @@ export function WorkListPage() {
       await sendCommand("work.request_review", workItemId, {});
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Could not request review.");
+      throw cause;
     }
   };
 
@@ -254,10 +297,44 @@ export function WorkListPage() {
       } catch {
         // The original start refusal is the useful surface message.
       }
+      throw cause;
     }
   };
 
-  const projection = useMemo(() => projectWorkList(events, new Date().toISOString()), [events]);
+  const projection = useMemo(
+    () =>
+      projectWorkList(events, {
+        ...logRead,
+        now: projectionNow,
+      }),
+    [events, logRead, projectionNow],
+  );
+  const visibleProjection = useMemo(() => {
+    if (visitedRevision === null) return projection;
+    const prefixLength = Math.max(0, Math.min(visitedRevision, projection.log.length));
+    return projectWorkList(events.slice(0, prefixLength), {
+      ...logRead,
+      revision: visitedRevision,
+      now: projectionNow,
+    });
+  }, [events, logRead, projection, projectionNow, visitedRevision]);
+
+  const refreshFromSurface = useCallback(async () => {
+    try {
+      let activeSession = session;
+      if (!activeSession) {
+        const response = await fetch("/api/session");
+        activeSession = await responseJson<SurfaceBSession>(response);
+        setSession(activeSession);
+      }
+      await refreshLog(activeSession);
+      setError(null);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not refresh the work log.");
+    }
+  }, [refreshLog, session]);
+
+  const cancelJourney = useCallback(() => setJourney(null), []);
 
   return (
     <>
@@ -267,16 +344,28 @@ export function WorkListPage() {
         </p>
       ) : null}
       <WorkList
+        projectId={session?.projectId ?? "unknown"}
         projectName={projection.projectName}
-        revision={revision}
-        items={projection.items}
-        assignments={projection.assignments}
+        revision={visitedRevision ?? projection.revision}
+        currentRevision={projection.revision}
+        visitedRevision={visitedRevision}
+        onVisitRevision={setVisitedRevision}
+        items={visibleProjection.items}
+        assignments={visibleProjection.assignments}
+        log={projection.log}
         runner={runner}
-        connected={session !== null}
-        actionsDisabled={session === null}
-        partialLog={partialLog}
+        connected={logRead.connected === true}
+        actionsDisabled={
+          session === null ||
+          logRead.connected !== true ||
+          visibleProjection.health.status !== "current" ||
+          visitedRevision !== null
+        }
+        health={visibleProjection.health}
+        onRefresh={refreshFromSurface}
         error={error}
-        onCreate={onCreate}
+        journey={journey}
+        onCancelJourney={cancelJourney}
         onAssign={onAssign}
         onEvidence={onEvidence}
         onReview={onReview}

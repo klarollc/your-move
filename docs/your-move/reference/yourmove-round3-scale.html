@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Move — Round 3: Scale + Filtering</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --plaster:#11162E; --card:#1A2140; --ink:#ECEFF8; --muted:#98A1C6;
+  --line:#2B3560; --signal:#A3B2EA; --signal-deep:#C6D1F2;
+  --signal-soft:rgba(163,178,234,.14); --glow:rgba(163,178,234,.5);
+  --terra:#C07A5E; --moss:#7FA98B; --char:#0B0F26;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--char);color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:14px;line-height:1.5;padding:32px;min-height:100vh}
+.page{max-width:1180px;margin:0 auto}
+h1{font-family:'Fraunces',serif;font-weight:600;font-size:30px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:6px 0 28px;max-width:70ch}
+h2{font-family:'Fraunces',serif;font-weight:600;font-size:21px;margin:40px 0 4px;display:flex;align-items:center;gap:10px}
+h2 .n{display:inline-flex;width:26px;height:26px;border-radius:50%;background:var(--signal-soft);border:1px solid var(--signal);color:var(--signal-deep);font-family:'Inter';font-size:13px;font-weight:600;align-items:center;justify-content:center;flex:none}
+.state-desc{color:var(--muted);margin-bottom:14px;max-width:72ch}
+.mock{background:var(--plaster);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:8px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--line)}
+.brand{font-weight:600;font-size:15px;letter-spacing:.01em}
+.brand em{font-style:normal;color:var(--muted);font-weight:400;font-size:12px;margin-left:8px}
+.topmeta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);display:flex;gap:14px}
+.body{display:grid;grid-template-columns:1fr 300px;min-height:380px}
+.listcol{padding:18px 22px}
+.railcol{border-left:1px solid var(--line);padding:18px;background:rgba(11,15,38,.5);display:flex;flex-direction:column}
+.rail-title{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.rail-count{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:12px}
+.lamp{width:11px;height:11px;border-radius:50%;background:#3A4470;flex:none}
+.lamp.lit{background:var(--signal);box-shadow:0 0 10px 2px var(--glow)}
+.toolbar{display:flex;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.toolbar input{background:var(--char);border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:8px 12px;font-family:'Inter';font-size:13px;width:220px}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:20px;padding:6px 12px;font-size:12px;font-family:'Inter';cursor:pointer}
+.chip.on{border-color:var(--signal);color:var(--signal-deep);background:var(--signal-soft)}
+.showing{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin:8px 0 4px}
+.group{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;display:flex;align-items:center;gap:8px}
+.group .caret{color:var(--signal);font-size:10px}
+.group .cnt{font-family:'IBM Plex Mono',monospace;font-weight:400;letter-spacing:0}
+.task{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:baseline}
+.task.ym{border-color:var(--signal);box-shadow:inset 0 0 0 1px var(--signal-soft), 0 0 14px -4px var(--glow)}
+.task .t{font-weight:600;font-size:13px;flex:1}
+.task .m{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--muted);white-space:nowrap}
+.task .wait{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--signal-deep);white-space:nowrap}
+.collapsed{background:var(--card);border:1px dashed var(--line);border-radius:10px;padding:10px 14px;margin-bottom:8px;color:var(--muted);font-size:12.5px;display:flex;justify-content:space-between}
+.collapsed .cnt{font-family:'IBM Plex Mono',monospace;font-size:11px}
+.rail-item{background:var(--card);border:1px solid var(--signal);border-radius:10px;padding:10px 12px;margin-bottom:8px;box-shadow:0 0 14px -4px var(--glow)}
+.rail-item .t{font-weight:600;font-size:12.5px}
+.rail-item .w{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--signal-deep);margin-top:3px}
+.rail-scroll{overflow-y:auto;flex:1;min-height:0;padding-right:2px}
+.rail-foot{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.rail-foot a{color:var(--signal-deep);text-decoration:none}
+.notes{background:rgba(163,178,234,.05);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-top:10px}
+.notes li{margin:6px 0 6px 18px;color:var(--muted);font-size:13px}
+.notes li b{color:var(--ink);font-weight:600}
+.notes .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--signal-deep);margin-right:6px}
+.rule{border-top:1px solid var(--line);margin:44px 0 0;padding-top:8px}
+.kicker{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--signal);margin:40px 0 4px}
+.ordrule{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--signal-deep);background:var(--signal-soft);border-radius:6px;padding:2px 8px;margin-left:8px;letter-spacing:0;text-transform:none;font-weight:400}
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>Your Move — Round 3: Scale + Filtering</h1>
+<p class="sub">54 items. The question: does the calm hold? Proposed answers — collapsed groups with honest counts, one ordering rule per group, a rail that owns its scale, and filters that never masquerade as emptiness.</p>
+
+<!-- ============ A: full list ============ -->
+<h2><span class="n">A</span> The list at 54 items</h2>
+<p class="state-desc">Groups carry counts; long groups collapse past a threshold. Each group has exactly one ordering rule, stated in the mock as it would be in a tooltip or docs line.</p>
+<div class="mock">
+  <div class="topbar">
+    <div><span class="brand">Your Move</span><em>round 3 mock</em></div>
+    <div class="topmeta"><span>r512</span><span>log: 214 events</span></div>
+  </div>
+  <div class="body">
+    <div class="listcol">
+      <div class="toolbar">
+        <input value="" placeholder="Search work…">
+        <button class="chip">Assignee: anyone ▾</button>
+        <button class="chip">Status: all ▾</button>
+      </div>
+      <div class="showing">54 items · as of r512</div>
+      <div class="group"><span class="caret">▾</span>Your move <span class="cnt">(3)</span><span class="ordrule">longest waiting first</span></div>
+      <div class="task ym"><div class="t">Rule on the blocked warehouse decision</div><div class="wait">waiting 3d</div><div class="m">T-103 · r501</div></div>
+      <div class="task ym"><div class="t">Review: Q3 budget draft</div><div class="wait">waiting 1d</div><div class="m">T-102 · r509</div></div>
+      <div class="task ym"><div class="t">Confirm the contractor start date</div><div class="wait">waiting 6h</div><div class="m">T-111 · r511</div></div>
+      <div class="group"><span class="caret">▸</span>In progress <span class="cnt">(31)</span><span class="ordrule">most recent signal first</span></div>
+      <div class="collapsed"><span>31 items — most recent: "File the quarterly tax estimate," check-in r512</span><span class="cnt">expand</span></div>
+      <div class="group"><span class="caret">▸</span>Queued <span class="cnt">(12)</span><span class="ordrule">oldest first</span></div>
+      <div class="collapsed"><span>12 items — oldest: "Renew the parking permits," queued r488</span><span class="cnt">expand</span></div>
+      <div class="group"><span class="caret">▸</span>Done <span class="cnt">(8)</span><span class="ordrule">most recently verified first</span></div>
+      <div class="collapsed"><span>8 items — latest: "Prepare the board meeting agenda," verified r428</span><span class="cnt">expand</span></div>
+    </div>
+    <div class="railcol">
+      <div class="rail-title"><span class="lamp lit"></span>Your move</div>
+      <div class="rail-count">3 matters · as of r512</div>
+      <div class="rail-scroll">
+        <div class="rail-item"><div class="t">Rule on the blocked warehouse decision</div><div class="w">waiting 3d · r501</div></div>
+        <div class="rail-item"><div class="t">Review: Q3 budget draft</div><div class="w">waiting 1d · r509</div></div>
+        <div class="rail-item"><div class="t">Confirm the contractor start date</div><div class="w">waiting 6h · r511</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<ul class="notes">
+  <li><span class="tag">A1</span><b>One ordering rule per group, no exceptions.</b> Your move: longest waiting first (oldest need gets the top). In progress: most recent signal first (what's alive). Queued: oldest first (FIFO). Done: most recently verified first. Deterministic, explainable, no "relevance" black box.</li>
+  <li><span class="tag">A2</span><b>Collapsed groups name their head item.</b> "31 items — most recent: …" means a collapsed group still tells you something true instead of being a bare number.</li>
+  <li><span class="tag">A3</span><b>Wait durations in plain words.</b> "Waiting 3d" next to the revision — the manager reads the urgency; the revision carries the proof.</li>
+</ul>
+
+<!-- ============ B: rail at scale ============ -->
+<h2><span class="n">B</span> The rail at scale — 11 matters</h2>
+<p class="state-desc">The stress case for the rail. Proposal: the rail shows <em>all</em> your-move matters, oldest first, in its own scroll region — it never samples or "top-5"s your obligations. The count line keeps it honest.</p>
+<div class="mock">
+  <div class="topbar">
+    <div><span class="brand">Your Move</span><em>round 3 mock</em></div>
+    <div class="topmeta"><span>r518</span><span>log: 231 events</span></div>
+  </div>
+  <div class="body">
+    <div class="listcol">
+      <div class="toolbar"><input placeholder="Search work…"><button class="chip">Assignee: anyone ▾</button><button class="chip">Status: all ▾</button></div>
+      <div class="showing">61 items · as of r518</div>
+      <div class="group"><span class="caret">▾</span>Your move <span class="cnt">(11)</span><span class="ordrule">longest waiting first</span></div>
+      <div class="task ym"><div class="t">Rule on the blocked warehouse decision</div><div class="wait">waiting 4d</div><div class="m">T-103 · r501</div></div>
+      <div class="task ym"><div class="t">Approve the vendor contract</div><div class="wait">waiting 2d</div><div class="m">T-114 · r505</div></div>
+      <div class="task ym"><div class="t">Review: Q3 budget draft</div><div class="wait">waiting 2d</div><div class="m">T-102 · r509</div></div>
+      <div class="collapsed"><span>8 more in this group — oldest waiting: "Sign the insurance renewal," waiting 1d</span><span class="cnt">expand</span></div>
+    </div>
+    <div class="railcol">
+      <div class="rail-title"><span class="lamp lit"></span>Your move</div>
+      <div class="rail-count">11 matters · as of r518</div>
+      <div class="rail-scroll">
+        <div class="rail-item"><div class="t">Rule on the blocked warehouse decision</div><div class="w">waiting 4d · r501</div></div>
+        <div class="rail-item"><div class="t">Approve the vendor contract</div><div class="w">waiting 2d · r505</div></div>
+        <div class="rail-item"><div class="t">Review: Q3 budget draft</div><div class="w">waiting 2d · r509</div></div>
+        <div class="rail-item"><div class="t">Sign the insurance renewal</div><div class="w">waiting 1d · r513</div></div>
+        <div class="rail-item"><div class="t">Confirm the contractor start date</div><div class="w">waiting 9h · r515</div></div>
+        <div class="rail-item"><div class="t">Send back: expense report</div><div class="w">waiting 4h · r516</div></div>
+        <div class="rail-item"><div class="t">Rule on the hiring freeze exception</div><div class="w">waiting 2h · r517</div></div>
+      </div>
+      <div class="rail-foot">+ 4 more · <a href="#">view all in list</a></div>
+    </div>
+  </div>
+</div>
+<ul class="notes">
+  <li><span class="tag">B1</span><b>No sampling.</b> The rail scrolls through all 11 rather than showing a "top 5." A "top N" rail would be the UI deciding which of your obligations you see — exactly the kind of quiet lying the product exists to avoid.</li>
+  <li><span class="tag">B2</span><b>The overflow line counts, it doesn't tease.</b> "+ 4 more" plus a link that filters the list to your-move. The count is the honesty; the link is the convenience.</li>
+  <li><span class="tag">B3</span><b>Oldest first is a fairness rule.</b> The thing waiting 4 days sits above the thing waiting 2 hours, always. No engagement optimization, no recency bias.</li>
+</ul>
+
+<!-- ============ C: filtered ============ -->
+<h2><span class="n">C</span> Filtered — search + assignee chip</h2>
+<p class="state-desc">The round-2C rule applied at scale: the filter names itself, counts what it shows against the whole, and the rail stays global.</p>
+<div class="mock">
+  <div class="topbar">
+    <div><span class="brand">Your Move</span><em>round 3 mock</em></div>
+    <div class="topmeta"><span>r518</span><span>log: 231 events</span></div>
+  </div>
+  <div class="body">
+    <div class="listcol">
+      <div class="toolbar"><input value="budget"><button class="chip on">Assignee: Dana ✕</button><button class="chip">Status: all ▾</button><button class="chip" style="border-style:dashed">Clear all</button></div>
+      <div class="showing">3 of 61 shown · search "budget" · assignee Dana · as of r518</div>
+      <div class="group"><span class="caret">▾</span>Your move <span class="cnt">(1 of 11)</span></div>
+      <div class="task ym"><div class="t">Review: Q3 budget draft</div><div class="wait">waiting 2d</div><div class="m">T-102 · r509</div></div>
+      <div class="group"><span class="caret">▾</span>In progress <span class="cnt">(2 of 34)</span></div>
+      <div class="task"><div class="t">Reconcile the budget variances</div><div class="m">T-120 · with Dana · no signal since r514</div></div>
+      <div class="task"><div class="t">Draft the budget narrative</div><div class="m">T-121 · with Dana · check-in r518</div></div>
+    </div>
+    <div class="railcol">
+      <div class="rail-title"><span class="lamp lit"></span>Your move</div>
+      <div class="rail-count">11 matters · as of r518 · unfiltered</div>
+      <div class="rail-scroll">
+        <div class="rail-item"><div class="t">Rule on the blocked warehouse decision</div><div class="w">waiting 4d · r501</div></div>
+        <div class="rail-item"><div class="t">Approve the vendor contract</div><div class="w">waiting 2d · r505</div></div>
+        <div class="rail-item"><div class="t">Review: Q3 budget draft</div><div class="w">waiting 2d · r509</div></div>
+      </div>
+      <div class="rail-foot">+ 8 more · <a href="#">view all in list</a></div>
+    </div>
+  </div>
+</div>
+<ul class="notes">
+  <li><span class="tag">C1</span><b>Group counts go fractional.</b> "(1 of 11)" — the group tells you both what the filter shows and what exists. Nothing about the filter is allowed to look like the world.</li>
+  <li><span class="tag">C2</span><b>Rail labeled "unfiltered."</b> One word that prevents the worst misreading: that your obligations shrank because your search did.</li>
+  <li><span class="tag">C3</span><b>Filters are chips, not a panel.</b> Visible, individually removable, one "clear all." The filter state is always legible at a glance.</li>
+</ul>
+
+<div class="rule"></div>
+<p class="kicker">Decisions for you</p>
+<h2 style="margin-top:6px">Rule on these</h2>
+<ul class="notes">
+  <li><b>1.</b> The four ordering rules (your-move: longest waiting first; in progress: most recent signal; queued: oldest; done: most recently verified). Any objections?</li>
+  <li><b>2.</b> Rail at scale: full scroll, no sampling (mock B). Or would you rather cap it at 5 with "+N more"?</li>
+  <li><b>3.</b> Group collapse: auto-collapse past ~8 items with the head-item line (mock A), and should collapse state persist per session?</li>
+</ul>
+
+</div>
+</body>
+</html>

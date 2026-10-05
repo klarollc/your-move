@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Move — Round 6: Character (Lamp, Time Travel, the Journey)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --plaster:#11162E; --card:#1A2140; --ink:#ECEFF8; --muted:#98A1C6;
+  --line:#2B3560; --signal:#A3B2EA; --signal-deep:#C6D1F2;
+  --signal-soft:rgba(163,178,234,.14); --glow:rgba(163,178,234,.5);
+  --terra:#C07A5E; --terra-soft:rgba(192,122,94,.13); --moss:#7FA98B; --char:#0B0F26;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--char);color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:14px;line-height:1.5;padding:32px;min-height:100vh}
+.page{max-width:1180px;margin:0 auto}
+h1{font-family:'Fraunces',serif;font-weight:600;font-size:30px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:6px 0 28px;max-width:72ch}
+h2{font-family:'Fraunces',serif;font-weight:600;font-size:21px;margin:40px 0 4px;display:flex;align-items:center;gap:10px}
+h2 .n{display:inline-flex;width:26px;height:26px;border-radius:50%;background:var(--signal-soft);border:1px solid var(--signal);color:var(--signal-deep);font-family:'Inter';font-size:13px;font-weight:600;align-items:center;justify-content:center;flex:none}
+.state-desc{color:var(--muted);margin-bottom:14px;max-width:72ch}
+.mock{background:var(--plaster);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:8px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--line)}
+.brand{font-weight:600;font-size:15px}
+.brand em{font-style:normal;color:var(--muted);font-weight:400;font-size:12px;margin-left:8px}
+.topmeta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);display:flex;gap:14px;align-items:center}
+.masterlamp{display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 10px;border:1px solid var(--line);border-radius:20px;background:var(--card)}
+.masterlamp .dot{width:11px;height:11px;border-radius:50%;background:#3A4470;flex:none}
+.masterlamp.lit .dot{background:var(--signal);box-shadow:0 0 10px 2px var(--glow)}
+.masterlamp .cnt{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--signal-deep)}
+.masterlamp.dim{opacity:.55}
+.masterlamp.dim .dot{background:transparent;border:2px solid #3A4470}
+.banner{padding:10px 18px;font-size:13px;display:flex;align-items:center;gap:10px;justify-content:space-between}
+.banner.past{background:var(--signal-soft);border-bottom:1px solid var(--signal);color:var(--signal-deep)}
+.banner .btn{padding:6px 12px;font-size:12px}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--signal);color:#11162E;border:none;border-radius:8px;padding:8px 14px;font-family:'Inter';font-size:12.5px;font-weight:600;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--signal-deep);border:1px solid var(--line)}
+.body{display:grid;grid-template-columns:1fr 300px;min-height:280px}
+.listcol{padding:18px 22px}
+.railcol{border-left:1px solid var(--line);padding:18px;background:rgba(11,15,38,.5)}
+.rail-title{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.task{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:8px}
+.task .t{font-weight:600;font-size:13px}
+.task .m{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--muted);margin-top:3px}
+.task.ym{border-color:var(--signal);box-shadow:0 0 14px -4px var(--glow)}
+.rail-item{background:var(--card);border:1px solid var(--signal);border-radius:10px;padding:10px 12px;margin-bottom:8px;box-shadow:0 0 14px -4px var(--glow)}
+.rail-item .t{font-weight:600;font-size:12.5px}
+.rail-item .w{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--signal-deep);margin-top:3px}
+/* storyboard */
+.frames{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:18px 22px}
+.frame{background:var(--char);border:1px solid var(--line);border-radius:10px;padding:12px;min-height:190px;position:relative}
+.frame .fn{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--signal-deep);letter-spacing:.06em;margin-bottom:8px}
+.frame .cap{font-size:11.5px;color:var(--muted);margin-top:8px}
+.ghost{border:1px solid var(--signal);border-radius:8px;background:var(--signal-soft);padding:8px 10px;font-size:11.5px;font-weight:600;box-shadow:0 0 18px -2px var(--glow)}
+.ghost .trail{position:absolute;}
+.farrow{position:absolute;top:50%;font-size:20px;color:var(--signal)}
+.slot{border:1px dashed var(--line);border-radius:8px;padding:8px 10px;font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace}
+/* scrubber */
+.scrub{padding:16px 22px;border-bottom:1px solid var(--line);background:rgba(11,15,38,.5)}
+.scrub label{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:8px}
+.scrub input[type=range]{width:100%;accent-color:var(--signal)}
+.scrub .ends{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--muted);margin-top:4px}
+.logview{padding:14px 22px;font-family:'IBM Plex Mono',monospace;font-size:12px}
+.logline{padding:7px 12px;border-left:2px solid var(--line);margin-bottom:6px;color:var(--muted)}
+.logline .r{color:var(--signal-deep)}
+.logline.future{opacity:.35}
+.logline.at{border-left-color:var(--signal);color:var(--ink);background:var(--signal-soft);border-radius:0 8px 8px 0}
+.notes{background:rgba(163,178,234,.05);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-top:10px}
+.notes li{margin:6px 0 6px 18px;color:var(--muted);font-size:13px}
+.notes li b{color:var(--ink);font-weight:600}
+.notes .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--signal-deep);margin-right:6px}
+.rule{border-top:1px solid var(--line);margin:44px 0 0;padding-top:8px}
+.kicker{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--signal);margin:40px 0 4px}
+.spec{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--muted);background:var(--char);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>Your Move — Round 6: Character</h1>
+<p class="sub">Three ideas that give the app a face without touching its honesty: a master lamp with a heartbeat, time travel on the log, and the two-sided journey — every governance act as a visible trip, worker → you → worker.</p>
+
+<!-- ============ 1: MASTER LAMP ============ -->
+<h2><span class="n">1</span> The master lamp</h2>
+<p class="state-desc">One lamp in the topbar, visible from every view — including the calm screen and the log. Lit means something, somewhere, is your move. It is the app's heartbeat, not a notification badge.</p>
+<div class="mock">
+  <div class="topbar">
+    <div><span class="brand">Your Move</span><em>round 6 mock</em></div>
+    <div class="topmeta">
+      <div class="masterlamp lit"><span class="dot"></span><span class="cnt">3</span></div>
+      <span>r512</span><span>log: 214 events</span>
+    </div>
+  </div>
+  <div class="body">
+    <div class="listcol">
+      <div class="task"><div class="t">File the quarterly tax estimate</div><div class="m">T-104 · with Priya · check-in r512</div></div>
+      <div class="task"><div class="t">Onboard the new contractor</div><div class="m">T-105 · unassigned</div></div>
+    </div>
+    <div class="railcol">
+      <div class="rail-title">Your move</div>
+      <div class="rail-item"><div class="t">Rule on the blocked warehouse decision</div><div class="w">waiting 3d · r501</div></div>
+      <div class="rail-item"><div class="t">Review: Q3 budget draft</div><div class="w">waiting 1d · r509</div></div>
+      <div class="rail-item"><div class="t">Confirm the contractor start date</div><div class="w">waiting 6h · r511</div></div>
+    </div>
+  </div>
+</div>
+<div class="mock" style="margin-top:10px">
+  <div class="topbar">
+    <div><span class="brand">Your Move</span><em>stale state</em></div>
+    <div class="topmeta">
+      <div class="masterlamp dim"><span class="dot"></span><span class="cnt" style="color:var(--muted)">3?</span></div>
+      <span>r512</span><span style="color:#E8C4B2">disconnected · 4 min</span>
+    </div>
+  </div>
+</div>
+<ul class="notes">
+  <li><span class="tag">L1</span><b>One lamp to rule the glow.</b> Every per-row lamp in the app is a reflection of this one. It answers "is anything my move?" without scrolling, from any view — the calm screen included, where it sits unlit above the big lamp.</li>
+  <li><span class="tag">L2</span><b>Clicking it takes you to your move.</b> The lamp is a control, not a decoration: one click → Today view, your-move group expanded. The count is mono, quiet, exact.</li>
+  <li><span class="tag">L3</span><b>Stale has a face.</b> Disconnected or behind the log, the lamp goes hollow and the count gets a question mark — "3?" — because the projection can't vouch for it anymore. The banner still carries the full story.</li>
+</ul>
+
+<!-- ============ 2: TIME TRAVEL ============ -->
+<h2><span class="n">2</span> Log time-travel</h2>
+<p class="state-desc">A revision scrubber on the Log view. Drag it back and the <em>entire</em> projection — list, rail, calm screen, as-of — re-folds as it was. The past is visitable, never editable.</p>
+<div class="mock">
+  <div class="topbar">
+    <div><span class="brand">Your Move</span><em>round 6 mock</em></div>
+    <div class="topmeta"><span style="color:var(--signal-deep)">viewing r505</span><span>log: r512</span></div>
+  </div>
+  <div class="banner past"><span><b>You’re viewing r505 as it was.</b> The log is at r512. The past is read-only.</span><button class="btn">Return to present</button></div>
+  <div class="scrub">
+    <label>Scrub the log — the whole screen follows</label>
+    <input type="range" min="407" max="512" value="505">
+    <div class="ends"><span>r407 · first event</span><span style="color:var(--signal-deep)">r505 · viewing</span><span>r512 · present</span></div>
+  </div>
+  <div class="logview">
+    <div class="logline"><span class="r">r512</span> · check-in appended · T-104</div>
+    <div class="logline"><span class="r">r511</span> · work assigned · T-111</div>
+    <div class="logline future"><span class="r">r510</span> · evidence recorded · T-102</div>
+    <div class="logline future"><span class="r">r509</span> · work assigned · T-102</div>
+    <div class="logline future"><span class="r">r508</span> · check-in · T-101</div>
+    <div class="logline at"><span class="r">r505</span> · work assigned · T-101 → J. Okafor &nbsp;◀ you are here</div>
+    <div class="logline"><span class="r">r504</span> · work created · T-103</div>
+  </div>
+</div>
+<ul class="notes">
+  <li><span class="tag">T1</span><b>The whole screen time-travels, not just the log.</b> List, rail, calm screen, as-of — everything re-folds at r505. A log-only scrubber would be a museum exhibit; this is the product's memory made navigable.</li>
+  <li><span class="tag">T2</span><b>The past is read-only, loudly.</b> Signal-colored banner (not terra — this isn't an error), "Return to present" as the primary action, and every ruling control disabled with the reason: "You can't rule on the past."</li>
+  <li><span class="tag">T3</span><b>The spine shows where you are.</b> "◀ you are here" at r505; later events dim but stay listed — the future isn't hidden, it's marked as not-yet.</li>
+  <li><span class="tag">T4</span><b>Answers real questions.</b> "What did my Tuesday look like?" "When exactly did this become my move?" — the audit trail becomes an experience, not just a compliance feature.</li>
+</ul>
+
+<!-- ============ 3: THE JOURNEY ============ -->
+<h2><span class="n">3</span> The two-sided journey</h2>
+<p class="state-desc">Your addition: the animation runs both ways. Worker → you when a matter arrives; you → worker when you rule. Every governance act is a visible trip — the physical journey of the work.</p>
+<div class="mock">
+  <div class="topbar">
+    <div><span class="brand">Your Move</span><em>storyboard — arrival (worker → you)</em></div>
+    <div class="topmeta"><span>r520</span></div>
+  </div>
+  <div class="frames">
+    <div class="frame"><div class="fn">1 · THE CLAIM</div><div class="task"><div class="t">Review: Q3 budget draft</div><div class="m">T-102 · underway</div></div><div class="cap">Dana's done-claim appends at r520. The log is now truth.</div></div>
+    <div class="frame"><div class="fn">2 · LIFT-OFF</div><div class="ghost" style="box-shadow:0 0 26px var(--glow)">Review: Q3 budget draft<div style="font-weight:400;font-size:10.5px;color:var(--signal-deep)">becoming your move…</div></div><div class="cap">A ghost of the card lifts from the list. The original stays put — nothing moves until the projection re-folds.</div></div>
+    <div class="frame"><div class="fn">3 · THE TRIP</div><div style="position:relative;height:80px;"><div class="ghost" style="position:absolute;right:6px;top:10px;">Review: Q3 budget draft</div><div class="farrow" style="left:40%;">→</div></div><div class="cap">550ms, one calm ease, no bounce. It travels list → rail while the master lamp lights.</div></div>
+    <div class="frame"><div class="fn">4 · ARRIVAL</div><div class="rail-item"><div class="t">Review: Q3 budget draft</div><div class="w">waiting just now · r520</div></div><div class="cap">The ghost fades; the rail's real card is already there. Lamp lit, count +1.</div></div>
+  </div>
+</div>
+<div class="mock" style="margin-top:10px">
+  <div class="topbar">
+    <div><span class="brand">Your Move</span><em>storyboard — departure (you → worker)</em></div>
+    <div class="topmeta"><span>r521</span></div>
+  </div>
+  <div class="frames">
+    <div class="frame"><div class="fn">1 · THE RULING</div><div class="rail-item"><div class="t">Review: Q3 budget draft</div><div class="w">"recording…"</div></div><div class="cap">You click Accept. "Recording…" — the animation waits. Nothing flies on intent.</div></div>
+    <div class="frame"><div class="fn">2 · THE LOG</div><div class="slot">r521 · review.accepted · you</div><div class="cap">The ruling appends. Only now does anything move.</div></div>
+    <div class="frame"><div class="fn">3 · THE TRIP BACK</div><div style="position:relative;height:80px;"><div class="ghost" style="position:absolute;left:6px;top:10px;border-color:var(--moss);background:rgba(127,169,139,.12);box-shadow:none;">Review: Q3 budget draft</div><div class="farrow" style="right:40%;transform:scaleX(-1);">→</div></div><div class="cap">The ghost travels rail → Done, tinted by its fate: moss for accepted, plain for sent-back.</div></div>
+    <div class="frame"><div class="fn">4 · SETTLED</div><div class="task"><div class="t">Review: Q3 budget draft</div><div class="m">T-102 · checked and accepted · r521</div></div><div class="cap">It lands in Done. The master lamp dims one count — or goes dark, if that was the last.</div></div>
+  </div>
+</div>
+<div class="spec">motion spec — 550ms · cubic-bezier(.22,.8,.3,1) · ghost at 90% scale, fades in the last 150ms · lamp pulses once on arrival · prefers-reduced-motion: no flight, crossfade only · animation starts after the log appends, never on intent · cancelled if the user navigates mid-flight</div>
+<ul class="notes">
+  <li><span class="tag">J1</span><b>Two-sided, as you asked.</b> Arrival (worker → you) and departure (you → worker) are the same component run in opposite directions. Governance reads as a round trip, not a notification.</li>
+  <li><span class="tag">J2</span><b>The ghost, not the card.</b> The real cards never move — the projection re-folds instantly and a ghost flies the old→new path. The UI can't be caught mid-lie with a card in two places.</li>
+  <li><span class="tag">J3</span><b>Departures are tinted by fate.</b> Accepted glows moss on its way to Done; sent-back travels plain back to In progress; a deferral drifts to Deferred. The journey narrates the ruling.</li>
+  <li><span class="tag">J4</span><b>The lamp keeps time.</b> It lights as the arrival lands and dims as the departure settles — the master lamp and the journeys are one system.</li>
+</ul>
+
+<div class="rule"></div>
+<p class="kicker">Decisions for you</p>
+<h2 style="margin-top:6px">Rule on these</h2>
+<ul class="notes">
+  <li><b>1.</b> Master lamp: topbar placement, click → your-move view. Keep the count, or dot alone?</li>
+  <li><b>2.</b> Time travel: whole-projection (recommended) with writes disabled in the past. Scrubber on the Log view only, or also a compact version on Today?</li>
+  <li><b>3.</b> The journey: ghost-flight spec as storyboarded. Anything you'd change — speed, the fate-tinting, the lamp pulse?</li>
+</ul>
+
+</div>
+</body>
+</html>

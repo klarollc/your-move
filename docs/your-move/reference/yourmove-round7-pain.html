@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Move — Round 7: Pain-Grounded Character</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --plaster:#11162E; --card:#1A2140; --ink:#ECEFF8; --muted:#98A1C6;
+  --line:#2B3560; --signal:#A3B2EA; --signal-deep:#C6D1F2;
+  --signal-soft:rgba(163,178,234,.14); --glow:rgba(163,178,234,.5);
+  --terra:#C07A5E; --terra-soft:rgba(192,122,94,.13); --moss:#7FA98B; --moss-soft:rgba(127,169,139,.12); --char:#0B0F26;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--char);color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:14px;line-height:1.5;padding:32px;min-height:100vh}
+.page{max-width:1180px;margin:0 auto}
+h1{font-family:'Fraunces',serif;font-weight:600;font-size:30px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:6px 0 28px;max-width:70ch}
+h2{font-family:'Fraunces',serif;font-weight:600;font-size:21px;margin:40px 0 4px;display:flex;align-items:center;gap:10px}
+h2 .n{display:inline-flex;width:26px;height:26px;border-radius:50%;background:var(--signal-soft);border:1px solid var(--signal);color:var(--signal-deep);font-family:'Inter';font-size:13px;font-weight:600;align-items:center;justify-content:center;flex:none}
+.pain{font-size:12.5px;color:var(--muted);margin-bottom:14px;max-width:72ch;border-left:2px solid var(--terra);padding-left:12px}
+.mock{background:var(--plaster);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:8px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--line)}
+.brand{font-weight:600;font-size:15px}
+.brand em{font-style:normal;color:var(--muted);font-weight:400;font-size:12px;margin-left:8px}
+.topmeta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);display:flex;gap:14px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--signal);color:#11162E;border:none;border-radius:8px;padding:9px 16px;font-family:'Inter';font-size:13px;font-weight:600;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--signal-deep);border:1px solid var(--line)}
+.btn.quiet{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.sess{max-width:640px;margin:0 auto;padding:34px 26px}
+.sess .prog{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between}
+.pbar{height:4px;background:var(--line);border-radius:2px;margin-bottom:22px;overflow:hidden}
+.pbar i{display:block;height:100%;width:29%;background:var(--signal);border-radius:2px}
+.scard{background:var(--card);border:1px solid var(--signal);border-radius:14px;padding:22px 24px;box-shadow:0 0 30px -6px var(--glow)}
+.scard h3{font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin:8px 0 4px}
+.flag{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.05em;padding:3px 10px;border-radius:6px;text-transform:uppercase}
+.flag.sig{background:var(--signal-soft);color:var(--signal-deep);border:1px solid var(--signal)}
+.flag.quiet{background:transparent;color:var(--muted);border:1px dashed var(--muted)}
+.scard .dl{color:var(--muted);font-size:13.5px;margin:10px 0 14px}
+.evmini{font-size:12.5px;color:var(--muted);margin-bottom:16px}
+.evmini .ok{color:var(--moss)} .evmini .pd{color:var(--muted)}
+.sactions{display:flex;gap:8px;flex-wrap:wrap}
+.sactions .skip{margin-left:auto}
+.calmwrap{min-height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 24px}
+.calmwrap h3{font-family:'Fraunces',serif;font-size:24px;font-weight:600;margin-bottom:10px}
+.calmwrap p{color:var(--muted);max-width:46ch;margin-bottom:8px}
+.digest{text-align:left;max-width:520px;margin:18px auto 24px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.digest .dr{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}
+.digest .dr:last-child{border:none}
+.digest .dr .k{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--signal-deep);flex:none;width:52px;padding-top:2px}
+.digest .dr a{color:var(--signal-deep);text-decoration:none;cursor:pointer}
+.railcol{max-width:360px;margin:0 auto;padding:20px}
+.ritem{background:var(--card);border:1px solid var(--signal);border-radius:10px;padding:12px 14px;margin-bottom:10px;box-shadow:0 0 14px -4px var(--glow)}
+.ritem .t{font-weight:600;font-size:13px}
+.ritem .w{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--signal-deep);margin:4px 0 8px}
+.ritem .row{display:flex;gap:8px}
+.ritem .btn{padding:7px 12px;font-size:12px}
+.toastmock{position:relative;margin:0 auto;max-width:520px;background:var(--ink);color:var(--char);padding:12px 18px;border-radius:10px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:12px}
+.toastmock .btn{background:var(--char);color:var(--ink);padding:6px 14px;font-size:12px;margin-left:auto}
+.toastmock small{font-weight:400;color:#4A5278;display:block}
+.trail{max-width:520px;margin:14px auto 0;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--muted)}
+.trail div{padding:6px 0;border-bottom:1px solid var(--line)}
+.attest{max-width:640px;margin:0 auto;padding:24px}
+.attest .box{background:var(--moss-soft);border:1px solid var(--moss);border-radius:10px;padding:14px 16px;margin-bottom:14px;font-size:13px}
+.attest .box b{color:#B9D6C2}
+.attest .box ul{margin:8px 0 0 18px;color:var(--muted);font-size:12.5px}
+.lens{padding:18px 22px}
+.ltoggle{display:flex;gap:8px;margin-bottom:16px}
+.lperson{margin-bottom:18px}
+.lperson>h4{font-size:13px;font-weight:600;margin-bottom:2px}
+.lperson .load{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--muted);margin-bottom:8px}
+.lrow{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin-bottom:6px;font-size:12.5px}
+.lrow .dot{width:8px;height:8px;border-radius:50%;flex:none}
+.lrow .st{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--muted)}
+.notes{background:rgba(163,178,234,.05);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-top:10px}
+.notes li{margin:6px 0 6px 18px;color:var(--muted);font-size:13px}
+.notes li b{color:var(--ink);font-weight:600}
+.notes .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--signal-deep);margin-right:6px}
+.rule{border-top:1px solid var(--line);margin:44px 0 0;padding-top:8px}
+.kicker{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--signal);margin:40px 0 4px}
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>Your Move — Round 7: Pain-Grounded Character</h1>
+<p class="sub">Seven ideas, each answering a real pain of supervising work. Every one is a projection of the log — no new write paths beyond the ruling events themselves.</p>
+
+<!-- 1 -->
+<h2><span class="n">1</span> Ruling session</h2>
+<p class="pain"><b>The pain:</b> ruling on 11 scattered matters between other work — decision fatigue, no rhythm, the important ones drown with the trivial.</p>
+<div class="mock">
+  <div class="topbar"><div><span class="brand">Your Move</span><em>ruling session</em></div><div class="topmeta"><button class="btn quiet" style="padding:6px 12px;font-size:12px">End session</button></div></div>
+  <div class="sess">
+    <div class="prog"><span>Matter 2 of 7</span><span>longest waiting first</span></div>
+    <div class="pbar"><i></i></div>
+    <div class="scard">
+      <span class="flag sig">Needs your review</span>
+      <h3>Review: Q3 budget draft</h3>
+      <div class="dl">M. Chen says it's done. 2 evidence items checked, 1 recorded — nothing surprising left, per the agreement.</div>
+      <div class="evmini"><span class="ok">✓ draft v3</span> · <span class="ok">✓ line-number flags</span> · <span class="pd">○ reviewer comments (recorded)</span></div>
+      <div class="sactions">
+        <button class="btn">Accept</button><button class="btn ghost">Send back</button><button class="btn ghost">Defer ▾</button>
+        <button class="btn quiet skip">Skip →</button>
+      </div>
+    </div>
+    <p style="text-align:center;color:var(--muted);font-size:12px;margin-top:14px;">1 new matter arrived — it joins the end of the queue.</p>
+  </div>
+</div>
+<ul class="notes">
+  <li><span class="tag">S1</span><b>One matter, full width, nothing else.</b> The session is a focus mode: no list, no rail, no log. The condensed card carries the decision, the evidence states, and nothing more — detail is one click away if needed.</li>
+  <li><span class="tag">S2</span><b>Skip is not dismiss.</b> "Skip →" moves the matter to the end of the queue; it stays your move. The session can end with unruly matters still lit — no forced rulings.</li>
+  <li><span class="tag">S3</span><b>Ends with a tally.</b> "7 ruled: 4 accepted, 2 sent back, 1 deferred, 1 skipped." The ritual closes; the log holds the receipts.</li>
+</ul>
+
+<!-- 2 -->
+<h2><span class="n">2</span> While you were away</h2>
+<p class="pain"><b>The pain:</b> returning after a day off and reconstructing what happened from a cold list — what changed, what became yours, what went quiet.</p>
+<div class="mock">
+  <div class="topbar"><div><span class="brand">Your Move</span><em>first visit in 19h</em></div><div class="topmeta"><span>r531</span></div></div>
+  <div class="calmwrap">
+    <h3>While you were away.</h3>
+    <p>Since yesterday 6 PM — 14 events, in plain words:</p>
+    <div class="digest">
+      <div class="dr"><span class="k">yours</span><span><a>Warehouse lease decision</a> became your move — waiting 3d, it's the oldest.</span></div>
+      <div class="dr"><span class="k">r529</span><span>M. Chen recorded <a>budget draft v3</a> — evidence, not yet checked.</span></div>
+      <div class="dr"><span class="k">r527</span><span>R. Patel checked in on <a>tax estimate</a> — step 6 of 8.</span></div>
+      <div class="dr"><span class="k">quiet</span><span><a>Board agenda</a> — no signal for 4 days.</span></div>
+    </div>
+    <button class="btn ghost">Show me everything</button>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-top:16px;">digest of r517–r531 · from the log, nothing inferred</div>
+  </div>
+</div>
+<ul class="notes">
+  <li><span class="tag">W1</span><b>A digest, not a feed.</b> Four lines, ordered by what matters to you: yours first, then evidence, then motion, then silence. Everything links to its matter or log line.</li>
+  <li><span class="tag">W2</span><b>"Nothing happened" is a valid digest.</b> "Quiet — 2 check-ins, nothing needs you." The digest never invents significance to fill space.</li>
+  <li><span class="tag">W3</span><b>It replaces the calm screen on return,</b> then yields to it. One screen, one dismissal — not a notification to clear.</li>
+</ul>
+
+<!-- 3 -->
+<h2><span class="n">3</span> Nudge the quiet ones</h2>
+<p class="pain"><b>The pain:</b> zombie tasks — underway, no signal for days, nobody's move, slowly rotting. Silence is currently nobody's problem.</p>
+<div class="mock">
+  <div class="topbar"><div><span class="brand">Your Move</span><em>round 7 mock</em></div><div class="topmeta"><span>r531</span></div></div>
+  <div class="railcol">
+    <div class="ritem" style="border-style:dashed;">
+      <span class="flag quiet">Quiet — suggested</span>
+      <div class="t" style="margin-top:8px;">Prepare the board meeting agenda</div>
+      <div class="w">no signal for 4 days · with J. Okafor · r512</div>
+      <div class="row"><button class="btn">Send nudge</button><button class="btn quiet">Snooze 2d</button></div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);">One suggestion per task at a time. A sent nudge is a log event — the silence becomes visible.</p>
+  </div>
+</div>
+<ul class="notes">
+  <li><span class="tag">N1</span><b>A suggestion, not an alarm.</b> Dashed border, "suggested" flag — it reads as the app noticing, not warning. It sits in your move because only you can decide a nudge is warranted.</li>
+  <li><span class="tag">N2</span><b>The nudge is a log event</b> (<span style="font-family:'IBM Plex Mono',monospace;font-size:11px;">work.nudged</span>) — the silence becomes part of the record, and the quiet-clock restarts honestly.</li>
+  <li><span class="tag">N3</span><b>Snooze is a ruling too</b> — "remind me in 2 days" re-surfaces the suggestion. Dismissal without a snooze still rests it for the full quiet threshold.</li>
+</ul>
+
+<!-- 4 -->
+<h2><span class="n">4</span> Undo a ruling</h2>
+<p class="pain"><b>The pain:</b> accepting too fast — the misclick, the skimmed evidence. "Accept" is currently forever, which makes every ruling heavier than it needs to be.</p>
+<div class="mock">
+  <div class="topbar"><div><span class="brand">Your Move</span><em>round 7 mock</em></div><div class="topmeta"><span>r526</span></div></div>
+  <div style="padding:26px;">
+    <div class="toastmock">Accepted at r525 — recorded.<small>Changed your mind? You have 60 seconds.</small><button class="btn">Undo</button></div>
+    <div class="trail">
+      <div>r526 · acceptance withdrawn · you — "skimmed the evidence"</div>
+      <div>r525 · review.accepted · you</div>
+      <div>r524 · evidence verified · draft v3</div>
+    </div>
+    <p style="max-width:520px;margin:14px auto 0;color:var(--muted);font-size:12.5px;">The withdrawal is a compensating event — history isn't rewritten. The task is your move again; the evidence drops back to recorded.</p>
+  </div>
+</div>
+<ul class="notes">
+  <li><span class="tag">U1</span><b>60 seconds, then it's history.</b> The window is short on purpose — undo is for misclicks, not second thoughts. After it lapses, the ruling stands like any other.</li>
+  <li><span class="tag">U2</span><b>An optional reason travels with it</b> — "skimmed the evidence" becomes part of the trail. Future-you learns from it.</li>
+  <li><span class="tag">U3</span><b>The event log makes this honest by default.</b> No other undo mechanism can show both the ruling and its withdrawal in order. This is the architecture showing off.</li>
+</ul>
+
+<!-- 5 -->
+<h2><span class="n">5</span> Attested acceptance</h2>
+<p class="pain"><b>The pain:</b> accepting without really looking — the trust half of the job has no ceremony, so "checked" quietly degrades into "glanced at".</p>
+<div class="mock">
+  <div class="topbar"><div><span class="brand">Your Move</span><em>escalation detail</em></div><div class="topmeta"><span>r519</span></div></div>
+  <div class="attest">
+    <div class="box"><b>By accepting, you attest:</b>
+      <ul><li>Budget draft v3 (hash a91f…c4) matches the agreement.</li><li>2 of 3 evidence items checked; 1 recorded, not checked.</li><li>You reviewed the flagged line numbers.</li></ul>
+    </div>
+    <div style="display:flex;gap:8px;"><button class="btn">Accept as done</button><button class="btn ghost">Send back with notes</button></div>
+    <p style="color:var(--muted);font-size:12px;margin-top:10px;">The attestation is recorded with the ruling — your name is on the specifics, not just the outcome.</p>
+  </div>
+</div>
+<ul class="notes">
+  <li><span class="tag">A1</span><b>Ceremony, not friction.</b> No checkbox, no modal — the statement sits above the button and the ruling records it. Reading it is the ceremony.</li>
+  <li><span class="tag">A2</span><b>Generated from the evidence states,</b> not written by hand. If only 1 of 3 is checked, the attestation says so — it can't flatter the review.</li>
+  <li><span class="tag">A3</span><b>Strongest where it matters most:</b> "Accept anyway" on failed verification gets the longest attestation — the override names exactly what was overridden.</li>
+</ul>
+
+<!-- 6 -->
+<h2><span class="n">6</span> Assignee lens</h2>
+<p class="pain"><b>The pain:</b> you can't see that everything is on Dana. Load is invisible in a status-grouped list — the reliable worker silently drowns.</p>
+<div class="mock">
+  <div class="topbar"><div><span class="brand">Your Move</span><em>round 7 mock</em></div><div class="topmeta"><span>r531</span></div></div>
+  <div class="lens">
+    <div class="ltoggle"><button class="btn quiet" style="font-size:12px;">By status</button><button class="btn ghost" style="font-size:12px;">By assignee</button></div>
+    <div class="lperson"><h4>Dana</h4><div class="load">6 underway · 2 need you · quiet 2d on T-101</div>
+      <div class="lrow"><span class="dot" style="background:var(--signal)"></span>Review: Q3 budget draft<span class="st">your move · 1d</span></div>
+      <div class="lrow"><span class="dot" style="background:#5A658C"></span>Reconcile variances<span class="st">underway · r529</span></div>
+      <div class="lrow"><span class="dot" style="background:#5A658C"></span>Draft the narrative<span class="st">underway · no signal 2d</span></div>
+    </div>
+    <div class="lperson"><h4>Priya</h4><div class="load">2 underway · 0 need you</div>
+      <div class="lrow"><span class="dot" style="background:#5A658C"></span>File the tax estimate<span class="st">underway · r531</span></div>
+    </div>
+    <div class="lperson"><h4>Unassigned</h4><div class="load">3 queued</div></div>
+  </div>
+</div>
+<ul class="notes">
+  <li><span class="tag">G1</span><b>A lens, not a view.</b> A toggle on Today — the status grouping stays canonical. Lenses are projections; the log doesn't care how you look at it.</li>
+  <li><span class="tag">G2</span><b>The load line is the point.</b> "6 underway · 2 need you · quiet 2d" — the manager sees distribution at a glance, before assigning the next thing to Dana.</li>
+  <li><span class="tag">G3</span><b>Unassigned is a person too.</b> Queued work with no owner gets its own group — invisible backlog made visible.</li>
+</ul>
+
+<!-- 7 -->
+<h2><span class="n">7</span> Ruling receipts</h2>
+<p class="pain"><b>The pain:</b> rulings vanish into the void — did Dana see it? Did the work actually resume? Judgment without feedback feels like shouting down a well.</p>
+<div class="mock">
+  <div class="topbar"><div><span class="brand">Your Move</span><em>round 7 mock</em></div><div class="topmeta"><span>r526</span></div></div>
+  <div style="padding:26px;">
+    <div class="toastmock">Sent back at r526.<small>Dana was notified — work resumed · evidence stays on record</small></div>
+    <div class="trail">
+      <div>r526 · review.sent_back · you — "line 14 doesn't foot"</div>
+      <div>r525 · evidence recorded · reviewer comments</div>
+    </div>
+    <p style="max-width:520px;margin:14px auto 0;color:var(--muted);font-size:12.5px;">The receipt states the effect, not just the act: who was notified, what resumed, what stood. The trail keeps it permanently.</p>
+  </div>
+</div>
+<ul class="notes">
+  <li><span class="tag">R1</span><b>The toast grows up.</b> Every ruling's confirmation names its effect — notified whom, resumed what, what stood. The act and its consequence travel together.</li>
+  <li><span class="tag">R2</span><b>Reasons ride along.</b> "Sent back — 'line 14 doesn't foot'" — the one-line reason lands in the trail, so the worker (and future-you) knows why.</li>
+  <li><span class="tag">R3</span><b>Pairs with the journey.</b> The ghost flight shows the trip; the receipt states the landing. Motion and words, same truth.</li>
+</ul>
+
+<div class="rule"></div>
+<p class="kicker">Decisions for you</p>
+<h2 style="margin-top:6px">Rule on these</h2>
+<ul class="notes">
+  <li><b>1.</b> Ruling session: new arrivals join the end of the queue quietly (mock) vs. interrupt the session?</li>
+  <li><b>2.</b> Nudge: quiet threshold — 3 days? And does dismissing rest it for the full threshold?</li>
+  <li><b>3.</b> Undo: 60-second window (mock) vs. until the next event touches the task?</li>
+  <li><b>4.</b> Attestation: statement above the button (mock) vs. an explicit checkbox to accept?</li>
+</ul>
+
+</div>
+</body>
+</html>

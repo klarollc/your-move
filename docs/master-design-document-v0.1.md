@@ -36,6 +36,24 @@ surface is shelved, with no further office-surface work until the owner reopens 
 core remains shared: `executeWorkCommand`, `replayProject`, and one append-only event log. This
 amendment supersedes office-first statements in this section and §4 for current product priority.
 
+### Owner amendment — 2026-10-04: Your Move Surface B package
+
+The owner-approved [Your Move UI spec](your-move/reference/surface-b-ui-spec.md) is the controlling
+Surface B design and behavior authority, including its truthfulness rules and round-decision log in
+§8. Its Dusk colors, typography direction, composition and the named Your Move round mocks supersede
+conflicting Surface B guidance in this document, `.ui-craft/brief.md`, `.ui-craft/tokens.md`, and the
+2026-09-27 office art-reference pack. The office pack remains authoritative only if office work is
+reopened. This Surface B amendment does not change the office visual contract or promote a global
+token set.
+
+The product name is Your Move; CuckCode remains the repository and codename. The prototype is a
+behavior reference and the round mocks are visual references; their demo controls, in-memory log,
+generic seed tasks, and synthetic clock are not production behavior. Every view, including calm,
+time-travel, and assignee views, is a read-model projection of the canonical log through
+`replayProject`. All writes stay on the shared `executeWorkCommand` path. A proposed event or command
+must be reconciled with the workflow core and approved through workflow-proof before implementation.
+The owner approved the plan and task breakdown on 2026-10-04 (“Approve + bind digest”).
+
 ### Outcome
 
 Create a multi-agent orchestration product in which a non-technical manager directs real agent work

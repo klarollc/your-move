@@ -1,13 +1,39 @@
-import { projectOfficeReadModel, type OfficeWorkView } from "@cuckcode/application";
-import { replayProject } from "@cuckcode/domain";
+import { normalizeEventLog, projectManagerAttention, replayProject } from "@cuckcode/domain";
+import type { ProjectEvent } from "@cuckcode/contracts";
 
-import type { WorkListAssignment, WorkListItem } from "./work-list.js";
+import type {
+  WorkListAssignment,
+  WorkListEvidence,
+  WorkListItem,
+  WorkListLogEntry,
+} from "./work-list.js";
+
+export type WorkListHealth = Readonly<{
+  status: "current" | "stale" | "incomplete" | "damaged" | "disagreement";
+  revision: number;
+  projectedRevision: number;
+  fetchedAt: string | null;
+  ageMs: number | null;
+  issueCount: number;
+  issues: readonly string[];
+}>;
+
+export type WorkListProjectionOptions = Readonly<{
+  revision?: number;
+  truncated?: boolean;
+  problems?: readonly unknown[];
+  connected?: boolean;
+  fetchedAt?: string;
+  now?: string;
+}>;
 
 export type WorkListProjection = Readonly<{
   projectName: string;
   revision: number;
   items: readonly WorkListItem[];
   assignments: readonly WorkListAssignment[];
+  log: readonly WorkListLogEntry[];
+  health: WorkListHealth;
 }>;
 
 const EVIDENCE_STATES = new Set([
@@ -18,58 +44,89 @@ const EVIDENCE_STATES = new Set([
   "review_requested",
 ]);
 
-/** Surface B is a projection of the canonical log, never a separate source of work truth. */
-export function projectWorkList(events: readonly unknown[], now: string): WorkListProjection {
+/**
+ * Surface B is a read-model projection of the canonical event log. Work state comes only from
+ * replayProject; event envelopes are joined by event id to retain provenance that the domain
+ * reducer intentionally does not duplicate into its truth records.
+ */
+export function projectWorkList(
+  events: readonly unknown[],
+  optionsOrNow: WorkListProjectionOptions | string = {},
+): WorkListProjection {
+  const options = typeof optionsOrNow === "string" ? { now: optionsOrNow } : optionsOrNow;
   const snapshot = replayProject(events);
-  const registry = Object.values(snapshot.staffing.agents).map((agent) => ({
-    entityId: agent.agentId,
-    kind: "person" as const,
-    label: agent.agentId,
-    agentId: agent.agentId,
-  }));
-  const officeProjection = projectOfficeReadModel({ snapshot, now, registry });
-  const officeWork = new Map<string, OfficeWorkView>([
-    ...officeProjection.unassignedWork.map((work) => [work.workItemId, work] as const),
-    ...officeProjection.entities.flatMap((entity) =>
-      entity.kind === "person" ? entity.work.map((work) => [work.workItemId, work] as const) : [],
-    ),
-  ]);
-  const partialWork = new Set<string>();
-  for (const raw of events) {
-    if (typeof raw !== "object" || raw === null || Array.isArray(raw)) continue;
-    const event = raw as { kind?: unknown; payload?: unknown };
-    if (
-      event.kind !== "evidence.recorded" ||
-      typeof event.payload !== "object" ||
-      event.payload === null
-    ) {
-      continue;
-    }
-    const payload = event.payload as Record<string, unknown>;
-    if (
-      payload.kind === "turn-record" &&
-      payload.partial === true &&
-      typeof payload.workItemId === "string"
-    ) {
-      partialWork.add(payload.workItemId);
+  const normalized = normalizeEventLog(events);
+  const eventById = new Map<string, ProjectEvent>(
+    normalized.events.map((event) => [event.eventId, event]),
+  );
+  const revisionById = new Map(snapshot.eventIds.map((eventId, index) => [eventId, index + 1]));
+  const currentTimeMs = Date.parse(options.now ?? new Date().toISOString());
+  const attentionById = new Map(
+    projectManagerAttention(snapshot).map((attention) => [attention.subjectId, attention]),
+  );
+  const roleAssignmentEvent = new Map<string, ProjectEvent>();
+  for (const event of normalized.events) {
+    const roleAssignmentId = text(event.payload.roleAssignmentId);
+    if (event.kind === "role.assigned" && roleAssignmentId) {
+      roleAssignmentEvent.set(roleAssignmentId, event);
     }
   }
-  const outputDigests = new Map<string, string>();
-  for (const raw of events) {
-    if (typeof raw !== "object" || raw === null || Array.isArray(raw)) continue;
-    const event = raw as { eventId?: unknown; kind?: unknown; payload?: unknown };
-    if (event.kind !== "evidence.recorded" || typeof event.eventId !== "string") continue;
-    if (typeof event.payload !== "object" || event.payload === null || Array.isArray(event.payload))
-      continue;
-    const digest = (event.payload as Record<string, unknown>).outputSha256;
-    if (typeof digest === "string") outputDigests.set(event.eventId, digest);
+  const eventsByWork = new Map<string, ProjectEvent[]>();
+  for (const event of normalized.events) {
+    const payloadWorkItemId = text(event.payload.workItemId);
+    const workItemId = event.workItemId ?? payloadWorkItemId;
+    if (!workItemId || !snapshot.work.workItems[workItemId]) continue;
+    const history = eventsByWork.get(workItemId) ?? [];
+    history.push(event);
+    eventsByWork.set(workItemId, history);
   }
 
+  const revision = options.revision ?? events.length;
+  const projectedRevision = snapshot.eventIds.length;
+  const issues = [
+    ...normalized.issues,
+    ...snapshot.work.issues,
+    ...snapshot.replayIssues,
+    ...(options.problems ?? []),
+  ];
+  const fetchedAt = options.fetchedAt ?? null;
+  const nowMs = Date.parse(options.now ?? new Date().toISOString());
+  const fetchedAtMs = fetchedAt === null ? Number.NaN : Date.parse(fetchedAt);
+  const ageMs =
+    Number.isFinite(nowMs) && Number.isFinite(fetchedAtMs)
+      ? Math.max(0, nowMs - fetchedAtMs)
+      : null;
+  const status: WorkListHealth["status"] =
+    options.connected === false
+      ? "stale"
+      : options.truncated === true
+        ? "incomplete"
+        : issues.length > 0
+          ? "damaged"
+          : revision !== projectedRevision
+            ? "disagreement"
+            : "current";
+  const health: WorkListHealth = {
+    status,
+    revision,
+    projectedRevision,
+    fetchedAt,
+    ageMs,
+    issueCount: issues.length,
+    issues: issues.map(describeIssue),
+  };
+
   const assignments = Object.values(snapshot.staffing.assignments)
-    .map((assignment) => ({
-      roleAssignmentId: assignment.roleAssignmentId,
-      label: `${humanLabel(assignment.roleId)} · ${assignment.agentId}`,
-    }))
+    .map((assignment): WorkListAssignment => {
+      const event = roleAssignmentEvent.get(assignment.roleAssignmentId);
+      return {
+        roleAssignmentId: assignment.roleAssignmentId,
+        label: `${humanLabel(assignment.roleId)} · ${assignment.agentId}`,
+        sourceRevision: event ? (revisionById.get(event.eventId) ?? null) : null,
+        source: event?.source ?? null,
+        trust: event?.trust ?? null,
+      };
+    })
     .sort((left, right) => left.label.localeCompare(right.label));
 
   const items = Object.values(snapshot.work.workItems)
@@ -77,45 +134,226 @@ export function projectWorkList(events: readonly unknown[], now: string): WorkLi
       const assignment = item.assignment
         ? snapshot.staffing.assignments[item.assignment.roleAssignmentId]
         : undefined;
-      const view = officeWork.get(item.workItemId);
-      return {
-        workItemId: item.workItemId,
-        outcome: item.outcome,
-        state: item.state,
-        assignee: assignment ? `${humanLabel(assignment.roleId)} · ${assignment.agentId}` : null,
-        partial: partialWork.has(item.workItemId),
-        contractAcceptsEvidence: Boolean(item.contract && EVIDENCE_STATES.has(item.state)),
-        evidenceObligations:
-          item.contract?.evidenceObligations ??
-          item.requiredEvidenceKinds.map((kind) => ({ kind, description: "Required evidence" })),
-        evidence: (view?.evidence ?? []).map(({ kind, result, eventId }) => {
-          const outputSha256 = outputDigests.get(eventId);
+      const assignmentEvent = item.assignment ? eventById.get(item.assignment.eventId) : undefined;
+      const history = eventsByWork.get(item.workItemId) ?? [];
+      const latestSignal = history.at(-1);
+      const attention = attentionById.get(item.workItemId);
+      const conditionEvent = item.condition ? eventById.get(item.condition.eventId) : undefined;
+      const evidence: WorkListEvidence[] = Object.values(snapshot.work.evidence)
+        .filter((record) => record.workItemId === item.workItemId)
+        .map((record) => {
+          const event = eventById.get(record.eventId);
+          const payload = event?.payload ?? {};
           return {
-            kind,
-            result,
-            eventId,
-            ...(outputSha256 ? { outputSha256 } : {}),
+            kind: record.kind,
+            result: record.result,
+            eventId: record.eventId,
+            status: evidenceStatus(event),
+            source: event?.source ?? null,
+            trust: event?.trust ?? null,
+            sourceRevision: revisionById.get(record.eventId) ?? null,
+            occurredAt: event?.occurredAt ?? null,
+            providerRunId: event?.providerRunId ?? null,
+            worktreeSha256: sha256(payload.worktreeSha256),
+            outputSha256: sha256(payload.outputSha256),
           };
-        }),
-        postures: (view?.postures ?? []).map(({ runId, posture, eventId }) => ({
-          runId,
+        })
+        .sort((left, right) => (left.sourceRevision ?? 0) - (right.sourceRevision ?? 0));
+      const partial = evidence.some((record) => {
+        const event = eventById.get(record.eventId);
+        return record.kind === "turn-record" && event?.payload.partial === true;
+      });
+      const postures = (snapshot.work.postures?.[item.workItemId] ?? []).map((record) => {
+        const event = eventById.get(record.eventId);
+        const posture = record.posture;
+        return {
+          runId: record.runId,
           requested: `${posture.requested.sandboxMode}; approvals ${posture.requested.approvalPolicy}; network off`,
           granted: `${posture.granted.type}; approvals ${posture.granted.approvalPolicy}; network ${posture.granted.networkAccess ? "on" : "off"}`,
           declared: `read ${posture.declared.read}; write ${posture.declared.write}; run ${posture.declared.run}`,
           match: posture.match,
-          eventId,
-        })),
-        lastEvent: item.updatedAt,
+          eventId: record.eventId,
+          source: event?.source ?? null,
+          trust: event?.trust ?? null,
+          sourceRevision: revisionById.get(record.eventId) ?? null,
+          providerRunId: event?.providerRunId ?? null,
+          worktreeSha256: sha256(event?.payload.worktreeSha256),
+        };
+      });
+      const latestEvidenceByKind = new Map<string, WorkListEvidence>();
+      for (const record of evidence) latestEvidenceByKind.set(record.kind, record);
+      const doneVerified =
+        item.requiredEvidenceKinds.length > 0 &&
+        item.requiredEvidenceKinds.every((kind) => {
+          const record = latestEvidenceByKind.get(kind);
+          return record?.status === "checked" && record.result === "passed";
+        });
+      const failedEvidence = evidence.filter((record) => record.result === "failed").at(-1);
+      const hasEvidenceFailure = failedEvidence !== undefined;
+      const needsManager = Boolean(attention) || hasEvidenceFailure;
+      const waitingAt = attention?.updatedAt ?? failedEvidence?.occurredAt ?? null;
+
+      return {
+        workItemId: item.workItemId,
+        outcome: item.outcome,
+        state: item.state,
+        group: groupFor(item.state, needsManager, doneVerified),
+        attentionReason: attention?.reason ?? (hasEvidenceFailure ? "verification_failed" : null),
+        doneVerified,
+        hasEvidenceFailure,
+        condition: item.condition
+          ? {
+              reasonCode: item.condition.reasonCode,
+              summary: item.condition.summary,
+              waitingOn: item.condition.waitingOn,
+              requestedAction: item.condition.requestedAction ?? null,
+              source: item.condition.source,
+              trust: item.condition.trust,
+              sourceRevision: revisionById.get(item.condition.eventId) ?? null,
+            }
+          : null,
+        contract: item.contract ?? null,
+        waitingMs:
+          waitingAt && Number.isFinite(currentTimeMs)
+            ? Math.max(0, currentTimeMs - Date.parse(waitingAt))
+            : null,
+        assignee: assignment ? `${humanLabel(assignment.roleId)} · ${assignment.agentId}` : null,
+        assignmentSourceRevision: item.assignment
+          ? (revisionById.get(item.assignment.eventId) ?? null)
+          : null,
+        assignmentSource: assignmentEvent?.source ?? null,
+        assignmentTrust: assignmentEvent?.trust ?? null,
+        partial,
+        contractAcceptsEvidence: Boolean(item.contract && EVIDENCE_STATES.has(item.state)),
+        evidenceObligations:
+          item.contract?.evidenceObligations ??
+          item.requiredEvidenceKinds.map((kind) => ({ kind, description: "Required evidence" })),
+        evidence,
+        postures,
+        sourceRevision: revisionById.get(item.updatedByEventId) ?? null,
+        lastSignalRevision: latestSignal ? (revisionById.get(latestSignal.eventId) ?? null) : null,
+        lastEvent: latestSignal?.occurredAt ?? item.updatedAt ?? null,
       };
     })
-    .sort((left, right) => left.outcome.localeCompare(right.outcome));
+    .sort(compareWorkItems);
+
+  const log = snapshot.eventIds.flatMap((eventId, index): WorkListLogEntry[] => {
+    const event = eventById.get(eventId);
+    if (!event) return [];
+    return [
+      {
+        eventId,
+        kind: event.kind,
+        summary: eventSummary(event),
+        source: event.source,
+        trust: event.trust,
+        occurredAt: event.occurredAt,
+        workItemId: event.workItemId ?? text(event.payload.workItemId) ?? null,
+        revision: index + 1,
+      },
+    ];
+  });
 
   return {
     projectName: snapshot.project.name ?? "Project work",
-    revision: events.length,
+    revision,
     items,
     assignments,
+    log,
+    health,
   };
+}
+
+function eventSummary(event: ProjectEvent): string {
+  const payload = event.payload;
+  if (event.kind === "work.created")
+    return text(payload.outcome) ?? "Work created; outcome missing";
+  if (event.kind === "work.transitioned") {
+    const state = text(payload.toState) ?? "state missing";
+    const condition = payload.condition;
+    const reason =
+      typeof condition === "object" && condition !== null && !Array.isArray(condition)
+        ? text((condition as Record<string, unknown>).summary)
+        : undefined;
+    return reason ? `${state} · ${reason}` : state;
+  }
+  if (event.kind === "evidence.recorded") {
+    return `${text(payload.kind) ?? "Evidence type missing"}: ${text(payload.result) ?? "result missing"}`;
+  }
+  if (event.kind === "approval.recorded") {
+    return `Approval recorded · artifact ${text(payload.artifactId) ?? "missing"} · version ${typeof payload.artifactVersion === "number" ? payload.artifactVersion : "missing"}`;
+  }
+  if (event.kind === "work.assigned") {
+    return `Assigned · ${text(payload.roleAssignmentId) ?? "role assignment missing"}`;
+  }
+  return event.kind.replaceAll(".", " ");
+}
+
+function evidenceStatus(event: ProjectEvent | undefined): WorkListEvidence["status"] {
+  if (!event) return "claimed";
+  if (event.trust === "verified") return "checked";
+  if (event.trust === "inferred" || event.payload.kind === "done-claim") return "claimed";
+  return "recorded";
+}
+
+function text(value: unknown): string | undefined {
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
+function groupFor(
+  state: string,
+  needsManager: boolean,
+  doneVerified: boolean,
+): WorkListItem["group"] {
+  if (needsManager) return "your-move";
+  if (state === "active") return "in-progress";
+  if (state === "draft" || state === "ready" || state === "assigned" || state === "paused")
+    return "queued";
+  if (state === "verified" || state === "completed") return doneVerified ? "done" : "other";
+  if (state === "blocked" || state === "waiting_input") return "in-progress";
+  return "other";
+}
+
+const groupOrder: WorkListItem["group"][] = ["your-move", "in-progress", "queued", "done", "other"];
+
+function compareWorkItems(left: WorkListItem, right: WorkListItem): number {
+  const groupDifference = groupOrder.indexOf(left.group) - groupOrder.indexOf(right.group);
+  if (groupDifference !== 0) return groupDifference;
+  if (left.group === "your-move") {
+    const waitDifference = (right.waitingMs ?? -1) - (left.waitingMs ?? -1);
+    if (waitDifference !== 0) return waitDifference;
+  } else if (left.group === "in-progress") {
+    const signalDifference = (right.lastSignalRevision ?? -1) - (left.lastSignalRevision ?? -1);
+    if (signalDifference !== 0) return signalDifference;
+  } else if (left.group === "queued") {
+    const queueDifference =
+      (left.sourceRevision ?? Number.MAX_SAFE_INTEGER) -
+      (right.sourceRevision ?? Number.MAX_SAFE_INTEGER);
+    if (queueDifference !== 0) return queueDifference;
+  } else if (left.group === "done") {
+    const verifiedDifference = (right.sourceRevision ?? -1) - (left.sourceRevision ?? -1);
+    if (verifiedDifference !== 0) return verifiedDifference;
+  }
+  return left.workItemId.localeCompare(right.workItemId);
+}
+
+function sha256(value: unknown): string | null {
+  return typeof value === "string" && /^[a-f0-9]{64}$/u.test(value) ? value : null;
+}
+
+function describeIssue(issue: unknown): string {
+  if (typeof issue === "object" && issue !== null && !Array.isArray(issue)) {
+    const record = issue as Record<string, unknown>;
+    const line = typeof record.line === "number" ? `line ${record.line}: ` : "";
+    const message = text(record.message) ?? text(record.reason) ?? text(record.code);
+    if (message) return `${line}${message}`;
+  }
+  if (typeof issue === "string") return issue;
+  try {
+    return JSON.stringify(issue);
+  } catch {
+    return "Unspecified log issue";
+  }
 }
 
 function humanLabel(value: string): string {
