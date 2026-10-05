@@ -88,6 +88,23 @@ export type WorkAssignmentPayload = { workItemId: string; roleAssignmentId: stri
 
 export type WorkPayloadResult<T> = { ok: true; value: T } | { ok: false; issues: string[] };
 
+const SHA256 = /^[a-f0-9]{64}$/;
+
+/** Validate the additive worktree identity without narrowing historical evidence payloads. */
+export function validateEvidenceRecordedPayload(
+  payload: Record<string, unknown>,
+): WorkPayloadResult<Record<string, unknown>> {
+  const worktreeSha256 = payload.worktreeSha256;
+  if (worktreeSha256 === undefined) return { ok: true, value: payload };
+  if (typeof worktreeSha256 !== "string" || !SHA256.test(worktreeSha256)) {
+    return {
+      ok: false,
+      issues: ["worktreeSha256 must be a 64-character lowercase hex digest"],
+    };
+  }
+  return { ok: true, value: payload };
+}
+
 const WORK_ITEM_ID = /^work_[A-Za-z0-9][A-Za-z0-9._-]*$/;
 const ROLE_ASSIGNMENT_ID = /^role-assignment_[A-Za-z0-9][A-Za-z0-9._-]*$/;
 const MAX_SUMMARY = 280;

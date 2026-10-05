@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { parseUtcTimestamp } from "./primitives.js";
+import { validateWorkflowCoreEventPayload } from "./work-contract-events.js";
 
 export const eventKinds = [
   "project.created",
@@ -11,6 +12,13 @@ export const eventKinds = [
   "evidence.recorded",
   "posture.recorded",
   "approval.recorded",
+  "work.turns_granted",
+  "work.rescoped",
+  "work.closed_incomplete",
+  "work.ruling_recorded",
+  "work.nudged",
+  "work.nudge_suppressed",
+  "ruling.withdrawn",
   "agent.registered",
   "agent.presence_changed",
   "role.assigned",
@@ -79,6 +87,8 @@ export function parseProjectEvent(input: unknown): EventParseResult {
       parsed.error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).sort(),
     );
   }
+  const payload = validateWorkflowCoreEventPayload(parsed.data.kind, parsed.data.payload);
+  if (!payload.ok) return malformed("invalid_envelope", payload.issues);
   return { ok: true, value: parsed.data };
 }
 

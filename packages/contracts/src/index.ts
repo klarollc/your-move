@@ -12,3 +12,4 @@ export * from "./work-payloads.js";
 export * from "./posture.js";
 export * from "./posture-event.js";
 export * from "./work-contract.js";
+export * from "./work-contract-events.js";

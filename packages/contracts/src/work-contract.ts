@@ -15,8 +15,7 @@ import type { WorkPayloadResult } from "./work-payloads.js";
 
 const nonEmpty = z.string().min(1);
 
-export const workContractSchema = z
-  .object({
+const workContractFields = {
     outcome: nonEmpty,
     exclusions: z.array(nonEmpty),
     acceptanceCriteria: z.array(nonEmpty).min(1),
@@ -34,10 +33,23 @@ export const workContractSchema = z
     contextRefs: z.array(
       z.object({ path: nonEmpty, sha256: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
     ),
-  })
-  .strict();
+  };
+
+/** Historical schema-v2 contracts stay byte-for-byte compatible and have no turn cap. */
+export const legacyWorkContractSchema = z.object(workContractFields).strict();
+
+/** Current read model permits old contracts whose turn cap was never recorded. */
+export const workContractSchema = legacyWorkContractSchema.extend({
+  maxTurns: z.number().int().positive().optional(),
+});
+
+/** New bounded work and every rescope must carry a positive, explicit turn cap. */
+export const boundedWorkContractSchema = legacyWorkContractSchema.extend({
+  maxTurns: z.number().int().positive(),
+});
 
 export type WorkContract = z.infer<typeof workContractSchema>;
+export type BoundedWorkContract = z.infer<typeof boundedWorkContractSchema>;
 
 export type WorkCreatedPayload = Readonly<{
   workItemId: string;
@@ -52,7 +64,7 @@ export function validateWorkCreatedPayload(
   payload: Record<string, unknown>,
 ): WorkPayloadResult<WorkCreatedPayload> {
   const version = "payloadVersion" in payload ? payload.payloadVersion : 1;
-  if (version !== 1 && version !== 2) {
+  if (version !== 1 && version !== 2 && version !== 3) {
     return { ok: false, issues: [`unsupported work.created payloadVersion ${String(version)}`] };
   }
   const issues: string[] = [];
@@ -82,7 +94,10 @@ export function validateWorkCreatedPayload(
     issues.push("contract is required at payloadVersion 2");
     return { ok: false, issues };
   }
-  const parsed = workContractSchema.safeParse(payload.contract);
+  const parsed =
+    version === 3
+      ? boundedWorkContractSchema.safeParse(payload.contract)
+      : legacyWorkContractSchema.safeParse(payload.contract);
   if (!parsed.success) {
     for (const found of parsed.error.issues) {
       issues.push(`contract.${found.path.join(".") || "(root)"}: ${found.message}`);
@@ -97,6 +112,15 @@ export function validateWorkCreatedPayload(
     if (!same) {
       issues.push("requiredEvidenceKinds must equal the contract's evidence obligation kinds");
     }
+  }
+  if (version === 3) {
+    const extra = Object.keys(payload).filter(
+      (key) =>
+        !["payloadVersion", "workItemId", "outcome", "requiredEvidenceKinds", "contract"].includes(
+          key,
+        ),
+    );
+    if (extra.length > 0) issues.push(`unexpected fields: ${extra.sort().join(", ")}`);
   }
   if (issues.length > 0) return { ok: false, issues };
   return {
