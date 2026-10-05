@@ -98,3 +98,67 @@ After code and verification are complete, enabling or demonstrating one genuine 
 ## 10. Owner ruling requested
 
 Please rule approve, amend, or decline the proposed source, transient-draft lifecycle, v4 `work.created` provenance, validation boundary, and RED–GREEN gate. If approved, Cinder review and this ruling authorize the implementation proposal only; a real provider draft remains separately gated as described in §8.
+
+## 11. Proposed amendment — direct manager-authored creation
+
+**Status:** Proposed amendment to the approved proposal; awaiting Cinder review and Nate's ruling.
+This amendment does not authorize implementation. It changes only the v4 creation-source options,
+the no-receipt manager command behavior, and the corresponding Surface B presentation. All other
+approved source, session, receipt, and live-run boundaries remain in force.
+
+### 11.1 Decision requested
+
+Approve, amend, or decline a deliberate direct-create path for a manager who chooses to write the
+structured contract instead of requesting an agent draft. Draft-first remains the default and
+recommended path. Both paths continue through the authenticated manager command, `executeWorkCommand`,
+one `work.created` event, the shared event log, and `replayProject`.
+
+Upon approval, strike this §1 wording:
+
+> ~~“Manager approval, with or without edits, is the one durable `work.created` event and the only path into shared work state.”~~
+
+Replace it with: manager-approved agent drafts and deliberate manager-authored direct creation each
+produce one durable `work.created` event through the existing command path.
+
+### 11.2 Event and command reconciliation
+
+| Concern | Proposed amendment | Reconciliation with the approved core |
+|---|---|---|
+| Agent-draft v4 | Keep the final manager contract separate from the agent candidate. New records identify `draftSource: "agent"` and retain the existing candidate and complete server-bound provider provenance. The existing manager event envelope identifies the approver. | A valid receipt continues to produce the current agent-draft variant through `executeWorkCommand`. Receipt checks and lifecycle do not change. |
+| Direct manager v4 | The v4 provenance container has the strict manager variant `{ "provenance": { "draftSource": "manager" } }`. It contains no candidate or provider session/turn IDs. The existing `work.created` envelope attributes the manager who wrote and approved the contract; no duplicate drafter or approver IDs are added. | The final contract uses the same bounded contract schema and validation as agent-draft approval. No event, endpoint, writer, or command path is added. |
+| Create without a receipt | `planCreate` accepts an absent receipt as direct manager-authored creation, subject to the same authenticated-manager check, expected revision, duplicate-ID checks, and contract validation. | With a valid receipt, retain current agent-draft behavior. If a receipt is supplied but is invalid, stale, expired, reused, or wrongly bound, reject it as today; never fall back to manager-authored creation. |
+
+The v4 schema is a strict discriminated union. A manager variant must not contain an agent candidate
+or agent-only provenance fields; an agent variant requires its candidate and complete provenance.
+Reject mixed, partial, ambiguous, or extra-field combinations. New agent-draft records carry the
+explicit `draftSource: "agent"` discriminator. For backward compatibility, the exact already-approved
+v4 agent shape without that new discriminator remains accepted on replay only when its existing
+candidate and complete provider provenance validate; that exact prior v4 schema shape already means
+agent-drafted and is not source inference from absent or partial provenance. Do not rewrite old
+events. No other v4 shape without an explicit source is accepted. v1–v3 replay remains unchanged and
+reports “draft source not recorded.”
+
+### 11.3 Surface B and truthfulness
+
+Draft-first remains the default and recommended create path. Direct creation requires one deliberate
+choice plainly labeled: **“You're writing the contract yourself; it will be recorded as manager-authored.”**
+That choice opens manager entry of the structured contract; it does not turn the plain-language
+description into a simulated or templated agent draft. When the draft service is unavailable, keep
+the direct path available with the same label instead of blocking creation with `NewWorkUnavailable`.
+
+The projection displays **“Draft source: manager”** wherever provenance for a manager-authored v4
+contract is shown. It never presents that contract as agent-drafted, and never guesses a source from
+missing or malformed provenance. Existing complete v4 agent provenance keeps its existing replay
+meaning; v4 records with a missing, mixed, or invalid provenance shape remain unreadable. Agent
+receipt expiry and rejection behavior is unchanged.
+
+### 11.4 Non-goals and ruling boundary
+
+This amendment does not change the draft service, receipt mechanics, agent procedure/model/runtime,
+or existing live-provider authorization boundary. It does not authorize W12, §20, live provider runs,
+promotion, deployment, or any other implementation. If approved, implementation requires a separate
+ordered RED–GREEN gate before code changes; until then, the currently approved proposal and its
+implementation remain in force.
+
+Please rule approve, amend, or decline this focused amendment. A ruling applies only to §11; it does
+not authorize a live provider session or either separately gated owner run.
