@@ -28,29 +28,23 @@ existing behavior has not been submitted to the separately started runner.
 
 **Approval and current state — 2026-10-04/05:** the owner approved the MDD amendment,
 `tasks/your-move-plan.md`, and `tasks/your-move-todo.md` with “Approve + bind digest.” The workflow-core
-proposal was subsequently approved as written. Contract, reducer, command, loopback integration, and
-projection/adversarial UI stages have passed their ordered focused RED–GREEN checks. The seven
-additional UI decisions are reconciled in `docs/your-move/behavior-evidence-matrix.md`; no new write
-path was added. Worktree SHA-256 is measured server-side and bound to relevant evidence. All six §7
-stages are green: `npm run verify` exited 0, including unit (905), component (182), integration
-(150 passed, 3 skipped), contract (140), build, and the Surface B browser checks at 1440×900 and
-1280×800. Provenance reports 429 artifacts and 695 ledger lines, with no missing files or stale
-digests. The verified change set was pushed to `review/workflow-proof` at
-`d5473be0de545aa86efd6fb832ca9141e95051d1`; the remote ref was read back and matched. The owner
-approved the agent-side speech-acts proposal as written on 2026-10-05; its separate ordered §7 gate
-is active and the ruling is recorded at
-`docs/evidence/workflow-proof/decision-record-2026-10-05-your-move-agent-speech-acts-approval.md`.
-The brief contract-draft service proposal was drafted at
-`docs/proposals/2026-10-04-your-move-contract-draft-service-proposal.md`. It is a local draft only,
-not part of the pushed review branch, and awaits an owner ruling before implementation. The full §8
-package remains incomplete. See `tasks/your-move-todo.md` and the behavior/evidence matrix for current
-evidence.
+proposal and agent speech-acts proposal were approved as written. Both ordered §7 RED–GREEN gates pass;
+the seven additional UI decisions are reconciled in `docs/your-move/behavior-evidence-matrix.md`, and
+no new write path was added. Full `npm.cmd run verify` exits 0 on implementation commit `82213a9`:
+unit 922, component 186, integration 153 passed/3 skipped, contract 152, plus successful build, e2e,
+accessibility and visual checks. Provenance reports 430 artifacts and 696 ledger lines with no missing
+files or stale digests. Surface B browser checks use an ephemeral empty log and no runner at 1440×900
+and 1280×800; these are technical checks, not owner visual acceptance. The speech-acts approval is
+recorded at `docs/evidence/workflow-proof/decision-record-2026-10-05-your-move-agent-speech-acts-approval.md`.
+The contract-draft service proposal is included at
+`docs/proposals/2026-10-04-your-move-contract-draft-service-proposal.md`; implementation awaits its
+separate owner ruling. The full §8 package remains incomplete. W12 and §20 remain separately gated
+and were not run.
 
-**Immediate next gate:** implement the approved speech acts through their proposal's ordered §7
-RED–GREEN gate, then push and verify the review branch. The contract-draft service proposal still
-awaits an owner ruling and its implementation is not authorized. Keep W8 shelved; do not start a live
-provider session or promote. W12 and the §20 Surface B comprehension run remain separately gated
-owner actions.
+**Immediate next gate:** push the verified `workflow-proof` branch to `review/workflow-proof` and
+verify the remote ref. The contract-draft service proposal still awaits its separate owner ruling.
+Keep W8 shelved; do not start a live provider session or promote. W12 and the §20 Surface B
+comprehension run remain separately gated owner actions.
 
 ---
 

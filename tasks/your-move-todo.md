@@ -26,10 +26,10 @@ authorized within this checklist. Approval response: “Approve + bind digest.�
 - [x] Task 6 — record the approved MDD amendment, implementation plan, and task breakdown. Owner
       approval was given on 2026-10-04 (“Approve + bind digest”); docs are recorded and the
       position record reflects the approval.
-- [ ] Task 7 — workflow-core proposal approved as written by the owner on 2026-10-04. Implement
+- [x] Task 7 — workflow-core proposal approved as written by the owner on 2026-10-04. Implement
       strictly in proposal §7 order. Contract, reducer, command, loopback, and projection/adversarial
-      UI stages passed focused RED–GREEN checks. Full `npm run verify` exited 0 and the provenance
-      check is clean; no live runner or later gate was run. Commit and push bookkeeping remains.
+      UI stages passed focused RED–GREEN checks. Full `npm.cmd run verify` exited 0 on `82213a9`;
+      provenance has no missing files or stale digests. No live runner or later gate was run.
 - [ ] Task 8 — complete read-model-only conformance using `replayProject`: source/trust/revision
       provenance, checked/recorded-not-checked/not-recorded evidence, per-figure source revisions,
       explicit missing values, no inferred idle state, stale/offline/damaged log, readable gaps, and
@@ -67,19 +67,20 @@ authorized within this checklist. Approval response: “Approve + bind digest.�
 - [ ] Task 14 — produce a §8 behavior-to-evidence matrix and run required unit/build/browser checks;
       capture current-build evidence at approved viewports and record limitations. Owner performs visual
       acceptance. W12 and the §20 comprehension run remain separately gated owner actions.
-- [ ] Task 15 — implement the approved agent-side speech acts from
+- [x] Task 15 — implement the approved agent-side speech acts from
       `docs/proposals/2026-10-04-your-move-agent-speech-acts-proposal.md`. Follow §7 in exact order:
       contracts; reducer; `executeWorkCommand`; loopback integration; projection/adversarial UI;
-      full `verify` and provenance. No manager question-answer event, inferred answer or notification
-      delivery. W12 and §20 are not part of this task.
+      full `verify` and provenance. All six gates passed on `82213a9`; full verification: unit 922,
+      component 186, integration 153 passed/3 skipped, contract 152, e2e/a11y/visual 2 each at
+      1440×900 and 1280×800. No manager question-answer event, inferred answer or notification
+      delivery. W12 and §20 are not part of this task and were not run.
 
 ## Current implementation status — 2026-10-04
 
-The source changes for the read-model, calm/list/detail, log travel, session/digest/lens, and truthful
-controls are present. The seven approved UI decisions and current evidence are mapped in
-`docs/your-move/behavior-evidence-matrix.md`. All six ordered workflow-core stages have passed,
-including full `npm run verify` and provenance. Current-build Surface B browser QA used an ephemeral
-empty log with no runner at 1440×900 and 1280×800; the captures are technical QA, not owner visual
-acceptance. The contract-draft service is absent and must be scoped as a brief proposal after the
-authorized push. The agent-side speech-acts proposal was approved on 2026-10-05 and is being
-implemented under Task 15's ordered §7 gate. W12 and §20 remain separately gated and were not run.
+The source changes for the read-model, calm/list/detail, log travel, session/digest/lens, truthful
+controls, and approved agent speech acts are present. The seven approved UI decisions and current
+evidence are mapped in `docs/your-move/behavior-evidence-matrix.md`. The workflow-core and speech-act
+§7 gates passed; full `npm.cmd run verify` and provenance passed on `82213a9`. Browser checks use an
+ephemeral empty log and no runner at 1440×900 and 1280×800; they are technical QA, not owner visual
+acceptance. The contract-draft service proposal is included as a draft; implementation awaits its
+separate owner ruling. W12 and §20 remain separately gated and were not run.
