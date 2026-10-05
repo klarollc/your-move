@@ -36,16 +36,21 @@ accessibility and visual checks. Provenance reports 430 artifacts and 696 ledger
 files or stale digests. Surface B browser checks use an ephemeral empty log and no runner at 1440×900
 and 1280×800; these are technical checks, not owner visual acceptance. The speech-acts approval is
 recorded at `docs/evidence/workflow-proof/decision-record-2026-10-05-your-move-agent-speech-acts-approval.md`.
-The contract-draft service proposal is at
-`docs/proposals/2026-10-04-your-move-contract-draft-service-proposal.md`. The revised proposal is
-pushed to `review/workflow-proof`; Cinder review and Nate's approve/amend/decline ruling are the next
-gates. No implementation or live provider run has occurred. The full §8 package remains incomplete.
-W12 and §20 remain separately gated and were not run.
+The contract-draft service proposal at
+`docs/proposals/2026-10-04-your-move-contract-draft-service-proposal.md` was approved as written on
+2026-10-05; the ruling is recorded in
+`docs/proposals/2026-10-05-your-move-contract-draft-service-ruling.md`. Task 16 passed its ordered §7
+gate on implementation commit `ac7345a`. Full `npm.cmd run verify` exited 0: unit 944, component
+192, integration 164 passed/3 skipped, contract 157; build, e2e, accessibility, and visual checks
+passed at both approved widths. Provenance checked 430 artifacts and 696 ledger lines with no
+missing files or stale digests; side-effect review passed. No live provider session ran. A genuine
+provider draft remains separately gated. The full §8 package remains incomplete; W12 and §20 remain
+separately gated and were not run.
 
-**Immediate next gate:** Cinder reviews the pushed contract-draft proposal, then Nate rules
-approve/amend/decline. Do not implement the proposal or start a live provider session before those
-gates. Keep W8 shelved and do not promote. W12 and the §20 Surface B comprehension run remain
-separately gated owner actions.
+**Immediate next gate:** finish the position-record check, then push `workflow-proof` to
+`review/workflow-proof` as directed. Do not start a live provider session or substitute a model. Keep
+W8 shelved and do not promote. W12 and the §20 Surface B comprehension run remain separately gated
+owner actions.
 
 ---
 

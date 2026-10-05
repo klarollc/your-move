@@ -415,7 +415,7 @@
         {
           "id": "14",
           "state": "in_progress",
-          "note": "Behavior/evidence matrix and full verify/provenance results are recorded. Technical browser checks passed at both approved widths; owner visual review and the unavailable contract-draft service remain outstanding."
+          "note": "Behavior/evidence matrix and full verify/provenance results are recorded. Technical browser checks passed at both approved widths; owner visual review remains outstanding. The contract-draft service is authorized separately as Task 16."
         },
         {
           "id": "15",
@@ -425,9 +425,18 @@
             "runner": "npm.cmd run verify; exit 0"
           },
           "note": "Agent speech acts implemented in approved §7 order. RED–GREEN stages passed; full verify and provenance pass on 82213a9. W12 and §20 remain gated and were not run."
+        },
+        {
+          "id": "16",
+          "state": "done",
+          "gate": {
+            "verify": "ac7345a",
+            "runner": "npm.cmd run verify exited 0; phase5 provenance checked; no live provider, W12, or §20"
+          },
+          "note": "Contract-draft service implemented through the approved ordered §7 gate. Full verification: unit 944, component 192, integration 164 passed/3 skipped, contract 157; build and e2e/a11y/visual checks passed at both approved widths. Provenance: 430 artifacts, 696 ledger lines, no missing files or stale digests; side-effect review passed. No live provider run."
         }
       ],
-      "note": "Workflow-core proposal and seven additive Surface B details are implemented and verified. Task 15 speech acts passed the ordered §7 gate and full verify/provenance on 82213a9. Contract-draft service implementation, W12 and §20 remain gated."
+      "note": "Workflow-core proposal, seven additive Surface B details, speech acts, and contract-draft service are implemented and verified through their ordered gates. Task 16 full verify and provenance passed on ac7345a. No live provider session is authorized. W12 and §20 remain gated."
     },
     {
       "id": "df-047",
@@ -564,7 +573,7 @@
       "Documentation, plans and proposals",
       "Scripts and tests outside the frozen paths",
       "Backend changes that do not change what the office shows",
-      "Your Move Surface B implementation under the owner-approved plan and workflow-core proposal, following §7 without launching a live run"
+      "Your Move Surface B implementation under the approved plan, workflow-core, speech-acts, and contract-draft proposals, following each ordered gate; no live provider run"
     ],
     "ownerRunOnly": [
       "Evidence writes (npm run phase5:provenance:write)",
@@ -683,6 +692,12 @@
       "ruled": "2026-10-05",
       "ruling": "approved as written; implement in the ordered RED-GREEN gate under §7",
       "record": "docs/evidence/workflow-proof/decision-record-2026-10-05-your-move-agent-speech-acts-approval.md"
+    },
+    {
+      "id": "your-move-contract-draft-service",
+      "ruled": "2026-10-05",
+      "ruling": "approved as written; implement through the ordered §7 RED-GREEN gate, without a live provider run",
+      "record": "docs/proposals/2026-10-05-your-move-contract-draft-service-ruling.md"
     }
   ]
 }

@@ -1,7 +1,8 @@
 # Your Move implementation tasks
 
 **Status:** approved by the owner on 2026-10-04 with the plan and MDD amendment; implementation is
-authorized within this checklist. Approval response: “Approve + bind digest.”
+authorized within this checklist. The contract-draft service supplement was approved on 2026-10-05
+as a separately gated addition. Approval response for the package: “Approve + bind digest.”
 
 ## Preparation already performed
 
@@ -74,13 +75,27 @@ authorized within this checklist. Approval response: “Approve + bind digest.�
       component 186, integration 153 passed/3 skipped, contract 152, e2e/a11y/visual 2 each at
       1440×900 and 1280×800. No manager question-answer event, inferred answer or notification
       delivery. W12 and §20 are not part of this task and were not run.
+- [x] Task 16 — implement the approved contract-draft service proposal at
+      `docs/proposals/2026-10-04-your-move-contract-draft-service-proposal.md` strictly in its §7
+      order: v4 contracts and v1–v3 compatibility; reducer; trusted-context `executeWorkCommand`;
+      session service with structurally isolated test-only fake; loopback; projection/adversarial UI;
+      then full `verify` and provenance. Drafts stay transient until manager approval; creation is
+      one `work.created` v4 event with separate agent candidate and manager-final contract. No live
+      provider session or model substitution. If `gpt-6.1-sol` is unavailable, stop for a ruling.
+      All ordered stages passed on `ac7345a`; `npm.cmd run verify` exited 0: unit 944, component 192,
+      integration 164 passed/3 skipped, contract 157, plus build and e2e/a11y/visual 2 each at
+      1440×900 and 1280×800. `phase5:provenance` checked 430 artifacts and 696 ledger lines with no
+      missing files or stale digests; side-effect review passed. No live provider, W12, or §20 run.
+      Push `workflow-proof` to `review/workflow-proof` after the position/provenance record check.
 
-## Current implementation status — 2026-10-04
+## Current implementation status — 2026-10-05
 
 The source changes for the read-model, calm/list/detail, log travel, session/digest/lens, truthful
 controls, and approved agent speech acts are present. The seven approved UI decisions and current
-evidence are mapped in `docs/your-move/behavior-evidence-matrix.md`. The workflow-core and speech-act
-§7 gates passed; full `npm.cmd run verify` and provenance passed on `82213a9`. Browser checks use an
-ephemeral empty log and no runner at 1440×900 and 1280×800; they are technical QA, not owner visual
-acceptance. The contract-draft service proposal is included as a draft; implementation awaits its
-separate owner ruling. W12 and §20 remain separately gated and were not run.
+evidence are mapped in `docs/your-move/behavior-evidence-matrix.md`. The workflow-core, speech-act,
+and contract-draft §7 gates passed. Full `npm.cmd run verify` exited 0 on implementation commit
+`ac7345a`: unit 944, component 192, integration 164 passed/3 skipped, contract 157, and
+build/e2e/a11y/visual checks passed. Provenance checked 430 artifacts and 696 ledger lines with no
+missing files or stale digests; side-effect review passed. Browser checks use an ephemeral empty log
+and no runner at 1440×900 and 1280×800; they are technical QA, not owner visual acceptance. No live
+provider session ran. W12 and §20 remain separately gated and were not run.
