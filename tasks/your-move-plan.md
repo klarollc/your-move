@@ -104,8 +104,23 @@ The owner approved the minimum reconciliation in
 The owner approved the separate agent-side speech-acts proposal as written on 2026-10-05; its §7
 RED–GREEN gate is a separately tracked supplement and must run in order. Both proposals keep the
 same command path, reducer and event log. The seven additive UI decisions are mapped in
-`tasks/your-move-todo.md` and the approval record. They add no event kinds. W12, §20, contract-draft
-service implementation and live provider sessions remain gated.
+`tasks/your-move-todo.md` and the approval record. They add no event kinds. W12 and §20 remain
+separately gated. The contract-draft service is now authorized as Task 16 under its approved
+proposal; live provider sessions remain separately gated.
+
+### Approved supplement — contract-draft service — 2026-10-05
+
+The owner approved
+`docs/proposals/2026-10-04-your-move-contract-draft-service-proposal.md` as written and authorized
+the ordered §7 implementation gate. The proposal's transient pre-approval lifecycle and server-bound
+receipt are the scope; approved contracts use `executeWorkCommand` and `work.created` v4, preserving
+the agent candidate separately from the manager-approved final contract. The ruling is recorded at
+`docs/proposals/2026-10-05-your-move-contract-draft-service-ruling.md`.
+
+Task 16 is the implementation plan for this supplement and follows the seven proposal stages
+without reordering. Tests inject only the structurally isolated fake adapter. No live provider run,
+model substitution, W12 session, §20 comprehension run, promotion, deployment, or notification
+delivery is authorized. If `gpt-6.1-sol` is unavailable, stop and return for a ruling.
 
 ## 5. Build order
 

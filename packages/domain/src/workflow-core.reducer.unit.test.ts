@@ -60,6 +60,43 @@ const created = (maxTurns = 2) =>
     0,
   );
 
+const contractDraftCreated = (over: Record<string, unknown> = {}) =>
+  event(
+    "event_created_with_contract_draft",
+    "work.created",
+    {
+      payloadVersion: 4,
+      workItemId: "work_alpha",
+      outcome: "The manager-approved outcome",
+      requiredEvidenceKinds: ["test-run"],
+      contract: contract(7, {
+        outcome: "The manager-approved outcome",
+        acceptanceCriteria: ["the reviewed implementation passes tests"],
+      }),
+      contractDraft: {
+        candidate: contract(5, {
+          outcome: "The original agent candidate",
+          acceptanceCriteria: ["the candidate passes the focused test"],
+        }),
+        provenance: {
+          draftId: "draft_contract_01",
+          procedureId: "contract-drafter-v1",
+          procedureVersion: "1.0.0",
+          procedureSha256: "b".repeat(64),
+          runtime: "@openai/codex@0.157.1",
+          model: "gpt-6.1-sol",
+          providerSessionId: "thread_contract_01",
+          providerTurnId: "turn_contract_01",
+          requestSha256: "c".repeat(64),
+          candidateSha256: "d".repeat(64),
+        },
+      },
+    },
+    0,
+    "manager",
+    { actor: { actorType: "manager", actorId: "manager_nate" }, ...over },
+  );
+
 const posture = (runId: string, offsetMs: number) =>
   event(
     `event_posture_${runId}`,
@@ -185,6 +222,57 @@ const accept = () =>
   );
 
 describe("workflow-core reducer", () => {
+  it("replays contract-draft work with confirmed provenance and a distinct manager final contract", () => {
+    const createdEvent = contractDraftCreated();
+    const work = replayProject([createdEvent]).work;
+    const item = work.workItems.work_alpha;
+
+    expect(item).toMatchObject({
+      contractDraft: {
+        candidate: { outcome: "The original agent candidate", maxTurns: 5 },
+        provenance: {
+          draftId: "draft_contract_01",
+          procedureId: "contract-drafter-v1",
+          runtime: "@openai/codex@0.157.1",
+          model: "gpt-6.1-sol",
+        },
+      },
+      contract: { outcome: "The manager-approved outcome", maxTurns: 7 },
+    });
+    expect(item?.contractDraft).not.toMatchObject({ candidate: item?.contract });
+    expect(work.issues).toEqual([]);
+  });
+
+  it("labels legacy work.created as having no recorded draft source", () => {
+    const work = replayProject([created()]).work;
+    expect(work.workItems.work_alpha).not.toHaveProperty("contractDraft");
+  });
+
+  it("refuses v4 approval events with invalid provenance or non-manager attribution", () => {
+    const missingProvenance = contractDraftCreated();
+    const payload = structuredClone(missingProvenance.payload);
+    const contractDraft = payload.contractDraft as Record<string, unknown>;
+    delete contractDraft.provenance;
+
+    const malformed = replayProject([{ ...missingProvenance, payload }]);
+    expect(malformed.work.workItems.work_alpha).toBeUndefined();
+    expect(malformed.replayIssues.length).toBeGreaterThan(0);
+
+    const wrongActor = replayProject([
+      contractDraftCreated({ actor: { actorType: "agent", actorId: "agent_engineer" } }),
+    ]);
+    expect(wrongActor.work.workItems.work_alpha).toBeUndefined();
+    expect(wrongActor.replayIssues.length).toBeGreaterThan(0);
+  });
+
+  it("replays confirmed candidate provenance deterministically regardless of input order", () => {
+    const draftEvent = contractDraftCreated();
+    const signal = posture("run_contract_draft", 1_000);
+    const forward = stableStringify(replayProject([draftEvent, signal]).work);
+    const reversed = stableStringify(replayProject([signal, draftEvent]).work);
+    expect(reversed).toBe(forward);
+  });
+
   it("replays rescope and grants in canonical order with stable contract history", () => {
     const log = [
       created(),

@@ -151,3 +151,13 @@ Task 6 implementation breakdown in tasks/phase-7-task-6-todo-draft.md and reques
 subagents. Task 6 implementation is authorized within tasks/phase-7-task-6-plan.md. Clean
 owner-run verification, owner captures/provenance and exact plate review remain required.
 No Task 7 work, evidence regeneration by agents, promotion, push or external effect is authorized.
+
+## Current amendment — 2026-10-05, Your Move contract-draft service
+
+Position and HANDOFF supersede historical phase status above. The owner approved
+`docs/proposals/2026-10-04-your-move-contract-draft-service-proposal.md` as written and authorized
+implementation under its ordered §7 gate; the ruling is recorded in
+`docs/proposals/2026-10-05-your-move-contract-draft-service-ruling.md`. Use the test-only fake
+adapter, keep fake receipts unable to authorize production creates, and do not run a live provider
+session. If the pinned model is unavailable, stop for a new ruling rather than substituting. W12,
+§20, promotion, deployment, and notification delivery remain gated.

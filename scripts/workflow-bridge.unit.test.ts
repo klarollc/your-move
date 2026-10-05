@@ -71,15 +71,27 @@ const command = (over: Record<string, unknown>) => ({
 });
 
 function assignedLog(paths?: string[]): unknown[] {
-  let log: unknown[] = staffing();
-  const created = executeWorkCommand({
-    log,
-    currentRevision: log.length,
-    now: T0,
-    command: command({ commandId: "c1", expectedRevision: log.length, contract: contract(paths) }),
-  });
-  if (!created.ok) throw new Error(created.code);
-  log = [...log, ...created.events];
+  const agreement = contract(paths);
+  const created = {
+    schemaVersion: 1,
+    eventId: "event_work_seed",
+    projectId: "project_alpha",
+    workItemId: "work_slug",
+    kind: "work.created",
+    occurredAt: T0,
+    receivedAt: T0,
+    source: "manager",
+    trust: "verified",
+    actor: { actorType: "manager", actorId: "manager_nate" },
+    payload: {
+      payloadVersion: 3,
+      workItemId: "work_slug",
+      outcome: agreement.outcome,
+      requiredEvidenceKinds: ["test-run"],
+      contract: agreement,
+    },
+  };
+  const log: unknown[] = [...staffing(), created];
   const assigned = executeWorkCommand({
     log,
     currentRevision: log.length,

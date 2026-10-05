@@ -9,15 +9,19 @@
  * any new reducer issue, passing the reducer's code through. A candidate that does not parse is refused too, because the
  * reducer would silently drop it and the command would then report success for nothing.
  */
+import { createHash } from "node:crypto";
 import {
   boundedWorkContractSchema,
+  contractDraftRecordSchema,
   parseProjectEvent,
+  type ContractDraftRecord,
   type WorkContract,
 } from "@cuckcode/contracts";
 import {
   judgeDoneClaim,
   nextEventTimes,
   replayProject,
+  stableStringify,
   type WorkTruthState,
 } from "@cuckcode/domain";
 
@@ -85,6 +89,18 @@ export type WorkCommandReceipt = Readonly<{
   eventIds: readonly string[];
 }>;
 
+/** Server-resolved draft receipt. A browser handle is never accepted in this shape. */
+export type VerifiedContractDraftReceipt = Readonly<{
+  kind: "codex-app-server";
+  state: "fresh" | "used";
+  receiptId: string;
+  managerSessionId: string;
+  projectId: string;
+  expectedRevision: number;
+  expiresAt: string;
+  draft: ContractDraftRecord;
+}>;
+
 export type WorkCommandResult =
   | Readonly<{
       ok: true;
@@ -125,6 +141,8 @@ export function executeWorkCommand(
     trustedContext?: Readonly<{
       worktreeSha256?: string;
       authenticatedAgent?: Readonly<{ agentId: string; roleAssignmentId: string }>;
+      authenticatedManagerSessionId?: string;
+      contractDraftReceipt?: VerifiedContractDraftReceipt;
     }>;
   }>,
 ): WorkCommandResult {
@@ -187,6 +205,17 @@ export function executeWorkCommand(
     }
     effectiveActor = command.actor;
   }
+  let createDraft: ContractDraftRecord | undefined;
+  if (command.intent === "create") {
+    const receiptResult = validateContractDraftReceipt({
+      command,
+      now,
+      currentRevision,
+      trustedContext,
+    });
+    if (receiptResult.ok === false) return receiptResult.result;
+    createDraft = receiptResult.draft;
+  }
   const commandPrefix = `event_${command.commandId}_`;
   if (normalizeCommandEventIds(log).some((eventId) => eventId.startsWith(commandPrefix))) {
     return refuse(
@@ -211,7 +240,7 @@ export function executeWorkCommand(
           : command.intent === "decline_rescope"
             ? planDeclineRescope(command, item)
             : command.intent === "create"
-              ? planCreate(command, item !== undefined)
+              ? planCreate(command, item !== undefined, createDraft)
               : command.intent === "assign"
                 ? planAssign(command, item)
                 : command.intent === "record_evidence"
@@ -311,7 +340,14 @@ type Candidate = Readonly<{
   suppressionDays?: 2 | 3;
 }>;
 
-function planCreate(command: WorkCommand, exists: boolean): Candidate[] | WorkCommandResult {
+function planCreate(
+  command: WorkCommand,
+  exists: boolean,
+  contractDraft: ContractDraftRecord | undefined,
+): Candidate[] | WorkCommandResult {
+  if (!contractDraft) {
+    return refuse("CONTRACT_DRAFT_REQUIRED", "a server-verified agent draft receipt is required");
+  }
   if (command.contract === undefined) {
     return refuse("CONTRACT_INVALID", "contract is required");
   }
@@ -329,14 +365,94 @@ function planCreate(command: WorkCommand, exists: boolean): Candidate[] | WorkCo
     {
       kind: "work.created",
       payload: {
-        payloadVersion: 3,
+        payloadVersion: 4,
         workItemId: command.workItemId,
         outcome: parsed.data.outcome,
         requiredEvidenceKinds: parsed.data.evidenceObligations.map((entry) => entry.kind),
         contract: parsed.data,
+        contractDraft,
       },
+      actor: command.actor,
     },
   ];
+}
+
+function validateContractDraftReceipt(input: {
+  command: WorkCommand;
+  now: string;
+  currentRevision: number;
+  trustedContext:
+    | Readonly<{
+        worktreeSha256?: string;
+        authenticatedAgent?: Readonly<{ agentId: string; roleAssignmentId: string }>;
+        authenticatedManagerSessionId?: string;
+        contractDraftReceipt?: VerifiedContractDraftReceipt;
+      }>
+    | undefined;
+}):
+  | Readonly<{ ok: true; draft: ContractDraftRecord }>
+  | Readonly<{ ok: false; result: WorkCommandResult }> {
+  const { command, now, currentRevision, trustedContext } = input;
+  const receipt = trustedContext?.contractDraftReceipt;
+  const fail = (code: string, message: string) => ({
+    ok: false as const,
+    result: refuse(code, message),
+  });
+  if (!receipt || !trustedContext?.authenticatedManagerSessionId) {
+    return fail(
+      "CONTRACT_DRAFT_REQUIRED",
+      "an authenticated manager and server draft receipt are required",
+    );
+  }
+  if (receipt.kind !== "codex-app-server") {
+    return fail(
+      "CONTRACT_DRAFT_RECEIPT_SOURCE",
+      "only a verified Codex session can authorize creation",
+    );
+  }
+  if (receipt.state !== "fresh") {
+    return fail("CONTRACT_DRAFT_RECEIPT_USED", "the draft receipt is no longer fresh");
+  }
+  if (!/^draft-receipt_[A-Za-z0-9][A-Za-z0-9._-]*$/u.test(receipt.receiptId)) {
+    return fail("CONTRACT_DRAFT_RECEIPT_INVALID", "the server draft receipt id is malformed");
+  }
+  if (receipt.managerSessionId !== trustedContext.authenticatedManagerSessionId) {
+    return fail("CONTRACT_DRAFT_RECEIPT_SESSION", "the draft belongs to another manager session");
+  }
+  if (receipt.projectId !== command.projectId) {
+    return fail("CONTRACT_DRAFT_RECEIPT_PROJECT", "the draft belongs to another project");
+  }
+  if (
+    !Number.isInteger(receipt.expectedRevision) ||
+    receipt.expectedRevision !== currentRevision ||
+    receipt.expectedRevision !== command.expectedRevision
+  ) {
+    return fail("CONTRACT_DRAFT_RECEIPT_STALE", "the project changed after this draft was created");
+  }
+  const expiry = Date.parse(receipt.expiresAt);
+  const currentTime = Date.parse(now);
+  if (!Number.isFinite(expiry) || !Number.isFinite(currentTime) || expiry <= currentTime) {
+    return fail(
+      "CONTRACT_DRAFT_RECEIPT_EXPIRED",
+      "the draft receipt is expired or has an invalid expiry",
+    );
+  }
+  const parsedDraft = contractDraftRecordSchema.safeParse(receipt.draft);
+  if (!parsedDraft.success) {
+    return fail("CONTRACT_DRAFT_RECEIPT_INVALID", "the draft record is malformed");
+  }
+  let candidateDigest: string;
+  try {
+    candidateDigest = createHash("sha256")
+      .update(stableStringify(parsedDraft.data.candidate))
+      .digest("hex");
+  } catch {
+    return fail("CONTRACT_DRAFT_RECEIPT_INVALID", "the draft candidate is not canonical JSON");
+  }
+  if (candidateDigest !== parsedDraft.data.provenance.candidateSha256) {
+    return fail("CONTRACT_DRAFT_DIGEST_MISMATCH", "the candidate does not match its source digest");
+  }
+  return { ok: true, draft: parsedDraft.data };
 }
 
 function planAssign(

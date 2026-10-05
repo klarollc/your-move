@@ -76,6 +76,87 @@
   margin-inline: auto;
 }
 
+.workflow-create-panel > h1 {
+  margin: 0;
+  font-family: Georgia, serif;
+  font-size: 1.6rem;
+}
+
+.workflow-unavailable-mark.is-ready {
+  border-color: var(--moss);
+  color: var(--moss);
+}
+
+.workflow-draft-disabled,
+.workflow-draft-error,
+.workflow-draft-status {
+  border-left: 3px solid var(--terra);
+  padding: 8px 12px;
+}
+
+.workflow-draft-error {
+  color: var(--terra) !important;
+}
+
+.workflow-draft-status {
+  border-color: var(--moss);
+  color: var(--moss) !important;
+}
+
+.workflow-draft-review,
+.workflow-agent-candidate {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+
+.workflow-draft-review h2,
+.workflow-agent-candidate h3,
+.workflow-contract-diff h3 {
+  margin: 0;
+  font-family: Georgia, serif;
+  font-size: 1.2rem;
+}
+
+.workflow-draft-review pre,
+.workflow-contract-diff pre {
+  max-width: 100%;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px;
+  color: var(--ink);
+  background: var(--char);
+  font-size: 0.72rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.workflow-contract-diff {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.workflow-contract-diff ul {
+  display: grid;
+  gap: 8px;
+  padding-left: 20px;
+}
+
+.workflow-contract-diff li > p {
+  margin: 6px 0;
+  overflow-wrap: anywhere;
+}
+
+.workflow-diff-label {
+  display: inline-block;
+  min-width: 132px;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
 .workflow-header {
   display: flex;
   align-items: center;

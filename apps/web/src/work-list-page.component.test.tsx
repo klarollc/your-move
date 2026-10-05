@@ -197,10 +197,14 @@ describe("Surface B log-backed page", () => {
 
     expect(await screen.findByRole("heading", { name: "No work yet." })).toBeVisible();
     expect(screen.queryByRole("heading", { name: "While you were away" })).not.toBeInTheDocument();
-    expect(window.localStorage.getItem("your-move:last-seen-revision:project_surface_b")).toBe("0");
+    await waitFor(() =>
+      expect(window.localStorage.getItem("your-move:last-seen-revision:project_surface_b")).toBe(
+        "0",
+      ),
+    );
   });
 
-  it("does not claim to create work until the real agent contract-draft path exists", async () => {
+  it("keeps work creation unavailable until the pinned draft source receives owner authorization", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
       if (url === "/api/session") {
@@ -209,6 +213,7 @@ describe("Surface B log-backed page", () => {
           csrfToken: "csrf_surface_b",
           projectId: "project_surface_b",
           runner: { available: false, state: "unavailable" },
+          contractDraftingAvailable: false,
         });
       }
       if (url === "/api/workflow/status") {
@@ -224,9 +229,81 @@ describe("Surface B log-backed page", () => {
     render(<WorkListPage />);
     await user.click(await screen.findByRole("button", { name: "New work" }));
     expect(screen.getByRole("region", { name: "Describe the outcome" })).toHaveTextContent(
-      "The current workflow core has no draft service, so this view will not create work.",
+      "has not received separate owner authorization",
     );
+    expect(screen.getByRole("button", { name: "Request agent draft" })).toBeDisabled();
     expect(fetchMock.mock.calls.some(([url]) => String(url) === "/api/commands")).toBe(false);
+  });
+
+  it("does not create optimistically when an otherwise genuine draft receipt is expired", async () => {
+    const candidate = {
+      outcome: "Document parser behavior",
+      exclusions: [],
+      acceptanceCriteria: ["Examples match parser behavior"],
+      dependencies: [],
+      evidenceObligations: [{ kind: "review", description: "Inspect the saved document" }],
+      permissionCeiling: {
+        sandboxMode: "workspace-write",
+        approvalPolicy: "never",
+        networkAccess: false,
+        windowsSandbox: "unelevated",
+      },
+      stopConditions: ["Stop if the examples are ambiguous"],
+      definitionOfDone: "The manager reviews the saved document",
+      contextRefs: [],
+      maxTurns: 4,
+    };
+    const events: readonly unknown[] = [];
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url === "/api/session")
+        return reply({
+          sessionId: "session_surface_b",
+          csrfToken: "csrf_surface_b",
+          projectId: "project_surface_b",
+          runner: { available: false, state: "unavailable" },
+          contractDraftingAvailable: true,
+        });
+      if (url === "/api/workflow/status") return reply({ available: false, state: "unavailable" });
+      if (url === "/api/log") return reply({ revision: 0, events, truncated: false, problems: [] });
+      if (url === "/api/contract-drafts" && init?.method === "POST")
+        return reply({
+          candidate,
+          provenance: {
+            draftId: "draft_surface_b_expired_receipt",
+            procedureId: "contract-drafter-v1",
+            procedureVersion: "1.0.0",
+            procedureSha256: "a".repeat(64),
+            runtime: "@openai/codex@0.157.1",
+            model: "gpt-6.1-sol",
+            providerSessionId: "provider-session-test",
+            providerTurnId: "provider-turn-test",
+            requestSha256: "b".repeat(64),
+            candidateSha256: "c".repeat(64),
+          },
+          receiptHandle: "draft-receipt-expired",
+          expiresAt: "2026-10-04T00:00:00.000Z",
+          source: "codex-app-server",
+          testOnly: false,
+        });
+      if (url === "/api/commands" && init?.method === "POST")
+        return reply({ code: "CONTRACT_DRAFT_RECEIPT_EXPIRED" }, 422);
+      throw new Error(`unexpected request ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+    render(<WorkListPage />);
+    await user.click(await screen.findByRole("button", { name: "New work" }));
+    await user.type(screen.getByLabelText("What outcome do you need?"), "Document parser behavior");
+    await user.click(screen.getByRole("button", { name: "Request agent draft" }));
+    expect(await screen.findByText(/source confirmed by the server/u)).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Approve contract and create work" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(/draft receipt expired/u);
+    expect(screen.queryByText(/source confirmed by the server/u)).not.toBeInTheDocument();
+    expect(fetchMock.mock.calls.filter(([url]) => String(url) === "/api/commands")).toHaveLength(1);
+    expect(events).toHaveLength(0);
   });
 
   it("starts the loopback runner with only the selected work-item id", async () => {

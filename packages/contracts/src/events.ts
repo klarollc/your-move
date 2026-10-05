@@ -81,6 +81,8 @@ const projectEventSchema = z
       event.kind === "work.send_back_disputed";
     const linkedApproval = event.kind === "work.rescoped" && event.payload.proposalId !== undefined;
     const managerSpeechAct = event.kind === "work.rescope_declined" || linkedApproval;
+    const contractDraftCreation =
+      event.kind === "work.created" && event.payload.payloadVersion === 4;
 
     if (agentSpeechAct) {
       if (event.actor?.actorType !== "agent") {
@@ -119,6 +121,30 @@ const projectEventSchema = z
           code: "custom",
           path: ["source"],
           message: "manager decisions require verified manager source",
+        });
+      }
+    }
+
+    if (contractDraftCreation) {
+      if (event.actor?.actorType !== "manager") {
+        context.addIssue({
+          code: "custom",
+          path: ["actor"],
+          message: "contract-draft approval requires manager attribution",
+        });
+      }
+      if (event.source !== "manager" || event.trust !== "verified") {
+        context.addIssue({
+          code: "custom",
+          path: ["source"],
+          message: "contract-draft approval requires verified manager source",
+        });
+      }
+      if (event.payload.workItemId !== event.workItemId) {
+        context.addIssue({
+          code: "custom",
+          path: ["payload", "workItemId"],
+          message: "payload workItemId must match the event envelope",
         });
       }
     }

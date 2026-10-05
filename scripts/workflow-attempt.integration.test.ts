@@ -40,7 +40,7 @@ const env = (eventId: string, kind: string, payload: Record<string, unknown>) =>
   payload,
 });
 const seed = (): unknown[] => {
-  let log: unknown[] = [
+  const log: unknown[] = [
     env("event_s1", "agent.registered", {
       agentId: "agent_engineer",
       capabilities: ["engineer"],
@@ -58,14 +58,18 @@ const seed = (): unknown[] => {
     actor: { actorType: "manager" as const, actorId: "manager_nate" },
     workItemId: "work_slug",
   };
-  const created = executeWorkCommand({
-    log,
-    currentRevision: log.length,
-    now: T0,
-    command: { ...base, commandId: "c1", expectedRevision: log.length, intent: "create", contract },
+  log.push({
+    ...env("event_work_seed", "work.created", {
+      payloadVersion: 3,
+      workItemId: "work_slug",
+      outcome: contract.outcome,
+      requiredEvidenceKinds: ["test-run"],
+      contract,
+    }),
+    workItemId: "work_slug",
+    source: "manager",
+    actor: base.actor,
   });
-  if (!created.ok) throw new Error(created.code);
-  log = [...log, ...created.events];
   const assigned = executeWorkCommand({
     log,
     currentRevision: log.length,

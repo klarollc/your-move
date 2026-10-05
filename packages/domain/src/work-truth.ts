@@ -19,6 +19,7 @@ import {
   type ProjectEvent,
   type WorkConditionV3,
   type WorkContract,
+  type ContractDraftRecord,
   type EvidenceVersionRef,
 } from "@cuckcode/contracts";
 
@@ -68,6 +69,8 @@ export type WorkItemTruth = {
   condition: WorkConditionTruth | null;
   /** The D-26 work contract, present only for a work item created with a version-2 payload. */
   contract?: WorkContract;
+  /** The original agent candidate and server-bound source receipt, present only for payload v4. */
+  contractDraft?: ContractDraftRecord;
   contractRevision?: number;
   contractHistory?: ContractRevisionTruth[];
   turnBudget?: TurnBudgetTruth;
@@ -315,14 +318,14 @@ export function reduceWorkTruth(
 }
 
 function createWorkItem(state: WorkTruthState, event: ProjectEvent): void {
-  // Version 2 carries the historical contract; version 3 adds an explicit bounded turn cap.
+  // Version 2 carries the historical contract; version 3 adds a turn cap; v4 binds a draft receipt.
   if (event.payload.payloadVersion !== undefined) {
     const parsed = validateWorkCreatedPayload(event.payload);
     if (!parsed.ok) {
       issue(state, "MALFORMED_WORK_EVENT", event, parsed.issues.join("; "));
       return;
     }
-    const { workItemId, outcome, requiredEvidenceKinds, contract } = parsed.value;
+    const { workItemId, outcome, requiredEvidenceKinds, contract, contractDraft } = parsed.value;
     state.workItems[workItemId] = {
       workItemId,
       outcome,
@@ -334,6 +337,7 @@ function createWorkItem(state: WorkTruthState, event: ProjectEvent): void {
       assignment: null,
       condition: null,
       ...(contract ? { contract } : {}),
+      ...(contractDraft ? { contractDraft } : {}),
       ...(contract
         ? {
             contractRevision: 1,

@@ -1,5 +1,7 @@
+import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 
+import { stableStringify } from "@cuckcode/domain";
 import { executeWorkCommand, type WorkCommand } from "./work-commands.js";
 
 const ROLE = "role-assignment_engineer";
@@ -25,6 +27,34 @@ const contract = (outcome: string) => ({
   definitionOfDone: "the manager reviews test evidence",
   contextRefs: [],
   maxTurns: 4,
+});
+
+const draftContext = (draft: ReturnType<typeof contract>, revision: number) => ({
+  authenticatedManagerSessionId: "session_manager_test",
+  contractDraftReceipt: {
+    kind: "codex-app-server",
+    state: "fresh",
+    receiptId: "draft-receipt_test",
+    managerSessionId: "session_manager_test",
+    projectId: "project_alpha",
+    expectedRevision: revision,
+    expiresAt: "2026-10-05T12:05:00.000Z",
+    draft: {
+      candidate: draft,
+      provenance: {
+        draftId: "draft_test",
+        procedureId: "contract-drafter-v1",
+        procedureVersion: "1.0.0",
+        procedureSha256: "b".repeat(64),
+        runtime: "@openai/codex@0.157.1",
+        model: "gpt-6.1-sol",
+        providerSessionId: "thread_test",
+        providerTurnId: "turn_test",
+        requestSha256: "c".repeat(64),
+        candidateSha256: createHash("sha256").update(stableStringify(draft)).digest("hex"),
+      },
+    },
+  },
 });
 
 let timestamp = 0;
@@ -101,6 +131,7 @@ const assignedLog = () => {
       workItemId: WORK,
       contract: contract("Replace the parser"),
     },
+    trustedContext: draftContext(contract("Agent draft for the parser"), initial.length) as never,
   });
   if (!created.ok) throw new Error("create fixture failed: " + created.code);
   const afterCreate = [...initial, ...created.events];

@@ -1,4 +1,5 @@
-import { judgeDoneClaim, replayProject } from "@cuckcode/domain";
+import { createHash } from "node:crypto";
+import { judgeDoneClaim, replayProject, stableStringify } from "@cuckcode/domain";
 import { describe, expect, it } from "vitest";
 
 import { executeWorkCommand, type WorkCommand } from "./work-commands.js";
@@ -70,7 +71,20 @@ const base = (over: Override): WorkCommand =>
     }).filter(([, value]) => value !== undefined),
   ) as WorkCommand;
 const run = (log: readonly unknown[], command: WorkCommand, currentRevision = log.length) =>
-  executeWorkCommand({ log, currentRevision, now: NOW, command });
+  executeWorkCommand({
+    log,
+    currentRevision,
+    now: NOW,
+    command,
+    ...(command.intent === "create"
+      ? {
+          trustedContext: trustedDraftContext({
+            expectedRevision: currentRevision,
+            projectId: command.projectId,
+          }) as never,
+        }
+      : {}),
+  });
 
 const created = () => {
   const log = staffing();
@@ -78,6 +92,56 @@ const created = () => {
   if (!result.ok) throw new Error(`setup failed: ${result.code}`);
   return [...log, ...result.events];
 };
+
+const candidateContract = () => contract();
+const draftDigest = (value: unknown) =>
+  createHash("sha256").update(stableStringify(value)).digest("hex");
+const trustedDraftContext = (over: Record<string, unknown> = {}) => {
+  const candidate = candidateContract();
+  const receipt = {
+    kind: "codex-app-server",
+    state: "fresh",
+    receiptId: "draft-receipt_01",
+    managerSessionId: "session_manager_01",
+    projectId: "project_alpha",
+    expectedRevision: 0,
+    expiresAt: "2026-10-04T11:05:00.000Z",
+    draft: {
+      candidate,
+      provenance: {
+        draftId: "draft_contract_01",
+        procedureId: "contract-drafter-v1",
+        procedureVersion: "1.0.0",
+        procedureSha256: "b".repeat(64),
+        runtime: "@openai/codex@0.157.1",
+        model: "gpt-6.1-sol",
+        providerSessionId: "thread_contract_01",
+        providerTurnId: "turn_contract_01",
+        requestSha256: "c".repeat(64),
+        candidateSha256: draftDigest(candidate),
+      },
+    },
+    ...over,
+  };
+  return {
+    authenticatedManagerSessionId: "session_manager_01",
+    contractDraftReceipt: receipt,
+  };
+};
+
+const runWithTrustedDraft = (
+  log: readonly unknown[],
+  command: WorkCommand,
+  trustedContext: Record<string, unknown>,
+  currentRevision = log.length,
+) =>
+  executeWorkCommand({
+    log,
+    currentRevision,
+    now: NOW,
+    command,
+    trustedContext: trustedContext as never,
+  });
 
 describe("executeWorkCommand: create", () => {
   it("creates a draft work item carrying the contract, with a receipt", () => {
@@ -144,6 +208,98 @@ describe("executeWorkCommand: create", () => {
   it("refuses rather than silently drops an event that would not parse", () => {
     const result = run([], base({ projectId: "alpha" }));
     expect(result).toMatchObject({ ok: false, code: "EVENT_INVALID" });
+  });
+});
+
+describe("executeWorkCommand: contract-draft receipt", () => {
+  it("creates v4 only from a server-bound fresh draft receipt and keeps manager edits separate", () => {
+    const finalContract = { ...contract(), outcome: "Manager-edited outcome" };
+    const result = runWithTrustedDraft(
+      [],
+      base({ contract: finalContract }),
+      trustedDraftContext(),
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.events).toMatchObject([
+      {
+        kind: "work.created",
+        source: "manager",
+        trust: "verified",
+        actor: manager,
+        payload: {
+          payloadVersion: 4,
+          contract: { outcome: "Manager-edited outcome" },
+          contractDraft: {
+            candidate: { outcome: "Implement slugify" },
+            provenance: { procedureId: "contract-drafter-v1", model: "gpt-6.1-sol" },
+          },
+        },
+      },
+    ]);
+    expect(result.state.workItems.work_slug?.contractDraft).toMatchObject({
+      candidate: { outcome: "Implement slugify" },
+      provenance: { procedureId: "contract-drafter-v1", model: "gpt-6.1-sol" },
+    });
+  });
+
+  it("requires an authenticated manager session and a trusted-context receipt", () => {
+    expect(runWithTrustedDraft([], base({}), {})).toMatchObject({
+      ok: false,
+      code: "CONTRACT_DRAFT_REQUIRED",
+    });
+    expect(
+      runWithTrustedDraft(
+        [],
+        base({ actor: { actorType: "agent", actorId: "agent_engineer" } }),
+        trustedDraftContext(),
+      ),
+    ).toMatchObject({ ok: false, code: "NOT_AUTHORIZED" });
+
+    const forgedCommand = {
+      ...base({}),
+      contractDraft: trustedDraftContext().contractDraftReceipt,
+    } as unknown as WorkCommand;
+    expect(run([], forgedCommand)).toMatchObject({ ok: false });
+
+    const missingManagerBinding = trustedDraftContext();
+    delete (missingManagerBinding as Record<string, unknown>).authenticatedManagerSessionId;
+    expect(runWithTrustedDraft([], base({}), missingManagerBinding)).toMatchObject({
+      ok: false,
+      code: "CONTRACT_DRAFT_REQUIRED",
+    });
+  });
+
+  it.each([
+    ["expired", { expiresAt: "2026-10-04T10:59:59.999Z" }, "CONTRACT_DRAFT_RECEIPT_EXPIRED"],
+    ["reused", { state: "used" }, "CONTRACT_DRAFT_RECEIPT_USED"],
+    ["wrong session", { managerSessionId: "session_other" }, "CONTRACT_DRAFT_RECEIPT_SESSION"],
+    ["wrong project", { projectId: "project_other" }, "CONTRACT_DRAFT_RECEIPT_PROJECT"],
+    ["stale revision", { expectedRevision: 2 }, "CONTRACT_DRAFT_RECEIPT_STALE"],
+  ])("refuses a %s draft receipt", (_label, receiptChanges, code) => {
+    const result = runWithTrustedDraft([], base({}), trustedDraftContext({ ...receiptChanges }));
+    expect(result).toMatchObject({ ok: false, code });
+  });
+
+  it("refuses fake adapter receipts and candidate digest mismatches", () => {
+    expect(
+      runWithTrustedDraft([], base({}), trustedDraftContext({ kind: "test-fake" })),
+    ).toMatchObject({ ok: false, code: "CONTRACT_DRAFT_RECEIPT_SOURCE" });
+    expect(
+      runWithTrustedDraft(
+        [],
+        base({}),
+        trustedDraftContext({
+          draft: {
+            ...trustedDraftContext().contractDraftReceipt.draft,
+            provenance: {
+              ...trustedDraftContext().contractDraftReceipt.draft.provenance,
+              candidateSha256: "e".repeat(64),
+            },
+          },
+        }),
+      ),
+    ).toMatchObject({ ok: false, code: "CONTRACT_DRAFT_DIGEST_MISMATCH" });
   });
 });
 

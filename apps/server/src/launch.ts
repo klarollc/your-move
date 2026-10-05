@@ -14,6 +14,10 @@ import { readEventLog } from "./event-log.js";
 import { acquireLogLock, type LogLock } from "./log-lock.js";
 import { createLoopbackApp, type LoopbackApp } from "./loopback-session.js";
 import { createWorkflowRunnerControl } from "./workflow-runner.js";
+import {
+  createCodexContractDraftSessionAdapter,
+  createContractDraftService,
+} from "./contract-draft-service.js";
 
 export const DEFAULT_PORT = 4180;
 export const DEFAULT_ORIGIN = "http://127.0.0.1:4173";
@@ -214,6 +218,11 @@ export async function startLogServer(args: LaunchArgs): Promise<StartResult> {
       logPath: args.logPath,
       worktreeRoot: process.cwd(),
       runner,
+      contractDraftService: createContractDraftService({
+        mode: "development",
+        adapter: createCodexContractDraftSessionAdapter(),
+        now: () => new Date().toISOString(),
+      }),
     });
     await app.listen({ host: "127.0.0.1", port: args.port });
     const address = app.server.address();

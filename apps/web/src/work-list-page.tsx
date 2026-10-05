@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { projectWorkList, type WorkListProjectionOptions } from "./work-list-model.js";
+import type { ContractDraftServiceResult } from "./contract-draft-panel.js";
+import type { WorkContract } from "@cuckcode/contracts";
 import {
   WorkList,
   type SurfaceBCommandApi,
@@ -16,6 +18,7 @@ type SurfaceBSession = Readonly<{
   csrfToken: string;
   projectId: string;
   runner: WorkflowRunnerStatus;
+  contractDraftingAvailable?: boolean;
 }>;
 
 type LogResponse = Readonly<{
@@ -53,6 +56,18 @@ function describeApiFailure(code: string): string {
       "The current worktree digest could not be measured. No ruling was recorded.",
     RULING_WITHDRAWAL_REFUSED:
       "The ruling can no longer be undone because the work or evidence changed, or the 60-second window ended.",
+    CONTRACT_DRAFT_UNAVAILABLE:
+      "Agent contract drafting is unavailable. No draft or work item was created.",
+    CONTRACT_DRAFT_NOT_AUTHORIZED:
+      "The pinned live draft session has not received separate owner authorization. No draft was created.",
+    CONTRACT_DRAFT_SESSION_FAILED:
+      "The pinned draft session failed. No draft was saved and no alternate model or template was substituted; owner review is required before retrying.",
+    CONTRACT_DRAFT_RECEIPT_EXPIRED:
+      "The draft receipt expired. No work was created; request a fresh draft.",
+    CONTRACT_DRAFT_RECEIPT_STALE:
+      "The project log changed after this draft. No work was created; request a fresh draft.",
+    CONTRACT_DRAFT_RECEIPT_SOURCE:
+      "This draft source cannot authorize a production work item. No work was created.",
   };
   return messages[code] ?? `The loopback server refused that action (${code}).`;
 }
@@ -226,7 +241,12 @@ export function WorkListPage() {
   }, [refreshLog, refreshRunner, runner.state, session]);
 
   const sendCommand = useCallback(
-    async (intent: string, targetEntityId: string, payload: Record<string, unknown>) => {
+    async (
+      intent: string,
+      targetEntityId: string,
+      payload: Record<string, unknown>,
+      draftReceiptHandle?: string,
+    ) => {
       if (!session) throw new Error("The local workflow server is not connected.");
       setError(null);
       const response = await fetch("/api/commands", {
@@ -245,6 +265,7 @@ export function WorkListPage() {
           intent,
           targetEntityId,
           payload,
+          ...(draftReceiptHandle ? { draftReceiptHandle } : {}),
         }),
       });
       if (response.status === 409) {
@@ -275,6 +296,46 @@ export function WorkListPage() {
       }
     },
     [refreshLog, revision, session],
+  );
+
+  const onDraftContract = useCallback(
+    async (description: string): Promise<ContractDraftServiceResult> => {
+      if (!session || session.contractDraftingAvailable !== true) {
+        throw new Error("The pinned live draft session is not authorized. No draft was created.");
+      }
+      const response = await fetch("/api/contract-drafts", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-cuckcode-session": session.sessionId,
+          "x-cuckcode-csrf": session.csrfToken,
+        },
+        body: JSON.stringify({ expectedRevision: revision, description }),
+      });
+      if (response.status === 409) {
+        const rejected = (await response.json().catch(() => ({}))) as { code?: unknown };
+        await refreshLog(session);
+        throw new Error(
+          describeApiFailure(typeof rejected.code === "string" ? rejected.code : "HTTP_409"),
+        );
+      }
+      const result = await responseJson<ContractDraftServiceResult>(response);
+      if (result.testOnly || result.source !== "codex-app-server") {
+        throw new Error("A test-only source cannot appear as an agent draft. No work was created.");
+      }
+      return result;
+    },
+    [refreshLog, revision, session],
+  );
+
+  const onCreateWork = useCallback(
+    async (contract: WorkContract, receiptHandle: string) => {
+      if (!session || session.contractDraftingAvailable !== true) {
+        throw new Error("The contract-drafting session is unavailable. No work was created.");
+      }
+      await sendCommand("work.create", newId("work"), { contract }, receiptHandle);
+    },
+    [sendCommand, session],
   );
 
   const onAssign: SurfaceBCommandApi["onAssign"] = async (workItemId, roleAssignmentId) => {
@@ -448,6 +509,7 @@ export function WorkListPage() {
         assignments={visibleProjection.assignments}
         log={projection.log}
         runner={runner}
+        contractDraftingAvailable={session?.contractDraftingAvailable === true}
         connected={logRead.connected === true}
         actionsDisabled={
           session === null ||
@@ -464,6 +526,8 @@ export function WorkListPage() {
         onEvidence={onEvidence}
         onReview={onReview}
         onExecute={onExecute}
+        onDraftContract={onDraftContract}
+        onCreateWork={onCreateWork}
         onRuling={onRuling}
         onGrantTurns={onGrantTurns}
         onRescope={onRescope}

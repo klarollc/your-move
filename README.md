@@ -1,15 +1,13 @@
 # CuckCode
 
-CuckCode is a visual multi-agent orchestration product in which a familiar office environment is
-the primary surface through which a non-technical manager directs real agent work: assigning
-outcomes, answering escalations, inspecting evidence, and approving or redirecting deliverables
-without learning an agent framework.
+CuckCode is the repository and codename for Your Move, a multi-agent orchestration product in which
+a non-technical manager directs real agent work through a simple work list. The office is a shelved,
+optional surface over the same workflow core.
 
-Rendering agents as office workers is the visible part and the least load-bearing. The claim is
-that the office is **operable** rather than observational, **truthful** — every meaningful visual
-behavior backed by an inspectable canonical event, with simulated or fallback animation treated as
-a defect rather than a shortcut — and **reciprocal**, with human and agent interfaces as equal
-projections of the same canonical state. See MDD §2.
+The product claim is that the primary surface is **operable**, **truthful** — every meaningful
+status is backed by an inspectable canonical event, with simulated or fallback activity treated as a
+defect — and **reciprocal**, with human and agent interfaces as equal projections of the same
+canonical state. See MDD §2.
 
 ## Current status
 
@@ -97,7 +95,8 @@ This approval does not authorize implementation or visual-baseline promotion.
 
 ## Working principle
 
-The office is a truthful projection of inspectable workflow state. It must never use animation, avatar behavior, or spatial placement to imply work, progress, collaboration, urgency, or availability that is not supported by real events.
+Surface B is a truthful projection of inspectable workflow state. It must never imply work,
+progress, approval, evidence, urgency, or availability that is not supported by the event log.
 
 ### Current implementation authority — 2026-10-03
 
@@ -105,3 +104,12 @@ The live position record and HANDOFF supersede historical phase status above. Ph
 accepted by owner waiver; Phase 7 Tasks 1–5b are complete. Task 6's furniture plan and implementation
 breakdown are owner-approved, with Luna subagents requested. Implementation is in progress; clean
 owner-run verification, owner captures/provenance and plate review remain open.
+
+### Current implementation authority — 2026-10-05, Your Move contract-draft service
+
+The owner approved the contract-draft service proposal as written and authorized its ordered §7
+RED–GREEN implementation on `workflow-proof`. Use only the isolated test fake; no live provider
+session is authorized. If the proposed model is unavailable, stop for a ruling. W12, §20,
+promotion, deployment and notification delivery remain separately gated. See the ruling at
+`docs/proposals/2026-10-05-your-move-contract-draft-service-ruling.md` and current
+`docs/HANDOFF.md`.

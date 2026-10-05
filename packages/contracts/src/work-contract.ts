@@ -51,11 +51,42 @@ export const boundedWorkContractSchema = legacyWorkContractSchema.extend({
 export type WorkContract = z.infer<typeof workContractSchema>;
 export type BoundedWorkContract = z.infer<typeof boundedWorkContractSchema>;
 
+const SHA256 = /^[a-f0-9]{64}$/;
+const DRAFT_ID = /^draft_[A-Za-z0-9][A-Za-z0-9._-]*$/;
+
+export const contractDraftProvenanceSchema = z
+  .object({
+    draftId: z.string().regex(DRAFT_ID),
+    procedureId: z.literal("contract-drafter-v1"),
+    procedureVersion: z.string().regex(/^\d+\.\d+\.\d+$/),
+    procedureSha256: z.string().regex(SHA256),
+    // The live pin is sourced by the server from @cuckcode/runtime-codex. Keep the shared
+    // browser/domain schema shape-only so the repository has one literal Codex pin.
+    runtime: z.string().regex(/^@openai\/codex@\d+\.\d+\.\d+$/u),
+    model: z.literal("gpt-6.1-sol"),
+    providerSessionId: z.string().min(1).max(200),
+    providerTurnId: z.string().min(1).max(200),
+    requestSha256: z.string().regex(SHA256),
+    candidateSha256: z.string().regex(SHA256),
+  })
+  .strict();
+
+export const contractDraftRecordSchema = z
+  .object({
+    candidate: boundedWorkContractSchema,
+    provenance: contractDraftProvenanceSchema,
+  })
+  .strict();
+
+export type ContractDraftProvenance = z.infer<typeof contractDraftProvenanceSchema>;
+export type ContractDraftRecord = z.infer<typeof contractDraftRecordSchema>;
+
 export type WorkCreatedPayload = Readonly<{
   workItemId: string;
   outcome: string;
   requiredEvidenceKinds: readonly string[];
   contract?: WorkContract;
+  contractDraft?: ContractDraftRecord;
 }>;
 
 const WORK_ITEM_ID = /^work_[A-Za-z0-9][A-Za-z0-9._-]*$/;
@@ -64,7 +95,7 @@ export function validateWorkCreatedPayload(
   payload: Record<string, unknown>,
 ): WorkPayloadResult<WorkCreatedPayload> {
   const version = "payloadVersion" in payload ? payload.payloadVersion : 1;
-  if (version !== 1 && version !== 2 && version !== 3) {
+  if (version !== 1 && version !== 2 && version !== 3 && version !== 4) {
     return { ok: false, issues: [`unsupported work.created payloadVersion ${String(version)}`] };
   }
   const issues: string[] = [];
@@ -95,7 +126,7 @@ export function validateWorkCreatedPayload(
     return { ok: false, issues };
   }
   const parsed =
-    version === 3
+    version >= 3
       ? boundedWorkContractSchema.safeParse(payload.contract)
       : legacyWorkContractSchema.safeParse(payload.contract);
   if (!parsed.success) {
@@ -113,12 +144,28 @@ export function validateWorkCreatedPayload(
       issues.push("requiredEvidenceKinds must equal the contract's evidence obligation kinds");
     }
   }
-  if (version === 3) {
+  let contractDraft: ContractDraftRecord | undefined;
+  if (version === 4) {
+    const draftParsed = contractDraftRecordSchema.safeParse(payload.contractDraft);
+    if (!draftParsed.success) {
+      for (const found of draftParsed.error.issues) {
+        issues.push(`contractDraft.${found.path.join(".") || "(root)"}: ${found.message}`);
+      }
+    } else {
+      contractDraft = draftParsed.data;
+    }
+  }
+  if (version === 3 || version === 4) {
     const extra = Object.keys(payload).filter(
       (key) =>
-        !["payloadVersion", "workItemId", "outcome", "requiredEvidenceKinds", "contract"].includes(
-          key,
-        ),
+        ![
+          "payloadVersion",
+          "workItemId",
+          "outcome",
+          "requiredEvidenceKinds",
+          "contract",
+          ...(version === 4 ? ["contractDraft"] : []),
+        ].includes(key),
     );
     if (extra.length > 0) issues.push(`unexpected fields: ${extra.sort().join(", ")}`);
   }
@@ -130,6 +177,7 @@ export function validateWorkCreatedPayload(
       outcome: outcome as string,
       requiredEvidenceKinds: requiredEvidenceKinds as string[],
       contract: parsed.data,
+      ...(contractDraft ? { contractDraft } : {}),
     },
   };
 }

@@ -62,6 +62,30 @@ const contract = {
   maxTurns: 5,
 };
 
+/** Historical replay fixture used by command tests that begin after work was already created. */
+const staffingAndWorkEvents = [
+  ...staffingEvents,
+  {
+    schemaVersion: 1,
+    eventId: "event_api_seed_work",
+    projectId: "project_alpha",
+    workItemId: "work_slug",
+    kind: "work.created",
+    occurredAt: "2026-10-04T09:00:02.000Z",
+    receivedAt: "2026-10-04T09:00:02.000Z",
+    source: "manager",
+    trust: "verified",
+    actor: { actorType: "manager", actorId: "manager_nate" },
+    payload: {
+      payloadVersion: 3,
+      workItemId: "work_slug",
+      outcome: contract.outcome,
+      requiredEvidenceKinds: ["test-run"],
+      contract,
+    },
+  },
+];
+
 const body = (over: Record<string, unknown>) => ({
   schemaVersion: 1,
   commandId: "cmd1",
@@ -113,6 +137,7 @@ const start = async (
     initialRevision: 0,
     sessionId: "session_t",
     csrfToken: "csrf_t",
+    managerActorId: "manager_nate",
     readModel: {},
     logPath,
     worktreeRoot,
@@ -148,8 +173,12 @@ afterEach(async () => {
 
 describe("work API in log mode", () => {
   it("binds agent speech-act identity from the authenticated session and appends to the shared log", async () => {
-    const app = await start(staffingEvents, undefined, digestRoot, authenticatedAgentSession);
-    await post(app, body({ commandId: "manager_create", targetEntityId: "work_slug" }));
+    const app = await start(
+      staffingAndWorkEvents,
+      undefined,
+      digestRoot,
+      authenticatedAgentSession,
+    );
     await post(
       app,
       body({
@@ -202,8 +231,12 @@ describe("work API in log mode", () => {
   });
 
   it("uses the same command endpoint for proposal, dispute and manager disposition events", async () => {
-    const app = await start(staffingEvents, undefined, digestRoot, authenticatedAgentSession);
-    await post(app, body({ commandId: "manager_create", targetEntityId: "work_slug" }));
+    const app = await start(
+      staffingAndWorkEvents,
+      undefined,
+      digestRoot,
+      authenticatedAgentSession,
+    );
     await post(
       app,
       body({
@@ -240,7 +273,7 @@ describe("work API in log mode", () => {
       body({
         commandId: "manager_decline",
         expectedRevision: proposalLog.revision,
-        actor: { actorType: "manager", actorId: "manager_nate" },
+        actor: { actorType: "manager", actorId: "manager_forged" },
         intent: "work.decline_rescope",
         payload: { proposalId: "rescope-proposal_api", reason: "Keep the bounded scope." },
       }),
@@ -333,8 +366,12 @@ describe("work API in log mode", () => {
   });
 
   it("rejects forged agent identity, stale revisions and damaged logs without append", async () => {
-    const app = await start(staffingEvents, undefined, digestRoot, authenticatedAgentSession);
-    await post(app, body({ commandId: "manager_create", targetEntityId: "work_slug" }));
+    const app = await start(
+      staffingAndWorkEvents,
+      undefined,
+      digestRoot,
+      authenticatedAgentSession,
+    );
     await post(
       app,
       body({
@@ -398,8 +435,7 @@ describe("work API in log mode", () => {
   });
 
   it("refuses invalid evidence before requiring a measurable worktree", async () => {
-    const app = await start(staffingEvents, undefined, dir);
-    await post(app, body({ commandId: "cmd_create" }));
+    const app = await start(staffingAndWorkEvents, undefined, dir);
     const afterCreate = await readEventLog(logPath);
     await post(
       app,
@@ -451,8 +487,7 @@ describe("work API in log mode", () => {
       }),
       waitUntilIdle: async () => undefined,
     };
-    const app = await start(staffingEvents, runner);
-    await post(app, body({}));
+    const app = await start(staffingAndWorkEvents, runner);
 
     const premature = await app.inject({
       method: "POST",
@@ -515,25 +550,18 @@ describe("work API in log mode", () => {
     expect(res.json()).toMatchObject({ revision: 2 });
   });
 
-  it("creates a work item from a surface command, appends it, and returns a receipt", async () => {
+  it("keeps new work unavailable until the contract-draft provider is separately authorized", async () => {
     const app = await start();
     const res = await post(app, body({}));
-    expect(res.statusCode).toBe(202);
-    expect(res.json()).toMatchObject({
-      receiptId: "receipt_cmd1",
-      commandId: "cmd1",
-      acceptedRevision: 2,
-      resultingRevision: 3,
-    });
+    expect(res.statusCode).toBe(503);
+    expect(res.json()).toMatchObject({ code: "CONTRACT_DRAFT_UNAVAILABLE" });
     const log = await readEventLog(logPath);
-    expect(log.revision).toBe(3);
-    const state = replayProject(log.events).work;
-    expect(state.workItems.work_slug).toMatchObject({ state: "draft" });
+    expect(log.revision).toBe(2);
+    expect(replayProject(log.events).work.workItems.work_slug).toBeUndefined();
   });
 
   it("assigns it: the replayed log then shows state assigned with the assignment bound", async () => {
-    const app = await start();
-    await post(app, body({}));
+    const app = await start(staffingAndWorkEvents);
     const res = await post(
       app,
       body({
@@ -558,15 +586,14 @@ describe("work API in log mode", () => {
     expect((await readEventLog(logPath)).revision).toBe(2);
   });
 
-  it("returns 422 naming the field for an invalid contract, and appends nothing", async () => {
+  it("keeps invalid and valid create requests disabled without an authorized draft session", async () => {
     const app = await start();
     const res = await post(
       app,
       body({ payload: { contract: { ...contract, acceptanceCriteria: [] } } }),
     );
-    expect(res.statusCode).toBe(422);
-    expect(res.json()).toMatchObject({ code: "CONTRACT_INVALID" });
-    expect(JSON.stringify(res.json())).toContain("acceptanceCriteria");
+    expect(res.statusCode).toBe(503);
+    expect(res.json()).toMatchObject({ code: "CONTRACT_DRAFT_UNAVAILABLE" });
     expect((await readEventLog(logPath)).revision).toBe(2);
   });
 
@@ -602,14 +629,14 @@ describe("work API in log mode", () => {
     expect((await readEventLog(logPath)).revision).toBe(2);
   });
 
-  it("lets only one of two simultaneous commands at the same revision succeed", async () => {
+  it("does not create work under concurrent requests without a draft service", async () => {
     const app = await start();
     const [a, b] = await Promise.all([
       post(app, body({ commandId: "cmdA", targetEntityId: "work_a" })),
       post(app, body({ commandId: "cmdB", targetEntityId: "work_b" })),
     ]);
-    expect([a.statusCode, b.statusCode].sort()).toEqual([202, 409]);
-    expect((await readEventLog(logPath)).revision).toBe(3);
+    expect([a.statusCode, b.statusCode]).toEqual([503, 503]);
+    expect((await readEventLog(logPath)).revision).toBe(2);
   });
 
   it("reports a truncated log at /api/log and refuses commands with 503, leaving it untouched", async () => {
@@ -639,8 +666,7 @@ describe("work API in log mode", () => {
   });
 
   it("records owner-run evidence from a surface command; an unknown kind is refused by name", async () => {
-    const app = await start();
-    await post(app, body({}));
+    const app = await start(staffingAndWorkEvents);
     await post(
       app,
       body({
@@ -788,8 +814,7 @@ describe("work API in log mode", () => {
   });
 
   it("refuses a review request on an item that is not active, by name, and appends nothing", async () => {
-    const app = await start();
-    await post(app, body({}));
+    const app = await start(staffingAndWorkEvents);
     await post(
       app,
       body({

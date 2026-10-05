@@ -64,6 +64,23 @@ runner/session context, never from request fields. No question-answer event, inf
 notification delivery is included. Implementation follows the proposal's ordered §7 gate. The ruling
 is recorded in `docs/evidence/workflow-proof/decision-record-2026-10-05-your-move-agent-speech-acts-approval.md`.
 
+### Owner amendment — 2026-10-05: contract-draft service
+
+The owner approved `docs/proposals/2026-10-04-your-move-contract-draft-service-proposal.md` as
+written and authorized implementation through its ordered §7 RED–GREEN gate. A single bounded turn
+of the CuckCode-owned `contract-drafter-v1` procedure uses the server-pinned Codex App Server
+adapter/model. The server binds the assistant response and one-use receipt; the browser cannot
+assert draft authorship. An unapproved draft is transient and creates no event. Approval creates
+ordinary `work.created` v4 through `executeWorkCommand`, preserving the agent candidate and the
+manager-approved final contract as distinct data with non-secret provenance; historical v1–v3
+events remain unchanged. The ruling is recorded in
+`docs/proposals/2026-10-05-your-move-contract-draft-service-ruling.md`.
+
+Tests use only the structurally isolated test fake. The ruling authorizes no live provider session;
+a genuine production draft remains separately gated. If the pinned model is unavailable, stop and
+return for a ruling rather than substituting. W12, §20, promotion, deployment, and notification
+delivery are not included.
+
 ### Outcome
 
 Create a multi-agent orchestration product in which a non-technical manager directs real agent work

@@ -127,6 +127,42 @@ describe("startLogServer", () => {
     expect(wrong.statusCode).toBe(403);
   });
 
+  it("wires drafting but refuses it without the separate live-provider opt-in", async () => {
+    const previous = process.env.CUCKCODE_LIVE_CONTRACT_DRAFT;
+    delete process.env.CUCKCODE_LIVE_CONTRACT_DRAFT;
+    try {
+      const server = await start();
+      const sessionResponse = await server.app.inject({
+        method: "GET",
+        url: "/api/session",
+        headers: { origin: DEFAULT_ORIGIN },
+      });
+      const session = sessionResponse.json() as {
+        sessionId: string;
+        csrfToken: string;
+        contractDraftingAvailable: boolean;
+      };
+      expect(session.contractDraftingAvailable).toBe(false);
+
+      const response = await server.app.inject({
+        method: "POST",
+        url: "/api/contract-drafts",
+        headers: {
+          origin: DEFAULT_ORIGIN,
+          "content-type": "application/json",
+          "x-cuckcode-session": session.sessionId,
+          "x-cuckcode-csrf": session.csrfToken,
+        },
+        payload: { expectedRevision: 0, description: "Draft a bounded work contract." },
+      });
+      expect(response.statusCode).toBe(503);
+      expect(response.json()).toMatchObject({ code: "CONTRACT_DRAFT_NOT_AUTHORIZED" });
+    } finally {
+      if (previous === undefined) delete process.env.CUCKCODE_LIVE_CONTRACT_DRAFT;
+      else process.env.CUCKCODE_LIVE_CONTRACT_DRAFT = previous;
+    }
+  });
+
   it("exposes a configured Surface B runner only with the explicit live opt-in", async () => {
     const previous = process.env.CUCKCODE_LIVE_WORKFLOW;
     process.env.CUCKCODE_LIVE_WORKFLOW = "1";

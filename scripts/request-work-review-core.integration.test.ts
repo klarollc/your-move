@@ -68,7 +68,7 @@ const posture = {
 } as unknown as PostureRecord;
 
 function assignedLog(): unknown[] {
-  let log: unknown[] = [
+  const log: unknown[] = [
     env("event_s1", "agent.registered", {
       agentId: "agent_engineer",
       capabilities: ["engineer"],
@@ -86,20 +86,32 @@ function assignedLog(): unknown[] {
     actor: { actorType: "manager" as const, actorId: "manager_nate" },
     workItemId: "work_slug",
   };
-  for (const [id, intent, extra] of [
-    ["c1", "create", { contract }],
-    ["c2", "assign", { roleAssignmentId: "role-assignment_engineer" }],
-  ] as const) {
-    const r = executeWorkCommand({
-      log,
-      currentRevision: log.length,
-      now: T0,
-      command: { ...base, commandId: id, expectedRevision: log.length, intent, ...extra },
-    });
-    if (!r.ok) throw new Error(r.code);
-    log = [...log, ...r.events];
-  }
-  return log;
+  log.push({
+    ...env("event_work_seed", "work.created", {
+      payloadVersion: 3,
+      workItemId: "work_slug",
+      outcome: contract.outcome,
+      requiredEvidenceKinds: ["test-run"],
+      contract,
+    }),
+    workItemId: "work_slug",
+    source: "manager",
+    actor: base.actor,
+  });
+  const assigned = executeWorkCommand({
+    log,
+    currentRevision: log.length,
+    now: T0,
+    command: {
+      ...base,
+      commandId: "c2",
+      expectedRevision: log.length,
+      intent: "assign",
+      roleAssignmentId: "role-assignment_engineer",
+    },
+  });
+  if (!assigned.ok) throw new Error(assigned.code);
+  return [...log, ...assigned.events];
 }
 
 let dir = "";

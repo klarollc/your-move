@@ -53,6 +53,7 @@ describe("loopback session boundary", () => {
       projectId: "project_fixture",
       revision: 7,
       runner: { available: false, state: "unavailable" },
+      contractDraftingAvailable: false,
     });
     expect(rejected.statusCode).toBe(403);
     expect(rejected.json()).toEqual({ code: "ORIGIN_REJECTED" });

@@ -5,6 +5,7 @@ import { replayProject } from "@cuckcode/domain";
 import Fastify, { type FastifyInstance } from "fastify";
 
 import { appendEventLog, readEventLog } from "./event-log.js";
+import type { ContractDraftService } from "./contract-draft-service.js";
 import type { WorkflowRunnerControl } from "./workflow-runner.js";
 import { measureWorktreeSha256 } from "./worktree-digest.js";
 
@@ -20,6 +21,8 @@ type LoopbackAppOptions = {
   initialRevision: number;
   sessionId: string;
   csrfToken: string;
+  /** Manager identity comes from the authenticated local session, never from a command body. */
+  managerActorId?: string;
   readModel: unknown;
   eventHistory?: Array<{
     revision: number;
@@ -42,6 +45,8 @@ type LoopbackAppOptions = {
     principal: Readonly<{ agentId: string; roleAssignmentId: string }>;
   }>;
   runner?: WorkflowRunnerControl;
+  /** Omitted until the separate live-provider authorization is granted. */
+  contractDraftService?: ContractDraftService;
   now?: () => string;
 };
 
@@ -100,6 +105,7 @@ export function createLoopbackApp(options: LoopbackAppOptions): LoopbackApp {
         ? (await readEventLog(options.logPath)).revision
         : options.initialRevision,
     runner: runnerStatus(),
+    contractDraftingAvailable: options.contractDraftService?.available === true,
   }));
 
   app.get("/api/workflow/status", async (request, reply) => {
@@ -178,6 +184,72 @@ export function createLoopbackApp(options: LoopbackAppOptions): LoopbackApp {
     return reply.code(200).send(options.readModel);
   });
 
+  app.post("/api/contract-drafts", async (request, reply) => {
+    if (
+      request.headers["x-cuckcode-session"] !== options.sessionId ||
+      request.headers["x-cuckcode-csrf"] !== options.csrfToken
+    ) {
+      return reply.code(403).send({ code: "SESSION_OR_CSRF_REJECTED" });
+    }
+    if (runnerBusy()) return reply.code(423).send({ code: "RUNNER_ACTIVE" });
+    if (!options.logPath) {
+      return reply.code(503).send({
+        code: "LOG_NOT_CONFIGURED",
+        detail: "Contract drafts require the shared project log.",
+      });
+    }
+    if (!options.contractDraftService) {
+      return reply.code(503).send({
+        code: "CONTRACT_DRAFT_UNAVAILABLE",
+        detail: "Agent contract drafting is unavailable until its provider session is authorized.",
+      });
+    }
+    if (!options.contractDraftService.available && options.mode !== "test") {
+      return reply.code(503).send({
+        code: "CONTRACT_DRAFT_NOT_AUTHORIZED",
+        detail: "Live agent drafting has not been separately authorized. No draft was created.",
+      });
+    }
+
+    const body = request.body;
+    const allowedKeys = new Set(["expectedRevision", "description"]);
+    if (
+      !isRecord(body) ||
+      Object.keys(body).some((key) => !allowedKeys.has(key)) ||
+      !Number.isSafeInteger(body.expectedRevision) ||
+      typeof body.description !== "string" ||
+      body.description.trim().length === 0
+    ) {
+      return reply.code(400).send({ code: "CONTRACT_DRAFT_REQUEST_INVALID" });
+    }
+
+    const log = await readEventLog(options.logPath);
+    if (log.truncated || log.problems.length > 0) {
+      return reply.code(503).send({ code: "LOG_DAMAGED" });
+    }
+    if (body.expectedRevision !== log.revision) {
+      return reply.code(409).send({ code: "WORKSPACE_COMMAND_STALE" });
+    }
+
+    const result = await options.contractDraftService.create({
+      managerSessionId: options.sessionId,
+      projectId: options.projectId,
+      expectedRevision: log.revision,
+      description: body.description,
+    });
+    if (!result.ok) {
+      return reply.code(503).send({ code: result.code, detail: result.detail });
+    }
+    if (options.mode === "production" && result.testOnly) {
+      options.contractDraftService.discard(result.receiptHandle);
+      return reply.code(503).send({
+        code: "CONTRACT_DRAFT_TEST_SOURCE_FORBIDDEN",
+        detail: "A test draft source cannot be used by the production surface.",
+      });
+    }
+    return reply.code(200).send(result);
+  });
+
   app.post("/api/commands", async (request, reply) => {
     const requestSessionId = request.headers["x-cuckcode-session"];
     const requestCsrfToken = request.headers["x-cuckcode-csrf"];
@@ -194,7 +266,29 @@ export function createLoopbackApp(options: LoopbackAppOptions): LoopbackApp {
     if (runnerBusy()) return reply.code(423).send({ code: "RUNNER_ACTIVE" });
 
     const body = request.body;
+    const allowedCommandKeys = new Set([
+      "schemaVersion",
+      "commandId",
+      "projectId",
+      "expectedRevision",
+      "actor",
+      "intent",
+      "targetEntityId",
+      "payload",
+      "draftReceiptHandle",
+    ]);
+    if (isRecord(body) && Object.keys(body).some((key) => !allowedCommandKeys.has(key))) {
+      return reply.code(400).send({ code: "WORKSPACE_COMMAND_INVALID" });
+    }
+    const requestedActorType =
+      isRecord(body) && isRecord(body.actor) ? body.actor.actorType : undefined;
+    if (isManagerSession && requestedActorType !== "manager") {
+      return reply.code(403).send({ code: "WORKSPACE_AUTHORITY_INVALID" });
+    }
     const requestedIntent = isRecord(body) ? body.intent : undefined;
+    if (requestedIntent !== "work.create" && isRecord(body) && "draftReceiptHandle" in body) {
+      return reply.code(400).send({ code: "WORKSPACE_COMMAND_INVALID" });
+    }
     const agentSpeechIntent =
       requestedIntent === "work.ask_question" ||
       requestedIntent === "work.propose_rescope" ||
@@ -204,16 +298,17 @@ export function createLoopbackApp(options: LoopbackAppOptions): LoopbackApp {
     }
     // The browser may include a stale or forged actor field. For an authenticated agent session,
     // replace it from server-held session context before workspace validation and command mapping.
-    const commandInput =
-      isAuthenticatedAgentSession && isRecord(body)
-        ? {
-            ...body,
-            actor: {
-              actorType: "agent",
-              actorId: agentSession.principal.agentId,
-            },
-          }
-        : body;
+    const commandInput = isRecord(body)
+      ? {
+          ...body,
+          actor: isAuthenticatedAgentSession
+            ? {
+                actorType: "agent",
+                actorId: agentSession.principal.agentId,
+              }
+            : { actorType: "manager", actorId: options.managerActorId ?? "manager_local" },
+        }
+      : body;
 
     const logPath = options.logPath;
     const log = logPath ? await readEventLog(logPath) : undefined;
@@ -251,15 +346,37 @@ export function createLoopbackApp(options: LoopbackAppOptions): LoopbackApp {
         mapped.value.intent === "record_evidence" ||
         (mapped.value.intent === "record_ruling" && mapped.value.ruling?.decision === "accept");
       const commandNow = (options.now ?? (() => new Date().toISOString()))();
-      const trustedContext = isAuthenticatedAgentSession
-        ? { authenticatedAgent: agentSession!.principal }
-        : undefined;
+      const draftReceiptHandle = isRecord(body) ? body.draftReceiptHandle : undefined;
+      if (mapped.value.intent === "create" && !options.contractDraftService) {
+        return reply.code(503).send({ code: "CONTRACT_DRAFT_UNAVAILABLE" });
+      }
+      if (mapped.value.intent === "create" && typeof draftReceiptHandle !== "string") {
+        return reply.code(422).send({ code: "CONTRACT_DRAFT_REQUIRED" });
+      }
+      const draftReceipt =
+        mapped.value.intent === "create" &&
+        typeof draftReceiptHandle === "string" &&
+        options.contractDraftService
+          ? options.contractDraftService.resolveForCommand(draftReceiptHandle, {
+              managerSessionId: options.sessionId,
+              projectId: options.projectId,
+              expectedRevision: log.revision,
+            })
+          : undefined;
+      if (mapped.value.intent === "create" && !draftReceipt) {
+        return reply.code(422).send({ code: "CONTRACT_DRAFT_RECEIPT_INVALID" });
+      }
+      const trustedContext = {
+        ...(isAuthenticatedAgentSession ? { authenticatedAgent: agentSession!.principal } : {}),
+        ...(isManagerSession ? { authenticatedManagerSessionId: options.sessionId } : {}),
+        ...(draftReceipt ? { contractDraftReceipt: draftReceipt as never } : {}),
+      };
       let outcome = executeWorkCommand({
         log: log.events,
         currentRevision: log.revision,
         now: commandNow,
         command: mapped.value,
-        ...(trustedContext ? { trustedContext } : {}),
+        trustedContext,
       });
       // Validate the command before walking the worktree. Invalid evidence, stale revisions, and
       // unsupported rulings should fail on their own terms without requiring a digest collector.
@@ -277,23 +394,48 @@ export function createLoopbackApp(options: LoopbackAppOptions): LoopbackApp {
           now: commandNow,
           command: mapped.value,
           trustedContext: {
-            ...(trustedContext ?? {}),
+            ...trustedContext,
             worktreeSha256,
           },
         });
       }
       if (!outcome.ok) {
+        if (mapped.value.intent === "create" && typeof draftReceiptHandle === "string") {
+          options.contractDraftService?.discard(draftReceiptHandle);
+        }
         const status =
           outcome.code === "STALE_REVISION" ? 409 : outcome.code === "NOT_AUTHORIZED" ? 403 : 422;
         return reply.code(status).send({ code: outcome.code, issues: outcome.issues });
       }
       const appended = await appendEventLog(logPath, outcome.events, log.revision);
       if (!appended.ok) {
+        if (mapped.value.intent === "create" && typeof draftReceiptHandle === "string") {
+          options.contractDraftService?.discard(draftReceiptHandle);
+        }
         const status =
           appended.code === "STALE_REVISION" ? 409 : appended.code === "LOG_DAMAGED" ? 503 : 422;
         return reply.code(status).send({ code: appended.code, detail: appended.detail });
       }
-      return reply.code(202).send(outcome.receipt);
+      if (mapped.value.intent === "create" && typeof draftReceiptHandle === "string") {
+        options.contractDraftService?.consume(draftReceiptHandle);
+      }
+      const readback = await readEventLog(logPath);
+      if (
+        readback.truncated ||
+        readback.problems.length > 0 ||
+        readback.revision !== appended.revision ||
+        !outcome.events.every((candidate, index) => {
+          const actual = readback.events[log.revision + index];
+          return (
+            isRecord(actual) &&
+            typeof actual.eventId === "string" &&
+            actual.eventId === candidate.eventId
+          );
+        })
+      ) {
+        return reply.code(503).send({ code: "LOG_READBACK_FAILED" });
+      }
+      return reply.code(202).send({ ...outcome.receipt, readbackRevision: readback.revision });
     }
 
     return reply.code(202).send({

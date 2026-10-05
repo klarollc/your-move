@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import type { WorkContract } from "@cuckcode/contracts";
+import type { BoundedWorkContract, ContractDraftRecord, WorkContract } from "@cuckcode/contracts";
 import type { WorkSpeechActTruth } from "@cuckcode/domain";
 
+import { ContractDraftPanel, type ContractDraftServiceResult } from "./contract-draft-panel.js";
 import "./work-list.css";
 
 export type WorkListEvidence = Readonly<{
@@ -46,6 +47,8 @@ export type WorkListItem = Readonly<{
     sourceRevision: number | null;
   }> | null;
   contract: WorkContract | null;
+  contractDraft?: ContractDraftRecord | null;
+  contractDraftSource?: "confirmed" | "not_recorded";
   contractRevision: number | null;
   contractHistory: readonly Readonly<{
     revision: number;
@@ -235,6 +238,9 @@ export function WorkList(
     runner: WorkListRunner;
     connected?: boolean;
     actionsDisabled?: boolean;
+    contractDraftingAvailable?: boolean;
+    onDraftContract?: (description: string) => Promise<ContractDraftServiceResult>;
+    onCreateWork?: (contract: WorkContract, receiptHandle: string) => Promise<void>;
     health?: WorkListHealth;
     onRefresh?: () => void | Promise<void>;
     error?: string | null;
@@ -263,7 +269,7 @@ export function WorkList(
     baseline: null,
     open: false,
   });
-  const awayInitialized = useRef(false);
+  const awayInitialized = useRef<string | null>(null);
   const [ghostFlight, setGhostFlight] = useState<Readonly<{
     journeyId: number;
     transform: string;
@@ -272,8 +278,13 @@ export function WorkList(
   const flightTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (awayInitialized.current || props.health?.status !== "current") return;
-    awayInitialized.current = true;
+    if (
+      props.projectId === "unknown" ||
+      awayInitialized.current === props.projectId ||
+      props.health?.status !== "current"
+    )
+      return;
+    awayInitialized.current = props.projectId;
     const storageKey = `your-move:last-seen-revision:${props.projectId}`;
     try {
       const stored = window.localStorage.getItem(storageKey);
@@ -612,7 +623,15 @@ export function WorkList(
                       : "Today’s work"
               }
             >
-              {view === "new-work" ? <NewWorkUnavailable /> : null}
+              {view === "new-work" ? (
+                <ContractDraftPanel
+                  available={props.contractDraftingAvailable === true}
+                  disabled={actionsDisabled || props.visitedRevision !== null}
+                  revision={props.currentRevision}
+                  {...(props.onDraftContract ? { onDraft: props.onDraftContract } : {})}
+                  {...(props.onCreateWork ? { onCreate: props.onCreateWork } : {})}
+                />
+              ) : null}
               {view === "log" ? (
                 <LogView
                   entries={props.log}
@@ -919,33 +938,42 @@ function WorkDetail({
 
       <section className="workflow-detail-section">
         <h2>The agreement</h2>
+        {item.contractDraft ? (
+          <section
+            className="workflow-agent-candidate"
+            aria-label="Original agent contract candidate"
+          >
+            <p className="workflow-draft-status">
+              Original agent candidate · source confirmed · {item.contractDraft.provenance.runtime}{" "}
+              · {item.contractDraft.provenance.model} · procedure{" "}
+              {item.contractDraft.provenance.procedureId}
+            </p>
+            <p className="workflow-log-meta">
+              Session {item.contractDraft.provenance.providerSessionId} · turn{" "}
+              {item.contractDraft.provenance.providerTurnId}
+              {log.find((entry) => entry.kind === "work.created")
+                ? ` · accepted by ${log.find((entry) => entry.kind === "work.created")?.actor?.actorId ?? "manager identity not recorded"} at ${revisionLabel(log.find((entry) => entry.kind === "work.created")?.revision ?? null)}`
+                : " · approval event unavailable in this view"}
+            </p>
+            <h3>Agent candidate, before your edits</h3>
+            <ContractSummary contract={item.contractDraft.candidate} />
+            {item.contract ? (
+              <ContractDraftDiff
+                candidate={item.contractDraft.candidate}
+                finalContract={item.contract}
+              />
+            ) : (
+              <p>The final manager contract is missing from this projection.</p>
+            )}
+          </section>
+        ) : item.contractDraftSource === "not_recorded" ? (
+          <p className="workflow-log-meta">Draft source not recorded for this work item.</p>
+        ) : null}
         {item.contract ? (
-          <div className="workflow-agreement">
-            <p>
-              <strong>Outcome:</strong> {item.contract.outcome}
-            </p>
-            <p>
-              <strong>Done means:</strong> {item.contract.definitionOfDone}
-            </p>
-            <p>
-              <strong>Acceptance:</strong> {item.contract.acceptanceCriteria.join(" · ")}
-            </p>
-            <p>
-              <strong>Boundaries:</strong>{" "}
-              {item.contract.exclusions.length
-                ? item.contract.exclusions.join(" · ")
-                : "None recorded"}
-            </p>
-            <p>
-              <strong>Dependencies:</strong>{" "}
-              {item.contract.dependencies.length
-                ? item.contract.dependencies.join(" · ")
-                : "None recorded"}
-            </p>
-            <p>
-              <strong>Stop conditions:</strong> {item.contract.stopConditions.join(" · ")}
-            </p>
-          </div>
+          <>
+            <h3>{item.contractDraft ? "Manager-approved final contract" : "Recorded contract"}</h3>
+            <ContractSummary contract={item.contract} />
+          </>
         ) : (
           <p>No work contract is recorded for this item.</p>
         )}
@@ -2278,18 +2306,72 @@ function CalmScreen({
   );
 }
 
-function NewWorkUnavailable() {
+function ContractSummary({ contract }: Readonly<{ contract: WorkContract }>) {
   return (
-    <section className="workflow-create-panel" aria-labelledby="new-work-title">
-      <div className="workflow-unavailable-mark" aria-hidden="true">
-        Drafting path not connected
-      </div>
-      <h1 id="new-work-title">Describe the outcome</h1>
+    <div className="workflow-agreement">
       <p>
-        Your Move requires an agent-authored contract draft for manager review before anything is
-        saved. The current workflow core has no draft service, so this view will not create work.
+        <strong>Outcome:</strong> {contract.outcome}
       </p>
-    </section>
+      <p>
+        <strong>Done means:</strong> {contract.definitionOfDone}
+      </p>
+      <p>
+        <strong>Acceptance:</strong> {contract.acceptanceCriteria.join(" · ")}
+      </p>
+      <p>
+        <strong>Boundaries:</strong>{" "}
+        {contract.exclusions.length ? contract.exclusions.join(" · ") : "None recorded"}
+      </p>
+      <p>
+        <strong>Dependencies:</strong>{" "}
+        {contract.dependencies.length ? contract.dependencies.join(" · ") : "None recorded"}
+      </p>
+      <p>
+        <strong>Evidence:</strong>{" "}
+        {contract.evidenceObligations
+          .map((entry) => `${entry.kind}: ${entry.description}`)
+          .join(" · ")}
+      </p>
+      <p>
+        <strong>Stop conditions:</strong> {contract.stopConditions.join(" · ")}
+      </p>
+      <p>
+        <strong>Turn limit:</strong> {contract.maxTurns ?? "Not recorded"}
+      </p>
+    </div>
+  );
+}
+
+function ContractDraftDiff({
+  candidate,
+  finalContract,
+}: Readonly<{ candidate: BoundedWorkContract; finalContract: WorkContract }>) {
+  const changed = (Object.keys(candidate) as (keyof BoundedWorkContract)[]).filter(
+    (key) => JSON.stringify(candidate[key]) !== JSON.stringify(finalContract[key]),
+  );
+  return (
+    <div className="workflow-contract-diff" aria-label="Manager edit diff">
+      <h3>Manager edits · agent candidate to final terms</h3>
+      {changed.length === 0 ? (
+        <p>No manager edits recorded. Candidate and final terms match.</p>
+      ) : (
+        <ul>
+          {changed.map((key) => (
+            <li key={key}>
+              <strong>{key}</strong>
+              <p>
+                <span className="workflow-diff-label">Agent candidate</span>{" "}
+                {JSON.stringify(candidate[key])}
+              </p>
+              <p>
+                <span className="workflow-diff-label">Manager final</span>{" "}
+                {JSON.stringify(finalContract[key])}
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 

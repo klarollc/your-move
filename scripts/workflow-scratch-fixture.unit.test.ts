@@ -4,9 +4,8 @@ import { cpSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from
 import { tmpdir } from "node:os";
 import { join, relative, resolve } from "node:path";
 
-import { executeWorkCommand } from "@cuckcode/application";
 import type { PostureRecord } from "@cuckcode/contracts";
-import { workContractSchema } from "@cuckcode/contracts";
+import { boundedWorkContractSchema, workContractSchema } from "@cuckcode/contracts";
 import { checkReadiness } from "@cuckcode/domain";
 import { afterEach, describe, expect, it } from "vitest";
 
@@ -14,7 +13,8 @@ import { afterEach, describe, expect, it } from "vitest";
  * Guards the workflow-proof scratch repo and its two contract versions (W11): the seed files are
  * the bytes the contract digests, the test is RED on the stub and GREEN on the reference, the two
  * contracts differ only in the seeded ambiguity, and the contract is acceptable to the work
- * command and to the readiness check. Fixtures are read from the repository, never from a worktree.
+ * bounded contract schema and to the readiness check. Fixtures are read from the repository,
+ * never from a worktree.
  */
 const ROOT = resolve(import.meta.dirname, "..");
 const FIXTURES = join(ROOT, "workflow-proof-seed");
@@ -162,53 +162,12 @@ describe("the two contract versions", () => {
     expect(strip(v2)).toEqual(strip(v1));
   });
 
-  it.each(names)("%s is accepted for new work when given an explicit turn cap", (name) => {
-    const at = "2026-10-04T10:00:00.000Z";
-    const staffing = [
-      {
-        schemaVersion: 1,
-        eventId: "event_a",
-        projectId: "project_alpha",
-        kind: "agent.registered",
-        occurredAt: at,
-        receivedAt: at,
-        source: "system",
-        trust: "verified",
-        payload: { agentId: "agent_engineer", capabilities: ["engineer"], health: "connected" },
-      },
-      {
-        schemaVersion: 1,
-        eventId: "event_b",
-        projectId: "project_alpha",
-        kind: "role.assigned",
-        occurredAt: at,
-        receivedAt: at,
-        source: "system",
-        trust: "verified",
-        payload: {
-          roleAssignmentId: "role-assignment_engineer",
-          roleId: "engineer",
-          agentId: "agent_engineer",
-          requiredCapabilities: ["engineer"],
-        },
-      },
-    ];
-    const actor = { actorType: "manager" as const, actorId: "manager_nate" };
-    const created = executeWorkCommand({
-      log: staffing,
-      currentRevision: 2,
-      now: at,
-      command: {
-        commandId: "c1",
-        projectId: "project_alpha",
-        expectedRevision: 2,
-        actor,
-        intent: "create",
-        workItemId: "work_slug",
-        contract: { ...(contract(name) as Record<string, unknown>), maxTurns: 3 } as never,
-      },
+  it.each(names)("%s is a valid bounded contract with an explicit turn cap", (name) => {
+    const bounded = boundedWorkContractSchema.safeParse({
+      ...(contract(name) as Record<string, unknown>),
+      maxTurns: 3,
     });
-    expect(created.ok).toBe(true);
+    expect(bounded.success).toBe(true);
   });
 
   it("passes the readiness check when the runner is told the two inlined files, and blocks on any other", () => {

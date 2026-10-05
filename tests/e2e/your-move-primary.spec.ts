@@ -23,7 +23,8 @@ test("@yourmove-e2e Surface B is the default and its calm screen reflects the ev
 
   await page.getByRole("button", { name: "+ New work" }).click();
   await expect(page.getByRole("heading", { name: "Describe the outcome" })).toBeVisible();
-  await expect(page.getByText(/current workflow core has no draft service/u)).toBeVisible();
+  await expect(page.getByText(/separate owner authorization/u)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Request agent draft" })).toBeDisabled();
   expect(commandPosts).toEqual([]);
   expect(failedRequests).toEqual([]);
 });

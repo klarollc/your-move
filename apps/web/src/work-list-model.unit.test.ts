@@ -60,7 +60,7 @@ const events = [
       requiredEvidenceKinds: ["test-run"],
       contract,
     },
-    { source: "manager" },
+    { source: "manager", workItemId: "work_slugify" },
   ),
   event(
     4,
@@ -156,6 +156,49 @@ describe("Surface B canonical list projection", () => {
         trust: "verified",
       }),
     ]);
+  });
+
+  it("keeps the agent candidate and manager-approved contract as separate projected records", () => {
+    const candidate = { ...contract, outcome: "Agent candidate outcome", maxTurns: 5 };
+    const finalContract = { ...contract, outcome: "Manager approved outcome", maxTurns: 5 };
+    const provenance = {
+      draftId: "draft_projection_1",
+      procedureId: "contract-drafter-v1",
+      procedureVersion: "1.0.0",
+      procedureSha256: "b".repeat(64),
+      runtime: "@openai/codex@0.157.1",
+      model: "gpt-6.1-sol",
+      providerSessionId: "provider_session_projection",
+      providerTurnId: "provider_turn_projection",
+      requestSha256: "c".repeat(64),
+      candidateSha256: "d".repeat(64),
+    };
+    const created = event(
+      3,
+      "work.created",
+      {
+        payloadVersion: 4,
+        workItemId: "work_slugify",
+        outcome: finalContract.outcome,
+        requiredEvidenceKinds: ["test-run"],
+        contract: finalContract,
+        contractDraft: { candidate, provenance },
+      },
+      {
+        source: "manager",
+        trust: "verified",
+        workItemId: "work_slugify",
+        actor: { actorType: "manager", actorId: "manager_nate" },
+      },
+    );
+
+    const model = projectWorkList([events[0], events[1], created], { revision: 3 });
+
+    expect(model.items[0]).toMatchObject({
+      contract: finalContract,
+      contractDraft: { candidate, provenance },
+      contractDraftSource: "confirmed",
+    });
   });
 
   it("keeps a reported done claim distinct and exposes absent provenance as missing", () => {

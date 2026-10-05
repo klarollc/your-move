@@ -102,7 +102,7 @@ const envelope = (eventId: string, kind: string, payload: Record<string, unknown
 });
 
 function seedLog(): unknown[] {
-  let log: unknown[] = [
+  const log: unknown[] = [
     envelope("event_seed1", "agent.registered", {
       agentId: "agent_engineer",
       capabilities: ["engineer"],
@@ -116,20 +116,18 @@ function seedLog(): unknown[] {
     }),
   ];
   const base = { projectId: PROJECT, actor: MANAGER, workItemId: WORK };
-  const created = executeWorkCommand({
-    log,
-    currentRevision: log.length,
-    now: T0,
-    command: {
-      ...base,
-      commandId: "seed-c1",
-      expectedRevision: log.length,
-      intent: "create",
+  log.push({
+    ...envelope("event_work_seed", "work.created", {
+      payloadVersion: 3,
+      workItemId: WORK,
+      outcome: contract.outcome,
+      requiredEvidenceKinds: ["test-run"],
       contract,
-    },
+    }),
+    workItemId: WORK,
+    source: "manager",
+    actor: MANAGER,
   });
-  if (!created.ok) throw new Error(`rehearsal seed: ${created.code}`);
-  log = [...log, ...created.events];
   const assigned = executeWorkCommand({
     log,
     currentRevision: log.length,

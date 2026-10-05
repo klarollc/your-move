@@ -161,8 +161,45 @@ describe("Surface B work list", () => {
 
     await user.click(screen.getByRole("button", { name: "New work" }));
     expect(screen.getByRole("region", { name: "Describe the outcome" })).toHaveTextContent(
-      "The current workflow core has no draft service, so this view will not create work.",
+      "has not received separate owner authorization",
     );
+  });
+
+  it("projects the original candidate and manager-approved final terms as separate recorded data", async () => {
+    const candidate = { ...item.contract!, outcome: "Agent candidate wording", maxTurns: 5 };
+    const finalContract = { ...item.contract!, outcome: "Manager-approved wording", maxTurns: 5 };
+    const withDraft: WorkListItem = {
+      ...item,
+      outcome: "Manager-approved wording",
+      contract: finalContract,
+      contractDraftSource: "confirmed",
+      contractDraft: {
+        candidate,
+        provenance: {
+          draftId: "draft_surface_b_projection",
+          procedureId: "contract-drafter-v1",
+          procedureVersion: "1.0.0",
+          procedureSha256: "a".repeat(64),
+          runtime: "@openai/codex@0.157.1",
+          model: "gpt-6.1-sol",
+          providerSessionId: "provider-session-recorded",
+          providerTurnId: "provider-turn-recorded",
+          requestSha256: "b".repeat(64),
+          candidateSha256: "c".repeat(64),
+        },
+      },
+    };
+    const user = userEvent.setup();
+    render(<WorkList {...baseProps} items={[withDraft]} />);
+    await user.click(screen.getByRole("button", { name: "Show all work" }));
+    await user.click(screen.getByRole("button", { name: "Details for Manager-approved wording" }));
+
+    const agreement = screen.getByRole("region", { name: "Work detail" });
+    expect(agreement).toHaveTextContent("Agent candidate, before your edits");
+    expect(agreement).toHaveTextContent("Manager-approved final contract");
+    const editDiff = within(agreement).getByLabelText("Manager edit diff");
+    expect(editDiff).toHaveTextContent("Agent candidate wording");
+    expect(editDiff).toHaveTextContent("Manager-approved wording");
   });
 
   it("records the digest of the saved evidence artifact from Surface B", async () => {

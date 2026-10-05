@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { validateWorkCreatedPayload, workContractSchema } from "./work-contract.js";
 
-const contract = () => ({
+const contract = (over: Record<string, unknown> = {}) => ({
   outcome: "Implement slugify so the pre-written test passes",
   exclusions: ["no other files", "no new dependencies"],
   acceptanceCriteria: ["the test is green when run by the owner"],
@@ -20,6 +20,40 @@ const contract = () => ({
   stopConditions: ["posture mismatch", "turn cap"],
   definitionOfDone: "owner acceptance through the surface under test",
   contextRefs: [{ path: "src/slugify.ts", sha256: "a".repeat(64) }],
+  ...over,
+});
+
+const draftProvenance = (over: Record<string, unknown> = {}) => ({
+  draftId: "draft_contract_01",
+  procedureId: "contract-drafter-v1",
+  procedureVersion: "1.0.0",
+  procedureSha256: "b".repeat(64),
+  runtime: "@openai/codex@0.157.1",
+  model: "gpt-6.1-sol",
+  providerSessionId: "thread_contract_01",
+  providerTurnId: "turn_contract_01",
+  requestSha256: "c".repeat(64),
+  candidateSha256: "d".repeat(64),
+  ...over,
+});
+
+const createdV4 = (over: Record<string, unknown> = {}) => ({
+  payloadVersion: 4,
+  workItemId: "work_contract_01",
+  outcome: "Deliver the manager-approved outcome",
+  requiredEvidenceKinds: ["test-run", "git-status"],
+  contract: contract({
+    outcome: "Deliver the manager-approved outcome",
+    maxTurns: 5,
+  }),
+  contractDraft: {
+    candidate: contract({
+      outcome: "Draft outcome from the bounded assistant turn",
+      maxTurns: 4,
+    }),
+    provenance: draftProvenance(),
+  },
+  ...over,
 });
 
 const refusal = (value: unknown) => {
@@ -128,5 +162,89 @@ describe("work.created payload", () => {
   it("refuses an unsupported payload version", () => {
     const result = validateWorkCreatedPayload({ ...v1, payloadVersion: 9 });
     expect(result.ok).toBe(false);
+  });
+
+  it("accepts v4 with a distinct bounded draft candidate and source provenance", () => {
+    const result = validateWorkCreatedPayload(createdV4());
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.contractDraft?.candidate.outcome).toBe(
+      "Draft outcome from the bounded assistant turn",
+    );
+    expect(result.value.contract?.outcome).toBe("Deliver the manager-approved outcome");
+    expect(result.value.contractDraft?.candidate).not.toEqual(result.value.contract);
+    expect(result.value.contractDraft?.provenance).toEqual(draftProvenance());
+  });
+
+  it("requires the v4 candidate and all source provenance", () => {
+    const base = createdV4();
+    for (const invalid of [
+      { ...base, contractDraft: undefined },
+      { ...base, contractDraft: { candidate: base.contractDraft.candidate } },
+      {
+        ...base,
+        contractDraft: { ...base.contractDraft, candidate: { outcome: "partial" } },
+      },
+      {
+        ...base,
+        contractDraft: {
+          ...base.contractDraft,
+          provenance: draftProvenance({ procedureSha256: "invalid" }),
+        },
+      },
+      {
+        ...base,
+        contractDraft: {
+          ...base.contractDraft,
+          provenance: draftProvenance({ model: "gpt-6-astra" }),
+        },
+      },
+      {
+        ...base,
+        contractDraft: {
+          ...base.contractDraft,
+          provenance: draftProvenance({ unexpected: "browser claim" }),
+        },
+      },
+    ]) {
+      expect(validateWorkCreatedPayload(invalid).ok).toBe(false);
+    }
+  });
+
+  it("keeps v1-v3 payload meaning unchanged and refuses draft fields on v3", () => {
+    const v2 = {
+      ...v1,
+      payloadVersion: 2,
+      requiredEvidenceKinds: ["test-run", "git-status"],
+      contract: contract(),
+    };
+    const v3 = {
+      ...v1,
+      payloadVersion: 3,
+      requiredEvidenceKinds: ["test-run", "git-status"],
+      contract: contract({ maxTurns: 5 }),
+    };
+    expect(validateWorkCreatedPayload(v1)).toMatchObject({ ok: true, value: v1 });
+    expect(validateWorkCreatedPayload(v2)).toMatchObject({
+      ok: true,
+      value: {
+        workItemId: v2.workItemId,
+        outcome: v2.outcome,
+        requiredEvidenceKinds: v2.requiredEvidenceKinds,
+        contract: contract(),
+      },
+    });
+    expect(validateWorkCreatedPayload(v3)).toMatchObject({
+      ok: true,
+      value: {
+        workItemId: v3.workItemId,
+        outcome: v3.outcome,
+        requiredEvidenceKinds: v3.requiredEvidenceKinds,
+        contract: contract({ maxTurns: 5 }),
+      },
+    });
+    expect(validateWorkCreatedPayload({ ...v3, contractDraft: createdV4().contractDraft }).ok).toBe(
+      false,
+    );
   });
 });

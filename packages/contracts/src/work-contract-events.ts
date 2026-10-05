@@ -415,7 +415,8 @@ export function validateWorkflowCoreEventPayload(
                           ? validateRulingWithdrawnPayload(payload)
                           : kind === "evidence.recorded"
                             ? validateEvidenceRecordedPayload(payload)
-                            : kind === "work.created" && payload.payloadVersion === 3
+                            : kind === "work.created" &&
+                                (payload.payloadVersion === 3 || payload.payloadVersion === 4)
                               ? validateWorkCreatedPayload(payload)
                               : undefined;
   if (!checked) return { ok: true, value: payload };

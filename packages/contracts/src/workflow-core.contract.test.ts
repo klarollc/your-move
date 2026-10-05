@@ -55,7 +55,75 @@ const event = (kind: string, payload: Record<string, unknown>, source = "manager
   payload,
 });
 
+const createdV4Event = (over: Record<string, unknown> = {}) => ({
+  schemaVersion: 1,
+  eventId: "event_work_created_v4",
+  projectId: "project_alpha",
+  workItemId: "work_contract_01",
+  kind: "work.created",
+  occurredAt: "2026-10-05T12:00:00.000Z",
+  receivedAt: "2026-10-05T12:00:00.000Z",
+  source: "manager",
+  trust: "verified",
+  actor: { actorType: "manager", actorId: "manager_nate" },
+  payload: {
+    payloadVersion: 4,
+    workItemId: "work_contract_01",
+    outcome: "Deliver the manager-approved outcome",
+    requiredEvidenceKinds: ["test-run"],
+    contract: workContract({ maxTurns: 5 }),
+    contractDraft: {
+      candidate: workContract({ outcome: "The agent's initial candidate", maxTurns: 4 }),
+      provenance: {
+        draftId: "draft_contract_01",
+        procedureId: "contract-drafter-v1",
+        procedureVersion: "1.0.0",
+        procedureSha256: "b".repeat(64),
+        runtime: "@openai/codex@0.157.1",
+        model: "gpt-6.1-sol",
+        providerSessionId: "thread_contract_01",
+        providerTurnId: "turn_contract_01",
+        requestSha256: "c".repeat(64),
+        candidateSha256: "d".repeat(64),
+      },
+    },
+  },
+  ...over,
+});
+
 describe("approved workflow-core event vocabulary", () => {
+  it("requires manager envelope attribution for contract-draft-backed work.created v4", () => {
+    const valid = createdV4Event();
+    expect(parseProjectEvent(valid)).toMatchObject({
+      ok: true,
+      value: {
+        source: "manager",
+        trust: "verified",
+        actor: { actorType: "manager", actorId: "manager_nate" },
+      },
+    });
+
+    for (const invalid of [
+      { ...valid, actor: undefined },
+      { ...valid, actor: { actorType: "agent", actorId: "agent_engineer" } },
+      { ...valid, source: "adapter" },
+      { ...valid, trust: "reported" },
+    ]) {
+      expect(parseProjectEvent(invalid).ok).toBe(false);
+    }
+  });
+
+  it("retains actorless historical work.created v1-v3 envelope compatibility", () => {
+    const legacy = event("work.created", {
+      payloadVersion: 3,
+      workItemId: "work_alpha",
+      outcome: "Historical work",
+      requiredEvidenceKinds: ["test-run"],
+      contract: workContract({ maxTurns: 4 }),
+    });
+    expect(parseProjectEvent(legacy).ok).toBe(true);
+  });
+
   it("adds only the approved canonical events, not derived or rejected prototype names", () => {
     for (const kind of [
       "work.turns_granted",
