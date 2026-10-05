@@ -184,6 +184,98 @@ describe("Surface B canonical list projection", () => {
     });
   });
 
+  it("projects speech acts with server attribution while leaving work and evidence truth unchanged", () => {
+    const question = event(
+      9,
+      "work.question_asked",
+      { workItemId: "work_slugify", question: "Which Unicode normalization should apply?" },
+      {
+        source: "adapter",
+        trust: "reported",
+        actor: { actorType: "agent", actorId: "agent_engineer" },
+        roleAssignmentId: "role-assignment_engineer",
+        workItemId: "work_slugify",
+      },
+    );
+    const proposedContract = {
+      ...contract,
+      outcome: "Preserve Unicode normalization",
+      maxTurns: 5,
+    };
+    const proposal = event(
+      10,
+      "work.rescope_proposed",
+      {
+        workItemId: "work_slugify",
+        proposalId: "rescope-proposal_unicode",
+        expectedContractRevision: 1,
+        contract: proposedContract,
+      },
+      {
+        source: "adapter",
+        trust: "reported",
+        actor: { actorType: "agent", actorId: "agent_engineer" },
+        roleAssignmentId: "role-assignment_engineer",
+        workItemId: "work_slugify",
+      },
+    );
+    const declined = event(
+      11,
+      "work.rescope_declined",
+      {
+        workItemId: "work_slugify",
+        proposalId: "rescope-proposal_unicode",
+        reason: "Keep the accepted outcome unchanged.",
+      },
+      {
+        source: "manager",
+        trust: "verified",
+        actor: { actorType: "manager", actorId: "manager_nate" },
+        workItemId: "work_slugify",
+      },
+    );
+    const before = projectWorkList(events, "2026-10-04T10:01:00.000Z").items[0]!;
+    const after = projectWorkList([...events, question, proposal, declined], {
+      now: "2026-10-04T10:01:00.000Z",
+    }).items[0]!;
+
+    expect(after).toMatchObject({
+      state: before.state,
+      contractRevision: 1,
+      contract: { outcome: "Implement slugify" },
+      speechActs: [
+        {
+          kind: "work.question_asked",
+          question: "Which Unicode normalization should apply?",
+          actor: { actorType: "agent", actorId: "agent_engineer" },
+          source: "adapter",
+          trust: "reported",
+          roleAssignmentId: "role-assignment_engineer",
+          sourceRevision: 9,
+        },
+        {
+          kind: "work.rescope_proposed",
+          proposalId: "rescope-proposal_unicode",
+          status: "declined",
+          contract: { outcome: "Preserve Unicode normalization" },
+          sourceRevision: 10,
+        },
+        {
+          kind: "work.rescope_declined",
+          reason: "Keep the accepted outcome unchanged.",
+          actor: { actorType: "manager", actorId: "manager_nate" },
+          source: "manager",
+          trust: "verified",
+          sourceRevision: 11,
+        },
+      ],
+    });
+    expect(after.evidence.map(({ eventId, status }) => ({ eventId, status }))).toEqual(
+      before.evidence.map(({ eventId, status }) => ({ eventId, status })),
+    );
+    expect(after.doneVerified).toBe(before.doneVerified);
+  });
+
   it("reports disagreement between the server revision and the projected log prefix", () => {
     const model = projectWorkList(events, {
       revision: 10,

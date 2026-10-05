@@ -11,6 +11,10 @@ import {
   validateWorkNudgedPayload,
   validateWorkNudgeSuppressedPayload,
   validateRulingWithdrawnPayload,
+  validateWorkQuestionAskedPayload,
+  validateWorkRescopeProposedPayload,
+  validateWorkRescopeDeclinedPayload,
+  validateWorkSendBackDisputedPayload,
   type PostureRecord,
   type ProjectEvent,
   type WorkConditionV3,
@@ -19,6 +23,7 @@ import {
 } from "@cuckcode/contracts";
 
 import { applyStaffingEvent, createStaffingTruth, type StaffingTruth } from "./staffing-truth.js";
+import { stableStringify } from "./canonical-json.js";
 
 export type WorkState =
   | "draft"
@@ -70,7 +75,52 @@ export type WorkItemTruth = {
   nudgeSuppression?: NudgeSuppressionTruth;
   nudges?: NudgeTruth[];
   currentRulingId?: string;
+  speechActs?: WorkSpeechActTruth[];
 };
+
+type WorkSpeechActBase = Readonly<{
+  eventId: string;
+  workItemId: string;
+  occurredAt: string;
+  sourceRevision: number;
+  source: ProjectEvent["source"];
+  trust: ProjectEvent["trust"];
+  actor: NonNullable<ProjectEvent["actor"]>;
+  roleAssignmentId?: string;
+}>;
+
+export type WorkSpeechActTruth =
+  | (WorkSpeechActBase & { kind: "work.question_asked"; question: string })
+  | (WorkSpeechActBase & {
+      kind: "work.rescope_proposed";
+      proposalId: string;
+      expectedContractRevision: number;
+      contract: WorkContract;
+      status: "open" | "approved" | "declined";
+      dispositionEventId?: string;
+    })
+  | (WorkSpeechActBase & {
+      kind: "work.rescope_declined";
+      proposalId: string;
+      reason: string;
+    })
+  | (WorkSpeechActBase & {
+      kind: "work.send_back_disputed";
+      rulingId: string;
+      statement: string;
+    });
+
+type WorkSpeechActContent =
+  | { kind: "work.question_asked"; question: string }
+  | {
+      kind: "work.rescope_proposed";
+      proposalId: string;
+      expectedContractRevision: number;
+      contract: WorkContract;
+      status: "open" | "approved" | "declined";
+    }
+  | { kind: "work.rescope_declined"; proposalId: string; reason: string }
+  | { kind: "work.send_back_disputed"; rulingId: string; statement: string };
 
 export type ContractRevisionTruth = {
   revision: number;
@@ -178,7 +228,12 @@ export type WorkTruthIssue = {
     | "INVALID_WORK_RULING"
     | "INVALID_NUDGE"
     | "INVALID_NUDGE_SUPPRESSION"
-    | "RULING_WITHDRAWAL_REFUSED";
+    | "RULING_WITHDRAWAL_REFUSED"
+    | "WORK_SPEECH_ACT_UNAUTHORIZED"
+    | "WORK_SPEECH_ACT_STALE"
+    | "WORK_SPEECH_ACT_DUPLICATE"
+    | "WORK_SPEECH_ACT_DISPOSITION_CONFLICT"
+    | "WORK_SPEECH_ACT_REFERENCE_INVALID";
   eventId: string;
   workItemId?: string;
   message: string;
@@ -224,10 +279,11 @@ export function reduceWorkTruth(
   // staffing is replayed alongside, through its own reducer, and never re-derived here.
   const staffing = createStaffingTruth();
 
-  for (const candidate of input) {
+  for (const [index, candidate] of input.entries()) {
     const parsed = parseProjectEvent(candidate);
     if (!parsed.ok) continue;
     const event = parsed.value;
+    const sourceRevision = index + 1;
     applyStaffingEvent(staffing, event);
     if (event.kind === "work.created") createWorkItem(state, event);
     if (event.kind === "evidence.recorded") recordEvidence(state, event);
@@ -244,6 +300,13 @@ export function reduceWorkTruth(
     if (event.kind === "ruling.withdrawn") withdrawRuling(state, event);
     if (event.kind === "work.nudged") recordNudge(state, event);
     if (event.kind === "work.nudge_suppressed") suppressNudge(state, event);
+    if (event.kind === "work.question_asked")
+      recordQuestion(state, event, staffing, sourceRevision);
+    if (event.kind === "work.rescope_proposed")
+      recordRescopeProposal(state, event, staffing, sourceRevision);
+    if (event.kind === "work.rescope_declined") recordRescopeDecline(state, event, sourceRevision);
+    if (event.kind === "work.send_back_disputed")
+      recordSendBackDispute(state, event, staffing, sourceRevision);
   }
 
   deriveWorkSummaries(state, input, options.asOf);
@@ -615,6 +678,37 @@ function rescopeWork(state: WorkTruthState, event: ProjectEvent): void {
     );
     return;
   }
+  const proposal = data.proposalId ? findProposal(state, data.proposalId) : undefined;
+  if (data.proposalId) {
+    if (
+      event.actor?.actorType !== "manager" ||
+      !proposal ||
+      proposal.workItemId !== data.workItemId ||
+      proposal.status !== "open"
+    ) {
+      issue(
+        state,
+        "WORK_SPEECH_ACT_DISPOSITION_CONFLICT",
+        event,
+        "linked rescope approval requires one open proposal for this work item",
+        data.workItemId,
+      );
+      return;
+    }
+    if (
+      proposal.expectedContractRevision !== data.expectedContractRevision ||
+      stableStringify(proposal.contract) !== stableStringify(data.contract)
+    ) {
+      issue(
+        state,
+        "WORK_SPEECH_ACT_STALE",
+        event,
+        "the proposal revision or full replacement contract does not match the approval",
+        data.workItemId,
+      );
+      return;
+    }
+  }
   if (
     !item.contract ||
     item.contractRevision !== data.expectedContractRevision ||
@@ -680,6 +774,291 @@ function rescopeWork(state: WorkTruthState, event: ProjectEvent): void {
     updatedByEventId: event.eventId,
     updatedAt: event.occurredAt,
     condition: null,
+  };
+  if (proposal) updateProposalDisposition(state, proposal, "approved", event.eventId);
+}
+
+function recordQuestion(
+  state: WorkTruthState,
+  event: ProjectEvent,
+  staffing: StaffingTruth,
+  sourceRevision: number,
+): void {
+  const parsed = validateWorkQuestionAskedPayload(event.payload);
+  if (!parsed.ok) {
+    issue(state, "MALFORMED_WORK_EVENT", event, parsed.issues.join("; "));
+    return;
+  }
+  const item = state.workItems[parsed.value.workItemId];
+  if (!item) {
+    issue(state, "WORK_ITEM_NOT_FOUND", event, "work item does not exist", parsed.value.workItemId);
+    return;
+  }
+  if (!authorizedAssignedAgent(event, item, staffing)) {
+    issue(
+      state,
+      "WORK_SPEECH_ACT_UNAUTHORIZED",
+      event,
+      "the authenticated agent must hold this work item's active role assignment",
+      parsed.value.workItemId,
+    );
+    return;
+  }
+  addSpeechAct(state, item, event, sourceRevision, {
+    kind: "work.question_asked",
+    question: parsed.value.question,
+  });
+}
+
+function recordRescopeProposal(
+  state: WorkTruthState,
+  event: ProjectEvent,
+  staffing: StaffingTruth,
+  sourceRevision: number,
+): void {
+  const parsed = validateWorkRescopeProposedPayload(event.payload);
+  if (!parsed.ok) {
+    issue(state, "MALFORMED_WORK_EVENT", event, parsed.issues.join("; "));
+    return;
+  }
+  const data = parsed.value;
+  const item = state.workItems[data.workItemId];
+  if (!item) {
+    issue(state, "WORK_ITEM_NOT_FOUND", event, "work item does not exist", data.workItemId);
+    return;
+  }
+  if (!authorizedAssignedAgent(event, item, staffing)) {
+    issue(
+      state,
+      "WORK_SPEECH_ACT_UNAUTHORIZED",
+      event,
+      "the authenticated agent must hold this work item's active role assignment",
+      data.workItemId,
+    );
+    return;
+  }
+  if (!item.contract || item.contractRevision !== data.expectedContractRevision) {
+    issue(
+      state,
+      "WORK_SPEECH_ACT_STALE",
+      event,
+      "proposal expected contract revision " +
+        data.expectedContractRevision +
+        ", current is " +
+        String(item.contractRevision),
+      data.workItemId,
+    );
+    return;
+  }
+  if (findProposal(state, data.proposalId)) {
+    issue(
+      state,
+      "WORK_SPEECH_ACT_DUPLICATE",
+      event,
+      "proposalId has already been used",
+      data.workItemId,
+    );
+    return;
+  }
+  addSpeechAct(state, item, event, sourceRevision, {
+    kind: "work.rescope_proposed",
+    proposalId: data.proposalId,
+    expectedContractRevision: data.expectedContractRevision,
+    contract: data.contract,
+    status: "open",
+  });
+}
+
+function recordRescopeDecline(
+  state: WorkTruthState,
+  event: ProjectEvent,
+  sourceRevision: number,
+): void {
+  const parsed = validateWorkRescopeDeclinedPayload(event.payload);
+  if (!parsed.ok) {
+    issue(state, "MALFORMED_WORK_EVENT", event, parsed.issues.join("; "));
+    return;
+  }
+  const data = parsed.value;
+  const item = state.workItems[data.workItemId];
+  if (!item) {
+    issue(state, "WORK_ITEM_NOT_FOUND", event, "work item does not exist", data.workItemId);
+    return;
+  }
+  const proposal = findProposal(state, data.proposalId);
+  if (!managerEvent(event) || event.actor?.actorType !== "manager") {
+    issue(
+      state,
+      "UNAUTHORIZED_WORK_DECISION",
+      event,
+      "only an attributed manager may decline a rescope proposal",
+      data.workItemId,
+    );
+    return;
+  }
+  if (!proposal || proposal.workItemId !== data.workItemId || proposal.status !== "open") {
+    issue(
+      state,
+      "WORK_SPEECH_ACT_DISPOSITION_CONFLICT",
+      event,
+      "decline requires one open proposal for this work item",
+      data.workItemId,
+    );
+    return;
+  }
+  updateProposalDisposition(state, proposal, "declined", event.eventId);
+  addSpeechAct(state, state.workItems[data.workItemId]!, event, sourceRevision, {
+    kind: "work.rescope_declined",
+    proposalId: data.proposalId,
+    reason: data.reason,
+  });
+}
+
+function recordSendBackDispute(
+  state: WorkTruthState,
+  event: ProjectEvent,
+  staffing: StaffingTruth,
+  sourceRevision: number,
+): void {
+  const parsed = validateWorkSendBackDisputedPayload(event.payload);
+  if (!parsed.ok) {
+    issue(state, "MALFORMED_WORK_EVENT", event, parsed.issues.join("; "));
+    return;
+  }
+  const data = parsed.value;
+  const item = state.workItems[data.workItemId];
+  if (!item) {
+    issue(state, "WORK_ITEM_NOT_FOUND", event, "work item does not exist", data.workItemId);
+    return;
+  }
+  if (!authorizedAssignedAgent(event, item, staffing)) {
+    issue(
+      state,
+      "WORK_SPEECH_ACT_UNAUTHORIZED",
+      event,
+      "the authenticated agent must hold this work item's active role assignment",
+      data.workItemId,
+    );
+    return;
+  }
+  const ruling = state.rulings?.[data.rulingId];
+  if (
+    !ruling ||
+    ruling.workItemId !== data.workItemId ||
+    ruling.decision !== "send_back" ||
+    ruling.withdrawn ||
+    item.currentRulingId !== data.rulingId
+  ) {
+    issue(
+      state,
+      "WORK_SPEECH_ACT_REFERENCE_INVALID",
+      event,
+      "dispute must reference the current non-withdrawn send-back ruling for this work item",
+      data.workItemId,
+    );
+    return;
+  }
+  if (findDispute(state, data.rulingId)) {
+    issue(
+      state,
+      "WORK_SPEECH_ACT_DUPLICATE",
+      event,
+      "this send-back ruling already has an agent dispute",
+      data.workItemId,
+    );
+    return;
+  }
+  addSpeechAct(state, item, event, sourceRevision, {
+    kind: "work.send_back_disputed",
+    rulingId: data.rulingId,
+    statement: data.statement,
+  });
+}
+
+function authorizedAssignedAgent(
+  event: ProjectEvent,
+  item: WorkItemTruth,
+  staffing: StaffingTruth,
+): boolean {
+  const assignmentId = event.roleAssignmentId;
+  const actor = event.actor;
+  return Boolean(
+    actor?.actorType === "agent" &&
+    assignmentId &&
+    item.assignment?.roleAssignmentId === assignmentId &&
+    staffing.assignments[assignmentId]?.agentId === actor.actorId,
+  );
+}
+
+function addSpeechAct(
+  state: WorkTruthState,
+  item: WorkItemTruth,
+  event: ProjectEvent,
+  sourceRevision: number,
+  content: WorkSpeechActContent,
+): void {
+  const actor = event.actor;
+  if (!actor) return;
+  const record = {
+    eventId: event.eventId,
+    workItemId: item.workItemId,
+    occurredAt: event.occurredAt,
+    sourceRevision,
+    source: event.source,
+    trust: event.trust,
+    actor,
+    ...(event.roleAssignmentId ? { roleAssignmentId: event.roleAssignmentId } : {}),
+    ...content,
+  } as WorkSpeechActTruth;
+  state.workItems[item.workItemId] = {
+    ...item,
+    speechActs: [...(item.speechActs ?? []), record].sort(
+      (left, right) => left.sourceRevision - right.sourceRevision,
+    ),
+  };
+}
+
+function findProposal(
+  state: WorkTruthState,
+  proposalId: string,
+): Extract<WorkSpeechActTruth, { kind: "work.rescope_proposed" }> | undefined {
+  for (const item of Object.values(state.workItems)) {
+    const proposal = item.speechActs?.find(
+      (entry): entry is Extract<WorkSpeechActTruth, { kind: "work.rescope_proposed" }> =>
+        entry.kind === "work.rescope_proposed" && entry.proposalId === proposalId,
+    );
+    if (proposal) return proposal;
+  }
+  return undefined;
+}
+
+function findDispute(
+  state: WorkTruthState,
+  rulingId: string,
+): Extract<WorkSpeechActTruth, { kind: "work.send_back_disputed" }> | undefined {
+  return Object.values(state.workItems)
+    .flatMap((item) => item.speechActs ?? [])
+    .find(
+      (entry): entry is Extract<WorkSpeechActTruth, { kind: "work.send_back_disputed" }> =>
+        entry.kind === "work.send_back_disputed" && entry.rulingId === rulingId,
+    );
+}
+
+function updateProposalDisposition(
+  state: WorkTruthState,
+  proposal: Extract<WorkSpeechActTruth, { kind: "work.rescope_proposed" }>,
+  status: "approved" | "declined",
+  eventId: string,
+): void {
+  const item = state.workItems[proposal.workItemId];
+  if (!item?.speechActs) return;
+  state.workItems[proposal.workItemId] = {
+    ...item,
+    speechActs: item.speechActs.map((entry) =>
+      entry.eventId === proposal.eventId && entry.kind === "work.rescope_proposed"
+        ? { ...entry, status, dispositionEventId: eventId }
+        : entry,
+    ),
   };
 }
 

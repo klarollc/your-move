@@ -54,6 +54,16 @@ time-travel, and assignee views, is a read-model projection of the canonical log
 must be reconciled with the workflow core and approved through workflow-proof before implementation.
 The owner approved the plan and task breakdown on 2026-10-04 (“Approve + bind digest”).
 
+### Owner amendment — 2026-10-05: agent-side speech acts
+
+The owner approved `docs/proposals/2026-10-04-your-move-agent-speech-acts-proposal.md` as written.
+Agent questions, full agreement-change proposals, and send-back disputes use the shared command,
+event-log, and replay path specified there; managers approve or decline proposals with attributable
+recorded decisions. The server binds agent identity and role assignment from authenticated
+runner/session context, never from request fields. No question-answer event, inferred answer, or
+notification delivery is included. Implementation follows the proposal's ordered §7 gate. The ruling
+is recorded in `docs/evidence/workflow-proof/decision-record-2026-10-05-your-move-agent-speech-acts-approval.md`.
+
 ### Outcome
 
 Create a multi-agent orchestration product in which a non-technical manager directs real agent work

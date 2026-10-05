@@ -18,6 +18,10 @@ export const eventKinds = [
   "work.ruling_recorded",
   "work.nudged",
   "work.nudge_suppressed",
+  "work.question_asked",
+  "work.rescope_proposed",
+  "work.rescope_declined",
+  "work.send_back_disputed",
   "ruling.withdrawn",
   "agent.registered",
   "agent.presence_changed",
@@ -38,26 +42,95 @@ export const eventKinds = [
 export type EventKind = (typeof eventKinds)[number];
 
 const timestampSchema = z.string().refine((value) => parseUtcTimestamp(value).ok);
-const projectEventSchema = z.object({
-  schemaVersion: z.literal(1),
-  eventId: z.string().regex(/^event_[A-Za-z0-9][A-Za-z0-9._-]*$/),
-  projectId: z.string().regex(/^project_[A-Za-z0-9][A-Za-z0-9._-]*$/),
-  workItemId: z
-    .string()
-    .regex(/^work_[A-Za-z0-9][A-Za-z0-9._-]*$/)
-    .optional(),
-  roleAssignmentId: z
-    .string()
-    .regex(/^role-assignment_[A-Za-z0-9][A-Za-z0-9._-]*$/)
-    .optional(),
-  providerRunId: z.string().min(1).optional(),
-  kind: z.enum(eventKinds),
-  occurredAt: timestampSchema,
-  receivedAt: timestampSchema,
-  source: z.enum(["manager", "adapter", "system", "reviewer"]),
-  trust: z.enum(["verified", "reported", "inferred"]),
-  payload: z.record(z.string(), z.unknown()),
-});
+const actorSchema = z.discriminatedUnion("actorType", [
+  z.object({
+    actorType: z.literal("manager"),
+    actorId: z.string().regex(/^manager_[A-Za-z0-9][A-Za-z0-9._-]*$/),
+  }),
+  z.object({
+    actorType: z.literal("agent"),
+    actorId: z.string().regex(/^agent_[A-Za-z0-9][A-Za-z0-9._-]*$/),
+  }),
+]);
+const projectEventSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    eventId: z.string().regex(/^event_[A-Za-z0-9][A-Za-z0-9._-]*$/),
+    projectId: z.string().regex(/^project_[A-Za-z0-9][A-Za-z0-9._-]*$/),
+    workItemId: z
+      .string()
+      .regex(/^work_[A-Za-z0-9][A-Za-z0-9._-]*$/)
+      .optional(),
+    roleAssignmentId: z
+      .string()
+      .regex(/^role-assignment_[A-Za-z0-9][A-Za-z0-9._-]*$/)
+      .optional(),
+    providerRunId: z.string().min(1).optional(),
+    kind: z.enum(eventKinds),
+    occurredAt: timestampSchema,
+    receivedAt: timestampSchema,
+    source: z.enum(["manager", "adapter", "system", "reviewer"]),
+    trust: z.enum(["verified", "reported", "inferred"]),
+    actor: actorSchema.optional(),
+    payload: z.record(z.string(), z.unknown()),
+  })
+  .superRefine((event, context) => {
+    const agentSpeechAct =
+      event.kind === "work.question_asked" ||
+      event.kind === "work.rescope_proposed" ||
+      event.kind === "work.send_back_disputed";
+    const linkedApproval = event.kind === "work.rescoped" && event.payload.proposalId !== undefined;
+    const managerSpeechAct = event.kind === "work.rescope_declined" || linkedApproval;
+
+    if (agentSpeechAct) {
+      if (event.actor?.actorType !== "agent") {
+        context.addIssue({
+          code: "custom",
+          path: ["actor"],
+          message: "agent attribution is required",
+        });
+      }
+      if (event.source !== "adapter" || event.trust !== "reported") {
+        context.addIssue({
+          code: "custom",
+          path: ["source"],
+          message: "agent speech acts are reported adapter content",
+        });
+      }
+      if (!event.roleAssignmentId) {
+        context.addIssue({
+          code: "custom",
+          path: ["roleAssignmentId"],
+          message: "agent speech acts require their role assignment",
+        });
+      }
+    }
+
+    if (managerSpeechAct) {
+      if (event.actor?.actorType !== "manager") {
+        context.addIssue({
+          code: "custom",
+          path: ["actor"],
+          message: "manager attribution is required",
+        });
+      }
+      if (event.source !== "manager" || event.trust !== "verified") {
+        context.addIssue({
+          code: "custom",
+          path: ["source"],
+          message: "manager decisions require verified manager source",
+        });
+      }
+    }
+
+    if ((agentSpeechAct || managerSpeechAct) && event.payload.workItemId !== event.workItemId) {
+      context.addIssue({
+        code: "custom",
+        path: ["payload", "workItemId"],
+        message: "payload workItemId must match the event envelope",
+      });
+    }
+  });
 
 export type ProjectEvent = z.infer<typeof projectEventSchema>;
 export type EventParseError = {

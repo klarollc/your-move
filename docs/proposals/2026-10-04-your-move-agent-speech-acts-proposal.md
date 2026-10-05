@@ -1,6 +1,6 @@
 # Your Move agent-side speech acts proposal
 
-**Status: Draft for owner ruling. No event, command, reducer, or UI implementation is authorized by this document.**
+**Status: approved as written by the owner on 2026-10-05; implementation is authorized under §7.**
 **Scope:** add three attributable agent speech acts to the approved Your Move workflow core: questions, agreement-change proposals, and disputes of manager send-back rulings. This proposal supplements the approved 2026-10-04 workflow-core proposal. It does not authorize W12, a live provider run, promotion, deployment, or external notification.
 
 ## 1. Decision requested
@@ -66,3 +66,11 @@ The proposal does not add a manager question-answer event or infer an answer. A 
 ## 8. Non-goals
 
 This proposal does not authorize agent-side contract drafting before `work.created`, automatic negotiation, question-answer tracking, an agent permission to assign or self-verify evidence, history rewriting, side-channel messages, notification delivery, W12, or the §20 comprehension run. The separate contract-draft service remains behind its own brief proposal and owner ruling.
+
+## 9. Owner decision
+
+The owner approved this proposal **as written** on 2026-10-05. Implementation must follow the
+RED–GREEN sequence in §7. The owner ruling is recorded in
+`docs/evidence/workflow-proof/decision-record-2026-10-05-your-move-agent-speech-acts-approval.md`.
+No manager question-answer event, inferred answer, notification delivery, W12 session, or §20
+comprehension run is authorized.

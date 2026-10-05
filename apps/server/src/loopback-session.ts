@@ -32,6 +32,15 @@ type LoopbackAppOptions = {
   logPath?: string;
   /** Trusted project checkout root used for server-measured evidence and final review digests. */
   worktreeRoot?: string;
+  /**
+   * Server-issued runner/session binding for agent speech acts. Credentials and principal are
+   * created by the trusted runner/session adapter; neither identity field comes from a request.
+   */
+  authenticatedAgentSession?: Readonly<{
+    sessionId: string;
+    csrfToken: string;
+    principal: Readonly<{ agentId: string; roleAssignmentId: string }>;
+  }>;
   runner?: WorkflowRunnerControl;
   now?: () => string;
 };
@@ -170,17 +179,45 @@ export function createLoopbackApp(options: LoopbackAppOptions): LoopbackApp {
   });
 
   app.post("/api/commands", async (request, reply) => {
-    if (
-      request.headers["x-cuckcode-session"] !== options.sessionId ||
-      request.headers["x-cuckcode-csrf"] !== options.csrfToken
-    ) {
+    const requestSessionId = request.headers["x-cuckcode-session"];
+    const requestCsrfToken = request.headers["x-cuckcode-csrf"];
+    const isManagerSession =
+      requestSessionId === options.sessionId && requestCsrfToken === options.csrfToken;
+    const agentSession = options.authenticatedAgentSession;
+    const isAuthenticatedAgentSession =
+      agentSession !== undefined &&
+      requestSessionId === agentSession.sessionId &&
+      requestCsrfToken === agentSession.csrfToken;
+    if (!isManagerSession && !isAuthenticatedAgentSession) {
       return reply.code(403).send({ code: "SESSION_OR_CSRF_REJECTED" });
     }
     if (runnerBusy()) return reply.code(423).send({ code: "RUNNER_ACTIVE" });
 
+    const body = request.body;
+    const requestedIntent = isRecord(body) ? body.intent : undefined;
+    const agentSpeechIntent =
+      requestedIntent === "work.ask_question" ||
+      requestedIntent === "work.propose_rescope" ||
+      requestedIntent === "work.dispute_send_back";
+    if (isAuthenticatedAgentSession !== agentSpeechIntent) {
+      return reply.code(403).send({ code: "WORKSPACE_AUTHORITY_INVALID" });
+    }
+    // The browser may include a stale or forged actor field. For an authenticated agent session,
+    // replace it from server-held session context before workspace validation and command mapping.
+    const commandInput =
+      isAuthenticatedAgentSession && isRecord(body)
+        ? {
+            ...body,
+            actor: {
+              actorType: "agent",
+              actorId: agentSession.principal.agentId,
+            },
+          }
+        : body;
+
     const logPath = options.logPath;
     const log = logPath ? await readEventLog(logPath) : undefined;
-    const result = validateWorkspaceCommand(request.body, {
+    const result = validateWorkspaceCommand(commandInput, {
       projectId: options.projectId,
       revision: log ? log.revision : options.initialRevision,
     });
@@ -214,11 +251,15 @@ export function createLoopbackApp(options: LoopbackAppOptions): LoopbackApp {
         mapped.value.intent === "record_evidence" ||
         (mapped.value.intent === "record_ruling" && mapped.value.ruling?.decision === "accept");
       const commandNow = (options.now ?? (() => new Date().toISOString()))();
+      const trustedContext = isAuthenticatedAgentSession
+        ? { authenticatedAgent: agentSession!.principal }
+        : undefined;
       let outcome = executeWorkCommand({
         log: log.events,
         currentRevision: log.revision,
         now: commandNow,
         command: mapped.value,
+        ...(trustedContext ? { trustedContext } : {}),
       });
       // Validate the command before walking the worktree. Invalid evidence, stale revisions, and
       // unsupported rulings should fail on their own terms without requiring a digest collector.
@@ -235,7 +276,10 @@ export function createLoopbackApp(options: LoopbackAppOptions): LoopbackApp {
           currentRevision: log.revision,
           now: commandNow,
           command: mapped.value,
-          trustedContext: { worktreeSha256 },
+          trustedContext: {
+            ...(trustedContext ?? {}),
+            worktreeSha256,
+          },
         });
       }
       if (!outcome.ok) {
@@ -260,4 +304,8 @@ export function createLoopbackApp(options: LoopbackAppOptions): LoopbackApp {
   });
 
   return app;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

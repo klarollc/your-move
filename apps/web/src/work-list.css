@@ -901,6 +901,52 @@
   color: var(--ink);
 }
 
+.workflow-speech-acts ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.workflow-speech-acts li {
+  display: grid;
+  gap: 6px;
+  border-bottom: 1px solid var(--line);
+  padding: 10px 0;
+}
+
+.workflow-speech-acts li > small {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  overflow-wrap: anywhere;
+}
+
+.workflow-proposal-actions {
+  display: grid;
+  justify-items: start;
+  gap: 9px;
+  border-left: 2px solid var(--line);
+  padding-left: 12px;
+}
+
+.workflow-proposal-actions label {
+  display: grid;
+  width: min(100%, 34rem);
+  gap: 5px;
+  color: var(--ink);
+  font-size: 0.82rem;
+}
+
+.workflow-proposal-actions textarea {
+  min-height: 4.5rem;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 8px;
+  color: var(--ink);
+  background: var(--paper);
+  font: inherit;
+}
+
 .workflow-detail-evidence,
 .workflow-matter-trail,
 .workflow-assignee-group ul,

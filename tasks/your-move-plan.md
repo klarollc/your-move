@@ -100,11 +100,12 @@ workflow-proof approval process before implementing the write:
 | Agent-drafted contract           | `work.created` accepts a validated contract | No pre-creation agent-draft service was found; a deterministic fake must not be labelled an agent draft. |
 
 The owner approved the minimum reconciliation in
-`docs/proposals/2026-10-04-your-move-workflow-core-proposal.md` on 2026-10-04. Implement its §7
-RED–GREEN gates in order. Contract, reducer, command, and loopback API stages have passed focused
-checks; projection/adversarial UI checks remain. The owner's seven additive UI decisions are mapped
-in `tasks/your-move-todo.md` and the approval record. They add no event kinds. Agent-side speech acts
-remain proposal-only until a separate owner ruling.
+`docs/proposals/2026-10-04-your-move-workflow-core-proposal.md` on 2026-10-04. Its §7 gate is green.
+The owner approved the separate agent-side speech-acts proposal as written on 2026-10-05; its §7
+RED–GREEN gate is a separately tracked supplement and must run in order. Both proposals keep the
+same command path, reducer and event log. The seven additive UI decisions are mapped in
+`tasks/your-move-todo.md` and the approval record. They add no event kinds. W12, §20, contract-draft
+service implementation and live provider sessions remain gated.
 
 ## 5. Build order
 

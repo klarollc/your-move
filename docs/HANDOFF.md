@@ -1,6 +1,6 @@
 # Handoff — state, next action, and what would otherwise be relearned expensively
 
-Written 2026-09-18, last updated 2026-10-04 for the Your Move package. Read `AGENTS.md` first for authority; this document is the
+Written 2026-09-18, last updated 2026-10-05 for the Your Move package. Read `AGENTS.md` first for authority; this document is the
 live state, the next action, and the things a fresh session pays for twice if nobody wrote them down.
 
 ## Owner amendment — 2026-10-04: Your Move supersedes W7
@@ -26,7 +26,7 @@ had no captured console warnings/errors or failed requests, and reduced-motion e
 animations or transitions. This is historical W7 evidence, not Your Move acceptance evidence. The
 existing behavior has not been submitted to the separately started runner.
 
-**Approval and current state — 2026-10-04:** the owner approved the MDD amendment,
+**Approval and current state — 2026-10-04/05:** the owner approved the MDD amendment,
 `tasks/your-move-plan.md`, and `tasks/your-move-todo.md` with “Approve + bind digest.” The workflow-core
 proposal was subsequently approved as written. Contract, reducer, command, loopback integration, and
 projection/adversarial UI stages have passed their ordered focused RED–GREEN checks. The seven
@@ -35,16 +35,22 @@ path was added. Worktree SHA-256 is measured server-side and bound to relevant e
 stages are green: `npm run verify` exited 0, including unit (905), component (182), integration
 (150 passed, 3 skipped), contract (140), build, and the Surface B browser checks at 1440×900 and
 1280×800. Provenance reports 429 artifacts and 695 ledger lines, with no missing files or stale
-digests. This verified change set is ready for the already-authorized commit and push to
-`review/workflow-proof`. The full §8 package remains incomplete. See `tasks/your-move-todo.md` and
-the behavior/evidence matrix for current evidence.
+digests. The verified change set was pushed to `review/workflow-proof` at
+`d5473be0de545aa86efd6fb832ca9141e95051d1`; the remote ref was read back and matched. The owner
+approved the agent-side speech-acts proposal as written on 2026-10-05; its separate ordered §7 gate
+is active and the ruling is recorded at
+`docs/evidence/workflow-proof/decision-record-2026-10-05-your-move-agent-speech-acts-approval.md`.
+The brief contract-draft service proposal was drafted at
+`docs/proposals/2026-10-04-your-move-contract-draft-service-proposal.md`. It is a local draft only,
+not part of the pushed review branch, and awaits an owner ruling before implementation. The full §8
+package remains incomplete. See `tasks/your-move-todo.md` and the behavior/evidence matrix for current
+evidence.
 
-**Immediate next gate:** commit and push the verified authorized change set to
-`review/workflow-proof`, without regenerating owner-only evidence. After that push, scope the separate
-contract-draft service as a brief proposal. The agent-side speech-acts proposal is drafted at
-`docs/proposals/2026-10-04-your-move-agent-speech-acts-proposal.md`; do not implement it before a
-separate owner ruling. Keep W8 shelved; do not start a live provider session or promote. W12 and the
-§20 Surface B comprehension run remain separately gated owner actions.
+**Immediate next gate:** implement the approved speech acts through their proposal's ordered §7
+RED–GREEN gate, then push and verify the review branch. The contract-draft service proposal still
+awaits an owner ruling and its implementation is not authorized. Keep W8 shelved; do not start a live
+provider session or promote. W12 and the §20 Surface B comprehension run remain separately gated
+owner actions.
 
 ---
 

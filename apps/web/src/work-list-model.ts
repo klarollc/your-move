@@ -271,6 +271,7 @@ export function projectWorkList(
           item.contract?.evidenceObligations ??
           item.requiredEvidenceKinds.map((kind) => ({ kind, description: "Required evidence" })),
         evidence,
+        speechActs: item.speechActs ?? [],
         postures,
         sourceRevision: revisionById.get(item.updatedByEventId) ?? null,
         lastSignalRevision: latestSignal ? (revisionById.get(latestSignal.eventId) ?? null) : null,
@@ -292,6 +293,7 @@ export function projectWorkList(
         occurredAt: event.occurredAt,
         workItemId: event.workItemId ?? text(event.payload.workItemId) ?? null,
         revision: index + 1,
+        actor: event.actor ?? null,
       },
     ];
   });
@@ -348,6 +350,23 @@ function eventSummary(event: ProjectEvent): string {
         : "missing";
     const to = typeof payload.contractRevision === "number" ? payload.contractRevision : "missing";
     return `Agreement revision ${String(from)} → ${String(to)} recorded`;
+  }
+  if (event.kind === "work.question_asked") {
+    return `Question asked · ${text(payload.question) ?? "question missing"}`;
+  }
+  if (event.kind === "work.rescope_proposed") {
+    const contract = payload.contract;
+    const outcome =
+      typeof contract === "object" && contract !== null && !Array.isArray(contract)
+        ? text((contract as Record<string, unknown>).outcome)
+        : undefined;
+    return `Agreement change proposed · ${outcome ?? "proposed outcome missing"}`;
+  }
+  if (event.kind === "work.rescope_declined") {
+    return `Agreement change declined · ${text(payload.reason) ?? "reason missing"}`;
+  }
+  if (event.kind === "work.send_back_disputed") {
+    return `Send-back disputed · ${text(payload.statement) ?? "statement missing"}`;
   }
   if (event.kind === "work.closed_incomplete") {
     return `Closed incomplete · ${text(payload.reason) ?? "reason missing"}`;

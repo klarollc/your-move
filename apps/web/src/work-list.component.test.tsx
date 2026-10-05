@@ -2,8 +2,9 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import type { WorkSpeechActTruth } from "@cuckcode/domain";
 
-import { WorkList, type WorkListItem } from "./work-list.js";
+import { WorkList, type WorkListItem, type WorkListLogEntry } from "./work-list.js";
 
 afterEach(() => {
   cleanup();
@@ -77,6 +78,7 @@ const item: WorkListItem = {
   contractAcceptsEvidence: true,
   evidenceObligations: [{ kind: "test-run", description: "Test output" }],
   evidence: [],
+  speechActs: [],
   postures: [],
   sourceRevision: 6,
   lastSignalRevision: 8,
@@ -204,6 +206,182 @@ describe("Surface B work list", () => {
     expect(screen.getByText(/Risk is not recorded/)).toBeVisible();
     expect(screen.getByRole("button", { name: "Accept as done" })).toBeDisabled();
     expect(screen.getByRole("complementary", { name: "Your move, unfiltered" })).toBeVisible();
+  });
+
+  it("shows attributed agent questions and proposal receipts without optimistic acceptance", async () => {
+    const proposalContract = {
+      ...item.contract!,
+      outcome: "Preserve quoted values and whitespace",
+    };
+    const speechActItem = {
+      ...item,
+      speechActs: [
+        {
+          eventId: "event_question_9",
+          workItemId: item.workItemId,
+          occurredAt: "2026-10-04T10:00:09.000Z",
+          sourceRevision: 9,
+          source: "adapter",
+          trust: "reported",
+          actor: { actorType: "agent", actorId: "agent_engineer" },
+          roleAssignmentId: "role-assignment_engineer",
+          kind: "work.question_asked",
+          question: "Which quote form should remain compatible?",
+        },
+        {
+          eventId: "event_proposal_10",
+          workItemId: item.workItemId,
+          occurredAt: "2026-10-04T10:00:10.000Z",
+          sourceRevision: 10,
+          source: "adapter",
+          trust: "reported",
+          actor: { actorType: "agent", actorId: "agent_engineer" },
+          roleAssignmentId: "role-assignment_engineer",
+          kind: "work.rescope_proposed",
+          proposalId: "rescope-proposal_quote",
+          expectedContractRevision: 1,
+          contract: proposalContract,
+          status: "open",
+        },
+      ] satisfies WorkSpeechActTruth[],
+    };
+    const log: WorkListLogEntry[] = [
+      {
+        eventId: "event_question_9",
+        kind: "work.question_asked",
+        summary: "Question asked · Which quote form should remain compatible?",
+        source: "adapter",
+        trust: "reported",
+        occurredAt: "2026-10-04T10:00:09.000Z",
+        workItemId: item.workItemId,
+        revision: 9,
+        actor: { actorType: "agent", actorId: "agent_engineer" },
+      },
+      {
+        eventId: "event_proposal_10",
+        kind: "work.rescope_proposed",
+        summary: "Agreement change proposed · Preserve quoted values and whitespace",
+        source: "adapter",
+        trust: "reported",
+        occurredAt: "2026-10-04T10:00:10.000Z",
+        workItemId: item.workItemId,
+        revision: 10,
+        actor: { actorType: "agent", actorId: "agent_engineer" },
+      },
+    ];
+    const onRescope = vi.fn();
+    const user = userEvent.setup();
+    render(<WorkList {...baseProps} items={[speechActItem]} log={log} onRescope={onRescope} />);
+
+    await user.click(screen.getByRole("button", { name: "Show all work" }));
+    await user.click(screen.getByRole("button", { name: "Details for Implement slugify" }));
+
+    expect(screen.getByText("Which quote form should remain compatible?")).toBeVisible();
+    expect(screen.getByText(/agent_engineer · adapter · reported · r9/)).toBeVisible();
+    expect(screen.getByRole("region", { name: "Contributions" })).toHaveTextContent(
+      "Preserve quoted values and whitespace",
+    );
+    expect(screen.getByText(/agent_engineer · adapter · reported · r10/)).toBeVisible();
+    expect(screen.getByText("Not recorded yet")).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Approve proposed agreement" }));
+
+    expect(onRescope).toHaveBeenCalledWith(
+      "work_slugify",
+      1,
+      proposalContract,
+      "rescope-proposal_quote",
+    );
+    expect(screen.getByRole("heading", { name: "Work: Implement slugify" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Approve proposed agreement" })).toBeEnabled();
+    expect(screen.getByText("Not recorded yet")).toBeVisible();
+  });
+
+  it("refuses a stale proposal approval and disables proposal writes in a past projection", async () => {
+    const staleProposal = {
+      ...item,
+      state: "review_requested",
+      contractRevision: 2,
+      speechActs: [
+        {
+          eventId: "event_stale_proposal",
+          workItemId: item.workItemId,
+          occurredAt: "2026-10-04T10:00:10.000Z",
+          sourceRevision: 10,
+          source: "adapter",
+          trust: "reported",
+          actor: { actorType: "agent", actorId: "agent_engineer" },
+          roleAssignmentId: "role-assignment_engineer",
+          kind: "work.rescope_proposed",
+          proposalId: "rescope-proposal_stale",
+          expectedContractRevision: 1,
+          contract: item.contract!,
+          status: "open",
+        },
+      ] satisfies WorkSpeechActTruth[],
+    };
+    const onRescope = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <WorkList
+        {...baseProps}
+        items={[staleProposal]}
+        visitedRevision={7}
+        revision={7}
+        actionsDisabled
+        onRescope={onRescope}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Show all work" }));
+    await user.click(screen.getByRole("button", { name: "Details for Implement slugify" }));
+    expect(screen.getByText(/based on agreement r1; current agreement r2/u)).toBeVisible();
+    expect(screen.getByRole("button", { name: "Approve proposed agreement" })).toBeDisabled();
+    expect(screen.getByText("Viewing the past · r7. You cannot rule on the past.")).toBeVisible();
+    expect(onRescope).not.toHaveBeenCalled();
+  });
+
+  it("requires a manager reason to decline and waits for the log before changing proposal status", async () => {
+    const candidateContract = { ...item.contract!, maxTurns: 5 };
+    const pendingProposal = {
+      ...item,
+      speechActs: [
+        {
+          eventId: "event_decline_proposal",
+          workItemId: item.workItemId,
+          occurredAt: "2026-10-04T10:00:10.000Z",
+          sourceRevision: 10,
+          source: "adapter",
+          trust: "reported",
+          actor: { actorType: "agent", actorId: "agent_engineer" },
+          roleAssignmentId: "role-assignment_engineer",
+          kind: "work.rescope_proposed",
+          proposalId: "rescope-proposal_decline-ui",
+          expectedContractRevision: 1,
+          contract: candidateContract,
+          status: "open",
+        },
+      ] satisfies WorkSpeechActTruth[],
+    };
+    const onDeclineRescope = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <WorkList {...baseProps} items={[pendingProposal]} onDeclineRescope={onDeclineRescope} />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Show all work" }));
+    await user.click(screen.getByRole("button", { name: "Details for Implement slugify" }));
+    const decline = screen.getByRole("button", { name: "Decline proposed agreement" });
+    expect(decline).toBeDisabled();
+    await user.type(screen.getByLabelText("Reason for declining"), "  Keep the agreed scope.  ");
+    expect(decline).toBeEnabled();
+    await user.click(decline);
+
+    expect(onDeclineRescope).toHaveBeenCalledWith(
+      "work_slugify",
+      "rescope-proposal_decline-ui",
+      "Keep the agreed scope.",
+    );
+    expect(screen.getByRole("region", { name: "Contributions" })).toHaveTextContent("open");
   });
 
   it("keeps the rail on the Log view and can group the same log projection by assignee", async () => {

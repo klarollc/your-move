@@ -37,7 +37,11 @@ export type WorkCommand = Readonly<{
     | "close_incomplete"
     | "nudge"
     | "suppress_nudge"
-    | "withdraw_ruling";
+    | "withdraw_ruling"
+    | "ask_question"
+    | "propose_rescope"
+    | "decline_rescope"
+    | "dispute_send_back";
   workItemId: string;
   contract?: WorkContract;
   roleAssignmentId?: string;
@@ -50,6 +54,9 @@ export type WorkCommand = Readonly<{
   note?: string;
   disposition?: "snooze" | "dismiss";
   rulingId?: string;
+  proposalId?: string;
+  question?: string;
+  statement?: string;
 }>;
 
 export type WorkRulingInput = Readonly<{
@@ -90,6 +97,18 @@ export type WorkCommandResult =
 const COMMAND_ID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 const WORK_ITEM_ID = /^work_[A-Za-z0-9][A-Za-z0-9._-]*$/;
 const ROLE_ASSIGNMENT_ID = /^role-assignment_[A-Za-z0-9][A-Za-z0-9._-]*$/;
+const AGENT_ID = /^agent_[A-Za-z0-9][A-Za-z0-9._-]*$/;
+const RESCOPE_PROPOSAL_ID = /^rescope-proposal_[A-Za-z0-9][A-Za-z0-9._-]*$/;
+const RULING_ID = /^ruling_[A-Za-z0-9][A-Za-z0-9._-]*$/;
+const MAX_SPEECH_TEXT = 2_000;
+
+type WorkActor = Readonly<{ actorType: "manager" | "agent"; actorId: string }>;
+type AgentSpeechIntent = "ask_question" | "propose_rescope" | "dispute_send_back";
+const AGENT_SPEECH_INTENTS: readonly AgentSpeechIntent[] = [
+  "ask_question",
+  "propose_rescope",
+  "dispute_send_back",
+];
 
 const refuse = (code: string, ...issues: string[]): WorkCommandResult => ({
   ok: false,
@@ -103,7 +122,10 @@ export function executeWorkCommand(
     currentRevision: number;
     now: string;
     command: WorkCommand;
-    trustedContext?: Readonly<{ worktreeSha256?: string }>;
+    trustedContext?: Readonly<{
+      worktreeSha256?: string;
+      authenticatedAgent?: Readonly<{ agentId: string; roleAssignmentId: string }>;
+    }>;
   }>,
 ): WorkCommandResult {
   const { log, currentRevision, now, command, trustedContext } = input;
@@ -129,8 +151,41 @@ export function executeWorkCommand(
       "trusted worktree digest must be 64-character lowercase hex",
     );
   }
-  if (command.actor.actorType !== "manager") {
-    return refuse("NOT_AUTHORIZED", "only a manager may create, assign or review work");
+  const agentSpeech = AGENT_SPEECH_INTENTS.includes(command.intent as AgentSpeechIntent);
+  const authenticatedAgent = trustedContext?.authenticatedAgent;
+  let effectiveActor: WorkActor;
+  let authenticatedRoleAssignmentId: string | undefined;
+  if (authenticatedAgent) {
+    if (!agentSpeech) {
+      return refuse("NOT_AUTHORIZED", "authenticated agents may only record speech acts");
+    }
+    if (
+      !AGENT_ID.test(authenticatedAgent.agentId) ||
+      !ROLE_ASSIGNMENT_ID.test(authenticatedAgent.roleAssignmentId)
+    ) {
+      return refuse("NOT_AUTHORIZED", "authenticated agent identity is malformed");
+    }
+    const current = replayProject(log);
+    const item = current.work.workItems[command.workItemId];
+    const assignedAgent =
+      current.staffing.assignments[authenticatedAgent.roleAssignmentId]?.agentId;
+    if (
+      current.project.projectId !== command.projectId ||
+      assignedAgent !== authenticatedAgent.agentId ||
+      item?.assignment?.roleAssignmentId !== authenticatedAgent.roleAssignmentId
+    ) {
+      return refuse(
+        "WORK_SPEECH_ACT_UNAUTHORIZED",
+        "the authenticated agent must hold this work item's active role assignment in this project",
+      );
+    }
+    effectiveActor = { actorType: "agent", actorId: authenticatedAgent.agentId };
+    authenticatedRoleAssignmentId = authenticatedAgent.roleAssignmentId;
+  } else {
+    if (agentSpeech || command.actor.actorType !== "manager") {
+      return refuse("NOT_AUTHORIZED", "an authenticated manager or assigned agent is required");
+    }
+    effectiveActor = command.actor;
   }
   const commandPrefix = `event_${command.commandId}_`;
   if (normalizeCommandEventIds(log).some((eventId) => eventId.startsWith(commandPrefix))) {
@@ -147,27 +202,35 @@ export function executeWorkCommand(
   const before = replayProject(log).work;
   const item = before.workItems[command.workItemId];
   const candidates =
-    command.intent === "create"
-      ? planCreate(command, item !== undefined)
-      : command.intent === "assign"
-        ? planAssign(command, item)
-        : command.intent === "record_evidence"
-          ? planRecordEvidence(command, item, trustedContext?.worktreeSha256)
-          : command.intent === "request_review"
-            ? planRequestReview(command, item, log)
-            : command.intent === "record_ruling"
-              ? planRuling(command, item, before, log, now, trustedContext?.worktreeSha256)
-              : command.intent === "grant_turns"
-                ? planGrantTurns(command, item)
-                : command.intent === "rescope"
-                  ? planRescope(command, item)
-                  : command.intent === "close_incomplete"
-                    ? planCloseIncomplete(command, item)
-                    : command.intent === "nudge"
-                      ? planNudge(command, item)
-                      : command.intent === "suppress_nudge"
-                        ? planSuppressNudge(command, item)
-                        : planWithdrawRuling(command, item, before);
+    command.intent === "ask_question"
+      ? planAskQuestion(command)
+      : command.intent === "propose_rescope"
+        ? planProposeRescope(command, item, authenticatedRoleAssignmentId)
+        : command.intent === "dispute_send_back"
+          ? planDisputeSendBack(command, item, authenticatedRoleAssignmentId)
+          : command.intent === "decline_rescope"
+            ? planDeclineRescope(command, item)
+            : command.intent === "create"
+              ? planCreate(command, item !== undefined)
+              : command.intent === "assign"
+                ? planAssign(command, item)
+                : command.intent === "record_evidence"
+                  ? planRecordEvidence(command, item, trustedContext?.worktreeSha256)
+                  : command.intent === "request_review"
+                    ? planRequestReview(command, item, log)
+                    : command.intent === "record_ruling"
+                      ? planRuling(command, item, before, log, now, trustedContext?.worktreeSha256)
+                      : command.intent === "grant_turns"
+                        ? planGrantTurns(command, item)
+                        : command.intent === "rescope"
+                          ? planRescope(command, item)
+                          : command.intent === "close_incomplete"
+                            ? planCloseIncomplete(command, item)
+                            : command.intent === "nudge"
+                              ? planNudge(command, item)
+                              : command.intent === "suppress_nudge"
+                                ? planSuppressNudge(command, item)
+                                : planWithdrawRuling(command, item, before);
   if (!Array.isArray(candidates)) return candidates;
 
   // Stamped after everything already in the log, so canonical replay applies them last.
@@ -182,10 +245,19 @@ export function executeWorkCommand(
       kind: candidate.kind,
       occurredAt: times[sequence - 1],
       receivedAt: times[sequence - 1],
-      source: "manager",
-      trust: "verified",
+      source: candidate.source ?? "manager",
+      trust: candidate.trust ?? "verified",
+      ...(candidate.actor
+        ? { actor: candidate.actor }
+        : authenticatedAgent
+          ? { actor: effectiveActor }
+          : {}),
       workItemId: command.workItemId,
-      ...(candidate.roleAssignmentId ? { roleAssignmentId: candidate.roleAssignmentId } : {}),
+      ...(candidate.roleAssignmentId
+        ? { roleAssignmentId: candidate.roleAssignmentId }
+        : authenticatedRoleAssignmentId
+          ? { roleAssignmentId: authenticatedRoleAssignmentId }
+          : {}),
       payload: {
         ...candidate.payload,
         ...(candidate.suppressionDays === undefined
@@ -222,7 +294,7 @@ export function executeWorkCommand(
       // Revisions count appended events: a log of N events is at revision N.
       resultingRevision: currentRevision + events.length,
       intent: command.intent,
-      actorId: command.actor.actorId,
+      actorId: effectiveActor.actorId,
       workItemId: command.workItemId,
       eventIds: events.map((event) => event.eventId),
     },
@@ -233,6 +305,9 @@ type Candidate = Readonly<{
   kind: string;
   payload: Record<string, unknown>;
   roleAssignmentId?: string;
+  actor?: WorkActor;
+  source?: "manager" | "adapter";
+  trust?: "verified" | "reported";
   suppressionDays?: 2 | 3;
 }>;
 
@@ -450,11 +525,15 @@ const COMMAND_FIELDS: Readonly<Record<WorkCommand["intent"], readonly string[]>>
   request_review: [],
   record_ruling: ["ruling"],
   grant_turns: ["turnsGranted", "budgetRevision"],
-  rescope: ["contract", "expectedContractRevision"],
+  rescope: ["contract", "expectedContractRevision", "proposalId"],
   close_incomplete: ["reason"],
   nudge: ["roleAssignmentId", "note"],
   suppress_nudge: ["disposition"],
   withdraw_ruling: ["rulingId"],
+  ask_question: ["question"],
+  propose_rescope: ["proposalId", "expectedContractRevision", "contract"],
+  decline_rescope: ["proposalId", "reason"],
+  dispute_send_back: ["rulingId", "statement"],
 };
 
 function validateCommandFields(command: WorkCommand): string[] {
@@ -463,6 +542,134 @@ function validateCommandFields(command: WorkCommand): string[] {
   const extra = Object.keys(command).filter((key) => !allowed.has(key));
   if (extra.length > 0) return [`unexpected command fields: ${extra.sort().join(", ")}`];
   return [];
+}
+
+function planAskQuestion(command: WorkCommand): Candidate[] | WorkCommandResult {
+  if (!speechText(command.question)) {
+    return refuse("COMMAND_INVALID", "question must be non-empty and at most 2000 characters");
+  }
+  return [
+    {
+      kind: "work.question_asked",
+      payload: { workItemId: command.workItemId, question: command.question },
+      source: "adapter",
+      trust: "reported",
+    },
+  ];
+}
+
+function planProposeRescope(
+  command: WorkCommand,
+  item: WorkTruthState["workItems"][string] | undefined,
+  roleAssignmentId: string | undefined,
+): Candidate[] | WorkCommandResult {
+  if (!item) return refuse("WORK_ITEM_NOT_FOUND", `${command.workItemId} does not exist`);
+  if (!item.contract) return refuse("CONTRACT_MISSING", `${command.workItemId} has no contract`);
+  if (
+    typeof command.expectedContractRevision !== "number" ||
+    command.expectedContractRevision !== item.contractRevision
+  ) {
+    return refuse(
+      "STALE_CONTRACT_REVISION",
+      `expected contract revision ${String(item.contractRevision)}`,
+    );
+  }
+  if (!command.proposalId || !RESCOPE_PROPOSAL_ID.test(command.proposalId)) {
+    return refuse("COMMAND_INVALID", "proposalId is missing or malformed");
+  }
+  if (!roleAssignmentId) {
+    return refuse("NOT_AUTHORIZED", "an authenticated role assignment is required");
+  }
+  if (command.contract === undefined) {
+    return refuse("CONTRACT_INVALID", "replacement contract is required");
+  }
+  const parsed = boundedWorkContractSchema.safeParse(command.contract);
+  if (!parsed.success) {
+    return refuse(
+      "CONTRACT_INVALID",
+      ...parsed.error.issues.map(
+        (found) => `${found.path.join(".") || "(root)"}: ${found.message}`,
+      ),
+    );
+  }
+  return [
+    {
+      kind: "work.rescope_proposed",
+      payload: {
+        workItemId: command.workItemId,
+        proposalId: command.proposalId,
+        expectedContractRevision: command.expectedContractRevision,
+        contract: parsed.data,
+      },
+      roleAssignmentId,
+      source: "adapter",
+      trust: "reported",
+    },
+  ];
+}
+
+function planDeclineRescope(
+  command: WorkCommand,
+  item: WorkTruthState["workItems"][string] | undefined,
+): Candidate[] | WorkCommandResult {
+  if (!item) return refuse("WORK_ITEM_NOT_FOUND", `${command.workItemId} does not exist`);
+  if (!command.proposalId || !RESCOPE_PROPOSAL_ID.test(command.proposalId)) {
+    return refuse("COMMAND_INVALID", "proposalId is missing or malformed");
+  }
+  if (!speechText(command.reason)) {
+    return refuse(
+      "COMMAND_INVALID",
+      "decline requires a non-empty reason of at most 2000 characters",
+    );
+  }
+  return [
+    {
+      kind: "work.rescope_declined",
+      payload: {
+        workItemId: command.workItemId,
+        proposalId: command.proposalId,
+        reason: command.reason,
+      },
+      actor: command.actor,
+    },
+  ];
+}
+
+function planDisputeSendBack(
+  command: WorkCommand,
+  item: WorkTruthState["workItems"][string] | undefined,
+  roleAssignmentId: string | undefined,
+): Candidate[] | WorkCommandResult {
+  if (!item) return refuse("WORK_ITEM_NOT_FOUND", `${command.workItemId} does not exist`);
+  if (!command.rulingId || !RULING_ID.test(command.rulingId)) {
+    return refuse("COMMAND_INVALID", "rulingId is missing or malformed");
+  }
+  if (!speechText(command.statement)) {
+    return refuse(
+      "COMMAND_INVALID",
+      "dispute statement must be non-empty and at most 2000 characters",
+    );
+  }
+  if (!roleAssignmentId) {
+    return refuse("NOT_AUTHORIZED", "an authenticated role assignment is required");
+  }
+  return [
+    {
+      kind: "work.send_back_disputed",
+      payload: {
+        workItemId: command.workItemId,
+        rulingId: command.rulingId,
+        statement: command.statement,
+      },
+      roleAssignmentId,
+      source: "adapter",
+      trust: "reported",
+    },
+  ];
+}
+
+function speechText(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0 && value.length <= MAX_SPEECH_TEXT;
 }
 
 function normalizeCommandEventIds(log: readonly unknown[]): string[] {
@@ -683,6 +890,21 @@ function planRescope(
   }
   if (!item.contract)
     return refuse("CONTRACT_MISSING", `${command.workItemId} has no contract to re-scope`);
+  const proposal = command.proposalId
+    ? item.speechActs?.find(
+        (entry) =>
+          entry.kind === "work.rescope_proposed" && entry.proposalId === command.proposalId,
+      )
+    : undefined;
+  if (
+    command.proposalId &&
+    (!proposal || proposal.kind !== "work.rescope_proposed" || proposal.status !== "open")
+  ) {
+    return refuse(
+      "WORK_SPEECH_ACT_DISPOSITION_CONFLICT",
+      "linked approval requires one open rescope proposal for this work item",
+    );
+  }
   return [
     {
       kind: "work.rescoped",
@@ -691,7 +913,9 @@ function planRescope(
         expectedContractRevision,
         contractRevision: expectedContractRevision + 1,
         contract: contract.data,
+        ...(command.proposalId ? { proposalId: command.proposalId } : {}),
       },
+      ...(command.proposalId ? { actor: command.actor } : {}),
     },
   ];
 }

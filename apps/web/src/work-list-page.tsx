@@ -360,7 +360,19 @@ export function WorkListPage() {
     workItemId,
     expectedContractRevision,
     contract,
-  ) => sendSurfaceCommand("work.rescope", workItemId, { expectedContractRevision, contract });
+    proposalId,
+  ) =>
+    sendSurfaceCommand("work.rescope", workItemId, {
+      expectedContractRevision,
+      contract,
+      ...(proposalId ? { proposalId } : {}),
+    });
+
+  const onDeclineRescope: NonNullable<SurfaceBCommandApi["onDeclineRescope"]> = (
+    workItemId,
+    proposalId,
+    reason,
+  ) => sendSurfaceCommand("work.decline_rescope", workItemId, { proposalId, reason });
 
   const onCloseIncomplete: NonNullable<SurfaceBCommandApi["onCloseIncomplete"]> = (
     workItemId,
@@ -455,6 +467,7 @@ export function WorkListPage() {
         onRuling={onRuling}
         onGrantTurns={onGrantTurns}
         onRescope={onRescope}
+        onDeclineRescope={onDeclineRescope}
         onCloseIncomplete={onCloseIncomplete}
         onNudge={onNudge}
         onSuppressNudge={onSuppressNudge}

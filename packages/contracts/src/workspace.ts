@@ -109,13 +109,40 @@ export function validateWorkspaceCommand(
   ) {
     return invalid("WORKSPACE_COMMAND_INVALID");
   }
-  if (input.actor.actorType !== "manager" && managerOnlyIntents.has(String(input.intent))) {
+  if (
+    (input.actor.actorType === "agent" && !agentSpeechIntents.has(String(input.intent))) ||
+    (input.actor.actorType === "manager" && agentSpeechIntents.has(String(input.intent))) ||
+    (input.actor.actorType !== "manager" && managerOnlyIntents.has(String(input.intent)))
+  ) {
     return invalid("WORKSPACE_AUTHORITY_INVALID");
   }
   return { ok: true, value: input as WorkspaceCommand };
 }
 
-const managerOnlyIntents = new Set(["approve", "decline", "defer", "cancel", "redirect"]);
+const managerOnlyIntents = new Set([
+  "approve",
+  "decline",
+  "defer",
+  "cancel",
+  "redirect",
+  "work.create",
+  "work.assign",
+  "work.record_evidence",
+  "work.request_review",
+  "work.record_ruling",
+  "work.grant_turns",
+  "work.rescope",
+  "work.decline_rescope",
+  "work.close_incomplete",
+  "work.nudge",
+  "work.suppress_nudge",
+  "work.withdraw_ruling",
+]);
+const agentSpeechIntents = new Set([
+  "work.ask_question",
+  "work.propose_rescope",
+  "work.dispute_send_back",
+]);
 const secretKey = /api[_-]?key|authorization|credential|password|secret|token/iu;
 const secretValue = /\bsk-[a-z0-9_-]+\b/iu;
 

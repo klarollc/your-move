@@ -28,6 +28,31 @@ export type WorkRescopedPayload = Readonly<{
   expectedContractRevision: number;
   contractRevision: number;
   contract: ReturnType<typeof boundedWorkContractSchema.parse>;
+  proposalId?: string;
+}>;
+
+export type WorkQuestionAskedPayload = Readonly<{
+  workItemId: string;
+  question: string;
+}>;
+
+export type WorkRescopeProposedPayload = Readonly<{
+  workItemId: string;
+  proposalId: string;
+  expectedContractRevision: number;
+  contract: ReturnType<typeof boundedWorkContractSchema.parse>;
+}>;
+
+export type WorkRescopeDeclinedPayload = Readonly<{
+  workItemId: string;
+  proposalId: string;
+  reason: string;
+}>;
+
+export type WorkSendBackDisputedPayload = Readonly<{
+  workItemId: string;
+  rulingId: string;
+  statement: string;
 }>;
 
 export type WorkClosedIncompletePayload = Readonly<{
@@ -57,8 +82,10 @@ export type RulingWithdrawnPayload = Readonly<{
 const WORK_ID = /^work_[A-Za-z0-9][A-Za-z0-9._-]*$/;
 const ASSIGNMENT_ID = /^role-assignment_[A-Za-z0-9][A-Za-z0-9._-]*$/;
 const RULING_ID = /^ruling_[A-Za-z0-9][A-Za-z0-9._-]*$/;
+const RESCOPE_PROPOSAL_ID = /^rescope-proposal_[A-Za-z0-9][A-Za-z0-9._-]*$/;
 const EVIDENCE_ID = /^evidence_[A-Za-z0-9][A-Za-z0-9._-]*$/;
 const MAX_TEXT = 280;
+const MAX_SPEECH_TEXT = 2_000;
 const decisions: readonly WorkRulingDecision[] = [
   "accept",
   "accept_with_exception",
@@ -95,6 +122,7 @@ export function validateWorkRescopedPayload(
     "expectedContractRevision",
     "contractRevision",
     "contract",
+    "proposalId",
   ]);
   if (!matches(payload.workItemId, WORK_ID)) issues.push("workItemId is missing or malformed");
   if (!positiveInteger(payload.expectedContractRevision)) {
@@ -112,6 +140,9 @@ export function validateWorkRescopedPayload(
       issues.push(`contract.${issue.path.join(".") || "(root)"}: ${issue.message}`);
     }
   }
+  if (payload.proposalId !== undefined && !matches(payload.proposalId, RESCOPE_PROPOSAL_ID)) {
+    issues.push("proposalId is malformed");
+  }
   if (issues.length > 0 || !contract.success) return { ok: false, issues };
   return {
     ok: true,
@@ -120,6 +151,99 @@ export function validateWorkRescopedPayload(
       expectedContractRevision: payload.expectedContractRevision as number,
       contractRevision: payload.contractRevision as number,
       contract: contract.data,
+      ...(typeof payload.proposalId === "string" ? { proposalId: payload.proposalId } : {}),
+    },
+  };
+}
+
+export function validateWorkQuestionAskedPayload(
+  payload: Record<string, unknown>,
+): WorkPayloadResult<WorkQuestionAskedPayload> {
+  const issues = fields(payload, ["workItemId", "question"]);
+  if (!matches(payload.workItemId, WORK_ID)) issues.push("workItemId is missing or malformed");
+  if (!text(payload.question)) issues.push("question must be non-empty");
+  else if ((payload.question as string).length > MAX_SPEECH_TEXT) {
+    issues.push("question exceeds 2000 characters");
+  }
+  if (issues.length > 0) return { ok: false, issues };
+  return {
+    ok: true,
+    value: { workItemId: payload.workItemId as string, question: payload.question as string },
+  };
+}
+
+export function validateWorkRescopeProposedPayload(
+  payload: Record<string, unknown>,
+): WorkPayloadResult<WorkRescopeProposedPayload> {
+  const issues = fields(payload, [
+    "workItemId",
+    "proposalId",
+    "expectedContractRevision",
+    "contract",
+  ]);
+  if (!matches(payload.workItemId, WORK_ID)) issues.push("workItemId is missing or malformed");
+  if (!matches(payload.proposalId, RESCOPE_PROPOSAL_ID))
+    issues.push("proposalId is missing or malformed");
+  if (!positiveInteger(payload.expectedContractRevision)) {
+    issues.push("expectedContractRevision must be a positive integer");
+  }
+  const contract = boundedWorkContractSchema.safeParse(payload.contract);
+  if (!contract.success) {
+    for (const issue of contract.error.issues) {
+      issues.push(`contract.${issue.path.join(".") || "(root)"}: ${issue.message}`);
+    }
+  }
+  if (issues.length > 0 || !contract.success) return { ok: false, issues };
+  return {
+    ok: true,
+    value: {
+      workItemId: payload.workItemId as string,
+      proposalId: payload.proposalId as string,
+      expectedContractRevision: payload.expectedContractRevision as number,
+      contract: contract.data,
+    },
+  };
+}
+
+export function validateWorkRescopeDeclinedPayload(
+  payload: Record<string, unknown>,
+): WorkPayloadResult<WorkRescopeDeclinedPayload> {
+  const issues = fields(payload, ["workItemId", "proposalId", "reason"]);
+  if (!matches(payload.workItemId, WORK_ID)) issues.push("workItemId is missing or malformed");
+  if (!matches(payload.proposalId, RESCOPE_PROPOSAL_ID))
+    issues.push("proposalId is missing or malformed");
+  if (!text(payload.reason)) issues.push("reason must be non-empty");
+  else if ((payload.reason as string).length > MAX_SPEECH_TEXT) {
+    issues.push("reason exceeds 2000 characters");
+  }
+  if (issues.length > 0) return { ok: false, issues };
+  return {
+    ok: true,
+    value: {
+      workItemId: payload.workItemId as string,
+      proposalId: payload.proposalId as string,
+      reason: payload.reason as string,
+    },
+  };
+}
+
+export function validateWorkSendBackDisputedPayload(
+  payload: Record<string, unknown>,
+): WorkPayloadResult<WorkSendBackDisputedPayload> {
+  const issues = fields(payload, ["workItemId", "rulingId", "statement"]);
+  if (!matches(payload.workItemId, WORK_ID)) issues.push("workItemId is missing or malformed");
+  if (!matches(payload.rulingId, RULING_ID)) issues.push("rulingId is missing or malformed");
+  if (!text(payload.statement)) issues.push("statement must be non-empty");
+  else if ((payload.statement as string).length > MAX_SPEECH_TEXT) {
+    issues.push("statement exceeds 2000 characters");
+  }
+  if (issues.length > 0) return { ok: false, issues };
+  return {
+    ok: true,
+    value: {
+      workItemId: payload.workItemId as string,
+      rulingId: payload.rulingId as string,
+      statement: payload.statement as string,
     },
   };
 }
@@ -271,21 +395,29 @@ export function validateWorkflowCoreEventPayload(
       ? validateWorkTurnsGrantedPayload(payload)
       : kind === "work.rescoped"
         ? validateWorkRescopedPayload(payload)
-        : kind === "work.closed_incomplete"
-          ? validateWorkClosedIncompletePayload(payload)
-          : kind === "work.ruling_recorded"
-            ? validateWorkRulingRecordedPayload(payload)
-            : kind === "work.nudged"
-              ? validateWorkNudgedPayload(payload)
-              : kind === "work.nudge_suppressed"
-                ? validateWorkNudgeSuppressedPayload(payload)
-                : kind === "ruling.withdrawn"
-                  ? validateRulingWithdrawnPayload(payload)
-                  : kind === "evidence.recorded"
-                    ? validateEvidenceRecordedPayload(payload)
-                    : kind === "work.created" && payload.payloadVersion === 3
-                      ? validateWorkCreatedPayload(payload)
-                      : undefined;
+        : kind === "work.question_asked"
+          ? validateWorkQuestionAskedPayload(payload)
+          : kind === "work.rescope_proposed"
+            ? validateWorkRescopeProposedPayload(payload)
+            : kind === "work.rescope_declined"
+              ? validateWorkRescopeDeclinedPayload(payload)
+              : kind === "work.send_back_disputed"
+                ? validateWorkSendBackDisputedPayload(payload)
+                : kind === "work.closed_incomplete"
+                  ? validateWorkClosedIncompletePayload(payload)
+                  : kind === "work.ruling_recorded"
+                    ? validateWorkRulingRecordedPayload(payload)
+                    : kind === "work.nudged"
+                      ? validateWorkNudgedPayload(payload)
+                      : kind === "work.nudge_suppressed"
+                        ? validateWorkNudgeSuppressedPayload(payload)
+                        : kind === "ruling.withdrawn"
+                          ? validateRulingWithdrawnPayload(payload)
+                          : kind === "evidence.recorded"
+                            ? validateEvidenceRecordedPayload(payload)
+                            : kind === "work.created" && payload.payloadVersion === 3
+                              ? validateWorkCreatedPayload(payload)
+                              : undefined;
   if (!checked) return { ok: true, value: payload };
   return checked.ok ? { ok: true, value: checked.value as Record<string, unknown> } : checked;
 }

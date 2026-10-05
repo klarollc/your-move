@@ -67,6 +67,11 @@ authorized within this checklist. Approval response: “Approve + bind digest.�
 - [ ] Task 14 — produce a §8 behavior-to-evidence matrix and run required unit/build/browser checks;
       capture current-build evidence at approved viewports and record limitations. Owner performs visual
       acceptance. W12 and the §20 comprehension run remain separately gated owner actions.
+- [ ] Task 15 — implement the approved agent-side speech acts from
+      `docs/proposals/2026-10-04-your-move-agent-speech-acts-proposal.md`. Follow §7 in exact order:
+      contracts; reducer; `executeWorkCommand`; loopback integration; projection/adversarial UI;
+      full `verify` and provenance. No manager question-answer event, inferred answer or notification
+      delivery. W12 and §20 are not part of this task.
 
 ## Current implementation status — 2026-10-04
 
@@ -76,4 +81,5 @@ controls are present. The seven approved UI decisions and current evidence are m
 including full `npm run verify` and provenance. Current-build Surface B browser QA used an ephemeral
 empty log with no runner at 1440×900 and 1280×800; the captures are technical QA, not owner visual
 acceptance. The contract-draft service is absent and must be scoped as a brief proposal after the
-authorized push. W12 and §20 remain separately gated and were not run.
+authorized push. The agent-side speech-acts proposal was approved on 2026-10-05 and is being
+implemented under Task 15's ordered §7 gate. W12 and §20 remain separately gated and were not run.

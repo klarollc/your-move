@@ -106,7 +106,7 @@ export function toWorkCommand(command: WorkspaceCommand): WorkCommandMapping {
     };
   }
   if (command.intent === "work.rescope") {
-    if (keys.some((key) => !["expectedContractRevision", "contract"].includes(key)))
+    if (keys.some((key) => !["expectedContractRevision", "contract", "proposalId"].includes(key)))
       return invalid("unexpected re-scope payload fields");
     if (!isRecord(command.payload.contract)) return invalid("payload.contract must be an object");
     return {
@@ -116,6 +116,60 @@ export function toWorkCommand(command: WorkspaceCommand): WorkCommandMapping {
         intent: "rescope",
         expectedContractRevision: command.payload.expectedContractRevision as number,
         contract: command.payload.contract as WorkContract,
+        ...(typeof command.payload.proposalId === "string"
+          ? { proposalId: command.payload.proposalId }
+          : {}),
+      },
+    };
+  }
+  if (command.intent === "work.ask_question") {
+    if (keys.some((key) => key !== "question"))
+      return invalid(
+        `unexpected question payload fields: ${keys.filter((key) => key !== "question").join(", ")}`,
+      );
+    return {
+      ok: true,
+      value: { ...common, intent: "ask_question", question: command.payload.question as string },
+    };
+  }
+  if (command.intent === "work.propose_rescope") {
+    if (keys.some((key) => !["proposalId", "expectedContractRevision", "contract"].includes(key)))
+      return invalid("unexpected re-scope proposal payload fields");
+    if (!isRecord(command.payload.contract)) return invalid("payload.contract must be an object");
+    return {
+      ok: true,
+      value: {
+        ...common,
+        intent: "propose_rescope",
+        proposalId: command.payload.proposalId as string,
+        expectedContractRevision: command.payload.expectedContractRevision as number,
+        contract: command.payload.contract as WorkContract,
+      },
+    };
+  }
+  if (command.intent === "work.decline_rescope") {
+    if (keys.some((key) => !["proposalId", "reason"].includes(key)))
+      return invalid("unexpected re-scope decline payload fields");
+    return {
+      ok: true,
+      value: {
+        ...common,
+        intent: "decline_rescope",
+        proposalId: command.payload.proposalId as string,
+        reason: command.payload.reason as string,
+      },
+    };
+  }
+  if (command.intent === "work.dispute_send_back") {
+    if (keys.some((key) => !["rulingId", "statement"].includes(key)))
+      return invalid("unexpected dispute payload fields");
+    return {
+      ok: true,
+      value: {
+        ...common,
+        intent: "dispute_send_back",
+        rulingId: command.payload.rulingId as string,
+        statement: command.payload.statement as string,
       },
     };
   }

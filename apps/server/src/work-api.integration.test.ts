@@ -78,6 +78,11 @@ let dir = "";
 let logPath = "";
 let digestRoot = "";
 const apps: LoopbackApp[] = [];
+const authenticatedAgentSession = {
+  sessionId: "session_agent_runner",
+  csrfToken: "csrf_agent_runner",
+  principal: { agentId: "agent_engineer", roleAssignmentId: "role-assignment_engineer" },
+};
 const start = async (
   events: readonly unknown[] = staffingEvents,
   runner?: {
@@ -97,6 +102,7 @@ const start = async (
     waitUntilIdle: () => Promise<void>;
   },
   worktreeRoot: string = digestRoot,
+  agentSession?: typeof authenticatedAgentSession,
 ) => {
   await writeFile(logPath, events.map((e) => `${JSON.stringify(e)}\n`).join(""), "utf8");
   const app = createLoopbackApp({
@@ -111,6 +117,7 @@ const start = async (
     logPath,
     worktreeRoot,
     ...(runner ? { runner } : {}),
+    ...(agentSession ? { authenticatedAgentSession: agentSession } : {}),
     now: () => NOW,
   });
   apps.push(app);
@@ -140,6 +147,256 @@ afterEach(async () => {
 });
 
 describe("work API in log mode", () => {
+  it("binds agent speech-act identity from the authenticated session and appends to the shared log", async () => {
+    const app = await start(staffingEvents, undefined, digestRoot, authenticatedAgentSession);
+    await post(app, body({ commandId: "manager_create", targetEntityId: "work_slug" }));
+    await post(
+      app,
+      body({
+        commandId: "manager_assign",
+        expectedRevision: 3,
+        intent: "work.assign",
+        payload: { roleAssignmentId: "role-assignment_engineer" },
+      }),
+    );
+
+    const before = await readEventLog(logPath);
+    const response = await post(
+      app,
+      body({
+        commandId: "agent_question",
+        expectedRevision: before.revision,
+        actor: { actorType: "agent", actorId: "agent_forged" },
+        intent: "work.ask_question",
+        payload: { question: "Which compatibility behavior must remain?" },
+      }),
+      {
+        "x-cuckcode-session": authenticatedAgentSession.sessionId,
+        "x-cuckcode-csrf": authenticatedAgentSession.csrfToken,
+      },
+    );
+
+    expect(response.statusCode).toBe(202);
+    expect(response.json()).toMatchObject({
+      actorId: "agent_engineer",
+      acceptedRevision: before.revision,
+      resultingRevision: before.revision + 1,
+    });
+    const after = await readEventLog(logPath);
+    expect(after.revision).toBe(before.revision + 1);
+    expect(after.events.at(-1)).toMatchObject({
+      kind: "work.question_asked",
+      source: "adapter",
+      trust: "reported",
+      actor: { actorType: "agent", actorId: "agent_engineer" },
+      roleAssignmentId: "role-assignment_engineer",
+      payload: { question: "Which compatibility behavior must remain?", workItemId: "work_slug" },
+    });
+    expect(replayProject(after.events).work.workItems.work_slug?.speechActs).toMatchObject([
+      {
+        kind: "work.question_asked",
+        actor: { actorType: "agent", actorId: "agent_engineer" },
+        trust: "reported",
+      },
+    ]);
+  });
+
+  it("uses the same command endpoint for proposal, dispute and manager disposition events", async () => {
+    const app = await start(staffingEvents, undefined, digestRoot, authenticatedAgentSession);
+    await post(app, body({ commandId: "manager_create", targetEntityId: "work_slug" }));
+    await post(
+      app,
+      body({
+        commandId: "manager_assign",
+        expectedRevision: 3,
+        intent: "work.assign",
+        payload: { roleAssignmentId: "role-assignment_engineer" },
+      }),
+    );
+    const agentHeaders = {
+      "x-cuckcode-session": authenticatedAgentSession.sessionId,
+      "x-cuckcode-csrf": authenticatedAgentSession.csrfToken,
+    };
+    const current = await readEventLog(logPath);
+    const proposed = await post(
+      app,
+      body({
+        commandId: "agent_proposal",
+        expectedRevision: current.revision,
+        intent: "work.propose_rescope",
+        payload: {
+          proposalId: "rescope-proposal_api",
+          expectedContractRevision: 1,
+          contract: { ...contract, outcome: "Preserve compatibility" },
+        },
+      }),
+      agentHeaders,
+    );
+    expect(proposed.statusCode).toBe(202);
+
+    const proposalLog = await readEventLog(logPath);
+    const managerDecline = await post(
+      app,
+      body({
+        commandId: "manager_decline",
+        expectedRevision: proposalLog.revision,
+        actor: { actorType: "manager", actorId: "manager_nate" },
+        intent: "work.decline_rescope",
+        payload: { proposalId: "rescope-proposal_api", reason: "Keep the bounded scope." },
+      }),
+    );
+    expect(managerDecline.statusCode).toBe(202);
+    expect((await readEventLog(logPath)).events.at(-1)).toMatchObject({
+      kind: "work.rescope_declined",
+      actor: { actorType: "manager", actorId: "manager_nate" },
+      payload: { proposalId: "rescope-proposal_api" },
+    });
+
+    const afterDecline = await readEventLog(logPath);
+    const latestAt = Date.parse(
+      String((afterDecline.events.at(-1) as { occurredAt?: unknown })?.occurredAt),
+    );
+    const activeAt = new Date(latestAt + 1).toISOString();
+    const reviewAt = new Date(latestAt + 2).toISOString();
+    const reviewStateFixtures = [
+      {
+        schemaVersion: 1,
+        eventId: "event_api_fixture_active",
+        projectId: "project_alpha",
+        workItemId: "work_slug",
+        kind: "work.transitioned",
+        occurredAt: activeAt,
+        receivedAt: activeAt,
+        source: "system",
+        trust: "verified",
+        payload: { workItemId: "work_slug", fromRevision: 2, toState: "active" },
+      },
+      {
+        schemaVersion: 1,
+        eventId: "event_api_fixture_review",
+        projectId: "project_alpha",
+        workItemId: "work_slug",
+        kind: "work.transitioned",
+        occurredAt: reviewAt,
+        receivedAt: reviewAt,
+        source: "system",
+        trust: "verified",
+        payload: { workItemId: "work_slug", fromRevision: 3, toState: "review_requested" },
+      },
+    ];
+    await writeFile(
+      logPath,
+      [...afterDecline.events, ...reviewStateFixtures]
+        .map((event) => `${JSON.stringify(event)}\n`)
+        .join(""),
+      "utf8",
+    );
+    const afterRequest = await readEventLog(logPath);
+    const sentBack = await post(
+      app,
+      body({
+        commandId: "manager_send_back",
+        expectedRevision: afterRequest.revision,
+        intent: "work.record_ruling",
+        payload: { decision: "send_back", reason: "Add a compatibility example." },
+      }),
+    );
+    expect(sentBack.statusCode).toBe(202);
+    const beforeDispute = await readEventLog(logPath);
+    expect(beforeDispute.events.at(-1)).toMatchObject({
+      kind: "work.ruling_recorded",
+      payload: { decision: "send_back" },
+    });
+    const disputed = await post(
+      app,
+      body({
+        commandId: "agent_dispute",
+        expectedRevision: beforeDispute.revision,
+        actor: { actorType: "manager", actorId: "manager_forged" },
+        intent: "work.dispute_send_back",
+        payload: {
+          rulingId: "ruling_manager_send_back",
+          statement: "The example is already in the attachment.",
+        },
+      }),
+      agentHeaders,
+    );
+    expect(disputed.statusCode, JSON.stringify(disputed.json())).toBe(202);
+    const afterDispute = await readEventLog(logPath);
+    expect(afterDispute.revision).toBe(beforeDispute.revision + 1);
+    expect(afterDispute.events.at(-1)).toMatchObject({
+      kind: "work.send_back_disputed",
+      actor: { actorType: "agent", actorId: "agent_engineer" },
+      source: "adapter",
+      trust: "reported",
+    });
+  });
+
+  it("rejects forged agent identity, stale revisions and damaged logs without append", async () => {
+    const app = await start(staffingEvents, undefined, digestRoot, authenticatedAgentSession);
+    await post(app, body({ commandId: "manager_create", targetEntityId: "work_slug" }));
+    await post(
+      app,
+      body({
+        commandId: "manager_assign",
+        expectedRevision: 3,
+        intent: "work.assign",
+        payload: { roleAssignmentId: "role-assignment_engineer" },
+      }),
+    );
+    const current = await readEventLog(logPath);
+    const forgedAssignment = await post(
+      app,
+      body({
+        commandId: "agent_forged_assignment",
+        expectedRevision: current.revision,
+        intent: "work.ask_question",
+        payload: { question: "Question", roleAssignmentId: "role-assignment_forged" },
+      }),
+      {
+        "x-cuckcode-session": authenticatedAgentSession.sessionId,
+        "x-cuckcode-csrf": authenticatedAgentSession.csrfToken,
+      },
+    );
+    expect(forgedAssignment.statusCode).toBe(422);
+    expect((await readEventLog(logPath)).revision).toBe(current.revision);
+
+    const stale = await post(
+      app,
+      body({
+        commandId: "agent_stale",
+        expectedRevision: current.revision - 1,
+        intent: "work.ask_question",
+        payload: { question: "Question" },
+      }),
+      {
+        "x-cuckcode-session": authenticatedAgentSession.sessionId,
+        "x-cuckcode-csrf": authenticatedAgentSession.csrfToken,
+      },
+    );
+    expect(stale.statusCode).toBe(409);
+    expect((await readEventLog(logPath)).revision).toBe(current.revision);
+
+    await writeFile(logPath, `${JSON.stringify(staffingEvents[0])}\nnot-json\n`, "utf8");
+    const before = await readFile(logPath, "utf8");
+    const damaged = await post(
+      app,
+      body({
+        commandId: "agent_damaged_log",
+        expectedRevision: 1,
+        intent: "work.ask_question",
+        payload: { question: "Question" },
+      }),
+      {
+        "x-cuckcode-session": authenticatedAgentSession.sessionId,
+        "x-cuckcode-csrf": authenticatedAgentSession.csrfToken,
+      },
+    );
+    expect(damaged.statusCode).toBe(503);
+    expect(damaged.json()).toMatchObject({ code: "LOG_DAMAGED" });
+    expect(await readFile(logPath, "utf8")).toBe(before);
+  });
+
   it("refuses invalid evidence before requiring a measurable worktree", async () => {
     const app = await start(staffingEvents, undefined, dir);
     await post(app, body({ commandId: "cmd_create" }));

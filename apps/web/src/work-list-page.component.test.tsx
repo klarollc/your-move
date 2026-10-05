@@ -319,6 +319,122 @@ describe("Surface B log-backed page", () => {
     expect(screen.getByRole("button", { name: "Run Implement feature" })).toBeEnabled();
   });
 
+  it("sends proposal approval through the shared command path and changes only after log readback", async () => {
+    const replacement = {
+      ...(assignedEvents[2]!.payload.contract as Record<string, unknown>),
+      outcome: "Preserve the existing parser contract",
+      maxTurns: 5,
+    };
+    const proposal = {
+      schemaVersion: 1,
+      eventId: "event_agent_proposal",
+      projectId: "project_surface_b",
+      workItemId: "work_surface_b",
+      kind: "work.rescope_proposed",
+      occurredAt: at(6),
+      receivedAt: at(6),
+      source: "adapter",
+      trust: "reported",
+      actor: { actorType: "agent", actorId: "agent_engineer" },
+      roleAssignmentId: "role-assignment_engineer",
+      payload: {
+        workItemId: "work_surface_b",
+        proposalId: "rescope-proposal_surface_b",
+        expectedContractRevision: 1,
+        contract: replacement,
+      },
+    };
+    let events: readonly unknown[] = [...assignedEvents, proposal];
+    let commandCount = 0;
+    const commandBodies: Record<string, unknown>[] = [];
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url === "/api/session") {
+        return reply({
+          sessionId: "session_surface_b",
+          csrfToken: "csrf_surface_b",
+          projectId: "project_surface_b",
+          runner: { available: true, state: "idle" },
+        });
+      }
+      if (url === "/api/workflow/status") return reply({ available: true, state: "idle" });
+      if (url === "/api/log")
+        return reply({ revision: events.length, events, truncated: false, problems: [] });
+      if (url === "/api/commands" && init?.method === "POST") {
+        const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+        commandBodies.push(body);
+        commandCount += 1;
+        const eventId = `event_${String(body.commandId)}_1`;
+        if (commandCount === 2) {
+          const payload = body.payload as Record<string, unknown>;
+          events = [
+            ...events,
+            {
+              schemaVersion: 1,
+              eventId,
+              projectId: "project_surface_b",
+              workItemId: "work_surface_b",
+              kind: "work.rescoped",
+              occurredAt: at(7),
+              receivedAt: at(7),
+              source: "manager",
+              trust: "verified",
+              actor: { actorType: "manager", actorId: "manager_surface_b" },
+              payload: {
+                workItemId: "work_surface_b",
+                expectedContractRevision: payload.expectedContractRevision,
+                contractRevision: 2,
+                contract: payload.contract,
+                proposalId: payload.proposalId,
+              },
+            },
+          ];
+        }
+        return reply(
+          {
+            resultingRevision: assignedEvents.length + 2,
+            eventIds: [eventId],
+          },
+          202,
+        );
+      }
+      throw new Error(`unexpected request ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+    render(<WorkListPage />);
+    await user.click(await screen.findByRole("button", { name: "Show all work" }));
+    await user.click(screen.getByRole("button", { name: "Details for Implement feature" }));
+    await user.click(screen.getByRole("button", { name: "Approve proposed agreement" }));
+
+    expect(
+      await screen.findByText(/command receipt is not present in the event-log readback/u),
+    ).toBeVisible();
+    const agreement = screen.getByRole("region", { name: "Work detail" });
+    expect(agreement).toHaveTextContent("The output is inspectable");
+    expect(agreement).toHaveTextContent("open");
+    expect(agreement).toHaveTextContent("Not recorded at r7");
+
+    await user.click(screen.getByRole("button", { name: "Approve proposed agreement" }));
+    await waitFor(() =>
+      expect(agreement).toHaveTextContent("Preserve the existing parser contract"),
+    );
+    expect(screen.getByRole("region", { name: "Contributions" })).toHaveTextContent("approved");
+    expect(commandBodies).toHaveLength(2);
+    expect(commandBodies[0]).toMatchObject({
+      actor: { actorType: "manager", actorId: "manager_surface_b" },
+      intent: "work.rescope",
+      targetEntityId: "work_surface_b",
+      payload: {
+        expectedContractRevision: 1,
+        proposalId: "rescope-proposal_surface_b",
+        contract: replacement,
+      },
+    });
+    expect(agreement).not.toHaveTextContent(/notified|sent\b/i);
+  });
+
   it("keeps the review projection unchanged until the ruling receipt appears in log readback", async () => {
     const events = reviewEvents("a".repeat(64));
     let resolveCommand: ((response: Response) => void) | undefined;

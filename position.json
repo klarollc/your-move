@@ -412,9 +412,14 @@
           "id": "14",
           "state": "in_progress",
           "note": "Behavior/evidence matrix and full verify/provenance results are recorded. Technical browser checks passed at both approved widths; owner visual review and the unavailable contract-draft service remain outstanding."
+        },
+        {
+          "id": "15",
+          "state": "in_progress",
+          "note": "Owner approved the agent-side speech-acts proposal as written on 2026-10-05. Implementing its ordered §7 gate; W12 and §20 remain gated."
         }
       ],
-      "note": "Owner approved the workflow-core proposal and seven additive Surface B details on 2026-10-04. Proposal §7 stages 1–6, full verify and provenance are green; authorized commit/push bookkeeping remains. The agent-side speech-acts proposal is drafting-only until a separate owner ruling; contract-draft service implementation, W12 and §20 remain gated."
+      "note": "Owner approved the workflow-core proposal and seven additive Surface B details on 2026-10-04; its §7 gate, full verify and provenance are green. Owner approved the agent-side speech-acts proposal as written on 2026-10-05; Task 15 follows its ordered §7 gate. Contract-draft service implementation, W12 and §20 remain gated."
     },
     {
       "id": "df-047",
@@ -664,6 +669,12 @@
       "ruled": "2026-10-04",
       "ruling": "approved as written; implement in RED-GREEN order under §7",
       "record": "docs/evidence/workflow-proof/decision-record-2026-10-04-your-move-workflow-core-approval.md"
+    },
+    {
+      "id": "your-move-agent-speech-acts",
+      "ruled": "2026-10-05",
+      "ruling": "approved as written; implement in the ordered RED-GREEN gate under §7",
+      "record": "docs/evidence/workflow-proof/decision-record-2026-10-05-your-move-agent-speech-acts-approval.md"
     }
   ]
 }

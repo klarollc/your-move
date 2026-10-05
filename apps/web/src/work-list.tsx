@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { WorkContract } from "@cuckcode/contracts";
+import type { WorkSpeechActTruth } from "@cuckcode/domain";
 
 import "./work-list.css";
 
@@ -105,6 +106,7 @@ export type WorkListItem = Readonly<{
   contractAcceptsEvidence: boolean;
   evidenceObligations: readonly Readonly<{ kind: string; description: string }>[];
   evidence: readonly WorkListEvidence[];
+  speechActs: readonly WorkSpeechActTruth[];
   postures: readonly Readonly<{
     runId: string;
     requested: string;
@@ -142,6 +144,7 @@ export type WorkListLogEntry = Readonly<{
   occurredAt: string;
   workItemId: string | null;
   revision: number;
+  actor?: Readonly<{ actorType: "manager" | "agent"; actorId: string }> | null;
 }>;
 
 export type WorkListJourney = Readonly<{
@@ -190,6 +193,12 @@ export type SurfaceBCommandApi = Readonly<{
     workItemId: string,
     expectedContractRevision: number,
     contract: WorkContract,
+    proposalId?: string,
+  ) => void | Promise<void>;
+  onDeclineRescope?: (
+    workItemId: string,
+    proposalId: string,
+    reason: string,
   ) => void | Promise<void>;
   onCloseIncomplete?: (workItemId: string, reason: string) => void | Promise<void>;
   onNudge?: (workItemId: string, roleAssignmentId: string, note: string) => void | Promise<void>;
@@ -857,6 +866,10 @@ function WorkDetail({
       "work.closed_incomplete",
       "work.nudged",
       "work.nudge_suppressed",
+      "work.question_asked",
+      "work.rescope_proposed",
+      "work.rescope_declined",
+      "work.send_back_disputed",
     ].includes(entry.kind),
   );
 
@@ -943,6 +956,10 @@ function WorkDetail({
           </div>
         ) : null}
       </section>
+
+      {item.speechActs.length > 0 ? (
+        <SpeechActTrail item={item} commands={commands} disabled={disabled} onAction={onAction} />
+      ) : null}
 
       {item.resurface ? (
         <p className="workflow-resurface-status" role="status">
@@ -1069,7 +1086,9 @@ function WorkDetail({
                 <span className="workflow-revision">r{entry.revision}</span>
                 <span>{entry.summary}</span>
                 <small>
-                  {entry.source} · {entry.trust} · {entry.occurredAt}
+                  {entry.actor ? `${entry.actor.actorType} ${entry.actor.actorId} · ` : ""}
+                  {entry.source} · {entry.trust} · {revisionLabel(entry.revision)} ·{" "}
+                  {entry.occurredAt}
                 </small>
               </li>
             ))}
@@ -1083,6 +1102,144 @@ function WorkDetail({
 }
 
 type ActionRunner = (label: string, action: () => void | Promise<void>) => Promise<boolean>;
+
+function SpeechActTrail({
+  item,
+  commands,
+  disabled,
+  onAction,
+}: Readonly<{
+  item: WorkListItem;
+  commands: SurfaceBCommandApi;
+  disabled: boolean;
+  onAction: ActionRunner;
+}>) {
+  return (
+    <section className="workflow-detail-section workflow-speech-acts" aria-label="Contributions">
+      <h2>Questions and proposed changes</h2>
+      <ol>
+        {item.speechActs.map((act) => (
+          <li key={act.eventId}>
+            {act.kind === "work.question_asked" ? (
+              <p>
+                <strong>Question:</strong> {act.question}
+              </p>
+            ) : null}
+            {act.kind === "work.rescope_proposed" ? (
+              <>
+                <p>
+                  <strong>Proposed outcome:</strong> {act.contract.outcome} · agreement r
+                  {act.expectedContractRevision} · {act.status}
+                </p>
+                <p>
+                  <strong>Proposed done means:</strong> {act.contract.definitionOfDone}
+                </p>
+                <p>
+                  <strong>Proposed acceptance:</strong>{" "}
+                  {act.contract.acceptanceCriteria.join(" · ")}
+                </p>
+                {act.status === "open" ? (
+                  <RescopeProposalActions
+                    item={item}
+                    proposalId={act.proposalId}
+                    expectedContractRevision={act.expectedContractRevision}
+                    contract={act.contract}
+                    commands={commands}
+                    disabled={disabled}
+                    onAction={onAction}
+                  />
+                ) : null}
+              </>
+            ) : null}
+            {act.kind === "work.rescope_declined" ? (
+              <p>
+                <strong>Manager declined the proposed change:</strong> {act.reason}
+              </p>
+            ) : null}
+            {act.kind === "work.send_back_disputed" ? (
+              <p>
+                <strong>Send-back disputed:</strong> {act.statement}
+              </p>
+            ) : null}
+            <small>
+              {act.actor.actorId} · {act.source} · {act.trust} · r{act.sourceRevision} ·{" "}
+              {act.occurredAt}
+              {act.roleAssignmentId ? ` · ${act.roleAssignmentId}` : ""}
+            </small>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+function RescopeProposalActions({
+  item,
+  proposalId,
+  expectedContractRevision,
+  contract,
+  commands,
+  disabled,
+  onAction,
+}: Readonly<{
+  item: WorkListItem;
+  proposalId: string;
+  expectedContractRevision: number;
+  contract: WorkContract;
+  commands: SurfaceBCommandApi;
+  disabled: boolean;
+  onAction: ActionRunner;
+}>) {
+  const [reason, setReason] = useState("");
+  const stale = item.contractRevision !== expectedContractRevision;
+  const cannotApprove = stale || item.state === "active";
+  return (
+    <div className="workflow-proposal-actions">
+      {stale ? (
+        <p role="status">
+          This proposal is based on agreement r{expectedContractRevision}; current agreement r
+          {item.contractRevision ?? "unknown"}. It cannot be approved as written.
+        </p>
+      ) : item.state === "active" ? (
+        <p role="status">Approval is unavailable while the runner is active.</p>
+      ) : null}
+      <button
+        type="button"
+        disabled={disabled || cannotApprove || !commands.onRescope}
+        onClick={() =>
+          commands.onRescope &&
+          void onAction(`approve-rescope:${proposalId}`, () =>
+            commands.onRescope!(item.workItemId, expectedContractRevision, contract, proposalId),
+          )
+        }
+      >
+        Approve proposed agreement
+      </button>
+      <label>
+        Reason for declining
+        <textarea
+          value={reason}
+          onChange={(event) => setReason(event.target.value)}
+          maxLength={2000}
+          required
+          disabled={disabled}
+        />
+      </label>
+      <button
+        type="button"
+        disabled={disabled || !commands.onDeclineRescope || reason.trim().length === 0}
+        onClick={() =>
+          commands.onDeclineRescope &&
+          void onAction(`decline-rescope:${proposalId}`, () =>
+            commands.onDeclineRescope!(item.workItemId, proposalId, reason.trim()),
+          )
+        }
+      >
+        Decline proposed agreement
+      </button>
+    </div>
+  );
+}
 
 function RulingActions({
   item,
@@ -2652,6 +2809,7 @@ function LogView({
               <small>
                 {entry.kind} · {entry.source} · {entry.trust} ·{" "}
                 {entry.workItemId ?? "project event"}
+                {entry.actor ? ` · ${entry.actor.actorType} ${entry.actor.actorId}` : ""}
               </small>
               <time dateTime={entry.occurredAt}>{entry.occurredAt}</time>
             </li>
