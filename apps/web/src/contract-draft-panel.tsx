@@ -6,6 +6,8 @@ import {
   type ContractDraftProvenance,
 } from "@cuckcode/contracts";
 
+type AgentDraftProvenance = Extract<ContractDraftProvenance, { draftSource: "agent" }>;
+
 export type ContractDraftServiceResult = Readonly<{
   candidate: BoundedWorkContract;
   provenance: ContractDraftProvenance;
@@ -15,23 +17,30 @@ export type ContractDraftServiceResult = Readonly<{
   testOnly: boolean;
 }>;
 
+type ReviewedAgentDraft = Omit<ContractDraftServiceResult, "provenance"> & {
+  provenance: AgentDraftProvenance;
+};
+
 export function ContractDraftPanel(
   props: Readonly<{
     available: boolean;
     disabled: boolean;
     revision: number;
     onDraft?: (description: string) => Promise<ContractDraftServiceResult>;
-    onCreate?: (contract: BoundedWorkContract, receiptHandle: string) => Promise<void>;
+    onCreate?: (contract: BoundedWorkContract, receiptHandle?: string) => Promise<void>;
   }>,
 ) {
   const [description, setDescription] = useState("");
-  const [draft, setDraft] = useState<ContractDraftServiceResult | null>(null);
+  const [draft, setDraft] = useState<ReviewedAgentDraft | null>(null);
   const [draftRevision, setDraftRevision] = useState<number | null>(null);
   const [finalJson, setFinalJson] = useState("");
+  const [managerAuthored, setManagerAuthored] = useState(false);
+  const [managerContractJson, setManagerContractJson] = useState("");
   const [pending, setPending] = useState<"draft" | "create" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const finalParsed = parseFinalContract(finalJson);
+  const managerContract = parseFinalContract(managerContractJson);
   const changedFields =
     draft && finalParsed
       ? Object.keys(draft.candidate).filter(
@@ -61,11 +70,21 @@ export function ContractDraftPanel(
         candidate: result.candidate,
         provenance: result.provenance,
       });
-      if (!parsed.success || result.receiptHandle.length === 0) {
+      if (
+        !parsed.success ||
+        !("candidate" in parsed.data) ||
+        !("draftSource" in parsed.data.provenance) ||
+        parsed.data.provenance.draftSource !== "agent" ||
+        result.receiptHandle.length === 0
+      ) {
         setError("The server returned an invalid draft receipt. No work was created.");
         return;
       }
-      setDraft({ ...result, candidate: parsed.data.candidate, provenance: parsed.data.provenance });
+      setDraft({
+        ...result,
+        candidate: parsed.data.candidate,
+        provenance: parsed.data.provenance as AgentDraftProvenance,
+      });
       setDraftRevision(props.revision);
       setFinalJson(JSON.stringify(parsed.data.candidate, null, 2));
     } catch (cause) {
@@ -97,6 +116,23 @@ export function ContractDraftPanel(
     }
   };
 
+  const createManagerAuthored = async () => {
+    if (!managerContract || disabled || !props.onCreate) return;
+    setError(null);
+    setPending("create");
+    try {
+      await props.onCreate(managerContract);
+      setManagerContractJson("");
+      setManagerAuthored(false);
+    } catch (cause) {
+      setError(
+        `${cause instanceof Error ? cause.message : "The create command was refused."} No work was confirmed.`,
+      );
+    } finally {
+      setPending(null);
+    }
+  };
+
   return (
     <section className="workflow-create-panel" aria-labelledby="new-work-title">
       <div className={`workflow-unavailable-mark${props.available ? " is-ready" : ""}`}>
@@ -110,35 +146,91 @@ export function ContractDraftPanel(
       {!props.available ? (
         <p className="workflow-draft-disabled" role="note">
           The pinned live draft session has not received separate owner authorization. This screen
-          will not use a template or simulated draft, and it will not save work.
+          will not use a template or simulated draft. You can write a structured contract yourself
+          and record it as manager-authored.
         </p>
       ) : null}
-      <form onSubmit={(event) => void requestDraft(event)}>
-        <label htmlFor="work-description">What outcome do you need?</label>
-        <textarea
-          id="work-description"
-          rows={4}
-          maxLength={4_000}
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-          disabled={!props.available || disabled}
-        />
-        <p className="workflow-help">
-          A plain-language request starts one bounded pinned session. It does not create a work
-          item.
-        </p>
-        <div className="workflow-dialog-actions">
+      {!managerAuthored ? (
+        <>
+          <form onSubmit={(event) => void requestDraft(event)}>
+            <label htmlFor="work-description">What outcome do you need?</label>
+            <textarea
+              id="work-description"
+              rows={4}
+              maxLength={4_000}
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              disabled={!props.available || disabled}
+            />
+            <p className="workflow-help">
+              A plain-language request starts one bounded pinned session. It does not create a work
+              item.
+            </p>
+            <div className="workflow-dialog-actions">
+              <button
+                className="workflow-primary"
+                type="submit"
+                disabled={
+                  !props.available || disabled || description.trim().length === 0 || !props.onDraft
+                }
+              >
+                {pending === "draft" ? "Waiting for the pinned session…" : "Request agent draft"}
+              </button>
+            </div>
+          </form>
           <button
-            className="workflow-primary"
-            type="submit"
-            disabled={
-              !props.available || disabled || description.trim().length === 0 || !props.onDraft
-            }
+            className="workflow-secondary"
+            type="button"
+            onClick={() => {
+              setError(null);
+              setManagerAuthored(true);
+            }}
+            disabled={disabled || !props.onCreate}
           >
-            {pending === "draft" ? "Waiting for the pinned session…" : "Request agent draft"}
+            You're writing the contract yourself; it will be recorded as manager-authored.
           </button>
-        </div>
-      </form>
+        </>
+      ) : (
+        <section aria-label="Manager-authored contract">
+          <p className="workflow-draft-status">Draft source: manager</p>
+          <h2>Write your contract</h2>
+          <p className="workflow-help">
+            Enter the complete structured contract. These terms are your work and will be recorded
+            as manager-authored.
+          </p>
+          <label htmlFor="manager-contract-json">Write the structured contract JSON</label>
+          <textarea
+            id="manager-contract-json"
+            rows={16}
+            value={managerContractJson}
+            onChange={(event) => setManagerContractJson(event.target.value)}
+            disabled={disabled}
+          />
+          {managerContractJson.length > 0 && !managerContract ? (
+            <p role="alert">
+              The contract JSON is invalid or does not satisfy the bounded contract.
+            </p>
+          ) : null}
+          <div className="workflow-dialog-actions">
+            <button
+              className="workflow-secondary"
+              type="button"
+              onClick={() => setManagerAuthored(false)}
+              disabled={disabled}
+            >
+              Back to agent draft
+            </button>
+            <button
+              className="workflow-primary"
+              type="button"
+              onClick={() => void createManagerAuthored()}
+              disabled={disabled || !managerContract || !props.onCreate}
+            >
+              {pending === "create" ? "Waiting for log readback…" : "Create manager-authored work"}
+            </button>
+          </div>
+        </section>
+      )}
       {error ? (
         <p className="workflow-draft-error" role="alert">
           {error}

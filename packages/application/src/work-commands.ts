@@ -207,14 +207,21 @@ export function executeWorkCommand(
   }
   let createDraft: ContractDraftRecord | undefined;
   if (command.intent === "create") {
-    const receiptResult = validateContractDraftReceipt({
-      command,
-      now,
-      currentRevision,
-      trustedContext,
-    });
-    if (receiptResult.ok === false) return receiptResult.result;
-    createDraft = receiptResult.draft;
+    if (trustedContext?.contractDraftReceipt !== undefined) {
+      const receiptResult = validateContractDraftReceipt({
+        command,
+        now,
+        currentRevision,
+        trustedContext,
+      });
+      if (receiptResult.ok === false) return receiptResult.result;
+      createDraft = receiptResult.draft;
+    } else if (
+      typeof trustedContext?.authenticatedManagerSessionId !== "string" ||
+      trustedContext.authenticatedManagerSessionId.trim().length === 0
+    ) {
+      return refuse("NOT_AUTHORIZED", "an authenticated manager session is required for creation");
+    }
   }
   const commandPrefix = `event_${command.commandId}_`;
   if (normalizeCommandEventIds(log).some((eventId) => eventId.startsWith(commandPrefix))) {
@@ -345,9 +352,6 @@ function planCreate(
   exists: boolean,
   contractDraft: ContractDraftRecord | undefined,
 ): Candidate[] | WorkCommandResult {
-  if (!contractDraft) {
-    return refuse("CONTRACT_DRAFT_REQUIRED", "a server-verified agent draft receipt is required");
-  }
   if (command.contract === undefined) {
     return refuse("CONTRACT_INVALID", "contract is required");
   }
@@ -361,6 +365,9 @@ function planCreate(
     );
   }
   if (exists) return refuse("WORK_ITEM_EXISTS", `${command.workItemId} already exists`);
+  const sourceRecord: ContractDraftRecord = contractDraft ?? {
+    provenance: { draftSource: "manager" },
+  };
   return [
     {
       kind: "work.created",
@@ -370,7 +377,7 @@ function planCreate(
         outcome: parsed.data.outcome,
         requiredEvidenceKinds: parsed.data.evidenceObligations.map((entry) => entry.kind),
         contract: parsed.data,
-        contractDraft,
+        contractDraft: sourceRecord,
       },
       actor: command.actor,
     },
@@ -440,6 +447,14 @@ function validateContractDraftReceipt(input: {
   const parsedDraft = contractDraftRecordSchema.safeParse(receipt.draft);
   if (!parsedDraft.success) {
     return fail("CONTRACT_DRAFT_RECEIPT_INVALID", "the draft record is malformed");
+  }
+  if (
+    !("draftSource" in parsedDraft.data.provenance) ||
+    parsedDraft.data.provenance.draftSource !== "agent" ||
+    !("candidate" in parsedDraft.data) ||
+    !("candidateSha256" in parsedDraft.data.provenance)
+  ) {
+    return fail("CONTRACT_DRAFT_RECEIPT_SOURCE", "a receipt must contain an explicit agent draft");
   }
   let candidateDigest: string;
   try {

@@ -347,11 +347,20 @@ export function createLoopbackApp(options: LoopbackAppOptions): LoopbackApp {
         (mapped.value.intent === "record_ruling" && mapped.value.ruling?.decision === "accept");
       const commandNow = (options.now ?? (() => new Date().toISOString()))();
       const draftReceiptHandle = isRecord(body) ? body.draftReceiptHandle : undefined;
-      if (mapped.value.intent === "create" && !options.contractDraftService) {
-        return reply.code(503).send({ code: "CONTRACT_DRAFT_UNAVAILABLE" });
+      const suppliedDraftReceipt = isRecord(body) && "draftReceiptHandle" in body;
+      if (
+        mapped.value.intent === "create" &&
+        suppliedDraftReceipt &&
+        typeof draftReceiptHandle !== "string"
+      ) {
+        return reply.code(422).send({ code: "CONTRACT_DRAFT_RECEIPT_INVALID" });
       }
-      if (mapped.value.intent === "create" && typeof draftReceiptHandle !== "string") {
-        return reply.code(422).send({ code: "CONTRACT_DRAFT_REQUIRED" });
+      if (
+        mapped.value.intent === "create" &&
+        typeof draftReceiptHandle === "string" &&
+        !options.contractDraftService
+      ) {
+        return reply.code(422).send({ code: "CONTRACT_DRAFT_RECEIPT_INVALID" });
       }
       const draftReceipt =
         mapped.value.intent === "create" &&
@@ -363,7 +372,7 @@ export function createLoopbackApp(options: LoopbackAppOptions): LoopbackApp {
               expectedRevision: log.revision,
             })
           : undefined;
-      if (mapped.value.intent === "create" && !draftReceipt) {
+      if (mapped.value.intent === "create" && suppliedDraftReceipt && !draftReceipt) {
         return reply.code(422).send({ code: "CONTRACT_DRAFT_RECEIPT_INVALID" });
       }
       const trustedContext = {

@@ -329,10 +329,8 @@ export function WorkListPage() {
   );
 
   const onCreateWork = useCallback(
-    async (contract: WorkContract, receiptHandle: string) => {
-      if (!session || session.contractDraftingAvailable !== true) {
-        throw new Error("The contract-drafting session is unavailable. No work was created.");
-      }
+    async (contract: WorkContract, receiptHandle?: string) => {
+      if (!session) throw new Error("The local workflow server is not connected.");
       await sendCommand("work.create", newId("work"), { contract }, receiptHandle);
     },
     [sendCommand, session],

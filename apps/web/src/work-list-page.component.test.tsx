@@ -204,8 +204,27 @@ describe("Surface B log-backed page", () => {
     );
   });
 
-  it("keeps work creation unavailable until the pinned draft source receives owner authorization", async () => {
-    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+  it("creates manager-authored work through the same command when agent drafting is unavailable", async () => {
+    const contract = {
+      outcome: "Document parser behavior",
+      exclusions: [],
+      acceptanceCriteria: ["Examples match parser behavior"],
+      dependencies: [],
+      evidenceObligations: [{ kind: "review", description: "Inspect the saved document" }],
+      permissionCeiling: {
+        sandboxMode: "workspace-write",
+        approvalPolicy: "never",
+        networkAccess: false,
+        windowsSandbox: "unelevated",
+      },
+      stopConditions: ["Stop if examples are ambiguous"],
+      definitionOfDone: "The manager reviews the saved document",
+      contextRefs: [],
+      maxTurns: 4,
+    };
+    let events: unknown[] = [];
+    let commandBody: Record<string, unknown> | undefined;
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
       if (url === "/api/session") {
         return reply({
@@ -220,7 +239,34 @@ describe("Surface B log-backed page", () => {
         return reply({ available: false, state: "unavailable" });
       }
       if (url === "/api/log")
-        return reply({ revision: 0, events: [], truncated: false, problems: [] });
+        return reply({ revision: events.length, events, truncated: false, problems: [] });
+      if (url === "/api/commands" && init?.method === "POST") {
+        commandBody = JSON.parse(String(init.body)) as Record<string, unknown>;
+        const payload = commandBody.payload as { contract: typeof contract };
+        events = [
+          {
+            schemaVersion: 1,
+            eventId: "event_manager_direct_create",
+            projectId: "project_surface_b",
+            kind: "work.created",
+            occurredAt: at(9),
+            receivedAt: at(9),
+            source: "manager",
+            trust: "verified",
+            actor: { actorType: "manager", actorId: "manager_local" },
+            workItemId: commandBody.targetEntityId,
+            payload: {
+              payloadVersion: 4,
+              workItemId: commandBody.targetEntityId,
+              outcome: contract.outcome,
+              requiredEvidenceKinds: ["review"],
+              contract: payload.contract,
+              contractDraft: { provenance: { draftSource: "manager" } },
+            },
+          },
+        ];
+        return reply({ resultingRevision: 1, eventIds: ["event_manager_direct_create"] }, 202);
+      }
       throw new Error(`unexpected request ${url}`);
     });
     vi.stubGlobal("fetch", fetchMock);
@@ -232,7 +278,24 @@ describe("Surface B log-backed page", () => {
       "has not received separate owner authorization",
     );
     expect(screen.getByRole("button", { name: "Request agent draft" })).toBeDisabled();
-    expect(fetchMock.mock.calls.some(([url]) => String(url) === "/api/commands")).toBe(false);
+    await user.click(
+      screen.getByRole("button", {
+        name: "You're writing the contract yourself; it will be recorded as manager-authored.",
+      }),
+    );
+    fireEvent.change(screen.getByLabelText("Write the structured contract JSON"), {
+      target: { value: JSON.stringify(contract) },
+    });
+    await user.click(screen.getByRole("button", { name: "Create manager-authored work" }));
+
+    await waitFor(() => expect(events).toHaveLength(1));
+    expect(commandBody).toMatchObject({
+      intent: "work.create",
+      actor: { actorType: "manager", actorId: "manager_surface_b" },
+      payload: { contract },
+    });
+    expect(commandBody).not.toHaveProperty("draftReceiptHandle");
+    expect(fetchMock.mock.calls.filter(([url]) => String(url) === "/api/commands")).toHaveLength(1);
   });
 
   it("does not create optimistically when an otherwise genuine draft receipt is expired", async () => {
@@ -270,6 +333,7 @@ describe("Surface B log-backed page", () => {
         return reply({
           candidate,
           provenance: {
+            draftSource: "agent",
             draftId: "draft_surface_b_expired_receipt",
             procedureId: "contract-drafter-v1",
             procedureVersion: "1.0.0",

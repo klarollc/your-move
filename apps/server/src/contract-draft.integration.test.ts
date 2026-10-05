@@ -146,6 +146,7 @@ describe("contract draft loopback boundary", () => {
       testOnly: true,
       source: "test-fake",
       provenance: {
+        draftSource: "agent",
         providerSessionId: "provider_session_test",
         providerTurnId: "provider_turn_test",
       },
@@ -338,6 +339,75 @@ describe("contract draft loopback boundary", () => {
     expect(unknown.statusCode).toBe(422);
     expect(unknown.json()).toMatchObject({ code: "CONTRACT_DRAFT_RECEIPT_INVALID" });
     expect((await readEventLog(logPath)).revision).toBe(3);
+  });
+
+  it("creates manager-authored work through the same command and log when drafting is unavailable", async () => {
+    const application = await start(false);
+    const before = await readEventLog(logPath);
+    const command = {
+      schemaVersion: 1,
+      commandId: "create_direct_manager",
+      projectId: "project_alpha",
+      expectedRevision: before.revision,
+      actor: { actorType: "manager", actorId: "browser_forged_manager" },
+      intent: "work.create",
+      targetEntityId: "work_manager_direct",
+      payload: { contract: candidate },
+    };
+    const unauthorized = await application.inject({
+      method: "POST",
+      url: "/api/commands",
+      headers: { ...headers, "x-cuckcode-session": "forged" },
+      payload: command,
+    });
+    expect(unauthorized.statusCode).toBe(403);
+
+    const response = await application.inject({
+      method: "POST",
+      url: "/api/commands",
+      headers,
+      payload: command,
+    });
+    expect(response.statusCode).toBe(202);
+    expect(response.json()).toMatchObject({ readbackRevision: before.revision + 1 });
+    const log = await readEventLog(logPath);
+    expect(log.revision).toBe(before.revision + 1);
+    const lastEvent = log.events.at(-1) as unknown as { payload: Record<string, unknown> };
+    expect(lastEvent).toMatchObject({
+      kind: "work.created",
+      actor: { actorType: "manager", actorId: "manager_nate" },
+      payload: {
+        payloadVersion: 4,
+        contractDraft: { provenance: { draftSource: "manager" } },
+      },
+    });
+    expect(lastEvent.payload).not.toHaveProperty("contractDraft.candidate");
+    expect(lastEvent.payload).not.toHaveProperty("contractDraft.provenance.providerTurnId");
+  });
+
+  it("refuses a supplied receipt instead of falling back to manager-authored creation", async () => {
+    const application = await start(false);
+    const before = await readEventLog(logPath);
+    const response = await application.inject({
+      method: "POST",
+      url: "/api/commands",
+      headers,
+      payload: {
+        schemaVersion: 1,
+        commandId: "create_forged_receipt_direct",
+        projectId: "project_alpha",
+        expectedRevision: before.revision,
+        actor: { actorType: "manager", actorId: "manager_nate" },
+        intent: "work.create",
+        targetEntityId: "work_forged_receipt_direct",
+        payload: { contract: candidate },
+        draftReceiptHandle: "draft-receipt_forged",
+      },
+    });
+
+    expect(response.statusCode).toBe(422);
+    expect(response.json()).toMatchObject({ code: "CONTRACT_DRAFT_RECEIPT_INVALID" });
+    expect((await readEventLog(logPath)).revision).toBe(before.revision);
   });
 
   it("keeps create unavailable when no separately authorized draft service is installed", async () => {

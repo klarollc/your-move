@@ -76,6 +76,7 @@ describe("contract draft session service", () => {
     if (!result.ok) return;
     expect(result.candidate).toEqual(candidate);
     expect(result.provenance).toMatchObject({
+      draftSource: "agent",
       draftId: "draft_test_1",
       procedureId: "contract-drafter-v1",
       runtime: "@openai/codex@0.157.1",

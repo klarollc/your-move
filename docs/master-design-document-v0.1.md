@@ -81,6 +81,19 @@ a genuine production draft remains separately gated. If the pinned model is unav
 return for a ruling rather than substituting. W12, §20, promotion, deployment, and notification
 delivery are not included.
 
+### Owner amendment — 2026-10-05: manager-authored direct creation
+
+The owner approved §11 of the contract-draft service proposal as written. Surface B keeps agent
+drafting as the default and offers a separate, clearly labeled choice for the authenticated manager
+to author a validated structured contract directly, including when drafting is unavailable. Both
+routes use the same `work.create` command, `executeWorkCommand`, one v4 `work.created` event, and
+`replayProject`. The strict v4 provenance union distinguishes explicit agent drafts from
+manager-authored contracts; the latter carry no candidate or provider-session fields. The projection
+reads source from the replayed event and labels it “Draft source: manager.” Historical v1–v3 and the
+complete prior v4 agent shape retain their approved replay behavior. The ruling is recorded in
+`docs/proposals/2026-10-05-your-move-contract-draft-direct-create-ruling.md`; implementation follows
+Task 17's ordered RED–GREEN gate. This does not authorize a live provider run.
+
 ### Outcome
 
 Create a multi-agent orchestration product in which a non-technical manager directs real agent work

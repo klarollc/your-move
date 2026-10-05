@@ -1,24 +1,24 @@
 # Your Move contract-draft service proposal
 
-**Status:** Proposed; awaiting Cinder review and Nate's ruling. No implementation or live provider run is authorized by this document.
+**Status:** Approved by the owner on 2026-10-05, including the §11 direct-create amendment. Implementation is authorized through the ordered §7 RED–GREEN gate. No live provider run is authorized.
 
-## 1. Decision requested
+## 1. Approved decision
 
 Approve, amend, or decline the following design for creating a genuine agent-authored structured contract draft in Surface B:
 
 - A CuckCode-owned `contract-drafter-v1` procedure runs as one bounded assistant turn through the existing Codex App Server session adapter.
 - The server binds the actual assistant response to an authenticated manager, project, current log revision, pinned procedure, and server-selected model. The browser cannot create or assert this provenance.
-- An unapproved draft is transient and absent from the project event log. Manager approval, with or without edits, is the one durable `work.created` event and the only path into shared work state.
-- The approved event preserves the original candidate and records the manager-approved contract separately, so the record never attributes manager edits to the agent.
+- An unapproved agent draft is transient and absent from the project event log. Manager-approved agent drafts and deliberate manager-authored direct creation each produce one durable `work.created` event through the existing command path.
+- Agent-draft events preserve the original candidate and manager-approved contract separately, so the record never attributes manager edits to the agent. Direct manager-authored events carry no agent candidate.
 - Implementation and deterministic tests can be completed with a test-only fake session adapter. Using the actual provider to generate a production draft requires a separate explicit owner authorization after implementation and verification.
 
-This proposal requests no new event or command family and does not authorize implementation. It proposes a versioned `work.created` schema extension, which must be approved and implemented through the workflow-proof RED–GREEN gate before use.
+The proposal and its §11 amendment request no new event or command family. The approved versioned `work.created` schema extension is implemented through the workflow-proof RED–GREEN gate before use.
 
 ## 2. Current core facts
 
 - The shared workflow core remains `executeWorkCommand` → the existing loopback command boundary and event log → `replayProject`. `work.created` is currently payload version 3 and stores the validated bounded work contract.
 - The event envelope identifies the manager who creates the work. No current durable event represents a draft, its approval, or its provenance.
-- The approved Surface B create flow is: manager describes the outcome in plain words → an agent drafts the structured contract → manager approves or edits it. Nothing enters the project log until approval.
+- Surface B keeps the default draft-first flow: the manager describes the outcome in plain words → an agent drafts the structured contract → the manager approves or edits it. Approved §11 also permits deliberate direct manager authorship through the same create command.
 - `CodexStdioSupervisor` and `createControlledCodexHome` are existing session/runtime components. They can be reused to host a controlled draft session; this proposal does not repurpose the implementation-attempt runner, which starts from already-created work and has its own attempt-writing behavior.
 - There is no existing contract-draft service, role, or validated live provider capability. The model and procedure below are proposed pins, not claims of a previously exercised service.
 
@@ -64,13 +64,13 @@ The v4 schema requires a well-formed provenance object. Historical v1–v3 paylo
 
 Before approval, Surface B shows the candidate as **“Draft for your review — not approved”**, with source identity and run/session reference. **“Source confirmed”** means the server verified the response came from the bound controlled session, procedure, and model. It does not certify the contract's truth or suitability. Show the complete structured candidate, validation issues, and any manager edits as a visible diff before enabling approval.
 
-After append, the projection folds the log and displays the original agent-produced candidate separately from the final manager-approved contract, with the manager as approver and creator. For historical v1–v3 work, show “draft source not recorded.” If provenance is absent or inconsistent for v4, report an invalid/unreadable record; never infer a genuine draft. The projection must refuse to show any draft as approved before a valid `work.created` record exists, refuse approval/create without a genuine bound draft receipt, and refuse a manager-final contract as agent-authored. No optimistic work item or success state may appear before append and readback.
+After append, the projection folds the log and displays the original agent-produced candidate separately from the final manager-approved contract, with the manager as approver and creator. For historical v1–v3 work, show “draft source not recorded.” If provenance is absent or inconsistent for v4, report an invalid/unreadable record; never infer a genuine draft. The projection must refuse to show any draft as approved before a valid `work.created` record exists. Agent-draft approval requires a genuine bound receipt; direct manager creation requires the explicit manager provenance variant and authenticated manager command. The projection must refuse a manager-final contract as agent-authored. No optimistic work item or success state may appear before append and readback.
 
 All normal, assignee, and historical/time-travel views remain deterministic projections of the event log. A transient candidate may be displayed for the manager who requested it, but it is not represented as project state, must not appear in another actor's log-derived lens, and disappears on expiry, rejection, restart, or log-revision mismatch. Past-view controls remain read-only.
 
 ## 7. RED–GREEN implementation gate
 
-If approved, implementation must proceed in order. Each test must first fail for the expected reason before its corresponding behavior is implemented:
+Implementation proceeds in order. Each test must first fail for the expected reason before its corresponding behavior is implemented:
 
 1. **Contract tests:** v4 schema, required provenance, manager envelope attribution, candidate/final separation, malformed and missing provenance rejection, and unchanged v1–v3 replay.
 2. **Reducer tests:** deterministic replay and ordering, correct source-confirmed/source-unrecorded labels, separation of candidate from manager final terms, and refusal of impossible approval states.
@@ -95,25 +95,28 @@ After code and verification are complete, enabling or demonstrating one genuine 
 - Manager-written text, canned templates, test fixtures, or simulated output represented as agent-authored.
 - Agent-side speech acts, assignment, execution, evidence, or review behavior beyond the already-approved shared workflow core.
 
-## 10. Owner ruling requested
+## 10. Owner ruling — 2026-10-05
 
-Please rule approve, amend, or decline the proposed source, transient-draft lifecycle, v4 `work.created` provenance, validation boundary, and RED–GREEN gate. If approved, Cinder review and this ruling authorize the implementation proposal only; a real provider draft remains separately gated as described in §8.
+The owner approved the proposal as written and separately approved §11 as written. The ruling record
+is `docs/proposals/2026-10-05-your-move-contract-draft-direct-create-ruling.md`. Implementation is
+authorized under the ordered §7 gate. A genuine provider draft remains separately gated as described
+in §8.
 
-## 11. Proposed amendment — direct manager-authored creation
+## 11. Approved amendment — direct manager-authored creation
 
-**Status:** Proposed amendment to the approved proposal; awaiting Cinder review and Nate's ruling.
-This amendment does not authorize implementation. It changes only the v4 creation-source options,
+**Status:** Approved by the owner on 2026-10-05 as written; implementation follows the ordered §7 gate.
+This amendment changes only the v4 creation-source options,
 the no-receipt manager command behavior, and the corresponding Surface B presentation. All other
 approved source, session, receipt, and live-run boundaries remain in force.
 
-### 11.1 Decision requested
+### 11.1 Approved decision
 
-Approve, amend, or decline a deliberate direct-create path for a manager who chooses to write the
+The approved amendment adds a deliberate direct-create path for a manager who chooses to write the
 structured contract instead of requesting an agent draft. Draft-first remains the default and
 recommended path. Both paths continue through the authenticated manager command, `executeWorkCommand`,
 one `work.created` event, the shared event log, and `replayProject`.
 
-Upon approval, strike this §1 wording:
+This prior §1 wording has been struck:
 
 > ~~“Manager approval, with or without edits, is the one durable `work.created` event and the only path into shared work state.”~~
 
@@ -122,7 +125,7 @@ produce one durable `work.created` event through the existing command path.
 
 ### 11.2 Event and command reconciliation
 
-| Concern | Proposed amendment | Reconciliation with the approved core |
+| Concern | Approved amendment | Reconciliation with the approved core |
 |---|---|---|
 | Agent-draft v4 | Keep the final manager contract separate from the agent candidate. New records identify `draftSource: "agent"` and retain the existing candidate and complete server-bound provider provenance. The existing manager event envelope identifies the approver. | A valid receipt continues to produce the current agent-draft variant through `executeWorkCommand`. Receipt checks and lifecycle do not change. |
 | Direct manager v4 | The v4 provenance container has the strict manager variant `{ "provenance": { "draftSource": "manager" } }`. It contains no candidate or provider session/turn IDs. The existing `work.created` envelope attributes the manager who wrote and approved the contract; no duplicate drafter or approver IDs are added. | The final contract uses the same bounded contract schema and validation as agent-draft approval. No event, endpoint, writer, or command path is added. |
@@ -155,10 +158,8 @@ receipt expiry and rejection behavior is unchanged.
 ### 11.4 Non-goals and ruling boundary
 
 This amendment does not change the draft service, receipt mechanics, agent procedure/model/runtime,
-or existing live-provider authorization boundary. It does not authorize W12, §20, live provider runs,
-promotion, deployment, or any other implementation. If approved, implementation requires a separate
-ordered RED–GREEN gate before code changes; until then, the currently approved proposal and its
-implementation remain in force.
+or existing live-provider authorization boundary. Implementation follows the ordered RED–GREEN gate.
+It does not authorize W12, §20, live provider runs, promotion, deployment, or other external effects.
 
-Please rule approve, amend, or decline this focused amendment. A ruling applies only to §11; it does
-not authorize a live provider session or either separately gated owner run.
+This ruling applies only to §11. It does not authorize a live provider session or either separately
+gated owner run.

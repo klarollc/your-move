@@ -42,6 +42,7 @@ const draftContext = (draft: ReturnType<typeof contract>, revision: number) => (
     draft: {
       candidate: draft,
       provenance: {
+        draftSource: "agent",
         draftId: "draft_test",
         procedureId: "contract-drafter-v1",
         procedureVersion: "1.0.0",

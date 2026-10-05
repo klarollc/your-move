@@ -152,7 +152,7 @@ describe("Surface B work list", () => {
     expect(within(row).getByText("Partial record")).toBeVisible();
   });
 
-  it("starts execution and refuses creation while the real contract-draft service is absent", async () => {
+  it("starts execution and explains when agent drafting is unavailable", async () => {
     const user = userEvent.setup();
     render(<WorkList {...baseProps} />);
     await user.click(screen.getByRole("button", { name: "Show all work" }));
@@ -172,10 +172,11 @@ describe("Surface B work list", () => {
       ...item,
       outcome: "Manager-approved wording",
       contract: finalContract,
-      contractDraftSource: "confirmed",
+      contractDraftSource: "agent",
       contractDraft: {
         candidate,
         provenance: {
+          draftSource: "agent",
           draftId: "draft_surface_b_projection",
           procedureId: "contract-drafter-v1",
           procedureVersion: "1.0.0",
@@ -200,6 +201,24 @@ describe("Surface B work list", () => {
     const editDiff = within(agreement).getByLabelText("Manager edit diff");
     expect(editDiff).toHaveTextContent("Agent candidate wording");
     expect(editDiff).toHaveTextContent("Manager-approved wording");
+  });
+
+  it("shows manager-authored source plainly without inventing an agent candidate", async () => {
+    const user = userEvent.setup();
+    const managerItem: WorkListItem = {
+      ...item,
+      contractDraftSource: "manager",
+      contractDraft: { provenance: { draftSource: "manager" } },
+    };
+    render(<WorkList {...baseProps} items={[managerItem]} />);
+    await user.click(screen.getByRole("button", { name: "Show all work" }));
+    await user.click(screen.getByRole("button", { name: "Details for Implement slugify" }));
+
+    const agreement = screen.getByRole("region", { name: "Work detail" });
+    expect(agreement).toHaveTextContent("Draft source: manager");
+    expect(agreement).toHaveTextContent("Manager-authored contract");
+    expect(agreement).not.toHaveTextContent("Agent candidate");
+    expect(agreement).not.toHaveTextContent("source confirmed");
   });
 
   it("records the digest of the saved evidence artifact from Surface B", async () => {

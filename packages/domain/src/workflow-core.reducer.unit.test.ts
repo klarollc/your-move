@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { workContractDraftSource } from "./work-truth.js";
 
 import { stableStringify } from "./canonical-json.js";
 import { replayProject } from "./replay.js";
@@ -96,6 +97,41 @@ const contractDraftCreated = (over: Record<string, unknown> = {}) =>
     "manager",
     { actor: { actorType: "manager", actorId: "manager_nate" }, ...over },
   );
+
+const explicitAgentDraftCreated = () => {
+  const original = contractDraftCreated();
+  const payload = structuredClone(original.payload);
+  const draft = payload.contractDraft as Record<string, unknown>;
+  const provenance = draft.provenance as Record<string, unknown>;
+  draft.provenance = { ...provenance, draftSource: "agent" };
+  return { ...original, payload };
+};
+
+const managerAuthoredCreated = () => {
+  const original = contractDraftCreated();
+  return {
+    ...original,
+    eventId: "event_created_direct_manager_contract",
+    payload: {
+      ...original.payload,
+      contractDraft: { provenance: { draftSource: "manager" } },
+    },
+  };
+};
+
+const historicalCreated = (payloadVersion: 1 | 2 | 3) => {
+  const original = created();
+  const payload = structuredClone(original.payload);
+  payload.payloadVersion = payloadVersion;
+  if (payloadVersion === 1) {
+    delete payload.contract;
+    delete payload.payloadVersion;
+  }
+  if (payloadVersion === 2 && typeof payload.contract === "object" && payload.contract !== null) {
+    delete (payload.contract as Record<string, unknown>).maxTurns;
+  }
+  return { ...original, payload };
+};
 
 const posture = (runId: string, offsetMs: number) =>
   event(
@@ -245,8 +281,32 @@ describe("workflow-core reducer", () => {
 
   it("labels legacy work.created as having no recorded draft source", () => {
     const work = replayProject([created()]).work;
+    expect(workContractDraftSource(work.workItems.work_alpha?.contractDraft)).toBe("not_recorded");
     expect(work.workItems.work_alpha).not.toHaveProperty("contractDraft");
   });
+
+  it("projects agent and manager provenance labels from validated v4 shapes", () => {
+    const agent = replayProject([explicitAgentDraftCreated()]).work.workItems.work_alpha;
+    const manager = replayProject([managerAuthoredCreated()]).work.workItems.work_alpha;
+    const legacyAgent = replayProject([contractDraftCreated()]).work.workItems.work_alpha;
+
+    expect(workContractDraftSource(agent?.contractDraft)).toBe("agent");
+    expect(workContractDraftSource(legacyAgent?.contractDraft)).toBe("agent");
+    expect(workContractDraftSource(manager?.contractDraft)).toBe("manager");
+    expect(manager?.contractDraft).toEqual({ provenance: { draftSource: "manager" } });
+  });
+
+  it.each([1, 2, 3] as const)(
+    "reports draft source not recorded for historical payload version %i without inferring from its manager envelope",
+    (payloadVersion) => {
+      const work = replayProject([historicalCreated(payloadVersion)]).work;
+      expect(workContractDraftSource(work.workItems.work_alpha?.contractDraft)).toBe(
+        "not_recorded",
+      );
+      expect(work.workItems.work_alpha?.contractDraft).toBeUndefined();
+      expect(work.issues).toEqual([]);
+    },
+  );
 
   it("refuses v4 approval events with invalid provenance or non-manager attribution", () => {
     const missingProvenance = contractDraftCreated();

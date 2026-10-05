@@ -1,5 +1,10 @@
 import { createHash } from "node:crypto";
-import { judgeDoneClaim, replayProject, stableStringify } from "@cuckcode/domain";
+import {
+  judgeDoneClaim,
+  replayProject,
+  stableStringify,
+  workContractDraftSource,
+} from "@cuckcode/domain";
 import { describe, expect, it } from "vitest";
 
 import { executeWorkCommand, type WorkCommand } from "./work-commands.js";
@@ -109,6 +114,7 @@ const trustedDraftContext = (over: Record<string, unknown> = {}) => {
     draft: {
       candidate,
       provenance: {
+        draftSource: "agent",
         draftId: "draft_contract_01",
         procedureId: "contract-drafter-v1",
         procedureVersion: "1.0.0",
@@ -141,6 +147,22 @@ const runWithTrustedDraft = (
     now: NOW,
     command,
     trustedContext: trustedContext as never,
+  });
+
+const runManagerDirect = (
+  log: readonly unknown[],
+  command: WorkCommand,
+  authenticatedManagerSessionId: string | null = "session_manager_01",
+  currentRevision = log.length,
+) =>
+  executeWorkCommand({
+    log,
+    currentRevision,
+    now: NOW,
+    command,
+    ...(typeof authenticatedManagerSessionId === "string"
+      ? { trustedContext: { authenticatedManagerSessionId } }
+      : {}),
   });
 
 describe("executeWorkCommand: create", () => {
@@ -232,21 +254,29 @@ describe("executeWorkCommand: contract-draft receipt", () => {
           contract: { outcome: "Manager-edited outcome" },
           contractDraft: {
             candidate: { outcome: "Implement slugify" },
-            provenance: { procedureId: "contract-drafter-v1", model: "gpt-6.1-sol" },
+            provenance: {
+              draftSource: "agent",
+              procedureId: "contract-drafter-v1",
+              model: "gpt-6.1-sol",
+            },
           },
         },
       },
     ]);
     expect(result.state.workItems.work_slug?.contractDraft).toMatchObject({
       candidate: { outcome: "Implement slugify" },
-      provenance: { procedureId: "contract-drafter-v1", model: "gpt-6.1-sol" },
+      provenance: {
+        draftSource: "agent",
+        procedureId: "contract-drafter-v1",
+        model: "gpt-6.1-sol",
+      },
     });
   });
 
   it("requires an authenticated manager session and a trusted-context receipt", () => {
     expect(runWithTrustedDraft([], base({}), {})).toMatchObject({
       ok: false,
-      code: "CONTRACT_DRAFT_REQUIRED",
+      code: "NOT_AUTHORIZED",
     });
     expect(
       runWithTrustedDraft(
@@ -301,6 +331,75 @@ describe("executeWorkCommand: contract-draft receipt", () => {
       ),
     ).toMatchObject({ ok: false, code: "CONTRACT_DRAFT_DIGEST_MISMATCH" });
   });
+});
+
+describe("executeWorkCommand: manager-authored direct create", () => {
+  it("creates without a receipt as manager-authored v4 provenance", () => {
+    const result = runManagerDirect([], base({}));
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.events).toMatchObject([
+      {
+        kind: "work.created",
+        actor: manager,
+        payload: {
+          payloadVersion: 4,
+          contract: { outcome: "Implement slugify" },
+          contractDraft: { provenance: { draftSource: "manager" } },
+        },
+      },
+    ]);
+    expect(result.events[0]?.payload).not.toHaveProperty("contractDraft.candidate");
+    expect(result.events[0]?.payload).not.toHaveProperty(
+      "contractDraft.provenance.providerSessionId",
+    );
+    expect(workContractDraftSource(result.state.workItems.work_slug?.contractDraft)).toBe(
+      "manager",
+    );
+  });
+
+  it("requires the authenticated manager binding and manager actor for direct create", () => {
+    expect(runManagerDirect([], base({}), null)).toMatchObject({
+      ok: false,
+      code: "NOT_AUTHORIZED",
+    });
+    expect(
+      runManagerDirect([], base({ actor: { actorType: "agent", actorId: "agent_engineer" } })),
+    ).toMatchObject({ ok: false, code: "NOT_AUTHORIZED" });
+  });
+
+  it("keeps stale-revision, duplicate-ID and contract-schema checks on the direct path", () => {
+    expect(
+      runManagerDirect([], base({ expectedRevision: 1 }), "session_manager_01", 2),
+    ).toMatchObject({
+      ok: false,
+      code: "STALE_REVISION",
+    });
+    const existing = created();
+    expect(
+      runManagerDirect(
+        existing,
+        base({ commandId: "cmd_direct_duplicate", expectedRevision: existing.length }),
+      ),
+    ).toMatchObject({ ok: false, code: "WORK_ITEM_EXISTS" });
+    expect(
+      runManagerDirect([], base({ contract: { ...contract(), evidenceObligations: [] } as never })),
+    ).toMatchObject({ ok: false, code: "CONTRACT_INVALID" });
+  });
+
+  it.each([
+    ["expired", { expiresAt: "2026-10-04T10:59:59.999Z" }, "CONTRACT_DRAFT_RECEIPT_EXPIRED"],
+    ["reused", { state: "used" }, "CONTRACT_DRAFT_RECEIPT_USED"],
+    ["wrong session", { managerSessionId: "session_other" }, "CONTRACT_DRAFT_RECEIPT_SESSION"],
+    ["wrong project", { projectId: "project_other" }, "CONTRACT_DRAFT_RECEIPT_PROJECT"],
+    ["stale revision", { expectedRevision: 2 }, "CONTRACT_DRAFT_RECEIPT_STALE"],
+  ])(
+    "refuses a supplied %s receipt without falling back to manager-authored",
+    (_label, change, code) => {
+      const result = runWithTrustedDraft([], base({}), trustedDraftContext({ ...change }));
+      expect(result).toMatchObject({ ok: false, code });
+    },
+  );
 });
 
 describe("executeWorkCommand: assign", () => {

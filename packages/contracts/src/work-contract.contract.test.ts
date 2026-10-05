@@ -56,6 +56,24 @@ const createdV4 = (over: Record<string, unknown> = {}) => ({
   ...over,
 });
 
+const createdV4WithAgentSource = (over: Record<string, unknown> = {}) => {
+  const prior = createdV4();
+  return {
+    ...prior,
+    contractDraft: {
+      ...prior.contractDraft,
+      provenance: draftProvenance({ draftSource: "agent" }),
+    },
+    ...over,
+  };
+};
+
+const createdV4WithManagerSource = (over: Record<string, unknown> = {}) => ({
+  ...createdV4(),
+  contractDraft: { provenance: { draftSource: "manager" } },
+  ...over,
+});
+
 const refusal = (value: unknown) => {
   const result = workContractSchema.safeParse(value);
   return result.success ? null : result.error.issues.map((i) => i.path.join(".")).join(",");
@@ -164,47 +182,116 @@ describe("work.created payload", () => {
     expect(result.ok).toBe(false);
   });
 
-  it("accepts v4 with a distinct bounded draft candidate and source provenance", () => {
-    const result = validateWorkCreatedPayload(createdV4());
+  it("accepts the explicit v4 agent variant with a distinct candidate and source provenance", () => {
+    const result = validateWorkCreatedPayload(createdV4WithAgentSource());
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.value.contractDraft?.candidate.outcome).toBe(
+    const draft = result.value.contractDraft;
+    expect(draft && "candidate" in draft ? draft.candidate.outcome : undefined).toBe(
       "Draft outcome from the bounded assistant turn",
     );
     expect(result.value.contract?.outcome).toBe("Deliver the manager-approved outcome");
-    expect(result.value.contractDraft?.candidate).not.toEqual(result.value.contract);
-    expect(result.value.contractDraft?.provenance).toEqual(draftProvenance());
+    expect(draft && "candidate" in draft ? draft.candidate : undefined).not.toEqual(
+      result.value.contract,
+    );
+    expect(draft?.provenance).toEqual(draftProvenance({ draftSource: "agent" }));
   });
 
-  it("requires the v4 candidate and all source provenance", () => {
-    const base = createdV4();
+  it("accepts the strict manager variant without candidate or provider session fields", () => {
+    const result = validateWorkCreatedPayload(createdV4WithManagerSource());
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.contractDraft).toEqual({ provenance: { draftSource: "manager" } });
+    }
+  });
+
+  it("replays the exact existing v4 agent shape with complete candidate and provenance", () => {
+    const result = validateWorkCreatedPayload(createdV4());
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      const draft = result.value.contractDraft;
+      expect(draft && "candidate" in draft ? draft.candidate.outcome : undefined).toBe(
+        "Draft outcome from the bounded assistant turn",
+      );
+      expect(draft?.provenance).toEqual(draftProvenance());
+    }
+  });
+
+  it("rejects mixed, partial, ambiguous, and extra-field v4 source variants", () => {
+    const agent = createdV4WithAgentSource();
+    const manager = createdV4WithManagerSource();
+    const legacy = createdV4();
     for (const invalid of [
-      { ...base, contractDraft: undefined },
-      { ...base, contractDraft: { candidate: base.contractDraft.candidate } },
+      { ...agent, contractDraft: undefined },
+      { ...agent, contractDraft: { candidate: agent.contractDraft.candidate } },
       {
-        ...base,
-        contractDraft: { ...base.contractDraft, candidate: { outcome: "partial" } },
+        ...agent,
+        contractDraft: { ...agent.contractDraft, candidate: { outcome: "partial" } },
       },
       {
-        ...base,
+        ...agent,
         contractDraft: {
-          ...base.contractDraft,
-          provenance: draftProvenance({ procedureSha256: "invalid" }),
+          ...agent.contractDraft,
+          provenance: draftProvenance({ draftSource: "agent", procedureSha256: "invalid" }),
         },
       },
       {
-        ...base,
+        ...agent,
         contractDraft: {
-          ...base.contractDraft,
-          provenance: draftProvenance({ model: "gpt-6-astra" }),
+          ...agent.contractDraft,
+          provenance: draftProvenance({ draftSource: "agent", model: "gpt-6-astra" }),
         },
       },
       {
-        ...base,
+        ...agent,
         contractDraft: {
-          ...base.contractDraft,
-          provenance: draftProvenance({ unexpected: "browser claim" }),
+          ...agent.contractDraft,
+          provenance: draftProvenance({ draftSource: "agent", unexpected: "browser claim" }),
         },
+      },
+      {
+        ...manager,
+        contractDraft: {
+          candidate: contract({ maxTurns: 3 }),
+          provenance: { draftSource: "manager" },
+        },
+      },
+      {
+        ...manager,
+        contractDraft: {
+          provenance: { draftSource: "manager", providerSessionId: "forged-session" },
+        },
+      },
+      {
+        ...agent,
+        contractDraft: {
+          provenance: draftProvenance({ draftSource: "agent" }),
+        },
+      },
+      {
+        ...agent,
+        contractDraft: {
+          candidate: agent.contractDraft.candidate,
+          provenance: draftProvenance({ draftSource: "agent", providerTurnId: undefined }),
+        },
+      },
+      {
+        ...legacy,
+        contractDraft: {
+          candidate: legacy.contractDraft.candidate,
+          provenance: draftProvenance({ providerTurnId: undefined }),
+        },
+      },
+      {
+        ...manager,
+        contractDraft: {
+          provenance: { draftSource: "agent" },
+          browserClaim: true,
+        },
+      },
+      {
+        ...manager,
+        contractDraft: { provenance: { draftSource: "unknown" } },
       },
     ]) {
       expect(validateWorkCreatedPayload(invalid).ok).toBe(false);

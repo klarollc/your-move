@@ -54,8 +54,9 @@ export type BoundedWorkContract = z.infer<typeof boundedWorkContractSchema>;
 const SHA256 = /^[a-f0-9]{64}$/;
 const DRAFT_ID = /^draft_[A-Za-z0-9][A-Za-z0-9._-]*$/;
 
-export const contractDraftProvenanceSchema = z
+const agentContractDraftProvenanceSchema = z
   .object({
+    draftSource: z.literal("agent"),
     draftId: z.string().regex(DRAFT_ID),
     procedureId: z.literal("contract-drafter-v1"),
     procedureVersion: z.string().regex(/^\d+\.\d+\.\d+$/),
@@ -71,15 +72,65 @@ export const contractDraftProvenanceSchema = z
   })
   .strict();
 
-export const contractDraftRecordSchema = z
+const managerContractDraftProvenanceSchema = z
   .object({
-    candidate: boundedWorkContractSchema,
-    provenance: contractDraftProvenanceSchema,
+    draftSource: z.literal("manager"),
   })
   .strict();
 
+const legacyAgentContractDraftProvenanceSchema = z
+  .object({
+    draftId: z.string().regex(DRAFT_ID),
+    procedureId: z.literal("contract-drafter-v1"),
+    procedureVersion: z.string().regex(/^\d+\.\d+\.\d+$/),
+    procedureSha256: z.string().regex(SHA256),
+    runtime: z.string().regex(/^@openai\/codex@\d+\.\d+\.\d+$/u),
+    model: z.literal("gpt-6.1-sol"),
+    providerSessionId: z.string().min(1).max(200),
+    providerTurnId: z.string().min(1).max(200),
+    requestSha256: z.string().regex(SHA256),
+    candidateSha256: z.string().regex(SHA256),
+  })
+  .strict();
+
+/** Current provenance is explicitly discriminated; the exact complete pre-amendment agent shape is replay-only compatibility. */
+export const contractDraftProvenanceSchema = z.union([
+  z.discriminatedUnion("draftSource", [
+    agentContractDraftProvenanceSchema,
+    managerContractDraftProvenanceSchema,
+  ]),
+  legacyAgentContractDraftProvenanceSchema,
+]);
+
+const agentContractDraftRecordSchema = z
+  .object({
+    candidate: boundedWorkContractSchema,
+    provenance: agentContractDraftProvenanceSchema,
+  })
+  .strict();
+
+const managerContractDraftRecordSchema = z
+  .object({ provenance: managerContractDraftProvenanceSchema })
+  .strict();
+
+const legacyAgentContractDraftRecordSchema = z
+  .object({
+    candidate: boundedWorkContractSchema,
+    provenance: legacyAgentContractDraftProvenanceSchema,
+  })
+  .strict();
+
+/** Strict current manager/agent variants plus only the exact complete legacy agent record. */
+export const contractDraftRecordSchema = z.union([
+  agentContractDraftRecordSchema,
+  managerContractDraftRecordSchema,
+  legacyAgentContractDraftRecordSchema,
+]);
+
 export type ContractDraftProvenance = z.infer<typeof contractDraftProvenanceSchema>;
 export type ContractDraftRecord = z.infer<typeof contractDraftRecordSchema>;
+export type AgentContractDraftProvenance = z.infer<typeof agentContractDraftProvenanceSchema>;
+export type AgentContractDraftRecord = z.infer<typeof agentContractDraftRecordSchema>;
 
 export type WorkCreatedPayload = Readonly<{
   workItemId: string;

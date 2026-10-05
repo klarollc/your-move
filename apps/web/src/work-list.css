@@ -755,6 +755,22 @@
   margin-inline: auto;
 }
 
+.workflow-create-panel > section[aria-label="Manager-authored contract"] {
+  display: grid;
+  gap: 12px;
+  width: min(100%, 620px);
+  margin-inline: auto;
+}
+
+.workflow-create-panel > button {
+  display: block;
+  max-width: min(100%, 620px);
+  min-height: 42px;
+  margin: 16px auto 0;
+  white-space: normal;
+  text-align: left;
+}
+
 .workflow-create-panel h2 {
   margin: 0;
   font-family: Georgia, serif;

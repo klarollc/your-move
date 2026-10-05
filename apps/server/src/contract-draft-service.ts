@@ -5,8 +5,9 @@ import { join } from "node:path";
 import {
   boundedWorkContractSchema,
   contractDraftRecordSchema,
+  type AgentContractDraftProvenance,
+  type AgentContractDraftRecord,
   type ContractDraftRecord,
-  type ContractDraftProvenance,
 } from "@cuckcode/contracts";
 import {
   CODEX_PIN,
@@ -215,8 +216,8 @@ export type ContractDraftService = Readonly<{
 export type ContractDraftCreateResult =
   | Readonly<{
       ok: true;
-      candidate: ContractDraftRecord["candidate"];
-      provenance: ContractDraftProvenance;
+      candidate: AgentContractDraftRecord["candidate"];
+      provenance: AgentContractDraftProvenance;
       receiptHandle: string;
       expiresAt: string;
       source: ContractDraftSessionAdapter["kind"];
@@ -340,7 +341,8 @@ export function createContractDraftService(options: {
         };
       }
 
-      const provenance: ContractDraftProvenance = {
+      const provenance: AgentContractDraftProvenance = {
+        draftSource: "agent",
         draftId,
         procedureId: CONTRACT_DRAFTER_PROCEDURE_ID,
         procedureVersion: CONTRACT_DRAFTER_PROCEDURE_VERSION,
@@ -352,7 +354,10 @@ export function createContractDraftService(options: {
         requestSha256,
         candidateSha256,
       };
-      const draft = contractDraftRecordSchema.parse({ candidate: parsed.data, provenance });
+      const draft = contractDraftRecordSchema.parse({
+        candidate: parsed.data,
+        provenance,
+      }) as AgentContractDraftRecord;
       const nowMs = Date.parse(options.now());
       if (!Number.isFinite(nowMs)) {
         return {

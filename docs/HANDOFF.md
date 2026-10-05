@@ -47,10 +47,18 @@ missing files or stale digests; side-effect review passed. No live provider sess
 provider draft remains separately gated. The full §8 package remains incomplete; W12 and §20 remain
 separately gated and were not run.
 
-**Immediate next gate:** finish the position-record check, then push `workflow-proof` to
-`review/workflow-proof` as directed. Do not start a live provider session or substitute a model. Keep
-W8 shelved and do not promote. W12 and the §20 Surface B comprehension run remain separately gated
-owner actions.
+**Direct-create amendment — 2026-10-05:** the owner approved §11 of the contract-draft proposal as
+written. The ruling is recorded at
+`docs/proposals/2026-10-05-your-move-contract-draft-direct-create-ruling.md`. Task 17 adds a strict
+manager-authored v4 provenance variant and a deliberate Surface B direct-create route. The route
+uses the existing manager-authenticated `work.create` command; an invalid supplied receipt never
+falls back to direct creation. Implementation and ordered RED–GREEN checks are in progress. No live
+provider run, W12, or §20 is included.
+
+**Immediate next gate:** complete Task 17's full `npm.cmd run verify` and provenance checks, update
+the position record, then push `workflow-proof` to `review/workflow-proof` as directed. Do not start
+a live provider session or substitute a model. Keep W8 shelved and do not promote. W12 and the §20
+Surface B comprehension run remain separately gated owner actions.
 
 ---
 

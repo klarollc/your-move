@@ -87,6 +87,14 @@ as a separately gated addition. Approval response for the package: “Approve + 
       1440×900 and 1280×800. `phase5:provenance` checked 430 artifacts and 696 ledger lines with no
       missing files or stale digests; side-effect review passed. No live provider, W12, or §20 run.
       Push `workflow-proof` to `review/workflow-proof` after the position/provenance record check.
+- [ ] Task 17 — implement approved §11 direct manager-authored creation from the contract-draft
+      proposal. Follow its RED–GREEN order: strict v4 manager/agent union and old-shape/v1–v3
+      contracts; reducer source labels with no inference; absent-receipt manager create plus
+      fail-closed supplied-receipt command checks; loopback session binding and shared-log
+      append/readback; projection/adversarial UI tests for draft-first, deliberate direct labeling,
+      explicit provenance, service-down availability, and no optimism; then full `verify` and
+      provenance. New agent drafts carry `draftSource: "agent"`; manager records carry only
+      `draftSource: "manager"`. No live provider run, W12, or §20.
 
 ## Current implementation status — 2026-10-05
 

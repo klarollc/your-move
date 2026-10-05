@@ -48,7 +48,7 @@ export type WorkListItem = Readonly<{
   }> | null;
   contract: WorkContract | null;
   contractDraft?: ContractDraftRecord | null;
-  contractDraftSource?: "confirmed" | "not_recorded";
+  contractDraftSource?: "agent" | "manager" | "not_recorded";
   contractRevision: number | null;
   contractHistory: readonly Readonly<{
     revision: number;
@@ -240,7 +240,7 @@ export function WorkList(
     actionsDisabled?: boolean;
     contractDraftingAvailable?: boolean;
     onDraftContract?: (description: string) => Promise<ContractDraftServiceResult>;
-    onCreateWork?: (contract: WorkContract, receiptHandle: string) => Promise<void>;
+    onCreateWork?: (contract: WorkContract, receiptHandle?: string) => Promise<void>;
     health?: WorkListHealth;
     onRefresh?: () => void | Promise<void>;
     error?: string | null;
@@ -938,14 +938,16 @@ function WorkDetail({
 
       <section className="workflow-detail-section">
         <h2>The agreement</h2>
-        {item.contractDraft ? (
+        {item.contractDraftSource === "agent" &&
+        item.contractDraft &&
+        "candidate" in item.contractDraft ? (
           <section
             className="workflow-agent-candidate"
             aria-label="Original agent contract candidate"
           >
             <p className="workflow-draft-status">
-              Original agent candidate · source confirmed · {item.contractDraft.provenance.runtime}{" "}
-              · {item.contractDraft.provenance.model} · procedure{" "}
+              Draft source: agent · source confirmed · {item.contractDraft.provenance.runtime} ·{" "}
+              {item.contractDraft.provenance.model} · procedure{" "}
               {item.contractDraft.provenance.procedureId}
             </p>
             <p className="workflow-log-meta">
@@ -966,12 +968,20 @@ function WorkDetail({
               <p>The final manager contract is missing from this projection.</p>
             )}
           </section>
+        ) : item.contractDraftSource === "manager" ? (
+          <p className="workflow-log-meta">Draft source: manager</p>
         ) : item.contractDraftSource === "not_recorded" ? (
           <p className="workflow-log-meta">Draft source not recorded for this work item.</p>
         ) : null}
         {item.contract ? (
           <>
-            <h3>{item.contractDraft ? "Manager-approved final contract" : "Recorded contract"}</h3>
+            <h3>
+              {item.contractDraftSource === "agent"
+                ? "Manager-approved final contract"
+                : item.contractDraftSource === "manager"
+                  ? "Manager-authored contract"
+                  : "Recorded contract"}
+            </h3>
             <ContractSummary contract={item.contract} />
           </>
         ) : (

@@ -1,4 +1,9 @@
-import { normalizeEventLog, projectManagerAttention, replayProject } from "@cuckcode/domain";
+import {
+  normalizeEventLog,
+  projectManagerAttention,
+  replayProject,
+  workContractDraftSource,
+} from "@cuckcode/domain";
 import type { ProjectEvent } from "@cuckcode/contracts";
 
 import type {
@@ -137,14 +142,7 @@ export function projectWorkList(
       const assignmentEvent = item.assignment ? eventById.get(item.assignment.eventId) : undefined;
       const history = eventsByWork.get(item.workItemId) ?? [];
       const latestSignal = history.at(-1);
-      const creationEvent = history.find((event) => event.kind === "work.created");
-      const contractDraftSource = item.contractDraft
-        ? "confirmed"
-        : creationEvent &&
-            (typeof creationEvent.payload.payloadVersion !== "number" ||
-              creationEvent.payload.payloadVersion <= 3)
-          ? "not_recorded"
-          : undefined;
+      const contractDraftSource = workContractDraftSource(item.contractDraft);
       const attention = attentionById.get(item.workItemId);
       const evidence: WorkListEvidence[] = Object.values(snapshot.work.evidence)
         .filter((record) => record.workItemId === item.workItemId)
@@ -226,7 +224,7 @@ export function projectWorkList(
           : null,
         contract: item.contract ?? null,
         contractDraft: item.contractDraft ?? null,
-        ...(contractDraftSource ? { contractDraftSource } : {}),
+        contractDraftSource,
         contractRevision: item.contractRevision ?? null,
         contractHistory: item.contractHistory ?? [],
         turnBudget: item.turnBudget ?? null,

@@ -434,9 +434,14 @@
             "runner": "npm.cmd run verify exited 0; phase5 provenance checked; no live provider, W12, or §20"
           },
           "note": "Contract-draft service implemented through the approved ordered §7 gate. Full verification: unit 944, component 192, integration 164 passed/3 skipped, contract 157; build and e2e/a11y/visual checks passed at both approved widths. Provenance: 430 artifacts, 696 ledger lines, no missing files or stale digests; side-effect review passed. No live provider run."
+        },
+        {
+          "id": "17",
+          "state": "in_progress",
+          "note": "Owner approved proposal §11 as written. Implementation is following the ordered RED–GREEN gate; live provider, W12, and §20 remain gated."
         }
       ],
-      "note": "Workflow-core proposal, seven additive Surface B details, speech acts, and contract-draft service are implemented and verified through their ordered gates. Task 16 full verify and provenance passed on ac7345a. No live provider session is authorized. W12 and §20 remain gated."
+      "note": "Workflow-core proposal, seven additive Surface B details, speech acts, and contract-draft service are implemented and verified through their ordered gates. Task 16 full verify and provenance passed on ac7345a. Task 17 implements the approved direct manager-authored create amendment. No live provider session is authorized. W12 and §20 remain gated."
     },
     {
       "id": "df-047",

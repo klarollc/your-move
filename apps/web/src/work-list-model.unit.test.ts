@@ -131,6 +131,7 @@ describe("Surface B canonical list projection", () => {
       assignee: "Engineer · agent_engineer",
       partial: true,
       contractAcceptsEvidence: true,
+      contractDraftSource: "not_recorded",
     });
     expect(model.items[0]?.sourceRevision).toBe(6);
     expect(model.items[0]?.evidence).toContainEqual(
@@ -162,6 +163,7 @@ describe("Surface B canonical list projection", () => {
     const candidate = { ...contract, outcome: "Agent candidate outcome", maxTurns: 5 };
     const finalContract = { ...contract, outcome: "Manager approved outcome", maxTurns: 5 };
     const provenance = {
+      draftSource: "agent",
       draftId: "draft_projection_1",
       procedureId: "contract-drafter-v1",
       procedureVersion: "1.0.0",
@@ -197,7 +199,36 @@ describe("Surface B canonical list projection", () => {
     expect(model.items[0]).toMatchObject({
       contract: finalContract,
       contractDraft: { candidate, provenance },
-      contractDraftSource: "confirmed",
+      contractDraftSource: "agent",
+    });
+  });
+
+  it("projects the explicit manager source without inferring an agent draft", () => {
+    const finalContract = { ...contract, maxTurns: 5 };
+    const created = event(
+      3,
+      "work.created",
+      {
+        payloadVersion: 4,
+        workItemId: "work_manager_direct",
+        outcome: finalContract.outcome,
+        requiredEvidenceKinds: ["test-run"],
+        contract: finalContract,
+        contractDraft: { provenance: { draftSource: "manager" } },
+      },
+      {
+        source: "manager",
+        trust: "verified",
+        workItemId: "work_manager_direct",
+        actor: { actorType: "manager", actorId: "manager_nate" },
+      },
+    );
+
+    const model = projectWorkList([created], { revision: 1 });
+    expect(model.items[0]).toMatchObject({
+      contract: finalContract,
+      contractDraft: { provenance: { draftSource: "manager" } },
+      contractDraftSource: "manager",
     });
   });
 

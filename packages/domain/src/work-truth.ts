@@ -368,6 +368,15 @@ function createWorkItem(state: WorkTruthState, event: ProjectEvent): void {
   };
 }
 
+/** Labels only validated provenance; the exact legacy v4 agent shape remains explicitly compatible. */
+export function workContractDraftSource(
+  record: ContractDraftRecord | undefined,
+): "agent" | "manager" | "not_recorded" {
+  if (!record) return "not_recorded";
+  if ("draftSource" in record.provenance) return record.provenance.draftSource;
+  return "agent";
+}
+
 function recordEvidence(state: WorkTruthState, event: ProjectEvent): void {
   const evidenceId = stringField(event.payload, "evidenceId");
   const workItemId = stringField(event.payload, "workItemId");
