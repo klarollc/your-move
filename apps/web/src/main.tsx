@@ -7,6 +7,8 @@ import { FontSheet } from "./font-sheet.js";
 import { LayoutTrial } from "./layout-trial.js";
 import { OfficeWorkspace, type KickoffFixtureId } from "./office-canvas.js";
 import type { OfficeShellState } from "./office-shell.js";
+import { WorkListPage } from "./work-list-page.js";
+import { selectAppSurface } from "./surface-route.js";
 
 const container = document.querySelector("#app");
 
@@ -15,7 +17,7 @@ if (!(container instanceof HTMLElement)) {
 }
 
 const parameters = new URLSearchParams(window.location.search);
-const surface = parameters.get("surface");
+const surface = selectAppSurface(parameters);
 const requestedState = parameters.get("state");
 const requestedKickoff = parameters.get("kickoff");
 const initialState: OfficeShellState = isOfficeShellState(requestedState)
@@ -28,7 +30,7 @@ createRoot(container).render(
       <LayoutTrial />
     ) : surface === "font-sheet" ? (
       <FontSheet />
-    ) : (
+    ) : surface === "office" ? (
       <OfficeWorkspace
         initialState={initialState}
         {...(isKickoffFixture(requestedKickoff) ? { kickoffFixture: requestedKickoff } : {})}
@@ -36,6 +38,8 @@ createRoot(container).render(
         motionEnabled={parameters.get("motion") === "handoff"}
         motionCheckpoint={parameters.get("checkpoint") ?? "settled"}
       />
+    ) : (
+      <WorkListPage />
     )}
   </StrictMode>,
 );

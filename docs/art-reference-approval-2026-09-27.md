@@ -50,6 +50,13 @@ If the local pack is missing or any approved hash differs, stop the affected vis
 - [ ] Application implementation under its separate approved specification, plan and tasks.
 - [ ] Current-build visual acceptance and any owner-run baseline promotion.
 
+## Owner amendment — 2026-10-04
+
+Surface B, the simple work list, is now the primary surface. The office-first composition rule in
+this historical art supplement does not govern Surface B or authorize further office work. The
+approved local pack and its hashes remain unchanged for any future office work if the owner reopens
+that surface.
+
 
 ## Amendment 2026-09-27 — the plates as the product target (P-0)
 

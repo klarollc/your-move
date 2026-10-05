@@ -64,8 +64,8 @@ $wp = "C:\Users\nater\CuckCode\.worktrees\workflow-proof"
 $s  = "C:\Users\nater\CuckCode\.scratch"
 $repo = "$s\slugify-proof"
 New-Item -ItemType Directory -Force $repo, "$s\evidence" | Out-Null
-Copy-Item -Recurse -Force "$wp\fixtures\workflow-proof\slugify-proof\*" $repo
-Copy-Item -Force "$wp\fixtures\workflow-proof\slugify-proof\.gitattributes" $repo
+Copy-Item -Recurse -Force "$wp\workflow-proof-seed\slugify-proof\*" $repo
+Copy-Item -Force "$wp\workflow-proof-seed\slugify-proof\.gitattributes" $repo
 git -C $repo init -b main
 git -C $repo config core.autocrlf false
 git -C $repo add -A

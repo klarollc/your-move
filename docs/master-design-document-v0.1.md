@@ -29,22 +29,28 @@ work. The approval is not application implementation, runtime verification or ba
 
 ## 2. Confirmed intent
 
+### Owner amendment — 2026-10-04: Surface B is primary
+
+The simple work-list interface (Surface B) is the primary surface for directing work. The office
+surface is shelved, with no further office-surface work until the owner reopens it. The workflow
+core remains shared: `executeWorkCommand`, `replayProject`, and one append-only event log. This
+amendment supersedes office-first statements in this section and §4 for current product priority.
+
 ### Outcome
 
-Create a visual multi-agent orchestration product in which a familiar office environment is the
-primary surface through which a non-technical manager directs real agent work.
+Create a multi-agent orchestration product in which a non-technical manager directs real agent work
+through a simple work list. A familiar office environment remains a shelved, optional projection of
+the same workflow core.
 
 ### Differentiation
 
 Rendering agents as office workers is the visible part of this product and the least load-bearing.
 What the product actually claims is narrower and harder:
 
-1. **The office is operable, not observational.** The scene is where the manager assigns outcomes,
-   answers escalations, inspects evidence, and approves or redirects deliverables — not a display
-   of what agents are doing.
-2. **The office is truthful.** Every meaningful visual behavior is backed by an inspectable
-   canonical event. Simulated or fallback animation is a V0 defect, not a shortcut. An office that
-   shows plausible activity it cannot substantiate is worse than no office.
+1. **The primary surface is operable, not observational.** The manager assigns outcomes, starts
+   execution, records evidence, and reviews deliverables from Surface B.
+2. **Every surface is truthful.** Every meaningful status is backed by an inspectable canonical
+   event. Simulated or fallback activity is a V0 defect, not a shortcut.
 3. **Both participants are first-class.** Human and agent interfaces are equal projections of the
    same canonical state (D-26). Human simplicity is never purchased with agent complexity.
 
@@ -127,7 +133,7 @@ These are not silent assumptions. Work stops at the named gate until the owner a
 ## 4. Product principles
 
 1. **Truth before theater.** The scene is a projection, never an invented account of work.
-2. **Office before dashboard.** The scene carries primary comprehension; panels provide drill-down.
+2. **Work list before office.** Surface B carries primary comprehension; the office is shelved.
 3. **Outcomes before prompts.** Managers assign intended results, constraints, and approval boundaries.
 4. **Evidence before confidence.** Completion claims link to artifacts and verification.
 5. **Human authority remains explicit.** Approval gates cannot be inferred from silence.
@@ -1276,11 +1282,11 @@ With no more than a short orientation, the single operator must satisfy every cr
 answering from the interface alone:
 
 - identify each agent's assignment and state;
-- locate the item needing manager attention;
+- locate the item needing manager attention in Surface B;
 - distinguish waiting from blocked;
 - distinguish completed from approved;
 - inspect evidence and take the correct next action;
-- explain that the office represents real workflow state, not simulated productivity.
+- explain that Surface B represents real workflow state, not simulated productivity.
 
 The operator designed the interface, so an immediate run measures recall rather than
 comprehension. The study is therefore run **cold, after a deliberate gap of at least three days**

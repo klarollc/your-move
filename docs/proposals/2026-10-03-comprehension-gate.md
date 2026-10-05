@@ -2,7 +2,7 @@
 
 Status: **Proposed 2026-10-03. Awaiting owner approval. Approves nothing, amends no
 requirement, authorizes no work until approved.**
-Purpose: gate Phase 7 Task 7 implementation on a genuine MDD §20 comprehension measurement.
+Purpose: require a genuine MDD §20 comprehension measurement of the primary Surface B interface.
 
 ## Decisions (owner-ruled 2026-10-03)
 
@@ -92,3 +92,10 @@ decision, not a specific outcome: no rendering proceeds on an unexamined score.
   remaining work, plus timing (owner's call).
 - **B (governance audit)** runs parallel, recommend-only on phase-gate requirements.
 - **C (dogfood the product)** follows as a phase-level initiative once this gate is resolved.
+
+## Owner amendment — 2026-10-04: target Surface B
+
+The owner ruled that the office-first thesis is dead and Surface B is the primary surface. This
+gate now evaluates Surface B only. The existing proposal mechanics, answer key, and evaluator plan
+carry over unchanged; only their target surface changes. The prior office comprehension result is
+not a Surface B result. The gate does not block the already-authorized W7 implementation.

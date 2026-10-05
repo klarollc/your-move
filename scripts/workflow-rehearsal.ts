@@ -1,6 +1,7 @@
 /**
- * Writes the W10 rehearsal transcript for the owner's review. Regenerated on demand; the output
- * directory is git-ignored. Fake runtime only: no Codex process, no network.
+ * Rebuilds the accepted W10 rehearsal transcript from its deterministic fake-runtime inputs.
+ * Review the output diff before replacing the checked-in proof. Fake runtime only: no Codex process,
+ * no network.
  *
  *   npm run workflow:rehearsal
  */

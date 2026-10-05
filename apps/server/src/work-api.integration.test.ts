@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { replayProject } from "@cuckcode/domain";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { readEventLog } from "./event-log.js";
 import { createLoopbackApp, type LoopbackApp } from "./loopback-session.js";
@@ -74,7 +74,25 @@ const body = (over: Record<string, unknown>) => ({
 let dir = "";
 let logPath = "";
 const apps: LoopbackApp[] = [];
-const start = async (events: readonly unknown[] = staffingEvents) => {
+const start = async (
+  events: readonly unknown[] = staffingEvents,
+  runner?: {
+    status: () => {
+      available: boolean;
+      state:
+        | "unavailable"
+        | "idle"
+        | "starting"
+        | "running"
+        | "completed"
+        | "failed"
+        | "recovery_required";
+      workItemId?: string;
+    };
+    start: (workItemId: string) => Promise<{ ok: true } | { ok: false; code: string }>;
+    waitUntilIdle: () => Promise<void>;
+  },
+) => {
   await writeFile(logPath, events.map((e) => `${JSON.stringify(e)}\n`).join(""), "utf8");
   const app = createLoopbackApp({
     mode: "test",
@@ -86,6 +104,7 @@ const start = async (events: readonly unknown[] = staffingEvents) => {
     csrfToken: "csrf_t",
     readModel: {},
     logPath,
+    ...(runner ? { runner } : {}),
     now: () => NOW,
   });
   apps.push(app);
@@ -109,6 +128,80 @@ afterEach(async () => {
 });
 
 describe("work API in log mode", () => {
+  it("reports that the live runner is unavailable unless the server is configured", async () => {
+    const app = await start();
+    const status = await app.inject({ method: "GET", url: "/api/workflow/status", headers });
+    expect(status.statusCode).toBe(200);
+    expect(status.json()).toMatchObject({ available: false, state: "unavailable" });
+
+    const execute = await app.inject({
+      method: "POST",
+      url: "/api/workflow/execute",
+      headers,
+      payload: { workItemId: "work_slug" },
+    });
+    expect(execute.statusCode).toBe(503);
+    expect(execute.json()).toMatchObject({ code: "WORKFLOW_RUNNER_UNAVAILABLE" });
+  });
+
+  it("starts only an assigned work item and blocks log reads and writes while the child runs", async () => {
+    let state: "idle" | "running" = "idle";
+    const runner = {
+      status: () => ({ available: true, state }),
+      start: vi.fn(async () => {
+        state = "running";
+        return { ok: true as const };
+      }),
+      waitUntilIdle: async () => undefined,
+    };
+    const app = await start(staffingEvents, runner);
+    await post(app, body({}));
+
+    const premature = await app.inject({
+      method: "POST",
+      url: "/api/workflow/execute",
+      headers,
+      payload: { workItemId: "work_slug" },
+    });
+    expect(premature.statusCode).toBe(409);
+    expect(premature.json()).toMatchObject({ code: "WORK_ITEM_NOT_ASSIGNED" });
+    expect(runner.start).not.toHaveBeenCalled();
+
+    await post(
+      app,
+      body({
+        commandId: "cmd2",
+        expectedRevision: 3,
+        intent: "work.assign",
+        payload: { roleAssignmentId: "role-assignment_engineer" },
+      }),
+    );
+    const started = await app.inject({
+      method: "POST",
+      url: "/api/workflow/execute",
+      headers,
+      payload: { workItemId: "work_slug" },
+    });
+    expect(started.statusCode).toBe(202);
+    expect(started.json()).toMatchObject({ accepted: true });
+    expect(runner.start).toHaveBeenCalledWith("work_slug");
+
+    const log = await app.inject({ method: "GET", url: "/api/log", headers });
+    expect(log.statusCode).toBe(503);
+    expect(log.json()).toMatchObject({ code: "RUNNER_ACTIVE" });
+    const command = await post(app, body({ commandId: "cmd3", expectedRevision: 6 }));
+    expect(command.statusCode).toBe(423);
+    expect(command.json()).toMatchObject({ code: "RUNNER_ACTIVE" });
+    const arbitrary = await app.inject({
+      method: "POST",
+      url: "/api/workflow/execute",
+      headers,
+      payload: { workItemId: "work_slug", worktree: "C:\\sensitive" },
+    });
+    expect(arbitrary.statusCode).toBe(400);
+    expect(arbitrary.json()).toMatchObject({ code: "WORKFLOW_REQUEST_INVALID" });
+  });
+
   it("serves the log with its revision at /api/log, session-gated", async () => {
     const app = await start();
     const denied = await app.inject({ method: "GET", url: "/api/log", headers: { origin } });

@@ -2,7 +2,7 @@
 
 Date: 2026-10-04
 Source: the owner's approval in session, 2026-10-04: “approved as recommended”.
-Reviewed artifact: `docs/evidence/workflow/rehearsal/rehearsal.md` (generated, git-ignored).
+Reviewed artifact: `docs/evidence/workflow/rehearsal/rehearsal.md` (the accepted transcript is tracked in this repository).
 
 ## Ruling
 

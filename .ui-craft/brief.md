@@ -1,5 +1,11 @@
 # CuckCode design brief
 
+## Owner amendment — 2026-10-04: Surface B primary
+
+Surface B, the simple work list, is the primary surface for creating, assigning, executing,
+evidencing, and reviewing work. The office surface is shelved until the owner reopens it. Both
+surfaces, when active, share `executeWorkCommand`, `replayProject`, and the same event log.
+
 Status: Draft v0.1 — confirmed product intent, spatial model, and visual thesis; detailed art system pending owner discovery
 
 ## Approved visual supplement — 2026-09-27
@@ -13,10 +19,9 @@ Do not infer approval of exact raster colors, geometry, identities or runtime be
 
 ## 1. Product identity
 
-CuckCode makes an office scene the primary surface for directing a real multi-agent workflow. The
-user is the manager. Connected agents occupy role templates and appear as employees whose
-location, posture, actions, conversations, and requests make otherwise technical work
-understandable.
+CuckCode makes a simple work list the primary surface for directing a real multi-agent workflow.
+The user is the manager. Connected agents occupy role templates and recorded workflow events make
+otherwise technical work understandable. The office scene is currently shelved.
 
 The scene is a control surface, not a view of one. Under design pressure, reduce scene fidelity,
 zone count, or role count before reducing operability, truthfulness, or reciprocity — those three
@@ -46,7 +51,7 @@ The desired feeling is calm command of a small working studio, not surveillance,
 ## 4. Product principles
 
 1. **Truth before theater.** Meaningful visuals are projections of inspectable workflow state.
-2. **Office first.** Start from the work scene and reveal technical detail on demand.
+2. **Surface B first.** Start from the work list and reveal technical detail on demand.
 3. **Management language first.** Use outcomes, assignments, questions, approvals, evidence, and delivery before framework terminology.
 4. **Progressive disclosure.** The scene must be readable without hiding the technical evidence needed for trust.
 5. **Calm attention.** Escalations are noticeable without turning the office into an alarm board.
@@ -55,7 +60,7 @@ The desired feeling is calm command of a small working studio, not surveillance,
 
 ## 5. Initial surface
 
-The first proof is a desktop-first office scene for one software-development project. A manager assigns an outcome to a small specialist team, observes planning and execution, answers a real escalation, reviews test and visual evidence, and approves or redirects the deliverable.
+The first proof is a desktop-first work list for one software-development project. From Surface B, a manager creates and assigns an outcome, starts execution, records evidence, and reviews the deliverable.
 
 Visual acceptance is desktop-only: a pinned current Chromium build at 1440×900 and 1280×800. Mobile, tablet, touch-only, and cross-browser acceptance are not claimed.
 

@@ -1,7 +1,7 @@
-# Workflow-proof plan — v0.2 APPROVED (2026-10-04)
+# Workflow-proof plan — v0.3 APPROVED (2026-10-04)
 
-**Status: plan approved by the owner 2026-10-04, with these rulings: W1 to W5 may start before the Task 6 gate (UI tasks W6 to W9 still wait); branch `workflow-proof` approved; W5 data path is the file log; the W12 stop rule is adopted. Tasks are still approved individually. W0 is done (see `2026-10-04-workflow-proof-w0-findings.md`, which also corrects W1 to W5). The plan authorizes no live run and no spend.**
-Implements `docs/proposals/2026-10-03-workflow-proof-spec.md` (v1.0, approved 2026-10-03). Order per AGENTS.md: spec (done) → plan (this) → tasks (approved individually).
+**Status: amended and approved by the owner 2026-10-04. Surface B is primary; W7 is top priority and authorized now without the Task 6 gate. W8 is shelved. W0–W6 and W9–W11 stand as built; no live run, promotion, push or external effect is authorized.**
+Implements `docs/proposals/2026-10-03-workflow-proof-spec.md` v1.1. The owner's 2026-10-04 ruling approves the Surface B amendment and `tasks/workflow-proof-w7-todo.md`.
 
 Facts were read from the repo on 2026-10-03 (read-only). **[unverified]** marks anything not read or tested. **[OWNER]** marks a ruling needed.
 
@@ -63,15 +63,26 @@ Surface posture and evidence for a work item through the existing read model. Th
 RED first: posture layers appear side by side in the projection; a record trying to supply state is still refused.
 Touches (likely): `packages/application/src/office-read-model.ts`. Depends on W1, W5.
 
-**W7. Surface B: plain list view (P-3).**
-Separate route in `apps/web`. One row per work item: assignee, state, requested/granted/declared posture, last event, diff and checks, evidence link, and actions (create and assign via W3; accept, redirect, stop via the existing attention commands). Reads `projectOfficeReadModel`.
-RED first: the boundary test (invariant 8): the view imports nothing from `office-canvas`, `office-scene-adapter`, or ui-system isometric primitives; row rendering fails on a fixture with a partial turn record until it shows "partial".
-Viewport check required (§3). Depends on W3, W6.
+**W7. Surface B: primary list view (P-3).**
+The default route in `apps/web` is Surface B. One row per work item shows assignee, state, posture
+history, recent activity, diff/check/evidence details, and actions. Create, assign, record evidence,
+and request review use `/api/commands` → `toWorkCommand` → `executeWorkCommand`; state is replayed
+from the single event log with `replayProject` and projected through W6. An assigned row can start
+the existing runner through a loopback endpoint whose worktree, model, reasoning effort, context
+paths, and opt-in are server-owned configuration. The browser can send only a work item id. The
+server blocks log reads and writes while the runner owns the log lock. No live run is started for
+W7 implementation or verification.
 
-**W8. Surface A: minimum for the proof (P-4).**
-Create/assign affordance calling W3, and the same posture display. No visual work. Coordination with Task 6/7 required **[OWNER]**.
-RED first: the office exposes a create action that issues the W3 command; posture shows requested and granted side by side.
-Depends on W3, W6; sequenced after Task 6 gate.
+RED first: no office/isometric imports; partial records are called partial; create, assign, evidence,
+and review all use the shared command route; execute rejects invalid authorization, an unassigned
+item, a duplicate start, or unavailable runner configuration. An injected fake runner verifies the
+lock handoff and busy-state guards without opening a provider session.
+Viewport, console/network, keyboard, and reduced-motion checks required (§3). Depends on W3/W6, not
+the Task 6 gate.
+
+**W8. Surface A: office affordance — shelved by owner 2026-10-04.** Preserve the approved W8
+proposal and history. No further office-surface work until the owner reopens it. This does not remove
+or rewrite the office implementation.
 
 **W9. Parity test (invariant 7).**
 For one canonical state, both surfaces show identical posture, status, and evidence values. Depends on W7, W8.
@@ -83,17 +94,27 @@ Run the whole loop against a fake runtime before any live turn, following `kicko
 
 **W11. Scratch repo and contract.** Build the disposable scratch repo (one function, one pre-written test, one seeded ambiguity) and the confirmed task's D-26 contract. Owner approves the contract text.
 
-**W12. Live run, Surface B first, then Surface A (or reverse) [OWNER].** Same contract, separate disposable worktrees, no secrets, no network. 10 turns per attempt, up to 10 attempts per surface (ceiling 100 turns per surface, 200 total). Owner review between attempts; no auto-retry. Hard stops per spec §8. Each attempt records posture, event stream, diff, checks, blocker handling, manager action, disposition. Any difference between the two runs is a finding, not noise.
-Stop rule (adopted by the owner 2026-10-04): stop a surface's series after two consecutive attempts that fail for the same recorded reason, rather than spending the ceiling. This rule is in addition to the spec's hard stops.
+**W12. Live run from Surface B [OWNER].** A qualifying real work session is create → assign →
+execute → evidence → review, all driven from Surface B. Assignment must happen there. Same bounded
+contract, one disposable worktree, no secrets, no network. 10 turns per attempt, up to 10 attempts
+(ceiling 100 turns). Owner review between attempts; no auto-retry. Hard stops per spec §8. Each
+attempt records posture, event stream, diff, checks, blocker handling, manager action, and
+disposition. W7's execute affordance is tested with a fake runner only; this separately gated owner
+run remains unperformed. Keep the adopted stop rule: stop after two consecutive attempts fail for the
+same recorded reason.
 
-**W13. Comprehension gate.** MDD §20 as written. Cold run after at least three days since the last substantive interface work; new protocol and key; both surfaces; performed/not-performed recorded per task; 6/6 met, 5/6 met with a finding, 4 or fewer fails; incomplete runs are not scored. Dates are set when W7 and W8 finish.
+**W13. Comprehension gate.** MDD §20 as written, targeting Surface B. Carry over the existing
+proposal, answer key, and evaluator plan; change only the target surface. Cold run after at least
+three days since the last substantive Surface B work; performed/not-performed recorded per task;
+6/6 met, 5/6 met with a finding, 4 or fewer fails; incomplete runs are not scored. The prior office
+run is not a Surface B result.
 
 **W14. Decision.** Apply spec §10. Record DF entries for every friction encountered. Update HANDOFF and the position record.
 
 ## 6. Dependencies at a glance
 
-W0 → W1, W2, W3 → W4 → W5 → W6 → W7 → W9; W6, W3 → W8 → W9; W1–W9 → W10 → (owner gate) → W11 → W12 → W13 → W14.
-UI tasks (W6 to W9) wait on the Task 6 decision. W1 to W5 can run first if you rule yes on entry condition 1.
+W0 → W1, W2, W3 → W4 → W5 → W6 → W7 → W9; W8 remains shelved; W1–W9 → W10 → (owner gate) → W11 → W12 → W13 → W14.
+W7 does not wait on the Task 6 office gate. W12 remains owner-run and separately gated.
 
 ## 7. Risks
 
@@ -102,12 +123,14 @@ UI tasks (W6 to W9) wait on the Task 6 decision. W1 to W5 can run first if you r
 - **Data path.** The server has no live ingestion. The file-log approach is the smallest change but makes the view refresh-based; confirm that is acceptable for a comprehension run.
 - **R-1 limit.** Declared capability reports policy intent. A role can still fail to act on inlined content; the first live turn is the first test.
 - **Budget size.** 200 turns across both surfaces is large relative to the 10-turn tracer. The stop rule in W12 is there to keep the ceiling from becoming the default.
-- **Attention.** UI-priority preference and the Task 6/7 gates compete with this work for the same attention.
+- **Runner handoff.** Surface B releases and reacquires the single-writer lock around a trusted child
+  runner. Failure to acquire or reacquire remains visible and fail-closed; raw runner output is not
+  returned to the browser.
 - **Environment.** The agent session cannot run `tsc` or the Windows toolchain; every RED/GREEN and verify run is owner-run, which sets the pace.
 
 ## 8. Not in this plan
 
-Phase 7 rendering, the Claude adapter, second vendor, multi-agent teams, MDD amendments, enabling a read path (R-2), a one-turn read probe, or market research.
+Phase 7 rendering, the Claude adapter, second vendor, multi-agent teams, enabling a read path (R-2), a one-turn read probe, or market research.
 
 ## 9. Decisions requested
 

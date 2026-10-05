@@ -3,17 +3,41 @@
 Written 2026-09-18, last updated 2026-10-04 for workflow-proof W6 and DF-047 closeout. Read `AGENTS.md` first for authority; this document is the
 live state, the next action, and the things a fresh session pays for twice if nobody wrote them down.
 
+## Owner amendment — 2026-10-04: Surface B is primary
+
+The office-first thesis is dead. Surface B (the simple work list) is the primary surface; W7 is
+authorized and top priority without the Task 6 gate. W8 is shelved, not deleted; no office-surface
+work until the owner reopens it. The shared core remains one `executeWorkCommand` path, one
+`replayProject` reducer, and one event log. W0–W6 and W9–W11 stand as built. W12 now requires a real
+create → assign → execute → evidence → review session driven entirely from Surface B, including
+assignment. The §20 comprehension gate targets Surface B; its existing materials carry over, with
+the target surface changed only. No live run, promotion, push, or external effect is authorized.
+
+**W7 implementation status — 2026-10-04:** the default Surface B list, canonical-log projection,
+shared command actions, evidence digest display, and loopback runner-start endpoint are implemented.
+Focused tests and the production build pass. Current-build screenshots were reviewed at 1440×900 and
+1280×800, keyboard focus was exercised through create and back to its trigger, the fake-log preview
+had no captured console warnings/errors or failed requests, and reduced-motion emulation produced no
+animations or transitions. W7 remains in progress pending owner review; screenshots are temporary
+review captures, not owner acceptance evidence. The owner reports a runner was started separately;
+this W7 session has not connected to it or submitted work.
+
+**Immediate next action:** prepare the W7 implementation and browser-check result for owner review.
+Keep W8 shelved. Do not do further office-surface work or submit a live work command until W12 is
+authorized.
+
 ---
 
 ## Approved visual supplement — 2026-09-27
 
 The owner approved the completed A/B art reference pack (AR-01–AR-04 and its constitution) as a
 visual supplement to Active `reconciliation-b-clarity`. Read
-[the approval record](art-reference-approval-2026-09-27.md) before UI work. The pack remains local
-under the owner-directed `/output/` Git exclusion; missing or changed artifacts block affected
-visual work. Office-first hierarchy, progressive disclosure and the illustrated anti-dashboard
-rules now govern future visual proposals and reviews. No implementation or baseline promotion
-is authorized by this approval. Existing phase gates remain.
+[the approval record](art-reference-approval-2026-09-27.md) before any UI work. The local pack stays
+under the owner-directed `/output/` Git exclusion; its hashes were verified unchanged on 2026-10-04.
+Its office-first composition rule is historical for the current pivot: Surface B is primary, and no
+office work is authorized until the owner reopens it. General progressive-disclosure and
+anti-dashboard constraints still inform Surface B, but the office plates are not Surface B visual
+acceptance evidence. Existing implementation and owner-review gates remain.
 
 ## Where the project is
 
@@ -35,9 +59,9 @@ finding and the need for an independent release-review refresh remain current.
 
 ---
 
-## The immediate next action
+## Phase 7 office work — shelved under the 2026-10-04 pivot
 
-**Phase 7, the rendered office — in progress, 2026-10-03.** Spec
+The following Phase 7 status is historical; it does not direct the current work. Spec
 `docs/phase-7-high-fidelity-spec-v0.1.md` (F-1 to F-8), plan `tasks/phase-7-plan.md` (Q-1 to Q-5),
 checklist `tasks/phase-7-todo.md` (the full record of every task: RED, GREEN, mutations, moved
 assertions, owner rulings). `position.json` carries each task's state and gate. Latest `verify` on a
@@ -59,7 +83,8 @@ provenance entries 631–632, and the read-only provenance check is clean. The o
 review is: "slice meets expectations". A subsequent clean owner-run `verify` passed on `a582953`
 (runner `p7t5b-verify-20261003-01`), closing the gate described below.
 
-**Do next:** Task 7 (figures) is unstarted and waits for its own owner approval. Task 6 was
+**Historical state at last review:** Task 7 (figures) is unstarted and previously waited for its own
+owner approval. Task 6 was
 accepted by the owner on 2026-10-04 and is not met against the final spec: the shortfall is
 unspecified by the owner, is carried forward into Task 10's review as V3, and the open question
 the checklist carries is whether the tucked team chairs read as chairs. The clean owner-run
@@ -74,8 +99,8 @@ under the owner's explicit instruction. Tracking the latter required one provena
 writer appended only that new owner-supplied artifact, with no re-recording or attribution changes.
 No furniture captures were regenerated. The failed clean runs were bookkeeping checks: stale
 position metadata (corrected in `e20edea`) and that missing provenance entry (now registered).
-Confirm the final clean runner result in `node_modules/.cache/agent-runner/outbox/` before the
-owner's furniture capture and exact plate review.
+The next furniture capture and exact plate review are shelved by the 2026-10-04 pivot. Do not
+continue them without a fresh owner ruling.
 
 ## Concurrent workstream: manager-agent workflow proof — 2026-10-04
 
@@ -96,8 +121,9 @@ DF-047, streamed-effect classification for kickoff callers, was accepted by the 
 `82017a3`. The command's failure guard did not throw and `git status --short` was empty; the
 detailed runner footer was not retained. Its RED/GREEN record and implementation are in
 `tasks/df-047-todo-draft.md` and `scripts/phase4-kickoff-session.ts`; the focused tests are in
-`scripts/phase4-kickoff-session.unit.test.ts`. W7–W9 remain blocked pending their own task
-approvals. No W12 live attempt, UI implementation, promotion, push, or external effect is authorized.
+`scripts/phase4-kickoff-session.unit.test.ts`. Under the owner's 2026-10-04 pivot, W7 is now
+authorized and top priority, W8 is shelved, and W9 stands as built. No W12 live attempt, promotion,
+push, or external effect is authorized.
 
 ### Why Phase 7 exists
 

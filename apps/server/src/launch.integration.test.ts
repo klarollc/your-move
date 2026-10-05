@@ -69,6 +69,40 @@ describe("parseLaunchArgs", () => {
     expect(result.issues.join("\n")).toMatch(/origin must look like/u);
     expect(result.issues.join("\n")).toMatch(/unrecognised argument "oops"/u);
   });
+
+  it("accepts a complete, server-owned Surface B runner configuration", () => {
+    const result = parseLaunchArgs([
+      "log=a.jsonl",
+      "runner-worktree=C:/worktrees/candidate",
+      "runner-model=gpt-6.1-sol",
+      "runner-reasoning-effort=high",
+      "runner-needs=src/index.ts,src/index.test.ts",
+    ]);
+    expect(result).toMatchObject({
+      ok: true,
+      value: {
+        runner: {
+          worktree: "C:/worktrees/candidate",
+          model: "gpt-6.1-sol",
+          reasoningEffort: "high",
+          needs: ["src/index.ts", "src/index.test.ts"],
+        },
+      },
+    });
+  });
+
+  it("refuses partial or unsafe runner configuration", () => {
+    expect(parseLaunchArgs(["log=a", "runner-worktree=C:/candidate"]).ok).toBe(false);
+    expect(
+      parseLaunchArgs([
+        "log=a",
+        "runner-worktree=C:/candidate",
+        "runner-model=gpt-6.1-sol",
+        "runner-reasoning-effort=high",
+        "runner-needs=../outside.ts",
+      ]).ok,
+    ).toBe(false);
+  });
 });
 
 describe("startLogServer", () => {
@@ -91,6 +125,40 @@ describe("startLogServer", () => {
       headers: { origin: "http://127.0.0.1:9999" },
     });
     expect(wrong.statusCode).toBe(403);
+  });
+
+  it("exposes a configured Surface B runner only with the explicit live opt-in", async () => {
+    const previous = process.env.CUCKCODE_LIVE_WORKFLOW;
+    process.env.CUCKCODE_LIVE_WORKFLOW = "1";
+    try {
+      const parsed = parseLaunchArgs([
+        `log=${log}`,
+        "runner-worktree=C:/worktrees/candidate",
+        "runner-model=gpt-6.1-sol",
+        "runner-reasoning-effort=high",
+      ]);
+      if (!parsed.ok) throw new Error(parsed.issues.join("; "));
+      const result = await startLogServer({ ...parsed.value, port: 0 });
+      if (!result.ok) throw new Error(`${result.code}: ${result.detail}`);
+      started.push(result.server);
+      const response = await result.server.app.inject({
+        method: "GET",
+        url: "/api/workflow/status",
+        headers: { origin: DEFAULT_ORIGIN, "x-cuckcode-session": "unknown" },
+      });
+      expect(response.statusCode).toBe(403);
+      const session = await result.server.app.inject({
+        method: "GET",
+        url: "/api/session",
+        headers: { origin: DEFAULT_ORIGIN },
+      });
+      expect(session.json()).toMatchObject({
+        runner: { available: true, state: "idle" },
+      });
+    } finally {
+      if (previous === undefined) delete process.env.CUCKCODE_LIVE_WORKFLOW;
+      else process.env.CUCKCODE_LIVE_WORKFLOW = previous;
+    }
   });
 
   it("holds the writer lock while up, so a second writer is refused, and frees it on close", async () => {

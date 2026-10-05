@@ -1,4 +1,4 @@
-# Workflow-proof spec — v1.0 APPROVED (2026-10-03)
+# Workflow-proof spec — v1.1 APPROVED (2026-10-04)
 
 **Status: APPROVED by the owner 2026-10-03. This approves the spec only. It authorizes no implementation, no live run, and no spend; the plan and then the tasks need their own approvals (AGENTS.md).**
 
@@ -133,3 +133,27 @@ None. Rulings 1 to 6 and spec approval are recorded in §0 and the status line.
 ## 12. Not done
 
 No code, tests, live runs, or repo changes beyond adding this file. The working tree already carries uncommitted changes (dogfood register, turn runner, tracer scripts); this file is untracked and uncommitted. DF-046's severity and D-26 clause remain owner-pending.
+
+## Owner amendment — 2026-10-04: Surface B primary
+
+This approved amendment records the owner's decision that the office-first thesis is dead and
+Surface B is the primary surface. It supersedes conflicting v1.0 statements above; the workflow
+core and completed W0–W6 and W9–W11 work remain unchanged.
+
+1. **W7 is top priority and authorized now.** The Task 6 office gate does not block Surface B UI
+   work. Surface B is the default product route. The list reads the same event log through
+   `replayProject` and uses the shared `executeWorkCommand` path for create, assign, evidence, and
+   review.
+2. **Execution is started from Surface B.** An assigned work row can request execution through the
+   loopback backend. The browser sends only the work item id; worktree, model, reasoning effort,
+   context paths, and live opt-in remain trusted server configuration. The UI cannot supply paths,
+   arbitrary arguments, or provider settings. No live run is authorized by this amendment.
+3. **W8 is shelved, not deleted.** No office-surface work is authorized until the owner reopens it.
+   W9's completed parity work remains as history; it does not require new office work.
+4. **A passing W12 session is create → assign → execute → evidence → review, all driven from
+   Surface B.** Assignment specifically occurs there. W12 remains a separately gated live run.
+5. **The §20 comprehension gate targets Surface B.** Carry over the existing proposal, answer key,
+   and evaluator plan; change only the target surface. This does not count the previous office run
+   as a Surface B result.
+6. W11 §6's seed source is `workflow-proof-seed\slugify-proof`. The accepted W10 rehearsal
+   transcript is retained in the repository as proof output.

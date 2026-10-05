@@ -366,6 +366,21 @@
       ]
     },
     {
+      "id": "workflow-proof-w7",
+      "title": "Workflow proof W7, Surface B primary list",
+      "state": "in_progress",
+      "spec": "docs/proposals/2026-10-03-workflow-proof-spec.md",
+      "checklist": "tasks/workflow-proof-w7-todo.md",
+      "tasks": [
+        {
+          "id": "7",
+          "state": "in_progress",
+          "note": "Implementation, focused tests, typecheck and production build pass. Temporary current-build captures cover 1440x900 and 1280x800; keyboard create/cancel focus was exercised. Fake-log preview had no captured console warnings/errors or failed requests; reduced-motion emulation produced no animations or transitions. Owner review remains. Owner reports starting a runner separately; this worktree did not connect to it or submit a command."
+        }
+      ],
+      "note": "Owner authorized Surface B as primary on 2026-10-04; W7 proceeds without the Task 6 office gate. W8 is shelved; W9 and W10–W11 stand as built. W7 implementation is in progress pending remaining browser checks and owner review. No live provider run is authorized."
+    },
+    {
       "id": "df-047",
       "title": "DF-047, streamed effects in kickoff classification",
       "state": "accepted",
@@ -441,7 +456,7 @@
             "verify": "a284685",
             "runner": "p7t6-verify-20261003-05"
           },
-          "note": "Accepted with recorded shortfall, not met against final spec (owner, 2026-10-04); shortfall unspecified by owner, carried forward into Task 10 as V3. Record: docs/evidence/phase-7/decision-record-2026-10-04-task-6-disposition.md. Task 7 waits for its own approval."
+          "note": "Accepted with recorded shortfall, not met against final spec (owner, 2026-10-04); shortfall unspecified by owner, carried forward into Task 10 as V3. Record: docs/evidence/phase-7/decision-record-2026-10-04-task-6-disposition.md. Office Task 7 is shelved under the 2026-10-04 Surface B pivot."
         },
         {
           "id": "7",
@@ -499,7 +514,8 @@
     "authorized": [
       "Documentation, plans and proposals",
       "Scripts and tests outside the frozen paths",
-      "Backend changes that do not change what the office shows"
+      "Backend changes that do not change what the office shows",
+      "Workflow proof W7 Surface B list and loopback runner-start affordance, without launching a live run"
     ],
     "ownerRunOnly": [
       "Evidence writes (npm run phase5:provenance:write)",
@@ -601,6 +617,12 @@
       "ruled": "2026-10-04",
       "ruling": "accepted by owner after green full verify",
       "record": "docs/evidence/workflow-proof/decision-record-2026-10-04-w6-acceptance.md"
+    },
+    {
+      "id": "workflow-proof-w7",
+      "ruled": "2026-10-04",
+      "ruling": "Surface B is primary; W7 authorized without the Task 6 gate; W8 shelved; W12 and §20 target Surface B",
+      "record": "docs/proposals/2026-10-03-workflow-proof-spec.md"
     },
     {
       "id": "df-047",
