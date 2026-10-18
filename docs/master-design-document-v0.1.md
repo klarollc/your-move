@@ -3,13 +3,21 @@
 Version: 0.1
 Status: Draft for product and architecture review
 Date: 2026-08-12
-Implementation authority: **Not granted**
+Implementation authority: **Not granted for the original first vertical slice; the narrow R1 amendment below is owner-approved.**
 
 ## 1. Document purpose
 
 This document is the controlling product, experience, system, testing, and visual-quality specification for CuckCode's first vertical slice. Its job is to make development efficient by preventing product intent, runtime behavior, office presentation, and acceptance evidence from drifting apart.
 
 Changes to a confirmed requirement must be made here before implementation. A passing build cannot overrule this document.
+
+### Owner-approved amendment — 2026-10-18 (Your Move R1 only)
+
+The owner approved implementation of R1 in `docs/your-move-redesign-build-plan-2026-10-18.md` and its authorization record. This amendment supersedes the source plan's draft/no-build status for R1 only; R2–R5 remain unapproved. It also supersedes only the original local-first deployment assumption where it conflicts with R1.
+
+R1 adds a Railway-hosted Fastify service with public HTTPS, protected by a single-owner login. Its provider-management surface supports OpenAI and Anthropic only, validates API keys before saving, encrypts credentials at rest, never returns credentials, reports `needs_reauth` on provider authorization rejection, and supports disconnect/reconnect without changing model preference or unrelated work data. Automatic model choice is the default; a specific model can be selected. OpenAI ChatGPT-plan OAuth is not enabled absent remote-app eligibility approval; use the paste-key path. R1 does not implement work creation or execution and does not authorize multi-user support, billing, Hermes, local-loopback changes, canonical event-log changes, lamp/T3/T4 changes, or R2–R5.
+
+Provider credentials and model preference must be stored separately from the canonical event log. A Railway deployment and any Railway account/project mutation remain owner-only; R1 authorizes deploy-ready code and documentation, not a deployment or push.
 
 ### Approved visual supplement — 2026-09-27
 

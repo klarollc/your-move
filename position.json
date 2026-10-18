@@ -3,6 +3,24 @@
   "purpose": "Where the project stands, what is authorized, and what is frozen. Read this first. Checked against the checklists and git by scripts/position-record.test.mjs; the checklists remain primary for results and evidence.",
   "workstreams": [
     {
+      "id": "your-move-r1",
+      "title": "Your Move redesign R1 — Hosted foundation + provider connections",
+      "state": "in_progress",
+      "checklist": "tasks/your-move-r1-todo.md",
+      "tasks": [
+        {"id": "1", "state": "authorized"},
+        {"id": "2", "state": "authorized"},
+        {"id": "3", "state": "authorized"},
+        {"id": "4", "state": "authorized"},
+        {"id": "5", "state": "authorized"},
+        {"id": "6", "state": "authorized"},
+        {"id": "7", "state": "authorized"},
+        {"id": "8", "state": "authorized"},
+        {"id": "9", "state": "authorized"},
+        {"id": "10", "state": "authorized"}
+      ]
+    },
+    {
       "id": "phase-0-3",
       "title": "Phase 3 (runtime and onboarding)",
       "state": "accepted",
@@ -460,11 +478,13 @@
     "authorized": [
       "Documentation, plans and proposals",
       "Scripts and tests outside the frozen paths",
-      "Backend changes that do not change what the office shows"
+      "Backend changes that do not change what the office shows",
+      "Owner-approved Your Move R1 scope only (2026-10-18): hosted provider-management UI and server, credential vault, model preference, and Railway-ready packaging"
     ],
     "ownerRunOnly": [
       "Evidence writes (npm run phase5:provenance:write)",
       "Live provider runs",
+      "Railway account/project changes and deployments",
       "Promotion",
       "Evidence regeneration (CUCKCODE_REGENERATE_EVIDENCE=1)",
       "Task 11 comprehension run and its scoring",
@@ -556,6 +576,12 @@
       "ruled": "2026-10-03",
       "ruling": "Task 3 split into 3a (renderer swap at parity) and 3b (the Active office)",
       "record": "tasks/phase-7-todo.md"
+    },
+    {
+      "id": "your-move-r1:approval",
+      "ruled": "2026-10-18",
+      "ruling": "R1 approved for implementation only; R2-R5 remain unapproved",
+      "record": "docs/evidence/your-move-r1-authorization-2026-10-18.md"
     }
   ]
 }
