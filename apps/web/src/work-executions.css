@@ -1,50 +1,513 @@
-.work-executions__list {
+/* Lit Windows (R4 Track E) — the triage surface only. Tokens are the Round 2 mockup's computed
+   values (Your Move — Directions, "Windows — Home / Crowded / Your move", 2026-10-18).
+   Hard rules: periwinkle ONLY on what needs the owner (a lit window, its label, its panel's edge);
+   working light is a muted oat (~25% saturation); finished work is dark; buttons are ivory; links
+   are ivory with an underline. Typography is the decision record's proposal (not locked), loaded
+   from the system if present: Petrona for words, Hanken Grotesk for the interface. */
+.your-move {
+  --ym-ivory: #f1e9e1;
+  --ym-ivory-button: #efe6da;
+  --ym-ink: #1a1724;
+  --ym-muted: #c6bac4;
+  --ym-faint: #a497a8;
+  --ym-house: #15121f;
+  --ym-house-quiet: #1d1928;
+  --ym-dark-window: #0b0912;
+  --ym-window-edge: #221d2e;
+  --ym-panel: #1b1726;
+  --ym-panel-edge: #332c40;
+  --ym-card: #14111d;
+  --ym-oat: #b6a28e;
+  --ym-oat-stripe: #9c8a7b;
+  --ym-periwinkle-core: #f4f5ff;
+  --ym-periwinkle: #c0c7ff;
+  --ym-periwinkle-deep: #8890e6;
+  --ym-periwinkle-text: #dfe3ff;
+  --ym-glow: rgba(176, 186, 255, 0.4);
+  --ym-serif: Petrona, Georgia, "Times New Roman", serif;
+  --ym-sans: "Hanken Grotesk", "Segoe UI", system-ui, sans-serif;
+
+  --ym-ground: 8.25rem;
+
+  margin: 2rem auto;
+  max-width: 80rem;
+  overflow: hidden;
+  color: var(--ym-ivory);
+  font-family: var(--ym-sans);
+  background: #0d0b14;
+  border-radius: 6px;
+}
+
+/* Night sky down to the horizon; the houses stand on the ground band, their names below. */
+.your-move__sky {
+  padding: 2rem 2.5rem 0;
+  background: linear-gradient(#0c0e20 0%, #181833 45%, #2b2443 85%, #3a2d4a 100%);
+}
+
+.your-move button,
+.your-move a,
+.your-move textarea {
+  font-family: var(--ym-sans);
+}
+
+.your-move :focus-visible {
+  outline: 2px solid var(--ym-ivory);
+  outline-offset: 3px;
+}
+
+.your-move__top {
+  display: flex;
+  align-items: baseline;
+  gap: 1.5rem;
+}
+
+.your-move__brand {
+  margin: 0 auto 0 0;
+  font: 400 1.375rem/1.2 var(--ym-serif);
+  color: var(--ym-muted);
+}
+
+.your-move__counts {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--ym-faint);
+}
+
+.your-move__link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ym-ivory);
+  font-size: 0.9375rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.your-move__link:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.your-move__scene {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-end;
+  margin: 2.5rem -2.5rem 0;
+  padding: 0 2.5rem;
+  min-height: 22rem;
+  background: linear-gradient(
+    to top,
+    #110f18 0,
+    #15121c var(--ym-ground),
+    rgba(58, 45, 74, 0) var(--ym-ground)
+  );
+}
+
+.your-move__street {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: 2.5rem;
+  align-items: flex-end;
+  margin: 0;
+  padding: 0;
+}
+
+.your-move__scene > .your-move__list {
+  align-self: stretch;
+  padding-bottom: 1.5rem;
+}
+
+.your-move__scene--open .your-move__street,
+.your-move__scene--open .your-move__list {
+  flex: 0 1 40%;
+}
+
+.your-move__house {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  max-width: 16rem;
+}
+
+.your-move__facade {
+  position: relative;
+  display: flex;
+  flex-direction: column-reverse; /* ground floor first in reading order; floors stack upward */
+  gap: 1rem;
+  padding: 5.25rem 1.75rem 0;
+  background: var(--ym-house);
+  clip-path: polygon(0 4.25rem, 50% 0, 100% 4.25rem, 100% 100%, 0 100%);
+}
+
+.your-move__house--quiet {
+  opacity: 0.72;
+  filter: blur(0.4px) saturate(0.85);
+}
+
+.your-move__house--quiet .your-move__facade {
+  background: var(--ym-house-quiet);
+}
+
+.your-move__floor {
+  display: flex;
+  gap: 1rem;
+}
+
+.your-move__floor--ground {
+  align-items: flex-end;
+}
+
+.your-move__floor--ground .your-move__window {
+  margin-bottom: 1.25rem;
+}
+
+/* The door stands on the ground, beside the ground-floor windows. */
+.your-move__door {
+  flex: 0 0 auto;
+  width: 2.75rem;
+  height: 5rem;
+  margin-left: 0.5rem;
+  background: #0f0d17;
+}
+
+.your-move__window {
+  position: relative;
+  width: 3.25rem;
+  height: 4rem;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  cursor: pointer;
+  background: var(--ym-dark-window);
+  box-shadow: inset 0 0 0 2px var(--ym-window-edge);
+}
+
+/* Working light: muted oat behind drawn curtains, soft only. */
+.your-move__window--working {
+  background: repeating-linear-gradient(90deg, var(--ym-oat) 0 3px, var(--ym-oat-stripe) 3px 8px);
+  box-shadow: 0 0 14px rgba(182, 162, 142, 0.18);
+}
+
+/* Your move: periwinkle, and only here. */
+.your-move__window--lit {
+  background: radial-gradient(
+    var(--ym-periwinkle-core),
+    var(--ym-periwinkle) 50%,
+    var(--ym-periwinkle-deep)
+  );
+  box-shadow: 0 0 40px 10px var(--ym-glow);
+}
+
+.your-move__curtain {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: repeating-linear-gradient(90deg, #8f7f76 0 3px, #7a6b63 3px 8px);
+  transition: width 240ms ease;
+}
+
+.your-move__curtain--left {
+  left: 0;
+}
+
+.your-move__curtain--right {
+  right: 0;
+}
+
+/* The curtains open on the object that needs you. */
+.your-move__window--lit .your-move__curtain {
+  width: 18%;
+}
+
+.your-move__window--open {
+  outline: 1px solid var(--ym-ivory);
+  outline-offset: 4px;
+}
+
+.your-move__house-label {
+  display: grid;
+  align-content: start;
+  gap: 0.2rem;
+  min-height: var(--ym-ground);
+  padding-top: 1rem;
+}
+
+.your-move__house-name {
+  font: 400 1.125rem/1.3 var(--ym-serif);
+}
+
+.your-move__needs-you {
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  min-height: 0;
+  color: var(--ym-periwinkle-text);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.your-move__house-counts,
+.your-move__overflow {
+  font-size: 0.8125rem;
+  color: var(--ym-faint);
+}
+
+.your-move__list {
+  flex: 1 1 auto;
+  display: grid;
+  gap: 0.75rem;
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.your-move__row {
   display: grid;
-  gap: 1.25rem;
+  gap: 0.2rem;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--ym-window-edge);
+  background: rgba(241, 233, 225, 0.04);
 }
 
-.work-executions__item {
-  padding-top: 1rem;
-  border-top: 1px solid #5d6063;
+.your-move__row--lit {
+  border-left-color: var(--ym-periwinkle);
 }
 
-.work-executions__item h3,
-.work-executions__item h4 {
-  margin: 0 0 0.25rem;
-  font-size: 1rem;
+.your-move__row--working {
+  border-left-color: var(--ym-oat);
 }
 
-.work-executions__status {
+.your-move__row-open {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ym-ivory);
+  font: 400 1.0625rem/1.3 var(--ym-serif);
+  text-align: left;
+  cursor: pointer;
+}
+
+.your-move__row-status {
+  font-size: 0.8125rem;
+  color: var(--ym-muted);
+}
+
+/* The unfold: the work itself slides out beside the street. Not a modal. */
+.your-move__panel {
+  flex: 1 1 60%;
+  align-self: center;
+  display: grid;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  padding: 1.75rem 2rem 2rem;
+  background: var(--ym-panel);
+  border: 1px solid var(--ym-panel-edge);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
+  transform-origin: left center;
+  animation: your-move-unfold 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.your-move__panel--lit {
+  background-image: linear-gradient(
+    90deg,
+    rgba(176, 186, 255, 0.07) 0%,
+    rgba(176, 186, 255, 0) 30%
+  );
+}
+
+@keyframes your-move-unfold {
+  from {
+    opacity: 0;
+    transform: perspective(900px) rotateY(-14deg) translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .your-move__panel {
+    animation: none;
+  }
+
+  .your-move__curtain {
+    transition: none;
+  }
+}
+
+.your-move__back {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ym-muted);
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.your-move__panel-kicker {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--ym-faint);
+}
+
+.your-move__panel-title {
+  margin: 0;
+  font: 300 2.25rem/1.15 var(--ym-serif);
+}
+
+.your-move__said,
+.your-move__cue,
+.your-move__plan-limit {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  background: rgba(241, 233, 225, 0.05);
+  border: 1px solid var(--ym-panel-edge);
+}
+
+.your-move__said-label,
+.your-move__cue-label {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--ym-faint);
+}
+
+.your-move__cue-label {
+  color: var(--ym-periwinkle-text);
+}
+
+.your-move__cue .your-move__link {
+  justify-self: start;
+}
+
+.your-move__words {
+  margin: 0;
+  font: 400 1.125rem/1.55 var(--ym-serif);
+  color: #e2d9d0;
+  white-space: pre-wrap;
+}
+
+.your-move__plan-limit p {
+  margin: 0;
+  color: var(--ym-muted);
+}
+
+.your-move__proposal {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  background: var(--ym-card);
+}
+
+.your-move__proposal-message {
+  margin: 0;
   font-weight: 600;
 }
 
-.work-executions__consent {
-  margin: 0 0 0.5rem;
-}
-
-.work-executions__proposal,
-.work-executions__reply {
-  margin-top: 0.75rem;
-  padding: 0.75rem;
-  border: 1px solid #5d6063;
-  border-radius: 4px;
-}
-
-.work-executions__content {
+.your-move__content {
   max-height: 16rem;
+  margin: 0;
   overflow: auto;
-  padding: 0.5rem;
-  background: #f8f8f5;
+  padding: 0.75rem;
+  background: var(--ym-dark-window);
+  color: #e2d9d0;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
-.work-executions__actions {
+.your-move__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.75rem;
   align-items: center;
+}
+
+.your-move__primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.25rem;
+  padding: 0 1.5rem;
+  border: 0;
+  background: var(--ym-ivory-button);
+  color: var(--ym-ink);
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.your-move__secondary {
+  min-height: 3.25rem;
+  padding: 0 1.25rem;
+  border: 1px solid rgba(241, 233, 225, 0.35);
+  background: transparent;
+  color: var(--ym-ivory);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.your-move__primary:disabled,
+.your-move__secondary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.your-move__reply {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.your-move__reply label {
+  font-size: 0.875rem;
+  color: var(--ym-muted);
+}
+
+.your-move__reply textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--ym-panel-edge);
+  background: var(--ym-card);
+  color: var(--ym-ivory);
+  font-size: 1rem;
+}
+
+.your-move__fineprint,
+.your-move__cost {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--ym-faint);
+}
+
+.your-move__cost a,
+.your-move__plan-limit a:not(.your-move__primary) {
+  color: var(--ym-ivory);
+}
+
+.your-move__summary {
+  padding: 2rem 2.5rem 2.5rem;
+}
+
+.your-move__headline {
+  margin: 0;
+  font: 300 2.75rem/1.1 var(--ym-serif);
+}
+
+.your-move__subline {
+  margin: 0.4rem 0 0;
+  font-size: 1.0625rem;
+  color: var(--ym-muted);
+}
+
+.your-move__error {
+  margin: 0;
+  padding: 0 2.5rem 1.5rem;
+  color: #f2b8b5;
 }

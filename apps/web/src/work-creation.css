@@ -27,3 +27,25 @@
 .work-creation__error {
   color: #9b1c1c;
 }
+
+.work-creation__materials {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.work-creation__materials form {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: start;
+}
+
+.work-creation__materials input,
+.work-creation__materials select {
+  width: 100%;
+  font: inherit;
+  padding: 0.4rem 0.5rem;
+}
+
+.work-creation__hint {
+  margin: 0;
+}

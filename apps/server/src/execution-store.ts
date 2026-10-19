@@ -3,6 +3,8 @@ import { chmodSync, mkdirSync } from "node:fs";
 import { isAbsolute, join, resolve } from "node:path";
 import Database from "better-sqlite3";
 
+import { sharedUtteranceVerdictSchema, type VerdictRow } from "@cuckcode/contracts";
+
 import type { TranscriptEntry } from "./provider-chat.js";
 
 export type ExecutionStatus =
@@ -23,7 +25,11 @@ export type ExecutionRecord = {
   updatedAt: string;
   output: string | null;
   error: string | null;
+  /** R4: what the latest pass ran on — the ChatGPT plan or a pasted key's provider. */
+  fundedBy: FundedBy | null;
 };
+
+export type FundedBy = "chatgpt_plan" | "openai" | "anthropic";
 
 export type ProposalRecord = {
   id: string;
@@ -88,6 +94,42 @@ const EXECUTION_SCHEMA_V1 = `
   CREATE INDEX IF NOT EXISTS tool_audit_execution ON tool_audit(execution_id, id);
 `;
 
+// Migration 2 (R4, PRAGMA user_version = 2): lamp verdicts, a projection. They live here and not in
+// a jsonl file because Railway's filesystem is ephemeral; the volume holds this database. row_json
+// is B's shared verdict row unchanged (sharedUtteranceVerdictSchema). latency_ms is telemetry kept
+// beside the row, and owner_choice is the owner's dismiss/engage signal on the cue.
+const EXECUTION_SCHEMA_V2 = `
+  CREATE TABLE IF NOT EXISTS lamp_verdicts (
+    id TEXT PRIMARY KEY,
+    execution_id TEXT NOT NULL REFERENCES work_executions(id),
+    turn_index INTEGER NOT NULL CHECK (turn_index >= 1),
+    verdict TEXT NOT NULL CHECK (verdict IN ('lamp', 'no-lamp')),
+    verdict_ts TEXT NOT NULL,
+    row_json TEXT NOT NULL,
+    latency_ms REAL NOT NULL CHECK (latency_ms >= 0),
+    owner_choice TEXT CHECK (owner_choice IS NULL OR owner_choice IN ('dismissed', 'engaged')),
+    choice_ts TEXT
+  );
+  CREATE INDEX IF NOT EXISTS lamp_verdicts_execution ON lamp_verdicts(execution_id, turn_index);
+`;
+
+export type LampVerdictRecord = {
+  executionId: string;
+  row: VerdictRow;
+  latencyMs: number;
+  ownerChoice: "dismissed" | "engaged" | null;
+  choiceTs: string | null;
+};
+
+/** Statuses a run can be closed from. `done` is written by close() and by nothing else. */
+const CLOSABLE: readonly ExecutionStatus[] = [
+  "queued",
+  "working",
+  "waiting-on-you",
+  "interrupted",
+  "failed",
+];
+
 type ExecutionRow = {
   id: string;
   draft_id: string;
@@ -102,6 +144,7 @@ type ExecutionRow = {
   updated_at: string;
   output: string | null;
   error: string | null;
+  funded_by?: FundedBy | null;
 };
 
 type ProposalRow = {
@@ -128,6 +171,7 @@ const toExecution = (row: ExecutionRow): ExecutionRecord => ({
   updatedAt: row.updated_at,
   output: row.output,
   error: row.error,
+  fundedBy: row.funded_by ?? null,
 });
 
 const toProposal = (row: ProposalRow): ProposalRecord => ({
@@ -159,8 +203,15 @@ export function openExecutionStore(options: { dataDir: string }) {
   database.pragma("foreign_keys = ON");
   database.transaction(() => {
     database.exec(EXECUTION_SCHEMA_V1);
-    if ((database.pragma("user_version", { simple: true }) as number) < 1) {
-      database.pragma("user_version = 1");
+    database.exec(EXECUTION_SCHEMA_V2);
+    const columns = database.prepare("PRAGMA table_info(work_executions)").all() as {
+      name: string;
+    }[];
+    if (!columns.some((column) => column.name === "funded_by")) {
+      database.exec("ALTER TABLE work_executions ADD COLUMN funded_by TEXT");
+    }
+    if ((database.pragma("user_version", { simple: true }) as number) < 2) {
+      database.pragma("user_version = 2");
     }
   })();
   if (process.platform !== "win32") chmodSync(databasePath, 0o700);
@@ -224,7 +275,8 @@ export function openExecutionStore(options: { dataDir: string }) {
     },
     /**
      * A new attempt linked to `previous`, carrying its transcript as context. Only the latest
-     * attempt of a draft revision, and only once it has stopped (interrupted or failed).
+     * attempt of a draft revision, and only once it has stopped (interrupted or failed) or been
+     * closed (done: R4 "pick it up again", so a closed run still has an action).
      */
     restart(
       previousId: string,
@@ -237,7 +289,9 @@ export function openExecutionStore(options: { dataDir: string }) {
         const latest = latestForDraft(previous.draftId);
         if (
           latest?.id !== previous.id ||
-          (previous.status !== "interrupted" && previous.status !== "failed")
+          (previous.status !== "interrupted" &&
+            previous.status !== "failed" &&
+            previous.status !== "done")
         ) {
           return "NOT_RESTARTABLE" as const;
         }
@@ -281,9 +335,32 @@ export function openExecutionStore(options: { dataDir: string }) {
           .run(now, id).changes === 1
       );
     },
-    /** One turn's state, written atomically: transcript, counters, status, and any new proposal. */
-    commitTurn(id: string, commit: TurnCommit, now: string): void {
-      database.transaction(() => {
+    setFundedBy(id: string, fundedBy: FundedBy): void {
+      database.prepare("UPDATE work_executions SET funded_by = ? WHERE id = ?").run(fundedBy, id);
+    },
+    /**
+     * One turn's state, written atomically: transcript, counters, status, and any new proposal.
+     * Only a run that is still working is written; false means the owner closed it mid-turn, and
+     * nothing (not even the proposal) is recorded.
+     */
+    commitTurn(id: string, commit: TurnCommit, now: string): boolean {
+      return database.transaction(() => {
+        const updated = database
+          .prepare(
+            `UPDATE work_executions SET transcript_json = ?, turn_count = ?, status = ?,
+               output = COALESCE(?, output), error = ?, updated_at = ?
+             WHERE id = ? AND status = 'working'`,
+          )
+          .run(
+            JSON.stringify(commit.transcript),
+            commit.turnCount,
+            commit.status,
+            commit.output ?? null,
+            commit.error ?? null,
+            now,
+            id,
+          ).changes;
+        if (updated !== 1) return false;
         if (commit.proposal) {
           database
             .prepare(
@@ -297,26 +374,147 @@ export function openExecutionStore(options: { dataDir: string }) {
               now,
             );
         }
-        database
-          .prepare(
-            `UPDATE work_executions SET transcript_json = ?, turn_count = ?, status = ?,
-               output = COALESCE(?, output), error = ?, updated_at = ? WHERE id = ?`,
-          )
-          .run(
-            JSON.stringify(commit.transcript),
-            commit.turnCount,
-            commit.status,
-            commit.output ?? null,
-            commit.error ?? null,
-            now,
-            id,
-          );
+        return true;
       })();
     },
-    setStatus(id: string, status: ExecutionStatus, error: string | null, now: string): void {
+    /** The loop's stop/park writes. Never `done`, and never over a run the owner already closed. */
+    setStatus(
+      id: string,
+      status: Exclude<ExecutionStatus, "done">,
+      error: string | null,
+      now: string,
+      output?: string,
+    ): void {
       database
-        .prepare("UPDATE work_executions SET status = ?, error = ?, updated_at = ? WHERE id = ?")
-        .run(status, error, now, id);
+        .prepare(
+          `UPDATE work_executions SET status = ?, error = ?, output = COALESCE(?, output),
+             updated_at = ? WHERE id = ? AND status != 'done'`,
+        )
+        .run(status, error, output ?? null, now, id);
+    },
+    /**
+     * Reply-and-resume (R4): the owner's message joins the transcript and the run re-queues, within
+     * the turns it has left. Only for a run waiting on the owner with no pending proposal (a
+     * proposal is answered with approve/deny instead).
+     */
+    reply(
+      id: string,
+      message: string,
+      now: string,
+    ): "OK" | "NOT_FOUND" | "NOT_WAITING" | "PROPOSAL_PENDING" | "NO_TURNS_LEFT" {
+      return database.transaction(() => {
+        const execution = get(id);
+        if (!execution) return "NOT_FOUND" as const;
+        if (execution.status !== "waiting-on-you") return "NOT_WAITING" as const;
+        const pending = database
+          .prepare(
+            "SELECT COUNT(*) AS n FROM tool_proposals WHERE execution_id = ? AND status IN ('pending', 'approved')",
+          )
+          .get(id) as { n: number };
+        if (pending.n > 0) return "PROPOSAL_PENDING" as const;
+        if (execution.turnCount >= execution.maxTurns) return "NO_TURNS_LEFT" as const;
+        const transcript: TranscriptEntry[] = [
+          ...execution.transcript,
+          { role: "user", content: message },
+        ];
+        database
+          .prepare(
+            "UPDATE work_executions SET status = 'queued', transcript_json = ?, error = NULL, updated_at = ? WHERE id = ? AND status = 'waiting-on-you'",
+          )
+          .run(JSON.stringify(transcript), now, id);
+        return "OK" as const;
+      })();
+    },
+    /**
+     * Close-as-done (R4): the only writer of `done`. A pending proposal is not sent: it is marked
+     * denied in the same transaction. A working run is stopped at its next turn boundary, because
+     * commitTurn refuses to write over a closed run.
+     */
+    closeRun(
+      id: string,
+      now: string,
+    ): { result: "OK"; withdrawn: ProposalRecord[] } | { result: "NOT_FOUND" | "NOT_CLOSABLE" } {
+      return database.transaction(() => {
+        const execution = get(id);
+        if (!execution) return { result: "NOT_FOUND" as const };
+        if (!CLOSABLE.includes(execution.status)) return { result: "NOT_CLOSABLE" as const };
+        const withdrawn = (
+          database
+            .prepare(
+              "SELECT * FROM tool_proposals WHERE execution_id = ? AND status IN ('pending', 'approved') ORDER BY created_at, id",
+            )
+            .all(id) as ProposalRow[]
+        ).map(toProposal);
+        database
+          .prepare(
+            "UPDATE tool_proposals SET status = 'denied', decided_at = ? WHERE execution_id = ? AND status IN ('pending', 'approved')",
+          )
+          .run(now, id);
+        database
+          .prepare(
+            "UPDATE work_executions SET status = 'done', error = NULL, updated_at = ? WHERE id = ?",
+          )
+          .run(now, id);
+        return { result: "OK" as const, withdrawn };
+      })();
+    },
+    /** Projection write: one verdict per utterance id (a duplicate observation is ignored). */
+    insertVerdict(executionId: string, row: VerdictRow, latencyMs: number): boolean {
+      const parsed = sharedUtteranceVerdictSchema.parse(row);
+      return (
+        database
+          .prepare(
+            `INSERT OR IGNORE INTO lamp_verdicts
+              (id, execution_id, turn_index, verdict, verdict_ts, row_json, latency_ms, owner_choice, choice_ts)
+             VALUES (?, ?, ?, ?, ?, ?, ?, NULL, NULL)`,
+          )
+          .run(
+            parsed.id,
+            executionId,
+            parsed.turnIndex,
+            parsed.verdict,
+            parsed.verdictTs,
+            JSON.stringify(parsed),
+            latencyMs,
+          ).changes === 1
+      );
+    },
+    listVerdicts(executionId?: string): LampVerdictRecord[] {
+      const rows = (
+        executionId
+          ? database
+              .prepare("SELECT * FROM lamp_verdicts WHERE execution_id = ? ORDER BY turn_index, id")
+              .all(executionId)
+          : database.prepare("SELECT * FROM lamp_verdicts ORDER BY verdict_ts, id").all()
+      ) as {
+        execution_id: string;
+        row_json: string;
+        latency_ms: number;
+        owner_choice: "dismissed" | "engaged" | null;
+        choice_ts: string | null;
+      }[];
+      return rows.map((row) => ({
+        executionId: row.execution_id,
+        row: sharedUtteranceVerdictSchema.parse(JSON.parse(row.row_json)),
+        latencyMs: row.latency_ms,
+        ownerChoice: row.owner_choice,
+        choiceTs: row.choice_ts,
+      }));
+    },
+    /** The owner's signal on a lamp cue ("Draw the curtain" = dismissed). Logged, never enforced. */
+    recordVerdictChoice(
+      verdictId: string,
+      choice: "dismissed" | "engaged",
+      now: string,
+    ): string | undefined {
+      const row = database
+        .prepare("SELECT execution_id FROM lamp_verdicts WHERE id = ?")
+        .get(verdictId) as { execution_id: string } | undefined;
+      if (!row) return undefined;
+      database
+        .prepare("UPDATE lamp_verdicts SET owner_choice = ?, choice_ts = ? WHERE id = ?")
+        .run(choice, now, verdictId);
+      return row.execution_id;
     },
     /** Boot recovery: nothing is mid-turn after a restart, and nothing resumes on its own. */
     interruptUnfinished(error: string, now: string): number {

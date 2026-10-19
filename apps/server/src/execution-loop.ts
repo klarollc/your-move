@@ -1,5 +1,12 @@
 import { randomUUID } from "node:crypto";
 
+import {
+  PLAN_LIMIT_NOTE,
+  listPlanModels,
+  PlanAccessRejectedError,
+  PlanUnavailableError,
+  type PlanAccess,
+} from "./chatgpt-plan.js";
 import type { ExecutionRecord, ExecutionStore, TurnCommit } from "./execution-store.js";
 import { DEFAULT_MAX_TURNS } from "./execution-store.js";
 import {
@@ -12,8 +19,11 @@ import {
 } from "./execution-tools.js";
 import type { IntegrationsVault } from "./integrations-vault.js";
 import { validateArgs } from "./json-schema-lite.js";
+import type { ObservedUtterance } from "./lamp-pipeline.js";
 import {
+  chatWithResponses,
   chatWithTools,
+  PlanUsageLimitError,
   type ChatReply,
   type ToolCall,
   type TranscriptEntry,
@@ -28,6 +38,7 @@ import type { ProviderKind, openProviderVault } from "./provider-vault.js";
 import { PROPOSAL_STALE_CODE, PROPOSAL_STALE_MESSAGE } from "./tool-github.js";
 import type { BoundedContract } from "./work-contract.js";
 import { pickModels } from "./work-drafts.js";
+import { renderMaterialsSection, type WorkMaterials } from "./work-materials.js";
 
 // The hosted execution loop (R3).
 //
@@ -51,9 +62,16 @@ const DENIAL_NOTE =
   "The owner denied this proposal; the change was not made. Do not repeat it unchanged. Continue " +
   "within the approved scope, or stop and explain what you need from the owner.";
 
-export function buildSystemPrompt(contract: BoundedContract, tools: readonly Tool[]): string {
+export function buildSystemPrompt(
+  contract: BoundedContract,
+  tools: readonly Tool[],
+  materials?: WorkMaterials | null,
+): string {
   const list = (items: readonly string[]) =>
     items.length > 0 ? items.map((item) => `- ${item}`).join("\n") : "- (none stated)";
+  // R4 Track B: the owner's materials, after the scope and before the tools. Frozen with the rest
+  // of this prompt into the run's initial transcript at enqueue.
+  const materialsSection = renderMaterialsSection(materials);
   return [
     "You are carrying out one piece of work the owner has approved. Stay inside it.",
     "",
@@ -65,6 +83,7 @@ export function buildSystemPrompt(contract: BoundedContract, tools: readonly Too
     "",
     `Done when:\n${list(contract.acceptanceCriteria)}`,
     "",
+    ...(materialsSection ? [materialsSection, ""] : []),
     "Tools you can use:",
     ...tools.map(
       (tool) =>
@@ -212,6 +231,26 @@ export async function gateToolCalls(
 
 export type ExecutionEngine = ReturnType<typeof createExecutionEngine>;
 
+/** Which credential a pass runs on: the ChatGPT plan (Responses API) or a pasted provider key. */
+type Route = { kind: "plan" } | { kind: "key"; provider: ProviderKind };
+
+export const OWNER_AUDIT_TOOL = "owner";
+
+/** 1-based ordinals of the transcript's last assistant entry: its turn index, and its index among non-empty ones. */
+export function utteranceOrdinals(transcript: readonly TranscriptEntry[]): {
+  turnIndex: number;
+  utteranceIndex: number;
+} {
+  let turnIndex = 0;
+  let utteranceIndex = 0;
+  for (const entry of transcript) {
+    if (entry.role !== "assistant") continue;
+    turnIndex += 1;
+    if (entry.content.trim()) utteranceIndex += 1;
+  }
+  return { turnIndex, utteranceIndex };
+}
+
 export function createExecutionEngine(options: {
   store: ExecutionStore;
   providerVault: ProviderVault;
@@ -219,6 +258,15 @@ export function createExecutionEngine(options: {
   registry: ToolRegistry;
   providerFetch: typeof fetch;
   getContract: (draftId: string) => BoundedContract | undefined;
+  /**
+   * R4 lamp tap: called once per committed assistant turn with non-empty content, after the turn
+   * is durably written. Observation only — it cannot change the loop (errors are swallowed).
+   */
+  onUtterance?: (utterance: ObservedUtterance) => void;
+  /** R4 Track D: the imported ChatGPT plan credential. When active, runs use it. */
+  planAccess?: PlanAccess;
+  /** Override of the plan's Responses URL (tests). */
+  planResponsesUrl?: string;
   now?: () => string;
   shutdownGraceMs?: number;
 }) {
@@ -262,12 +310,19 @@ export function createExecutionEngine(options: {
     });
   }
 
-  /** The provider this pass talks to, chosen once; it must stay connected for every turn. */
-  function chooseProvider(): ProviderKind | undefined {
+  /**
+   * The route this pass talks to, chosen once; it must stay connected for every turn. An active
+   * plan credential wins (the owner chose it); otherwise a pasted key, as in R3.
+   */
+  function chooseRoute(): Route | undefined {
+    if (options.planAccess?.isActive()) return { kind: "plan" };
     const selection = providerVault.getModelSelection();
     const candidates: ProviderKind[] =
       selection.mode === "specific" ? [selection.provider] : ["openai", "anthropic"];
-    return candidates.find((provider) => providerVault.getProviderStatus(provider) === "connected");
+    const provider = candidates.find(
+      (candidate) => providerVault.getProviderStatus(candidate) === "connected",
+    );
+    return provider ? { kind: "key", provider } : undefined;
   }
 
   function credentialFor(provider: ProviderKind): string | null {
@@ -305,6 +360,16 @@ export function createExecutionEngine(options: {
 
   const stop = (execution: ExecutionRecord, status: "interrupted" | "failed", error: string) =>
     store.setStatus(execution.id, status, error, now());
+
+  /** Observation only: the tap never alters the loop, whatever the observer does. */
+  function observe(executionId: string, transcript: readonly TranscriptEntry[], text: string) {
+    if (!options.onUtterance || !text.trim()) return;
+    try {
+      options.onUtterance({ executionId, ...utteranceOrdinals(transcript), text });
+    } catch {
+      // A failing observer is the observer's problem.
+    }
+  }
 
   async function applyApprovedProposal(
     execution: ExecutionRecord,
@@ -370,50 +435,112 @@ export function createExecutionEngine(options: {
 
     await applyApprovedProposal(execution, transcript);
 
-    const provider = chooseProvider();
-    if (!provider) return stop(execution, "interrupted", "PROVIDER_DISCONNECTED");
+    const route = chooseRoute();
+    if (!route) return stop(execution, "interrupted", "PROVIDER_DISCONNECTED");
+    store.setFundedBy(execution.id, route.kind === "plan" ? "chatgpt_plan" : route.provider);
     let models: string[] | undefined;
+    const closed = () => store.get(execution.id)?.status === "done";
 
     for (;;) {
       if (cancelled) return stop(execution, "interrupted", "SERVER_SHUTDOWN");
+      // The owner closed this run: stop at the turn boundary, writing nothing more.
+      if (closed()) return;
       if (!hasTurnsRemaining(turnCount, execution.maxTurns)) {
         return stop(execution, "failed", "TURN_BUDGET_EXHAUSTED");
       }
-      // Per-turn credential check: a disconnect lands here, after the turn in flight finished.
-      const credential = credentialFor(provider);
-      if (!credential) return stop(execution, "interrupted", "PROVIDER_DISCONNECTED");
 
       let reply: ChatReply;
-      try {
-        if (!models) {
-          models = pickModels(
-            provider,
-            await listProviderModels(provider, credential, options.providerFetch),
-            providerVault.getModelSelection(),
-          );
+      if (route.kind === "plan") {
+        const plan = options.planAccess!;
+        // Per-turn credential check, with a refresh near expiry. A disconnect or a switch back to
+        // the API key lands here, after the turn in flight finished.
+        if (!plan.isActive()) return stop(execution, "interrupted", "PROVIDER_DISCONNECTED");
+        try {
+          const accessToken = await plan.getAccessToken();
+          if (!accessToken) return stop(execution, "interrupted", "PROVIDER_REAUTH_REQUIRED");
+          if (!models) {
+            const listed = await listPlanModels(accessToken, options.providerFetch, abort.signal);
+            if (listed.length === 0) return stop(execution, "failed", "PROVIDER_RESPONSE_INVALID");
+            models = [listed[0]!.slug];
+          }
+          reply = await chatWithResponses({
+            accessToken,
+            model: models[0]!,
+            transcript,
+            tools,
+            fetcher: options.providerFetch,
+            signal: abort.signal,
+            ...(options.planResponsesUrl ? { url: options.planResponsesUrl } : {}),
+          });
+          // A completed plan request means any earlier limit no longer applies.
+          if (integrationsVault.getPlanStatus().limitReachedAt) integrationsVault.clearPlanLimit();
+        } catch (error) {
+          if (cancelled) return stop(execution, "interrupted", "SERVER_SHUTDOWN");
+          if (error instanceof PlanUsageLimitError) {
+            // Cap hit (Track D #12): defined, never silent. The run waits on the owner with a note;
+            // nothing switches billing on its own. Reply resumes it once the owner has raised the
+            // limit or moved the work to an API key.
+            integrationsVault.recordPlanLimit(now());
+            store.setStatus(
+              execution.id,
+              "waiting-on-you",
+              "PLAN_USAGE_LIMIT_REACHED",
+              now(),
+              PLAN_LIMIT_NOTE,
+            );
+            return;
+          }
+          if (
+            error instanceof ProviderAuthorizationError ||
+            error instanceof PlanAccessRejectedError
+          ) {
+            plan.markNeedsReauth();
+            return stop(execution, "interrupted", "PROVIDER_REAUTH_REQUIRED");
+          }
+          if (error instanceof ProviderUnavailableError || error instanceof PlanUnavailableError) {
+            return stop(execution, "interrupted", "PROVIDER_UNAVAILABLE");
+          }
+          return stop(execution, "failed", "PROVIDER_RESPONSE_INVALID");
         }
-        reply = await callModel(provider, credential, models, transcript, tools);
-      } catch (error) {
-        if (cancelled) return stop(execution, "interrupted", "SERVER_SHUTDOWN");
-        if (error instanceof ProviderAuthorizationError) {
-          providerVault.markNeedsReauth(provider);
-          return stop(execution, "interrupted", "PROVIDER_REAUTH_REQUIRED");
+      } else {
+        const provider = route.provider;
+        // Per-turn credential check: a disconnect lands here, after the turn in flight finished.
+        const credential = credentialFor(provider);
+        if (!credential) return stop(execution, "interrupted", "PROVIDER_DISCONNECTED");
+        try {
+          if (!models) {
+            models = pickModels(
+              provider,
+              await listProviderModels(provider, credential, options.providerFetch),
+              providerVault.getModelSelection(),
+            );
+          }
+          reply = await callModel(provider, credential, models, transcript, tools);
+        } catch (error) {
+          if (cancelled) return stop(execution, "interrupted", "SERVER_SHUTDOWN");
+          if (error instanceof ProviderAuthorizationError) {
+            providerVault.markNeedsReauth(provider);
+            return stop(execution, "interrupted", "PROVIDER_REAUTH_REQUIRED");
+          }
+          if (error instanceof ProviderUnavailableError) {
+            return stop(execution, "interrupted", "PROVIDER_UNAVAILABLE");
+          }
+          return stop(execution, "failed", "PROVIDER_RESPONSE_INVALID");
         }
-        if (error instanceof ProviderUnavailableError) {
-          return stop(execution, "interrupted", "PROVIDER_UNAVAILABLE");
-        }
-        return stop(execution, "failed", "PROVIDER_RESPONSE_INVALID");
       }
+      // Closed while the model was answering: no tool runs, nothing is written.
+      if (closed()) return;
       turnCount += 1;
       transcript.push({ role: "assistant", content: reply.content, toolCalls: reply.toolCalls });
 
       if (reply.toolCalls.length === 0) {
         // The model ended without calling a tool: the work now waits on the owner.
-        store.commitTurn(
+        const written = store.commitTurn(
           execution.id,
           { transcript, turnCount, status: "waiting-on-you", output: reply.content },
           now(),
         );
+        if (written) observe(execution.id, transcript, reply.content);
         return;
       }
 
@@ -423,7 +550,8 @@ export function createExecutionEngine(options: {
       const commit: TurnCommit = gate.proposal
         ? { transcript, turnCount, status: "waiting-on-you", proposal: gate.proposal }
         : { transcript, turnCount, status: "working" };
-      store.commitTurn(execution.id, commit, now());
+      if (!store.commitTurn(execution.id, commit, now())) return;
+      observe(execution.id, transcript, reply.content);
       for (const entry of gate.deferredAudits) ctx.audit(entry);
       if (gate.proposal) return;
     }
@@ -462,25 +590,41 @@ export function createExecutionEngine(options: {
     });
   }
 
-  const initialTranscript = (contract: BoundedContract): TranscriptEntry[] => [
+  const initialTranscript = (
+    contract: BoundedContract,
+    materials?: WorkMaterials | null,
+  ): TranscriptEntry[] => [
     {
       role: "system",
       content: buildSystemPrompt(
         contract,
         toolsForScope(registry, toolScopeForCeiling(contract.permissionCeiling)),
+        materials,
       ),
     },
     { role: "user", content: "Begin the approved work now." },
   ];
 
+  const ownerAudit = (executionId: string, resultSummary: string, proposalId?: string) =>
+    writeAudit(
+      executionId,
+      { tool: OWNER_AUDIT_TOOL, args: null, resultSummary, ...(proposalId ? { proposalId } : {}) },
+      [],
+    );
+
   return {
-    /** Idempotent per draft revision. */
-    enqueue(draftId: string, revision: number, contract: BoundedContract): ExecutionRecord {
+    /** Idempotent per draft revision. Materials are frozen into the initial transcript here. */
+    enqueue(
+      draftId: string,
+      revision: number,
+      contract: BoundedContract,
+      materials?: WorkMaterials | null,
+    ): ExecutionRecord {
       const execution = store.enqueue({
         draftId,
         revision,
         maxTurns: DEFAULT_MAX_TURNS,
-        transcript: initialTranscript(contract),
+        transcript: initialTranscript(contract, materials),
         now: now(),
       });
       setImmediate(kick);
@@ -495,7 +639,10 @@ export function createExecutionEngine(options: {
             ...previous.transcript,
             {
               role: "user",
-              content: `The previous attempt stopped before finishing (${previous.error ?? previous.status}). This is a new attempt: continue the work from where it left off.`,
+              content:
+                previous.status === "done"
+                  ? "The owner closed this work and has now picked it up again. This is a new attempt: continue the work from where it left off."
+                  : `The previous attempt stopped before finishing (${previous.error ?? previous.status}). This is a new attempt: continue the work from where it left off.`,
             },
           ],
         }),
@@ -503,6 +650,26 @@ export function createExecutionEngine(options: {
       );
       if (typeof result !== "string") setImmediate(kick);
       return result;
+    },
+    /** Reply-and-resume (R4 Track C): the owner's message, then the run resumes within its turns. */
+    reply(executionId: string, message: string) {
+      const result = store.reply(executionId, message, now());
+      if (result === "OK") {
+        ownerAudit(executionId, "owner replied; run resumed");
+        setImmediate(kick);
+      }
+      return result;
+    },
+    /** Close-as-done (R4 Track C): the only path to `done`. The choice is logged. */
+    closeRun(executionId: string) {
+      const closedRun = store.closeRun(executionId, now());
+      if (closedRun.result === "OK") {
+        for (const proposal of closedRun.withdrawn) {
+          ownerAudit(executionId, "closed by the owner; proposal not sent", proposal.id);
+        }
+        ownerAudit(executionId, "closed as done by the owner");
+      }
+      return closedRun.result;
     },
     decide(executionId: string, proposalId: string, decision: "approved" | "denied") {
       const result = store.decideProposal(

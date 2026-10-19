@@ -1,0 +1,46 @@
+{
+ "1440": {
+  "first_unfolded": "Add a setup section to the handbook README",
+  "house_label": "Your work\nAdd a setup section to the handbook README \u00b7 needs you\nDraft the onboarding email for new volunteers \u00b7 needs you\n1 more needs you \u00b7 2 working \u00b7 1 done",
+  "tab_order": [
+   "See it as a list",
+   "Add a setup section to the handbook README \u2014 needs you",
+   "Draft the onboarding email for new volunteers \u2014 needs you",
+   "Collect venue options for the spring event \u2014 needs you"
+  ],
+  "enter_opened": "Collect venue options for the spring event",
+  "panel_animation": "your-move-unfold",
+  "panel_animation_reduced_motion": "none",
+  "curtain_transition_reduced_motion": "0s",
+  "console_errors": [],
+  "websocket": [
+   {
+    "url": "ws://127.0.0.1:4317/api/events",
+    "state": "open"
+   }
+  ],
+  "http_errors_4xx_5xx": []
+ },
+ "1280": {
+  "first_unfolded": "Add a setup section to the handbook README",
+  "house_label": "Your work\nAdd a setup section to the handbook README \u00b7 needs you\nDraft the onboarding email for new volunteers \u00b7 needs you\n1 more needs you \u00b7 2 working \u00b7 1 done",
+  "tab_order": [
+   "See it as a list",
+   "Add a setup section to the handbook README \u2014 needs you",
+   "Draft the onboarding email for new volunteers \u2014 needs you",
+   "Collect venue options for the spring event \u2014 needs you"
+  ],
+  "enter_opened": "Collect venue options for the spring event",
+  "panel_animation": "your-move-unfold",
+  "panel_animation_reduced_motion": "none",
+  "curtain_transition_reduced_motion": "0s",
+  "console_errors": [],
+  "websocket": [
+   {
+    "url": "ws://127.0.0.1:4317/api/events",
+    "state": "open"
+   }
+  ],
+  "http_errors_4xx_5xx": []
+ }
+}

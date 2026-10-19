@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc -b",
-    "start:hosted": "node dist/hosted.js"
+    "start:hosted": "node dist/hosted.js",
+    "siwc:login": "tsx src/siwc-login.ts"
   },
   "dependencies": {
     "@cuckcode/contracts": "0.0.0",

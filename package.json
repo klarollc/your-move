@@ -15,6 +15,7 @@
   "scripts": {
     "dev:web": "npm run dev --workspace @cuckcode/web",
     "dev:server": "npm run dev --workspace @cuckcode/server",
+    "siwc:login": "tsx apps/server/src/siwc-login.ts",
     "check:toolchain": "node scripts/check-toolchain.mjs",
     "test:toolchain": "node --test scripts/check-toolchain.test.mjs",
     "format": "prettier --write .",
