@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc -b",
-    "start:hosted": "node dist/hosted.js",
+    "start:hosted": "node --conditions=production dist/hosted.js",
     "siwc:login": "tsx src/siwc-login.ts"
   },
   "dependencies": {
