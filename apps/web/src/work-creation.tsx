@@ -40,7 +40,11 @@ async function requestJson<T>(
   const response = await fetcher(url, {
     ...init,
     credentials: "same-origin",
-    headers: { "content-type": "application/json", ...(init.headers ?? {}) },
+    // Only declare a JSON body when there is one. Fastify rejects an empty body that claims JSON.
+    headers:
+      init.body === undefined
+        ? (init.headers ?? {})
+        : { "content-type": "application/json", ...(init.headers ?? {}) },
   });
   const body = (await response.json().catch(() => undefined)) as
     (T & { code?: string }) | undefined;

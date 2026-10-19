@@ -127,4 +127,63 @@ describe("HostedWorkspace owner session", () => {
     await screen.findByRole("heading", { name: "Describe the work" });
     expect(screen.queryByText(/not included in this hosted setup stage/)).not.toBeInTheDocument();
   });
+
+  it("approves without sending an empty JSON body (Fastify rejects content-type with no body)", async () => {
+    const draftView = {
+      id: "draft_test",
+      status: "draft",
+      description: "Test work",
+      prose: { achieve: "Outcome", inScope: ["Scope"], outOfScope: [], doneWhen: ["Done"] },
+      revision: 1,
+      updatedAt: "2026-10-19T00:00:00.000Z",
+      approvedAt: null,
+    };
+    const fetcher = vi.fn<typeof fetch>(async (input, init) => {
+      const url = String(input);
+      if (url === "/api/session" && (!init?.method || init.method === "GET")) {
+        return jsonResponse({ authenticated: true });
+      }
+      if (url === "/api/providers") {
+        return jsonResponse({
+          providers: [
+            { id: "openai", status: "connected" },
+            { id: "anthropic", status: "disconnected" },
+          ],
+          modelSelection: { mode: "automatic" },
+        });
+      }
+      if (url === "/api/providers/openai/models/refresh") return jsonResponse({ models: [] });
+      if (url === "/api/work-drafts" && init?.method === "POST")
+        return jsonResponse(draftView, 201);
+      if (url === "/api/work-drafts/draft_test/approve" && init?.method === "POST") {
+        // Mirror Fastify: a request that declares JSON with an empty body is rejected.
+        const declaresJson = new Headers(init.headers).get("content-type") === "application/json";
+        if (declaresJson && (init.body === undefined || init.body === "")) {
+          return jsonResponse({ code: "FST_ERR_CTP_EMPTY_JSON_BODY" }, 400);
+        }
+        return jsonResponse({
+          ...draftView,
+          status: "approved",
+          approvedAt: "2026-10-19T00:00:01.000Z",
+        });
+      }
+      return jsonResponse({ code: "NOT_FOUND" }, 404);
+    });
+    const user = userEvent.setup();
+    render(<HostedWorkspace fetcher={fetcher} />);
+
+    await user.type(await screen.findByLabelText(/What should get done/), "Test work");
+    await user.click(screen.getByRole("button", { name: "Draft it" }));
+    await user.click(await screen.findByRole("button", { name: "Approve this work" }));
+    await user.click(screen.getByRole("button", { name: "Yes, approve" }));
+
+    expect(await screen.findByRole("heading", { name: "Work approved" })).toBeVisible();
+    const approveCall = fetcher.mock.calls.find(
+      ([input, init]) =>
+        String(input) === "/api/work-drafts/draft_test/approve" && init?.method === "POST",
+    );
+    const headers = new Headers(approveCall?.[1]?.headers);
+    expect(headers.get("content-type")).toBeNull();
+    expect(approveCall?.[1]?.body).toBeUndefined();
+  });
 });
