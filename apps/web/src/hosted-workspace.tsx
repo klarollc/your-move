@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import "./hosted-workspace.css";
 import { ProviderSettings } from "./provider-settings.js";
 import { WorkCreation } from "./work-creation.js";
 
@@ -9,9 +10,9 @@ export function HostedWorkspace({
 }: Readonly<{ fetcher?: typeof fetch }>) {
   const [signedIn, setSignedIn] = useState(false);
   return (
-    <>
+    <div className="hosted-workspace">
       <ProviderSettings fetcher={fetcher} onSessionChange={setSignedIn} />
       <WorkCreation signedIn={signedIn} fetcher={fetcher} />
-    </>
+    </div>
   );
 }

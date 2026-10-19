@@ -1,8 +1,6 @@
 .provider-settings {
   width: 100%;
   min-height: 100vh;
-  max-height: 100vh;
-  overflow: auto;
   padding: clamp(24px, 5vw, 64px) clamp(20px, 7vw, 104px);
   color: #292b2d;
   background: transparent;

@@ -17,6 +17,34 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+describe("HostedWorkspace layout", () => {
+  it("places the work-creation panel inside the scroll container with the provider panel", async () => {
+    const fetcher = vi.fn<typeof fetch>(async (input, init) => {
+      const url = String(input);
+      if (url === "/api/session" && (!init?.method || init.method === "GET")) {
+        return jsonResponse({ authenticated: true });
+      }
+      if (url === "/api/providers") {
+        return jsonResponse({
+          providers: [
+            { id: "openai", status: "disconnected" },
+            { id: "anthropic", status: "disconnected" },
+          ],
+          modelSelection: { mode: "automatic" },
+        });
+      }
+      return jsonResponse({ code: "NOT_FOUND" }, 404);
+    });
+    const { container } = render(<HostedWorkspace fetcher={fetcher} />);
+
+    const panel = await screen.findByRole("heading", { name: "Describe the work" });
+    const scroller = container.querySelector(".hosted-workspace");
+    expect(scroller).not.toBeNull();
+    expect(scroller?.contains(panel)).toBe(true);
+    expect(scroller?.querySelector(".provider-settings")).not.toBeNull();
+  });
+});
+
 describe("HostedWorkspace owner session", () => {
   it("shows the work-creation panel after sign-in without a page reload", async () => {
     let authenticated = false;
