@@ -1,0 +1,216 @@
+{
+  "schema": "cuckcode.r4-lamp-latency.v1",
+  "method": "Hosted app, real execution loop, real lamp pipeline, real classifyLampV2 against a real Ollama, real WebSocket subscriber on /api/events. Agent replies replayed from a stored transcript; paced one utterance at a time. No provider session.",
+  "transcript": "docs/evidence/phase-4/live-kickoff/task-17-run/run-attempt-2.json",
+  "model": "qwen3:8b",
+  "promptVersion": "v2",
+  "ollama": {
+    "endpoint": "http://localhost:11434",
+    "tokenUsed": false
+  },
+  "budgetMs": 10000,
+  "coldStartMs": 1069,
+  "sampleCount": 26,
+  "server": {
+    "p50Ms": 6277,
+    "p95Ms": 12962,
+    "count": 26
+  },
+  "client": {
+    "p50Ms": 6279,
+    "p95Ms": 12963,
+    "minMs": 2263,
+    "maxMs": 12980
+  },
+  "overBudgetCount": 6,
+  "failures": 0,
+  "degraded": true,
+  "verdicts": {
+    "lamp": 22,
+    "no-lamp": 4
+  },
+  "samples": [
+    {
+      "replyIndex": 0,
+      "turnIndex": 1,
+      "chars": 4080,
+      "clientMs": 10031,
+      "verdict": "lamp"
+    },
+    {
+      "replyIndex": 1,
+      "turnIndex": 2,
+      "chars": 4439,
+      "clientMs": 11035,
+      "verdict": "no-lamp"
+    },
+    {
+      "replyIndex": 2,
+      "turnIndex": 3,
+      "chars": 2955,
+      "clientMs": 6299,
+      "verdict": "lamp"
+    },
+    {
+      "replyIndex": 3,
+      "turnIndex": 4,
+      "chars": 3103,
+      "clientMs": 7176,
+      "verdict": "lamp"
+    },
+    {
+      "replyIndex": 4,
+      "turnIndex": 5,
+      "chars": 3012,
+      "clientMs": 6595,
+      "verdict": "lamp"
+    },
+    {
+      "replyIndex": 5,
+      "turnIndex": 6,
+      "chars": 5484,
+      "clientMs": 12963,
+      "verdict": "lamp"
+    },
+    {
+      "replyIndex": 6,
+      "turnIndex": 7,
+      "chars": 3771,
+      "clientMs": 9616,
+      "verdict": "lamp"
+    },
+    {
+      "replyIndex": 7,
+      "turnIndex": 8,
+      "chars": 409,
+      "clientMs": 2283,
+      "verdict": "lamp"
+    },
+    {
+      "replyIndex": 8,
+      "turnIndex": 9,
+      "chars": 551,
+      "clientMs": 2360,
+      "verdict": "lamp"
+    },
+    {
+      "replyIndex": 9,
+      "turnIndex": 10,
+      "chars": 674,
+      "clientMs": 2619,
+      "verdict": "lamp"
+    },
+    {
+      "replyIndex": 10,
+      "turnIndex": 1,
+      "chars": 525,
+      "clientMs": 2426,
+      "verdict": "lamp"
+    },
+    {
+      "replyIndex": 11,
+      "turnIndex": 2,
+      "chars": 573,
+      "clientMs": 2449,
+      "verdict": "lamp"
+    },
+    {
+      "replyIndex": 12,
+      "turnIndex": 3,
+      "chars": 559,
+      "clientMs": 2629,
+      "verdict": "no-lamp"
+    },
+    {
+      "replyIndex": 13,
+      "turnIndex": 4,
+      "chars": 4080,
+      "clientMs": 10062,
+      "verdict": "lamp"
+    },
+    {
+      "replyIndex": 14,
+      "turnIndex": 5,
+      "chars": 4439,
+      "clientMs": 11043,
+      "verdict": "no-lamp"
+    },
+    {
+      "replyIndex": 15,
+      "turnIndex": 6,
+      "chars": 2955,
+      "clientMs": 6279,
+      "verdict": "lamp"
+    },
+    {
+      "replyIndex": 16,
+      "turnIndex": 7,
+      "chars": 3103,
+      "clientMs": 7247,
+      "verdict": "lamp"
+    },
+    {
+      "replyIndex": 17,
+      "turnIndex": 8,
+      "chars": 3012,
+      "clientMs": 6609,
+      "verdict": "lamp"
+    },
+    {
+      "replyIndex": 18,
+      "turnIndex": 9,
+      "chars": 5484,
+      "clientMs": 12980,
+      "verdict": "lamp"
+    },
+    {
+      "replyIndex": 19,
+      "turnIndex": 10,
+      "chars": 3771,
+      "clientMs": 9631,
+      "verdict": "lamp"
+    },
+    {
+      "replyIndex": 20,
+      "turnIndex": 1,
+      "chars": 409,
+      "clientMs": 2263,
+      "verdict": "lamp"
+    },
+    {
+      "replyIndex": 21,
+      "turnIndex": 2,
+      "chars": 551,
+      "clientMs": 2321,
+      "verdict": "lamp"
+    },
+    {
+      "replyIndex": 22,
+      "turnIndex": 3,
+      "chars": 674,
+      "clientMs": 2528,
+      "verdict": "lamp"
+    },
+    {
+      "replyIndex": 23,
+      "turnIndex": 4,
+      "chars": 525,
+      "clientMs": 2319,
+      "verdict": "lamp"
+    },
+    {
+      "replyIndex": 24,
+      "turnIndex": 5,
+      "chars": 573,
+      "clientMs": 2438,
+      "verdict": "lamp"
+    },
+    {
+      "replyIndex": 25,
+      "turnIndex": 6,
+      "chars": 559,
+      "clientMs": 2615,
+      "verdict": "no-lamp"
+    }
+  ]
+}
