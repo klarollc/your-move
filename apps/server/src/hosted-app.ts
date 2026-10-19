@@ -1,9 +1,29 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { readFileSync, realpathSync, statSync } from "node:fs";
 import { extname, resolve, sep } from "node:path";
+import websocket from "@fastify/websocket";
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
 import { z } from "zod";
 
+import {
+  MANAGE_USAGE_URL,
+  PLAN_IN_USE_LABEL,
+  REFRESH_MARGIN_MS,
+  SIWC_PLAN_SCOPE,
+  createPlanAccess,
+  decodeCredentialBundle,
+  listPlanModels,
+  PlanAccessRejectedError,
+  PlanRefreshError,
+  refreshPlanCredential,
+  revokePlanSession,
+  verifyIdToken,
+  planCredentialSchema,
+} from "./chatgpt-plan.js";
+import { createLampLiveFeed } from "./lamp-live-feed.js";
+import { createLampPipeline, type Classify } from "./lamp-pipeline.js";
+import { classifyLampV2, LAMP_V2_MODEL } from "./lamp-v2.js";
+import { workMaterialsSchema } from "./work-materials.js";
 import {
   ProviderAuthorizationError,
   ProviderResponseError,
@@ -52,6 +72,8 @@ type HostedAppOptions = {
   resolveHost?: ResolveHost;
   /** Replaces the native tool registry (tests: allowlist drift must refuse the subsystem). */
   toolRegistry?: ToolRegistry;
+  /** Outbound fetch for the lamp's Ollama endpoint. Defaults to global fetch. */
+  lampFetch?: typeof fetch;
 };
 
 const SESSION_COOKIE = "cuckcode_session";
@@ -210,6 +232,24 @@ export function createHostedApp(options: HostedAppOptions): HostedApp {
   });
   const executionStore: ExecutionStore = openExecutionStore({ dataDir: options.dataDir });
   const toolFetch = options.toolFetch ?? providerFetch;
+  // R4 Track A: the lamp. Verdicts are a projection: lamp_verdicts + the live feed, never a log.
+  const lampFetch = options.lampFetch ?? globalThis.fetch;
+  const lampFeed = createLampLiveFeed();
+  const classifyWithOwnerEndpoint: Classify = (text) => {
+    const endpoint = integrationsVault.getLampEndpoint();
+    return classifyLampV2(text, {
+      fetcher: lampFetch,
+      endpoint: `${endpoint.baseUrl}/api/chat`,
+      ...(endpoint.token ? { token: endpoint.token } : {}),
+    });
+  };
+  const lampPipeline = createLampPipeline({
+    store: executionStore,
+    feed: lampFeed,
+    classify: classifyWithOwnerEndpoint,
+  });
+  // R4 Track D: the imported ChatGPT plan credential (refreshed here, never by the client).
+  const planAccess = createPlanAccess({ vault: integrationsVault, fetcher: providerFetch });
   const toolRegistry =
     options.toolRegistry ??
     createNativeToolRegistry({
@@ -227,6 +267,8 @@ export function createHostedApp(options: HostedAppOptions): HostedApp {
       integrationsVault,
       registry: toolRegistry,
       providerFetch,
+      onUtterance: (utterance) => lampPipeline.observe(utterance),
+      planAccess,
       getContract: (draftId) => {
         const draft = workDrafts.get(draftId);
         return draft?.status === "approved" ? draft.contract : undefined;
@@ -237,6 +279,7 @@ export function createHostedApp(options: HostedAppOptions): HostedApp {
     executionEngine = undefined;
   }
   const app = Fastify({ logger: false });
+  void app.register(websocket);
 
   app.addHook("onRequest", async (request, reply) => {
     const pathname = new URL(request.url, options.appOrigin).pathname;
@@ -256,6 +299,11 @@ export function createHostedApp(options: HostedAppOptions): HostedApp {
   app.addHook("onClose", async () => {
     // Stop the execution loop first (bounded), so no run writes to a store after it closes.
     await executionEngine?.close();
+    await Promise.race([
+      lampPipeline.flush(),
+      new Promise((resolve) => setTimeout(resolve, 2_000).unref()),
+    ]);
+    lampFeed.clear();
     signingKey.fill(0);
     expectedPassword.fill(0);
     providerVault.close();
@@ -265,6 +313,31 @@ export function createHostedApp(options: HostedAppOptions): HostedApp {
   });
 
   app.get("/health", async () => ({ status: "ok" }));
+
+  // R4 Track A #4: the hosted live verdict feed. Owner session required (the onRequest hook), and
+  // the upgrade must come from the app's own origin (a GET skips the hook's origin check, so a
+  // cross-site page could otherwise open it with the owner's cookie). Messages are B's exact
+  // lamp.verdict contract: no text. Execution status keeps its 2 s HTTP polling.
+  void app.register(async (instance) => {
+    instance.get(
+      "/api/events",
+      {
+        websocket: true,
+        preValidation: async (request, reply) => {
+          if (request.headers.origin !== options.appOrigin) {
+            await reply.code(403).send({ code: "ORIGIN_REJECTED" });
+          }
+        },
+      },
+      (socket) => {
+        const unsubscribe = lampFeed.subscribe((message) => {
+          socket.send(JSON.stringify(message));
+        });
+        socket.on("close", unsubscribe);
+        socket.on("error", unsubscribe);
+      },
+    );
+  });
 
   if (staticFiles) {
     app.get("/", async (_request, reply) =>
@@ -502,6 +575,15 @@ export function createHostedApp(options: HostedAppOptions): HostedApp {
 
   // R3: every draft view carries an additive `execution` field (latest attempt, or null).
   function executionView(record: ExecutionRecord) {
+    // R4: the triage join. Verdicts stay textless; the text comes from the run's own transcript,
+    // matched on turn index (verdict utteranceId = utterance_<executionId>_<turnIndex>_1).
+    const utterances: { turnIndex: number; text: string }[] = [];
+    let turnIndex = 0;
+    for (const entry of record.transcript) {
+      if (entry.role !== "assistant") continue;
+      turnIndex += 1;
+      if (entry.content.trim()) utterances.push({ turnIndex, text: entry.content });
+    }
     return {
       id: record.id,
       draftId: record.draftId,
@@ -515,6 +597,15 @@ export function createHostedApp(options: HostedAppOptions): HostedApp {
       error: record.error,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
+      fundedBy: record.fundedBy,
+      utterances,
+      lampVerdicts: executionStore.listVerdicts(record.id).map((verdict) => ({
+        utteranceId: verdict.row.id,
+        turnIndex: verdict.row.turnIndex,
+        verdict: verdict.row.verdict,
+        verdictTs: verdict.row.verdictTs,
+        ownerChoice: verdict.ownerChoice,
+      })),
       proposals: executionStore.listProposals(record.id).map((proposal) => ({
         id: proposal.id,
         tool: proposal.tool,
@@ -592,8 +683,21 @@ export function createHostedApp(options: HostedAppOptions): HostedApp {
       return reply.code(409).send({ code: "WORK_DRAFT_NOT_EDITABLE" });
     }
     const approved = workDrafts.get(existing.id)!;
-    executionEngine?.enqueue(approved.id, approved.revision, approved.contract);
+    executionEngine?.enqueue(approved.id, approved.revision, approved.contract, approved.materials);
     return reply.code(200).send(draftView(approved));
+  });
+
+  // R4 Track B: the owner's materials, editable only while the work is a draft. Each edit is a new
+  // revision; approval freezes them, and enqueue copies them into the run's initial transcript.
+  app.put<{ Params: { id: string } }>("/api/work-drafts/:id/materials", async (request, reply) => {
+    const body = workMaterialsSchema.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ code: "WORK_MATERIALS_INVALID" });
+    const existing = workDrafts.get(request.params.id);
+    if (!existing) return reply.code(404).send({ code: "WORK_DRAFT_NOT_FOUND" });
+    if (!workDrafts.setMaterials(existing.id, body.data, new Date().toISOString())) {
+      return reply.code(409).send({ code: "WORK_DRAFT_NOT_EDITABLE" });
+    }
+    return reply.code(200).send(draftView(workDrafts.get(existing.id)!));
   });
 
   // ---- R3: executions, proposals, integrations ----
@@ -634,7 +738,7 @@ export function createHostedApp(options: HostedAppOptions): HostedApp {
     if (executionStore.latestForDraft(draft.id)) {
       return reply.code(409).send({ code: "WORK_EXECUTION_EXISTS" });
     }
-    const execution = engine.enqueue(draft.id, draft.revision, draft.contract);
+    const execution = engine.enqueue(draft.id, draft.revision, draft.contract, draft.materials);
     return reply.code(201).send(executionView(execution));
   });
 
@@ -669,6 +773,213 @@ export function createHostedApp(options: HostedAppOptions): HostedApp {
       },
     );
   }
+
+  // ---- R4 Track C: owner triage, so a run never has zero available actions ----
+
+  const replySchema = z.object({ message: z.string().trim().min(1).max(4000) }).strict();
+  app.post<{ Params: { id: string } }>("/api/work-executions/:id/reply", async (request, reply) => {
+    const engine = engineOrRefuse(reply);
+    if (!engine) return reply;
+    const body = replySchema.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ code: "WORK_EXECUTION_REQUEST_INVALID" });
+    const result = engine.reply(request.params.id, body.data.message);
+    if (result === "NOT_FOUND") return reply.code(404).send({ code: "WORK_EXECUTION_NOT_FOUND" });
+    if (result === "NOT_WAITING")
+      return reply.code(409).send({ code: "WORK_EXECUTION_NOT_WAITING" });
+    if (result === "PROPOSAL_PENDING") return reply.code(409).send({ code: "PROPOSAL_PENDING" });
+    if (result === "NO_TURNS_LEFT") {
+      return reply.code(409).send({ code: "WORK_EXECUTION_NO_TURNS_LEFT" });
+    }
+    return reply.code(200).send(executionView(executionStore.get(request.params.id)!));
+  });
+
+  app.post<{ Params: { id: string } }>("/api/work-executions/:id/close", async (request, reply) => {
+    const engine = engineOrRefuse(reply);
+    if (!engine) return reply;
+    const result = engine.closeRun(request.params.id);
+    if (result === "NOT_FOUND") return reply.code(404).send({ code: "WORK_EXECUTION_NOT_FOUND" });
+    if (result === "NOT_CLOSABLE") {
+      return reply.code(409).send({ code: "WORK_EXECUTION_NOT_CLOSABLE" });
+    }
+    return reply.code(200).send(executionView(executionStore.get(request.params.id)!));
+  });
+
+  // The owner's signal on a lamp cue: "Draw the curtain" (dismissed) or opened (engaged). Logged
+  // beside the verdict as signal; it changes nothing about the run.
+  const verdictChoiceSchema = z.object({ choice: z.enum(["dismissed", "engaged"]) }).strict();
+  app.post<{ Params: { id: string } }>("/api/lamp-verdicts/:id/choice", async (request, reply) => {
+    const body = verdictChoiceSchema.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ code: "LAMP_CHOICE_INVALID" });
+    const executionId = executionStore.recordVerdictChoice(
+      request.params.id,
+      body.data.choice,
+      new Date().toISOString(),
+    );
+    if (!executionId) return reply.code(404).send({ code: "LAMP_VERDICT_NOT_FOUND" });
+    return reply.code(200).send({ utteranceId: request.params.id, choice: body.data.choice });
+  });
+
+  // ---- R4 Track A #2 / D #13: the lamp's Ollama endpoint ----
+
+  app.get("/api/lamp", async () => {
+    const endpoint = integrationsVault.getLampEndpoint();
+    return {
+      endpoint: {
+        baseUrl: endpoint.baseUrl,
+        configured: endpoint.configured,
+        tokenSet: endpoint.token !== null,
+      },
+      model: LAMP_V2_MODEL,
+      ...lampPipeline.snapshot(),
+    };
+  });
+
+  const lampEndpointSchema = z
+    .object({
+      baseUrl: z.string().trim().min(1).max(2048),
+      token: z
+        .string()
+        .trim()
+        .max(4096)
+        // eslint-disable-next-line no-control-regex -- The token enters an HTTP authorization header.
+        .regex(/^[^\u0000-\u001f\u007f\s]*$/)
+        .optional(),
+    })
+    .strict();
+
+  // Validated at connect: the endpoint must answer /api/tags (with the token, when set) and list the
+  // locked model. The URL is the owner's own choice and may be private (an Ollama on their network),
+  // so it is not run through the web_fetch SSRF guard; only the owner's session can set it.
+  app.post("/api/lamp/endpoint", async (request, reply) => {
+    const body = lampEndpointSchema.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ code: "LAMP_ENDPOINT_INVALID" });
+    let url: URL;
+    try {
+      url = new URL(body.data.baseUrl);
+    } catch {
+      return reply.code(400).send({ code: "LAMP_ENDPOINT_INVALID" });
+    }
+    if ((url.protocol !== "http:" && url.protocol !== "https:") || url.username || url.password) {
+      return reply.code(400).send({ code: "LAMP_ENDPOINT_INVALID" });
+    }
+    const baseUrl = `${url.origin}${url.pathname.replace(/\/+$/u, "")}`;
+    const token = body.data.token ? body.data.token : null;
+    let response: Response;
+    try {
+      response = await lampFetch(`${baseUrl}/api/tags`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        signal: AbortSignal.timeout(10_000),
+      });
+    } catch {
+      return reply.code(503).send({ code: "LAMP_ENDPOINT_UNREACHABLE" });
+    }
+    if (response.status === 401 || response.status === 403) {
+      return reply.code(400).send({ code: "LAMP_ENDPOINT_AUTH_REJECTED" });
+    }
+    if (!response.ok) return reply.code(503).send({ code: "LAMP_ENDPOINT_UNREACHABLE" });
+    const tags = (await response.json().catch(() => undefined)) as
+      { models?: { name?: unknown; model?: unknown }[] } | undefined;
+    const hasModel = (tags?.models ?? []).some(
+      (model) => model.name === LAMP_V2_MODEL || model.model === LAMP_V2_MODEL,
+    );
+    if (!hasModel)
+      return reply.code(422).send({ code: "LAMP_MODEL_MISSING", model: LAMP_V2_MODEL });
+    integrationsVault.saveLampEndpoint(baseUrl, token);
+    return reply.code(201).send({ baseUrl, configured: true, tokenSet: token !== null });
+  });
+
+  app.delete("/api/lamp/endpoint", async () => {
+    integrationsVault.clearLampEndpoint();
+    const endpoint = integrationsVault.getLampEndpoint();
+    return { baseUrl: endpoint.baseUrl, configured: false, tokenSet: false };
+  });
+
+  // ---- R4 Track D: "Continue with ChatGPT" (local sign-in, hosted import) ----
+
+  function planView() {
+    return {
+      ...integrationsVault.getPlanStatus(),
+      inUseLabel: PLAN_IN_USE_LABEL,
+      manageUsageUrl: MANAGE_USAGE_URL,
+      hostId: integrationsVault.getHostId(),
+    };
+  }
+
+  app.get("/api/chatgpt-plan", async () => planView());
+
+  const planImportSchema = z.object({ bundle: z.string().trim().min(1).max(64_000) }).strict();
+  app.post("/api/chatgpt-plan/import", async (request, reply) => {
+    const body = planImportSchema.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ code: "PLAN_IMPORT_INVALID" });
+    let credential = decodeCredentialBundle(body.data.bundle);
+    if (!credential) return reply.code(400).send({ code: "PLAN_IMPORT_INVALID" });
+    if (!credential.scopes.includes(SIWC_PLAN_SCOPE)) {
+      return reply.code(422).send({ code: "PLAN_SCOPE_MISSING" });
+    }
+    try {
+      // The bundle's ID token was validated at sign-in; check its signature, issuer and audience
+      // again here (it may be past expiry: it only identifies the account).
+      const claims = await verifyIdToken(credential.id_token, {
+        fetcher: providerFetch,
+        clientId: credential.client_id,
+        nowMs: Date.now(),
+        allowExpired: true,
+      });
+      if (claims.sub !== credential.subject) {
+        return reply.code(400).send({ code: "INVALID_CREDENTIALS" });
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+      if (message.startsWith("SIWC_"))
+        return reply.code(503).send({ code: "PROVIDER_UNAVAILABLE" });
+      return reply.code(400).send({ code: "INVALID_CREDENTIALS" });
+    }
+    try {
+      if (credential.expires_at - Date.now() <= REFRESH_MARGIN_MS) {
+        credential = await refreshPlanCredential(credential, providerFetch, Date.now());
+      }
+      // Validate at import, like a pasted key: the plan account must answer with its models.
+      await listPlanModels(credential.access_token, providerFetch);
+    } catch (error) {
+      if (error instanceof PlanAccessRejectedError) {
+        return reply.code(400).send({ code: "INVALID_CREDENTIALS" });
+      }
+      if (error instanceof PlanRefreshError && error.terminal) {
+        return reply.code(400).send({ code: "INVALID_CREDENTIALS" });
+      }
+      return reply.code(503).send({ code: "PROVIDER_UNAVAILABLE" });
+    }
+    integrationsVault.savePlanCredential(
+      JSON.stringify(planCredentialSchema.parse(credential)),
+      credential.email,
+    );
+    return reply.code(201).send(planView());
+  });
+
+  // The owner's choice between the plan and their pasted key. Switching takes effect at the next
+  // turn boundary of a running pass.
+  const planActiveSchema = z.object({ active: z.boolean() }).strict();
+  app.post("/api/chatgpt-plan/active", async (request, reply) => {
+    const body = planActiveSchema.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ code: "PLAN_REQUEST_INVALID" });
+    if (!integrationsVault.setPlanActive(body.data.active)) {
+      return reply.code(409).send({ code: "PLAN_NOT_CONNECTED" });
+    }
+    return reply.code(200).send(planView());
+  });
+
+  // Disconnect deletes. The renewable session is revoked first (best effort, OpenAI's guidance);
+  // the response says whether revocation was confirmed.
+  app.delete("/api/chatgpt-plan", async () => {
+    const json = integrationsVault.getPlanCredential();
+    let revoked = false;
+    if (json) {
+      const parsed = planCredentialSchema.safeParse(JSON.parse(json));
+      if (parsed.success) revoked = await revokePlanSession(parsed.data, providerFetch);
+    }
+    integrationsVault.disconnectPlan();
+    return { ...planView(), revoked };
+  });
 
   const integrationSchema = z.enum(["github"]);
   const integrationConnectSchema = z

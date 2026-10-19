@@ -9,3 +9,5 @@ export * from "./workspace.js";
 export * from "./kickoff.js";
 export * from "./open-question.js";
 export * from "./work-payloads.js";
+export * from "./utterance-verdict.js";
+export * from "./lamp-verdict-message.js";

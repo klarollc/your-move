@@ -18,6 +18,7 @@ import {
   type ProviderModel,
 } from "./provider-client.js";
 import type { ModelSelection, ProviderKind } from "./provider-vault.js";
+import { workMaterialsSchema, type WorkMaterials } from "./work-materials.js";
 
 export type WorkDraftStatus = "draft" | "approved";
 
@@ -29,6 +30,8 @@ export type WorkDraftView = {
   revision: number;
   updatedAt: string;
   approvedAt: string | null;
+  /** R4: the owner's materials on this revision (null when none were attached). */
+  materials: WorkMaterials | null;
 };
 
 type StoredDraft = {
@@ -39,6 +42,7 @@ type StoredDraft = {
   revision: number;
   updatedAt: string;
   approvedAt: string | null;
+  materials: WorkMaterials | null;
 };
 
 const DRAFT_SCHEMA = `
@@ -62,6 +66,11 @@ export function openWorkDraftStore(options: { dataDir: string }) {
   database.pragma("journal_mode = WAL");
   database.pragma("secure_delete = ON");
   database.exec(DRAFT_SCHEMA);
+  // R4 Track B: nullable materials_json, added in place (existing rows read as "no materials").
+  const columns = database.prepare("PRAGMA table_info(work_drafts)").all() as { name: string }[];
+  if (!columns.some((column) => column.name === "materials_json")) {
+    database.exec("ALTER TABLE work_drafts ADD COLUMN materials_json TEXT");
+  }
   if (process.platform !== "win32") chmodSync(databasePath, 0o700);
 
   const rowToStored = (row: {
@@ -72,6 +81,7 @@ export function openWorkDraftStore(options: { dataDir: string }) {
     revision: number;
     updated_at: string;
     approved_at: string | null;
+    materials_json: string | null;
   }): StoredDraft => ({
     id: row.id,
     status: row.status,
@@ -80,6 +90,9 @@ export function openWorkDraftStore(options: { dataDir: string }) {
     revision: row.revision,
     updatedAt: row.updated_at,
     approvedAt: row.approved_at,
+    materials: row.materials_json
+      ? workMaterialsSchema.parse(JSON.parse(row.materials_json))
+      : null,
   });
 
   return {
@@ -98,6 +111,7 @@ export function openWorkDraftStore(options: { dataDir: string }) {
         revision: 1,
         updatedAt: now,
         approvedAt: null,
+        materials: null,
       };
     },
     get(id: string): StoredDraft | undefined {
@@ -118,6 +132,18 @@ export function openWorkDraftStore(options: { dataDir: string }) {
           "UPDATE work_drafts SET contract_json = ?, revision = revision + 1, updated_at = ? WHERE id = ? AND status = 'draft'",
         )
         .run(JSON.stringify(contract), now, id);
+      return result.changes === 1;
+    },
+    /**
+     * R4 Track B: replace the draft's materials. Like a contract revision, this is a new revision,
+     * so (draft_id, revision) names one contract and one set of materials; approved rows are immutable.
+     */
+    setMaterials(id: string, materials: WorkMaterials | null, now: string): boolean {
+      const result = database
+        .prepare(
+          "UPDATE work_drafts SET materials_json = ?, revision = revision + 1, updated_at = ? WHERE id = ? AND status = 'draft'",
+        )
+        .run(materials && materials.items.length > 0 ? JSON.stringify(materials) : null, now, id);
       return result.changes === 1;
     },
     // The single irreversible transition. Guarded so a second approval cannot succeed.
@@ -144,6 +170,7 @@ export function toView(draft: StoredDraft): WorkDraftView {
     revision: draft.revision,
     updatedAt: draft.updatedAt,
     approvedAt: draft.approvedAt,
+    materials: draft.materials,
   };
 }
 
