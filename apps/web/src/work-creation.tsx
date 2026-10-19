@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 
 import "./work-creation.css";
+import { APPROVAL_CONSENT, executionStatusLine, type ExecutionView } from "./work-executions.js";
 
 type ProseDraft = {
   achieve: string;
@@ -17,6 +18,8 @@ type WorkDraftView = {
   revision: number;
   updatedAt: string;
   approvedAt: string | null;
+  // R3: the latest run for this item, when the service has started one.
+  execution?: ExecutionView | null;
 };
 
 const errorMessages: Record<string, string> = {
@@ -54,7 +57,8 @@ async function requestJson<T>(
 export function WorkCreation({
   signedIn,
   fetcher = globalThis.fetch,
-}: Readonly<{ signedIn: boolean; fetcher?: typeof fetch }>) {
+  onApproved,
+}: Readonly<{ signedIn: boolean; fetcher?: typeof fetch; onApproved?: () => void }>) {
   const [draft, setDraft] = useState<WorkDraftView | undefined>();
   const [description, setDescription] = useState("");
   const [feedback, setFeedback] = useState("");
@@ -124,6 +128,7 @@ export function WorkCreation({
       return;
     }
     setDraft(result.body);
+    onApproved?.();
   }
 
   function startOver() {
@@ -141,8 +146,8 @@ export function WorkCreation({
       <section className="work-creation" aria-labelledby="work-creation-title">
         <h2 id="work-creation-title">Work approved</h2>
         <p className="work-creation__approved">
-          Approved on {new Date(draft.approvedAt ?? draft.updatedAt).toLocaleString()}. It is ready
-          to be assigned. Nothing has started yet.
+          Approved on {new Date(draft.approvedAt ?? draft.updatedAt).toLocaleString()}.{" "}
+          {executionStatusLine(draft.execution)} Follow it under Approved work.
         </p>
         <ProseSummary prose={draft.prose} />
         <button type="button" onClick={startOver}>
@@ -205,6 +210,7 @@ export function WorkCreation({
               <p id="confirm-title">
                 Approve this work? Once approved, the scope and done-when above are locked.
               </p>
+              <p className="work-creation__consent">{APPROVAL_CONSENT}</p>
               <button type="button" onClick={approveDraft} disabled={busy}>
                 Yes, approve
               </button>
