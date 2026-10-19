@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 
 import "./work-creation.css";
 import { APPROVAL_CONSENT, executionStatusLine, type ExecutionView } from "./work-executions.js";
+import { MaterialsEditor, type WorkMaterials } from "./work-materials-editor.js";
 
 type ProseDraft = {
   achieve: string;
@@ -20,6 +21,8 @@ type WorkDraftView = {
   approvedAt: string | null;
   // R3: the latest run for this item, when the service has started one.
   execution?: ExecutionView | null;
+  // R4: the owner's materials on this revision.
+  materials?: WorkMaterials | null;
 };
 
 const errorMessages: Record<string, string> = {
@@ -29,6 +32,8 @@ const errorMessages: Record<string, string> = {
   WORK_DRAFT_REQUEST_INVALID: "Please check what you entered and try again.",
   WORK_DRAFT_NOT_EDITABLE: "This work is already approved and can no longer change.",
   WORK_DRAFT_NOT_FOUND: "That work item could not be found.",
+  WORK_MATERIALS_INVALID:
+    "Those materials could not be attached. Links must start with http or https, repositories look like owner/name, and text has a size limit.",
 };
 
 function messageFor(code: string | undefined): string {
@@ -110,6 +115,24 @@ export function WorkCreation({
     }
     setDraft(result.body);
     setFeedback("");
+  }
+
+  async function saveMaterials(materials: WorkMaterials): Promise<boolean> {
+    if (!draft) return false;
+    setBusy(true);
+    setError("");
+    const result = await requestJson<WorkDraftView>(
+      fetcher,
+      `/api/work-drafts/${encodeURIComponent(draft.id)}/materials`,
+      { method: "PUT", body: JSON.stringify(materials) },
+    );
+    setBusy(false);
+    if (!result.ok || !result.body) {
+      setError(messageFor(result.body?.code));
+      return false;
+    }
+    setDraft(result.body);
+    return true;
   }
 
   async function approveDraft() {
@@ -196,6 +219,12 @@ export function WorkCreation({
               {busy ? "Updating…" : "Update the draft"}
             </button>
           </form>
+
+          <MaterialsEditor
+            materials={draft.materials ?? null}
+            disabled={busy}
+            onSave={saveMaterials}
+          />
 
           {!confirming ? (
             <button type="button" onClick={() => setConfirming(true)} disabled={busy}>

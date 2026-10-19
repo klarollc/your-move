@@ -124,7 +124,8 @@ describe("WorkExecutions", () => {
     expect(screen.queryByText("Not approved")).not.toBeInTheDocument();
     const proposal = screen.getByRole("group", { name: "Proposed change to README.md" });
     expect(within(proposal).getByText("## Setup")).toBeVisible();
-    await user.click(within(proposal).getByRole("button", { name: "Approve change" }));
+    // R4 Track E supersedes "Approve change": the approval button always says "Go ahead and send".
+    await user.click(within(proposal).getByRole("button", { name: "Go ahead and send" }));
 
     expect(await screen.findByText("Done.")).toBeVisible();
     const approveCall = fetcher.mock.calls.find(([input]) => String(input).endsWith("/approve"))!;
