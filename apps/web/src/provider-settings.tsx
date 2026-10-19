@@ -89,7 +89,8 @@ function selectedModel(value: string): { provider: ProviderId; modelId: string }
 
 export function ProviderSettings({
   fetcher = globalThis.fetch,
-}: Readonly<{ fetcher?: typeof fetch }>) {
+  onSessionChange,
+}: Readonly<{ fetcher?: typeof fetch; onSessionChange?: (signedIn: boolean) => void }>) {
   const [view, setView] = useState<"loading" | "signed-out" | "signed-in" | "error">("loading");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
@@ -103,6 +104,12 @@ export function ProviderSettings({
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState<Record<ProviderId, string>>({ openai: "", anthropic: "" });
   const [selectionError, setSelectionError] = useState("");
+
+  // Report every session transition (sign-in, sign-out, failed check) so sibling panels stay in step.
+  useEffect(() => {
+    if (view === "loading") return;
+    onSessionChange?.(view === "signed-in");
+  }, [view, onSessionChange]);
 
   useEffect(() => {
     let disposed = false;
@@ -447,9 +454,6 @@ export function ProviderSettings({
       <p className="provider-settings__feedback" role="status" aria-live="polite">
         {message}
       </p>
-      <footer className="provider-settings__footer">
-        Work creation and execution are not included in this hosted setup stage.
-      </footer>
     </main>
   );
 }

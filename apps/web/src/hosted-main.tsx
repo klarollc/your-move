@@ -3,7 +3,7 @@ import "./global.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
-import { ProviderSettings } from "./provider-settings.js";
+import { HostedWorkspace } from "./hosted-workspace.js";
 
 const container = document.querySelector("#app");
 
@@ -13,6 +13,6 @@ if (!(container instanceof HTMLElement)) {
 
 createRoot(container).render(
   <StrictMode>
-    <ProviderSettings />
+    <HostedWorkspace />
   </StrictMode>,
 );

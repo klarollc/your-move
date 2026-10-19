@@ -56,7 +56,6 @@ import {
 } from "@cuckcode/runtime-codex";
 
 import { assertNoCodexDrift } from "./codex-drift.js";
-import { mergeTurnItems } from "./tracer-guards.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -272,8 +271,8 @@ async function runVariant(policy: ProbePolicy): Promise<VariantResult> {
       result.outcome = run.ok ? "completed" : `${run.code}`;
       result.turnCode = run.ok ? null : run.code;
       result.turnDetail = run.ok ? null : run.detail;
-      const merged = mergeTurnItems(run.turn?.items ?? [], run.streamedItems);
-      result.items = merged.map(describeItem);
+      const turnItems = run.turn?.items ?? [];
+      result.items = turnItems.map(describeItem);
       result.agentText =
         result.items
           .filter((i) => i.type === "agentMessage")

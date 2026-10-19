@@ -1,0 +1,6 @@
+/* The hosted page is one scroll container. body stays overflow: hidden for the other surfaces,
+   so the provider panel and the work panel scroll together inside this element. */
+.hosted-workspace {
+  height: 100vh;
+  overflow-y: auto;
+}
