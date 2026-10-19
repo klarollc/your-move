@@ -51,9 +51,11 @@ const workspaces = new Map<string, string>();
 for (const directory of workspaceManifests) {
   const manifest = JSON.parse(await readFile(resolve(ROOT, directory, "package.json"), "utf8")) as {
     name: string;
-    exports?: Record<string, string>;
+    exports?: Record<string, string | Record<string, string>>;
   };
-  const entry = manifest.exports?.["."] ?? "./src/index.ts";
+  // A conditional entry's "default" is the source entry; this review scans source.
+  const exported = manifest.exports?.["."];
+  const entry = (typeof exported === "string" ? exported : exported?.default) ?? "./src/index.ts";
   workspaces.set(manifest.name, `${directory}/${entry.replace(/^\.\//u, "")}`);
 }
 

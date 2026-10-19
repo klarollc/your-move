@@ -6,6 +6,7 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 COPY . .
 RUN npm ci
+RUN npm run build --workspace @cuckcode/contracts --workspace @cuckcode/domain --workspace @cuckcode/application --workspace @cuckcode/runtime-codex --workspace @cuckcode/persistence
 RUN npm run build --workspace @cuckcode/web
 RUN npm run build --workspace @cuckcode/server
 RUN npm prune --omit=dev
