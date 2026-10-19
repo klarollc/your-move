@@ -18,6 +18,21 @@ import {
   DraftProviderUnavailableError,
   draftContractWithProvider,
 } from "./work-drafts.js";
+import { createExecutionEngine, type ExecutionEngine } from "./execution-loop.js";
+import {
+  openExecutionStore,
+  type ExecutionRecord,
+  type ExecutionStore,
+} from "./execution-store.js";
+import {
+  ExecutionSubsystemRefusedError,
+  verifyToolRegistry,
+  type ToolRegistry,
+} from "./execution-tools.js";
+import { validateGithubToken } from "./github-client.js";
+import { openIntegrationsVault } from "./integrations-vault.js";
+import { createNativeToolRegistry } from "./native-tools.js";
+import type { ResolveHost } from "./tool-web-fetch.js";
 
 export type HostedApp = FastifyInstance;
 
@@ -31,6 +46,12 @@ type HostedAppOptions = {
   staticRoot?: string;
   staticEntryFile?: string;
   providerFetch?: typeof fetch;
+  /** Outbound fetch for tools and the GitHub integration. Defaults to providerFetch. */
+  toolFetch?: typeof fetch;
+  /** Hostname resolution for the web_fetch SSRF guard. Defaults to DNS. */
+  resolveHost?: ResolveHost;
+  /** Replaces the native tool registry (tests: allowlist drift must refuse the subsystem). */
+  toolRegistry?: ToolRegistry;
 };
 
 const SESSION_COOKIE = "cuckcode_session";
@@ -183,6 +204,38 @@ export function createHostedApp(options: HostedAppOptions): HostedApp {
   });
   const providerFetch = options.providerFetch ?? globalThis.fetch;
   const workDrafts = openWorkDraftStore({ dataDir: options.dataDir });
+  const integrationsVault = openIntegrationsVault({
+    dataDir: options.dataDir,
+    encryptionKey: options.credentialEncryptionKey,
+  });
+  const executionStore: ExecutionStore = openExecutionStore({ dataDir: options.dataDir });
+  const toolFetch = options.toolFetch ?? providerFetch;
+  const toolRegistry =
+    options.toolRegistry ??
+    createNativeToolRegistry({
+      fetcher: toolFetch,
+      ...(options.resolveHost ? { resolveHost: options.resolveHost } : {}),
+    });
+  // Fail closed: on any tool allowlist or schema drift the execution subsystem does not start.
+  // R1/R2 routes keep working; execution routes answer EXECUTION_SUBSYSTEM_UNAVAILABLE.
+  let executionEngine: ExecutionEngine | undefined;
+  try {
+    verifyToolRegistry(toolRegistry);
+    executionEngine = createExecutionEngine({
+      store: executionStore,
+      providerVault,
+      integrationsVault,
+      registry: toolRegistry,
+      providerFetch,
+      getContract: (draftId) => {
+        const draft = workDrafts.get(draftId);
+        return draft?.status === "approved" ? draft.contract : undefined;
+      },
+    });
+  } catch (error) {
+    if (!(error instanceof ExecutionSubsystemRefusedError)) throw error;
+    executionEngine = undefined;
+  }
   const app = Fastify({ logger: false });
 
   app.addHook("onRequest", async (request, reply) => {
@@ -201,10 +254,14 @@ export function createHostedApp(options: HostedAppOptions): HostedApp {
   });
 
   app.addHook("onClose", async () => {
+    // Stop the execution loop first (bounded), so no run writes to a store after it closes.
+    await executionEngine?.close();
     signingKey.fill(0);
     expectedPassword.fill(0);
     providerVault.close();
     workDrafts.close();
+    integrationsVault.close();
+    executionStore.close();
   });
 
   app.get("/health", async () => ({ status: "ok" }));
@@ -443,14 +500,50 @@ export function createHostedApp(options: HostedAppOptions): HostedApp {
     }
   }
 
+  // R3: every draft view carries an additive `execution` field (latest attempt, or null).
+  function executionView(record: ExecutionRecord) {
+    return {
+      id: record.id,
+      draftId: record.draftId,
+      revision: record.revision,
+      attempt: record.attempt,
+      restartedFrom: record.restartedFrom,
+      status: record.status,
+      turnCount: record.turnCount,
+      maxTurns: record.maxTurns,
+      output: record.output,
+      error: record.error,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
+      proposals: executionStore.listProposals(record.id).map((proposal) => ({
+        id: proposal.id,
+        tool: proposal.tool,
+        status: proposal.status,
+        createdAt: proposal.createdAt,
+        decidedAt: proposal.decidedAt,
+        change: {
+          repo: String(proposal.args.repo ?? ""),
+          path: String(proposal.args.path ?? ""),
+          message: String(proposal.args.message ?? ""),
+          content: String(proposal.args.content ?? ""),
+        },
+      })),
+    };
+  }
+
+  function draftView(draft: Parameters<typeof toView>[0]) {
+    const latest = executionEngine ? executionStore.latestForDraft(draft.id) : undefined;
+    return { ...toView(draft), execution: latest ? executionView(latest) : null };
+  }
+
   app.get("/api/work-drafts", async () => ({
-    drafts: workDrafts.list().map(toView),
+    drafts: workDrafts.list().map(draftView),
   }));
 
   app.get<{ Params: { id: string } }>("/api/work-drafts/:id", async (request, reply) => {
     const draft = workDrafts.get(request.params.id);
     if (!draft) return reply.code(404).send({ code: "WORK_DRAFT_NOT_FOUND" });
-    return reply.code(200).send(toView(draft));
+    return reply.code(200).send(draftView(draft));
   });
 
   app.post("/api/work-drafts", async (request, reply) => {
@@ -463,7 +556,7 @@ export function createHostedApp(options: HostedAppOptions): HostedApp {
       drafted.contract,
       new Date().toISOString(),
     );
-    return reply.code(201).send(toView(draft));
+    return reply.code(201).send(draftView(draft));
   });
 
   app.post<{ Params: { id: string } }>("/api/work-drafts/:id/revise", async (request, reply) => {
@@ -485,19 +578,144 @@ export function createHostedApp(options: HostedAppOptions): HostedApp {
     if (!workDrafts.revise(existing.id, drafted.contract, new Date().toISOString())) {
       return reply.code(409).send({ code: "WORK_DRAFT_NOT_EDITABLE" });
     }
-    return reply.code(200).send(toView(workDrafts.get(existing.id)!));
+    return reply.code(200).send(draftView(workDrafts.get(existing.id)!));
   });
 
   // The owner's explicit approval is the only transition that makes work real. It is a separate
   // POST so no draft or revision can approve itself, and it is one-way.
+  // R3: approving now also enqueues the execution (idempotent per draft revision). The UI shows
+  // what this arms before the owner confirms.
   app.post<{ Params: { id: string } }>("/api/work-drafts/:id/approve", async (request, reply) => {
     const existing = workDrafts.get(request.params.id);
     if (!existing) return reply.code(404).send({ code: "WORK_DRAFT_NOT_FOUND" });
     if (!workDrafts.approve(existing.id, new Date().toISOString())) {
       return reply.code(409).send({ code: "WORK_DRAFT_NOT_EDITABLE" });
     }
-    return reply.code(200).send(toView(workDrafts.get(existing.id)!));
+    const approved = workDrafts.get(existing.id)!;
+    executionEngine?.enqueue(approved.id, approved.revision, approved.contract);
+    return reply.code(200).send(draftView(approved));
   });
+
+  // ---- R3: executions, proposals, integrations ----
+
+  function engineOrRefuse(reply: FastifyReply): ExecutionEngine | undefined {
+    if (!executionEngine) {
+      void reply.code(503).send({ code: "EXECUTION_SUBSYSTEM_UNAVAILABLE" });
+      return undefined;
+    }
+    return executionEngine;
+  }
+
+  app.get("/api/work-executions", async (_request, reply) => {
+    if (!engineOrRefuse(reply)) return reply;
+    return reply.code(200).send({ executions: executionStore.list().map(executionView) });
+  });
+
+  app.get<{ Params: { id: string } }>("/api/work-executions/:id", async (request, reply) => {
+    if (!engineOrRefuse(reply)) return reply;
+    const execution = executionStore.get(request.params.id);
+    if (!execution) return reply.code(404).send({ code: "WORK_EXECUTION_NOT_FOUND" });
+    return reply.code(200).send(executionView(execution));
+  });
+
+  // Start for work approved before R3 existed: that approval did not show what it would arm, so
+  // it never auto-starts. The owner starts it explicitly, from a button that states the scope.
+  const startSchema = z.object({ draftId: z.string().min(1).max(200) }).strict();
+  app.post("/api/work-executions", async (request, reply) => {
+    const engine = engineOrRefuse(reply);
+    if (!engine) return reply;
+    const body = startSchema.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ code: "WORK_EXECUTION_REQUEST_INVALID" });
+    const draft = workDrafts.get(body.data.draftId);
+    if (!draft) return reply.code(404).send({ code: "WORK_DRAFT_NOT_FOUND" });
+    if (draft.status !== "approved") {
+      return reply.code(409).send({ code: "WORK_DRAFT_NOT_APPROVED" });
+    }
+    if (executionStore.latestForDraft(draft.id)) {
+      return reply.code(409).send({ code: "WORK_EXECUTION_EXISTS" });
+    }
+    const execution = engine.enqueue(draft.id, draft.revision, draft.contract);
+    return reply.code(201).send(executionView(execution));
+  });
+
+  app.post<{ Params: { id: string } }>(
+    "/api/work-executions/:id/restart",
+    async (request, reply) => {
+      const engine = engineOrRefuse(reply);
+      if (!engine) return reply;
+      const result = engine.restart(request.params.id);
+      if (result === "NOT_FOUND") return reply.code(404).send({ code: "WORK_EXECUTION_NOT_FOUND" });
+      if (result === "NOT_RESTARTABLE") {
+        return reply.code(409).send({ code: "WORK_EXECUTION_NOT_RESTARTABLE" });
+      }
+      return reply.code(201).send(executionView(result));
+    },
+  );
+
+  for (const decision of ["approve", "deny"] as const) {
+    app.post<{ Params: { id: string; proposalId: string } }>(
+      `/api/work-executions/:id/proposals/:proposalId/${decision}`,
+      async (request, reply) => {
+        const engine = engineOrRefuse(reply);
+        if (!engine) return reply;
+        const result = engine.decide(
+          request.params.id,
+          request.params.proposalId,
+          decision === "approve" ? "approved" : "denied",
+        );
+        if (result === "NOT_FOUND") return reply.code(404).send({ code: "PROPOSAL_NOT_FOUND" });
+        if (result === "NOT_PENDING") return reply.code(409).send({ code: "PROPOSAL_NOT_PENDING" });
+        return reply.code(200).send(executionView(executionStore.get(request.params.id)!));
+      },
+    );
+  }
+
+  const integrationSchema = z.enum(["github"]);
+  const integrationConnectSchema = z
+    .object({
+      token: z
+        .string()
+        .trim()
+        .min(8)
+        .max(4096)
+        // eslint-disable-next-line no-control-regex -- Tokens enter an HTTP authorization header.
+        .regex(/^[^\u0000-\u001f\u007f\s]+$/),
+    })
+    .strict();
+
+  app.get("/api/integrations", async () => ({
+    integrations: [{ id: "github", status: integrationsVault.getStatus("github") }],
+  }));
+
+  app.post<{ Params: { integration: string } }>(
+    "/api/integrations/:integration",
+    async (request, reply) => {
+      const integration = integrationSchema.safeParse(request.params.integration);
+      if (!integration.success) return reply.code(404).send({ code: "INTEGRATION_NOT_FOUND" });
+      const body = integrationConnectSchema.safeParse(request.body);
+      if (!body.success) return reply.code(400).send({ code: "INTEGRATION_REQUEST_INVALID" });
+      // Validate at connect, so a bad token fails here and never at first use.
+      const validated = await validateGithubToken(body.data.token, toolFetch);
+      if (!validated.ok) {
+        if (validated.code === "GITHUB_AUTH_REJECTED" || validated.code === "GITHUB_FORBIDDEN") {
+          return reply.code(400).send({ code: "INVALID_CREDENTIALS" });
+        }
+        return reply.code(503).send({ code: "INTEGRATION_UNAVAILABLE" });
+      }
+      integrationsVault.saveCredential(integration.data, body.data.token);
+      return reply.code(201).send({ id: integration.data, status: "connected" });
+    },
+  );
+
+  app.delete<{ Params: { integration: string } }>(
+    "/api/integrations/:integration",
+    async (request, reply) => {
+      const integration = integrationSchema.safeParse(request.params.integration);
+      if (!integration.success) return reply.code(404).send({ code: "INTEGRATION_NOT_FOUND" });
+      integrationsVault.disconnect(integration.data);
+      return reply.code(200).send({ id: integration.data, status: "disconnected" });
+    },
+  );
 
   return app;
 }

@@ -163,7 +163,7 @@ const preferredModelPatterns: Record<ProviderKind, RegExp[]> = {
 };
 
 // Automatic selection picks a model the account actually lists, preferring cheaper tiers.
-function pickModels(
+export function pickModels(
   provider: ProviderKind,
   models: ProviderModel[],
   selection: ModelSelection,

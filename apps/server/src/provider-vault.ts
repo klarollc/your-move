@@ -45,7 +45,7 @@ const PROVIDER_SCHEMA = `
     VALUES (1, 0, 0);
 `;
 
-function encryptCredential(credential: string, key: Buffer): string {
+export function encryptCredential(credential: string, key: Buffer): string {
   const nonce = randomBytes(12);
   const cipher = createCipheriv("aes-256-gcm", key, nonce);
   const ciphertext = Buffer.concat([cipher.update(credential, "utf8"), cipher.final()]);
@@ -57,7 +57,7 @@ function encryptCredential(credential: string, key: Buffer): string {
   ].join(":");
 }
 
-function decryptCredential(envelope: string, key: Buffer): string {
+export function decryptCredential(envelope: string, key: Buffer): string {
   try {
     const [version, nonce, authTag, ciphertext] = envelope.split(":");
     if (version !== "v1" || !nonce || !authTag || !ciphertext) throw new Error("INVALID_ENVELOPE");
@@ -72,7 +72,7 @@ function decryptCredential(envelope: string, key: Buffer): string {
   }
 }
 
-function parseEncryptionKey(value: string): Buffer {
+export function parseEncryptionKey(value: string): Buffer {
   const key = Buffer.from(value, "base64");
   if (key.length !== 32 || key.toString("base64") !== value) {
     throw new Error("PROVIDER_VAULT_ENCRYPTION_KEY_INVALID");
