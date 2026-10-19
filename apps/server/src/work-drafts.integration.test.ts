@@ -115,6 +115,60 @@ describe("R2 plain-language work creation API", () => {
     expect(ownerText).not.toMatch(/permissionCeiling|draft_only|acceptanceCriteria/);
   });
 
+  it("automatic selection tries the next listed model when its preferred model is unavailable", async () => {
+    const attemptedModels: string[] = [];
+    const providerFetch = vi.fn<typeof fetch>(async (input, init) => {
+      const url = String(input);
+      if (url === "https://api.openai.com/v1/models") {
+        return jsonResponse({ data: [{ id: "gpt-4o-mini" }, { id: "gpt-4o" }] });
+      }
+      if (url === "https://api.openai.com/v1/chat/completions") {
+        const body = JSON.parse(String(init?.body)) as { model: string };
+        attemptedModels.push(body.model);
+        if (body.model === "gpt-4o-mini") return new Response("model unavailable", { status: 404 });
+        return jsonResponse({ choices: [{ message: { content: contractJson } }] });
+      }
+      return jsonResponse({ code: "NOT_FOUND" }, 404);
+    });
+    const app = createApp(providerFetch);
+    const cookie = await login(app);
+    await connectOpenAI(app, cookie);
+
+    const manualSelection = await app.inject({
+      method: "POST",
+      url: "/api/model-selection",
+      headers: { origin, cookie },
+      payload: { mode: "specific", provider: "openai", modelId: "gpt-4o" },
+    });
+    expect(manualSelection.statusCode).toBe(200);
+    const manuallyDrafted = await app.inject({
+      method: "POST",
+      url: "/api/work-drafts",
+      headers: { origin, cookie },
+      payload: { description: "Create a bounded item" },
+    });
+    expect(manuallyDrafted.statusCode).toBe(201);
+    expect(attemptedModels).toEqual(["gpt-4o"]);
+
+    const automaticSelection = await app.inject({
+      method: "POST",
+      url: "/api/model-selection",
+      headers: { origin, cookie },
+      payload: { mode: "automatic" },
+    });
+    expect(automaticSelection.statusCode).toBe(200);
+    attemptedModels.length = 0;
+    const created = await app.inject({
+      method: "POST",
+      url: "/api/work-drafts",
+      headers: { origin, cookie },
+      payload: { description: "Create a bounded item" },
+    });
+
+    expect(created.statusCode).toBe(201);
+    expect(attemptedModels).toEqual(["gpt-4o-mini", "gpt-4o"]);
+  });
+
   it("returns a plain error (no draft stored) when the model output is not a valid contract", async () => {
     const app = createApp(fakeFetch("I think you should do it differently."));
     const cookie = await login(app);

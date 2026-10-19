@@ -163,19 +163,20 @@ const preferredModelPatterns: Record<ProviderKind, RegExp[]> = {
 };
 
 // Automatic selection picks a model the account actually lists, preferring cheaper tiers.
-function pickModel(
+function pickModels(
   provider: ProviderKind,
   models: ProviderModel[],
   selection: ModelSelection,
-): string {
-  if (selection.mode === "specific" && selection.provider === provider) return selection.modelId;
+): string[] {
+  if (selection.mode === "specific" && selection.provider === provider) return [selection.modelId];
+  const selected: string[] = [];
   for (const pattern of preferredModelPatterns[provider]) {
-    const match = models.find(({ id }) => pattern.test(id));
-    if (match) return match.id;
+    const match = models.find(({ id }) => pattern.test(id) && !selected.includes(id));
+    if (match) selected.push(match.id);
   }
-  const first = models[0];
-  if (!first) throw new ProviderResponseError();
-  return first.id;
+  if (selected.length === 0 && models[0]) selected.push(models[0].id);
+  if (selected.length === 0) throw new ProviderResponseError();
+  return selected;
 }
 
 const openAIChatSchema = z.object({
@@ -224,18 +225,28 @@ export async function draftContractWithProvider(options: {
 
   try {
     const models = await listProviderModels(chosen.provider, chosen.credential, options.fetcher);
-    const modelId = pickModel(chosen.provider, models, options.selection);
+    const modelIds = pickModels(chosen.provider, models, options.selection);
     const userMessage = buildDraftUserMessage(options.request);
 
-    const raw = await completeOnce(
-      chosen.provider,
-      chosen.credential,
-      modelId,
-      userMessage,
-      options.fetcher,
-    );
-    const parsed = parseContractDraft(raw);
-    return parsed.ok ? parsed.contract : "CONTRACT_DRAFT_INVALID";
+    for (const [index, modelId] of modelIds.entries()) {
+      try {
+        const raw = await completeOnce(
+          chosen.provider,
+          chosen.credential,
+          modelId,
+          userMessage,
+          options.fetcher,
+        );
+        const parsed = parseContractDraft(raw);
+        return parsed.ok ? parsed.contract : "CONTRACT_DRAFT_INVALID";
+      } catch (error) {
+        const hasAnotherAutomaticModel =
+          options.selection.mode === "automatic" && index < modelIds.length - 1;
+        if (error instanceof ProviderUnavailableError && hasAnotherAutomaticModel) continue;
+        throw error;
+      }
+    }
+    throw new ProviderResponseError();
   } catch (error) {
     if (error instanceof ProviderAuthorizationError) throw new AuthRejected(chosen.provider);
     throw error;
