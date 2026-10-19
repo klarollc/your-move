@@ -1,7 +1,17 @@
 # Handoff — state, next action, and what would otherwise be relearned expensively
 
-Written 2026-09-18, last updated 2026-10-03 for Phase 7 Task 6. Read `AGENTS.md` first for authority; this document is the
+Written 2026-09-18, last updated 2026-10-18 for the owner-approved Your Move R1 workstream. Read `AGENTS.md` first for authority; this document is the
 live state, the next action, and the things a fresh session pays for twice if nobody wrote them down.
+
+---
+
+## Current owner-authorized workstream — Your Move R1
+
+On 2026-10-18 the owner approved R1 only: hosted Railway foundation and OpenAI/Anthropic provider connections. The source plan and narrow amendment are `docs/your-move-redesign-build-plan-2026-10-18.md`; the authorization is recorded in `docs/evidence/your-move-r1-authorization-2026-10-18.md`; the checklist is `tasks/your-move-r1-todo.md`. Work on `feature/your-move-r1-hosted-providers` in its dedicated worktree. Do not switch to or modify `main`.
+
+Scope exclusions: no Hermes provider, multi-user support, billing, local-loopback changes, canonical event-log changes, lamp/T3/T4 changes, or R2–R5. Success-path tests must mock at the provider HTTP boundary; use invalid dummy keys for rejection tests; no real provider credentials. Build deploy-ready Docker/Railway configuration and document required settings, but do not connect the Railway project, set variables, push, or deploy. The Railway project reference is in the authorization record.
+
+**Next action:** complete the R1 checklist, starting with the hosted-only server boundary and provider vault; preserve the existing loopback and event-log paths. Run the R1-focused checks and applicable regression suite before reporting completion.
 
 ---
 
@@ -35,9 +45,11 @@ finding and the need for an independent release-review refresh remain current.
 
 ---
 
-## The immediate next action
+## Historical Phase 7 handoff — snapshot as of 2026-10-03
 
-**Phase 7, the rendered office — in progress, 2026-10-03.** Spec
+The detailed Phase 7 status below is preserved as a historical handoff. The current assignment is the owner-approved R1 workstream above; its scope and next action supersede the older Phase 7 “Do next” note without changing Phase 7's recorded results.
+
+**Phase 7, the rendered office — in progress in the 2026-10-03 snapshot.** Spec
 `docs/phase-7-high-fidelity-spec-v0.1.md` (F-1 to F-8), plan `tasks/phase-7-plan.md` (Q-1 to Q-5),
 checklist `tasks/phase-7-todo.md` (the full record of every task: RED, GREEN, mutations, moved
 assertions, owner rulings). `position.json` carries each task's state and gate. Latest `verify` on a
@@ -59,7 +71,7 @@ provenance entries 631–632, and the read-only provenance check is clean. The o
 review is: "slice meets expectations". A subsequent clean owner-run `verify` passed on `a582953`
 (runner `p7t5b-verify-20261003-01`), closing the gate described below.
 
-**Do next:** finish the Task 6 owner gate in `tasks/phase-7-task-6-todo-draft.md` §6.8. The Luna
+**Historical next action at that time:** finish the Task 6 owner gate in `tasks/phase-7-task-6-todo-draft.md` §6.8. The Luna
 implementation is ready for review under the three owner-approved corrections recorded there.
 Focused tests pass 37/37; final default/inspector clearance checks pass at both approved viewports.
 The standalone furniture browser command hung in teardown after reaching all 12 cases. The

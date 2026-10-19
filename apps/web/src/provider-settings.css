@@ -1,0 +1,243 @@
+.provider-settings {
+  width: 100%;
+  min-height: 100vh;
+  max-height: 100vh;
+  overflow: auto;
+  padding: clamp(24px, 5vw, 64px) clamp(20px, 7vw, 104px);
+  color: #292b2d;
+  background: transparent;
+}
+
+.provider-settings__header,
+.provider-settings__section,
+.provider-settings__feedback,
+.provider-settings__footer {
+  width: min(100%, 920px);
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.provider-settings__header {
+  margin-bottom: 38px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #5d6063;
+}
+
+.provider-settings__eyebrow {
+  margin: 0 0 14px;
+  opacity: 0.8;
+  font-size: 0.9rem;
+}
+
+.provider-settings h1,
+.provider-settings h2,
+.provider-settings p {
+  margin-top: 0;
+}
+
+.provider-settings h1 {
+  margin-bottom: 8px;
+  font-size: clamp(1.7rem, 3vw, 2.25rem);
+  line-height: 1.15;
+}
+
+.provider-settings h2 {
+  margin-bottom: 12px;
+  font-size: 1.15rem;
+}
+
+.provider-settings__header > p:last-child,
+.provider-settings__title-row p {
+  max-width: 620px;
+  margin-bottom: 0;
+  color: #292b2d;
+  opacity: 0.8;
+  line-height: 1.55;
+}
+
+.provider-settings__title-row {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.provider-settings__section {
+  margin-bottom: 32px;
+}
+
+.provider-settings__providers {
+  border-top: 1px solid #5d6063;
+}
+
+.provider-settings__provider {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.34fr) minmax(0, 1fr);
+  column-gap: 28px;
+  row-gap: 8px;
+  margin: 0;
+  padding: 20px 0 24px;
+  border: 0;
+  border-bottom: 1px solid #5d6063;
+}
+
+.provider-settings__provider legend {
+  grid-column: 1;
+  padding: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.provider-settings__provider-status {
+  grid-column: 1;
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  color: #292b2d;
+  opacity: 0.8;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.provider-settings__provider-status strong {
+  color: #292b2d;
+  opacity: 1;
+}
+
+.provider-settings__provider form {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.provider-settings label {
+  font-weight: 600;
+}
+
+.provider-settings input,
+.provider-settings select {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid #5d6063;
+  border-radius: 4px;
+  color: #292b2d;
+  background: #f8f8f5;
+  font: inherit;
+}
+
+.provider-settings button {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid #5d6063;
+  border-radius: 4px;
+  color: #292b2d;
+  background: #f8f8f5;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.provider-settings button:hover:not(:disabled) {
+  background: #e3e3df;
+}
+
+.provider-settings button:focus-visible,
+.provider-settings input:focus-visible,
+.provider-settings select:focus-visible {
+  outline: 3px solid #242628;
+  outline-offset: 2px;
+}
+
+.provider-settings button:disabled {
+  border-color: #5d6063;
+  color: #292b2d;
+  background: #e3e3df;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.provider-settings .provider-settings__quiet {
+  color: #292b2d;
+  background: transparent;
+}
+
+.provider-settings .provider-settings__quiet:hover:not(:disabled) {
+  background: #e3e3df;
+}
+
+.provider-settings__key-row {
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) auto auto;
+  gap: 10px;
+}
+
+.provider-settings__hint {
+  color: #292b2d;
+  opacity: 0.8;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.provider-settings__login {
+  display: grid;
+  gap: 12px;
+  width: min(100%, 460px);
+  margin: 0 auto;
+}
+
+.provider-settings__login button {
+  justify-self: start;
+  min-width: 110px;
+}
+
+.provider-settings__error {
+  margin: 4px 0 0;
+  padding-left: 10px;
+  border-left: 3px solid #5d6063;
+  color: #292b2d;
+  font-weight: 600;
+}
+
+.provider-settings__feedback {
+  min-height: 1.5em;
+  margin-top: 20px;
+  color: #292b2d;
+  font-weight: 600;
+}
+
+.provider-settings__footer {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid #5d6063;
+  color: #292b2d;
+  opacity: 0.8;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 720px) {
+  .provider-settings {
+    padding: 24px 18px;
+  }
+
+  .provider-settings__title-row {
+    flex-direction: column;
+  }
+
+  .provider-settings__provider {
+    grid-template-columns: 1fr;
+  }
+
+  .provider-settings__provider legend,
+  .provider-settings__provider-status,
+  .provider-settings__provider form {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .provider-settings__key-row {
+    grid-template-columns: 1fr;
+  }
+}
