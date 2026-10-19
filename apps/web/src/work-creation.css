@@ -1,0 +1,29 @@
+.work-creation {
+  max-width: 44rem;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.work-creation textarea {
+  width: 100%;
+  font: inherit;
+  padding: 0.5rem;
+}
+
+.work-creation__prose h3 {
+  margin: 1rem 0 0.25rem;
+  font-size: 1rem;
+}
+
+.work-creation__confirm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.work-creation__error {
+  color: #9b1c1c;
+}

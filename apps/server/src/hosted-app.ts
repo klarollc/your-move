@@ -10,7 +10,14 @@ import {
   ProviderUnavailableError,
   listProviderModels,
 } from "./provider-client.js";
-import { openProviderVault } from "./provider-vault.js";
+import { openProviderVault, type ProviderKind } from "./provider-vault.js";
+import { openWorkDraftStore, toView, type DraftRequest } from "./work-drafts.js";
+import { type BoundedContract } from "./work-contract.js";
+import {
+  AuthRejected,
+  DraftProviderUnavailableError,
+  draftContractWithProvider,
+} from "./work-drafts.js";
 
 export type HostedApp = FastifyInstance;
 
@@ -175,6 +182,7 @@ export function createHostedApp(options: HostedAppOptions): HostedApp {
     encryptionKey: options.credentialEncryptionKey,
   });
   const providerFetch = options.providerFetch ?? globalThis.fetch;
+  const workDrafts = openWorkDraftStore({ dataDir: options.dataDir });
   const app = Fastify({ logger: false });
 
   app.addHook("onRequest", async (request, reply) => {
@@ -196,6 +204,7 @@ export function createHostedApp(options: HostedAppOptions): HostedApp {
     signingKey.fill(0);
     expectedPassword.fill(0);
     providerVault.close();
+    workDrafts.close();
   });
 
   app.get("/health", async () => ({ status: "ok" }));
@@ -384,6 +393,110 @@ export function createHostedApp(options: HostedAppOptions): HostedApp {
         code: "PROVIDER_REAUTH_REQUIRED",
       });
     }
+  });
+
+  const workDescriptionSchema = z
+    .object({ description: z.string().trim().min(1).max(4000) })
+    .strict();
+  const workRevisionSchema = z.object({ feedback: z.string().trim().min(1).max(4000) }).strict();
+
+  function connectedDraftProviders(): { provider: ProviderKind; credential: string }[] {
+    const providers: ProviderKind[] = ["openai", "anthropic"];
+    const result: { provider: ProviderKind; credential: string }[] = [];
+    for (const provider of providers) {
+      if (providerVault.getProviderStatus(provider) !== "connected") continue;
+      const credential = providerVault.getCredential(provider);
+      if (credential) result.push({ provider, credential });
+    }
+    return result;
+  }
+
+  async function draftFor(
+    request: DraftRequest,
+    reply: FastifyReply,
+  ): Promise<{ contract: BoundedContract } | undefined> {
+    const providers = connectedDraftProviders();
+    try {
+      const contract = await draftContractWithProvider({
+        request,
+        providers,
+        selection: providerVault.getModelSelection(),
+        fetcher: providerFetch,
+      });
+      if (contract === "CONTRACT_DRAFT_INVALID") {
+        void reply.code(502).send({ code: "CONTRACT_DRAFT_INVALID" });
+        return undefined;
+      }
+      return { contract };
+    } catch (error) {
+      if (error instanceof DraftProviderUnavailableError) {
+        void reply.code(409).send({ code: "PROVIDER_NOT_CONNECTED" });
+        return undefined;
+      }
+      if (error instanceof AuthRejected) {
+        providerVault.markNeedsReauth(error.provider);
+        void reply.code(401).send({ code: "PROVIDER_REAUTH_REQUIRED" });
+        return undefined;
+      }
+      providerFailure(reply, error, { statusCode: 401, code: "PROVIDER_REAUTH_REQUIRED" });
+      return undefined;
+    }
+  }
+
+  app.get("/api/work-drafts", async () => ({
+    drafts: workDrafts.list().map(toView),
+  }));
+
+  app.get<{ Params: { id: string } }>("/api/work-drafts/:id", async (request, reply) => {
+    const draft = workDrafts.get(request.params.id);
+    if (!draft) return reply.code(404).send({ code: "WORK_DRAFT_NOT_FOUND" });
+    return reply.code(200).send(toView(draft));
+  });
+
+  app.post("/api/work-drafts", async (request, reply) => {
+    const body = workDescriptionSchema.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ code: "WORK_DRAFT_REQUEST_INVALID" });
+    const drafted = await draftFor({ description: body.data.description }, reply);
+    if (!drafted) return reply;
+    const draft = workDrafts.insert(
+      body.data.description,
+      drafted.contract,
+      new Date().toISOString(),
+    );
+    return reply.code(201).send(toView(draft));
+  });
+
+  app.post<{ Params: { id: string } }>("/api/work-drafts/:id/revise", async (request, reply) => {
+    const body = workRevisionSchema.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ code: "WORK_DRAFT_REQUEST_INVALID" });
+    const existing = workDrafts.get(request.params.id);
+    if (!existing) return reply.code(404).send({ code: "WORK_DRAFT_NOT_FOUND" });
+    if (existing.status !== "draft")
+      return reply.code(409).send({ code: "WORK_DRAFT_NOT_EDITABLE" });
+    const drafted = await draftFor(
+      {
+        description: existing.description,
+        currentContract: existing.contract,
+        feedback: body.data.feedback,
+      },
+      reply,
+    );
+    if (!drafted) return reply;
+    if (!workDrafts.revise(existing.id, drafted.contract, new Date().toISOString())) {
+      return reply.code(409).send({ code: "WORK_DRAFT_NOT_EDITABLE" });
+    }
+    return reply.code(200).send(toView(workDrafts.get(existing.id)!));
+  });
+
+  // The owner's explicit approval is the only transition that makes work real. It is a separate
+  // POST so no draft or revision can approve itself, and it is one-way.
+  app.post<{ Params: { id: string } }>("/api/work-drafts/:id/approve", async (request, reply) => {
+    const existing = workDrafts.get(request.params.id);
+    if (!existing) return reply.code(404).send({ code: "WORK_DRAFT_NOT_FOUND" });
+    if (!workDrafts.approve(existing.id, new Date().toISOString())) {
+      return reply.code(409).send({ code: "WORK_DRAFT_NOT_EDITABLE" });
+    }
+    return reply.code(200).send(toView(workDrafts.get(existing.id)!));
   });
 
   return app;
