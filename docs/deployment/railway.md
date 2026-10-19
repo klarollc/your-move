@@ -37,6 +37,8 @@ Provider keys are entered through the authenticated UI; do not set them as Railw
 
 ## Persistence and operations
 
+- Login throttling persists an aggregate budget of 32 invalid password attempts per 15-minute window in the provider SQLite database. It does not trust client-supplied `X-Real-IP` or `X-Forwarded-For`, so rotating or spoofing addresses cannot reset the budget. A valid owner password remains accepted after the invalid-attempt budget is exhausted and resets it.
+- The limiter survives process restarts as long as the same volume is retained; restoring an older database backup may restore an earlier counter. Keep one replica for the R1 SQLite volume; add a trusted platform-level rate limit if the service later becomes multi-replica.
 - Do not run more than one replica with the R1 SQLite volume.
 - Keep the volume and `CREDENTIAL_ENCRYPTION_KEY` together in the backup/restore plan. A volume backup without the encryption key cannot recover credentials; the key without its volume cannot recover the connection state.
 - `/health` is a readiness endpoint and does not disclose provider state or secrets.

@@ -8,16 +8,16 @@
       "state": "in_progress",
       "checklist": "tasks/your-move-r1-todo.md",
       "tasks": [
-        {"id": "1", "state": "authorized"},
-        {"id": "2", "state": "authorized"},
-        {"id": "3", "state": "authorized"},
-        {"id": "4", "state": "authorized"},
-        {"id": "5", "state": "authorized"},
-        {"id": "6", "state": "authorized"},
-        {"id": "7", "state": "authorized"},
-        {"id": "8", "state": "authorized"},
-        {"id": "9", "state": "authorized"},
-        {"id": "10", "state": "authorized"}
+        { "id": "1", "state": "authorized" },
+        { "id": "2", "state": "authorized" },
+        { "id": "3", "state": "authorized" },
+        { "id": "4", "state": "authorized" },
+        { "id": "5", "state": "authorized" },
+        { "id": "6", "state": "authorized" },
+        { "id": "7", "state": "authorized" },
+        { "id": "8", "state": "authorized" },
+        { "id": "9", "state": "authorized" },
+        { "id": "10", "state": "authorized" }
       ]
     },
     {
