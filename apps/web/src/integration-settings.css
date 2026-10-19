@@ -1,0 +1,6 @@
+/* Reuses the provider-settings look inside the shared scroll container, without its full-page height. */
+.integration-settings {
+  min-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
