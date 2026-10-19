@@ -47,8 +47,10 @@ async function requestJson<T>(
   return { ok: response.ok, status: response.status, body };
 }
 
-export function WorkCreation({ fetcher = globalThis.fetch }: Readonly<{ fetcher?: typeof fetch }>) {
-  const [signedIn, setSignedIn] = useState(false);
+export function WorkCreation({
+  signedIn,
+  fetcher = globalThis.fetch,
+}: Readonly<{ signedIn: boolean; fetcher?: typeof fetch }>) {
   const [draft, setDraft] = useState<WorkDraftView | undefined>();
   const [description, setDescription] = useState("");
   const [feedback, setFeedback] = useState("");
@@ -56,17 +58,15 @@ export function WorkCreation({ fetcher = globalThis.fetch }: Readonly<{ fetcher?
   const [error, setError] = useState("");
   const [confirming, setConfirming] = useState(false);
 
+  // Drop any in-progress draft when the owner signs out, so the next session starts blank.
   useEffect(() => {
-    let disposed = false;
-    void (async () => {
-      const session = await requestJson<{ authenticated?: boolean }>(fetcher, "/api/session");
-      if (disposed) return;
-      setSignedIn(Boolean(session.body?.authenticated));
-    })();
-    return () => {
-      disposed = true;
-    };
-  }, [fetcher]);
+    if (signedIn) return;
+    setDraft(undefined);
+    setDescription("");
+    setFeedback("");
+    setError("");
+    setConfirming(false);
+  }, [signedIn]);
 
   async function createDraft(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
