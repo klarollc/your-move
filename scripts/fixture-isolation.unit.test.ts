@@ -23,8 +23,11 @@ async function workspaceMap(): Promise<Map<string, string>> {
       const directory = `${parent}/${entry.name}`;
       const manifest = JSON.parse(
         await readFile(resolve(ROOT, directory, "package.json"), "utf8"),
-      ) as { name: string; exports?: Record<string, string> };
-      const main = manifest.exports?.["."] ?? "./src/index.ts";
+      ) as { name: string; exports?: Record<string, string | Record<string, string>> };
+      // A conditional entry's "default" is the source entry; this walk follows source.
+      const exported = manifest.exports?.["."];
+      const main =
+        (typeof exported === "string" ? exported : exported?.default) ?? "./src/index.ts";
       map.set(manifest.name, `${directory}/${main.replace(/^\.\//u, "")}`);
     }
   }
