@@ -30,7 +30,7 @@
           "id": "merge",
           "state": "done",
           "gate": { "verify": "edefd23aa384415ab287919ca08371bbd46c1869" },
-          "note": "Merged 2026-10-18; deployed 2026-10-19."
+          "note": "Merged 2026-10-19 UTC (commit timestamp: 2026-10-18 22:37 PDT); deployed 2026-10-19."
         }
       ]
     },
