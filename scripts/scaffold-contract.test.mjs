@@ -55,6 +55,12 @@ test("eslint ignores nested worktrees", async () => {
   assert.ok(ignores.includes(`${WORKTREES}/**`), `eslint does not ignore ${WORKTREES}`);
 });
 
+test("eslint ignores local scratch copies", async () => {
+  const { default: config } = await import(new URL("../eslint.config.mjs", import.meta.url));
+  const ignores = config.flatMap((entry) => entry.ignores ?? []);
+  assert.ok(ignores.includes(".scratch/**"), "eslint does not ignore local scratch copies");
+});
+
 test("prettier ignores nested worktrees", async () => {
   const lines = (await readFile(new URL("../.prettierignore", import.meta.url), "utf8"))
     .split(/\r?\n/)

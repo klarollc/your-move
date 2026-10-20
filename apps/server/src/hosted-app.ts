@@ -39,6 +39,7 @@ import {
   draftContractWithProvider,
 } from "./work-drafts.js";
 import { createExecutionEngine, type ExecutionEngine } from "./execution-loop.js";
+import type { TranscriptEntry } from "./provider-chat.js";
 import {
   openExecutionStore,
   type ExecutionRecord,
@@ -55,6 +56,51 @@ import { createNativeToolRegistry } from "./native-tools.js";
 import type { ResolveHost } from "./tool-web-fetch.js";
 
 export type HostedApp = FastifyInstance;
+
+function isLegacyRestartInstruction(content: string): boolean {
+  const closedWorkPrompt =
+    "The owner closed this work and has now picked it up again. This is a new attempt: continue the work from where it left off.";
+  const stoppedWorkStart = "The previous attempt stopped before finishing (";
+  const stoppedWorkEnd = "). This is a new attempt: continue the work from where it left off.";
+  return (
+    content === closedWorkPrompt ||
+    (content.startsWith(stoppedWorkStart) && content.endsWith(stoppedWorkEnd))
+  );
+}
+
+export function projectExecutionConversation(transcript: readonly TranscriptEntry[]): {
+  utterances: { turnIndex: number; text: string }[];
+  conversation: { role: "agent" | "owner"; text: string; turnIndex?: number }[];
+} {
+  const utterances: { turnIndex: number; text: string }[] = [];
+  const conversation: { role: "agent" | "owner"; text: string; turnIndex?: number }[] = [];
+  let turnIndex = 0;
+  let sawInitialUserMessage = false;
+
+  for (const entry of transcript) {
+    if (entry.role === "assistant") {
+      turnIndex += 1;
+      if (entry.content.trim()) {
+        utterances.push({ turnIndex, text: entry.content });
+        conversation.push({ role: "agent", turnIndex, text: entry.content });
+      }
+    } else if (entry.role === "user") {
+      // Older stored runs lack ownerReply markers. Their first user entry is the startup prompt;
+      // subsequent unmarked entries are owner replies except for the known restart control prompts.
+      const isOwnerReply =
+        entry.ownerReply === true ||
+        (entry.ownerReply === undefined &&
+          sawInitialUserMessage &&
+          !isLegacyRestartInstruction(entry.content));
+      sawInitialUserMessage = true;
+      if (isOwnerReply && entry.content.trim()) {
+        conversation.push({ role: "owner", text: entry.content });
+      }
+    }
+  }
+
+  return { utterances, conversation };
+}
 
 type HostedAppOptions = {
   mode: "development" | "test" | "production";
@@ -577,13 +623,7 @@ export function createHostedApp(options: HostedAppOptions): HostedApp {
   function executionView(record: ExecutionRecord) {
     // R4: the triage join. Verdicts stay textless; the text comes from the run's own transcript,
     // matched on turn index (verdict utteranceId = utterance_<executionId>_<turnIndex>_1).
-    const utterances: { turnIndex: number; text: string }[] = [];
-    let turnIndex = 0;
-    for (const entry of record.transcript) {
-      if (entry.role !== "assistant") continue;
-      turnIndex += 1;
-      if (entry.content.trim()) utterances.push({ turnIndex, text: entry.content });
-    }
+    const { utterances, conversation } = projectExecutionConversation(record.transcript);
     return {
       id: record.id,
       draftId: record.draftId,
@@ -599,6 +639,7 @@ export function createHostedApp(options: HostedAppOptions): HostedApp {
       updatedAt: record.updatedAt,
       fundedBy: record.fundedBy,
       utterances,
+      conversation,
       lampVerdicts: executionStore.listVerdicts(record.id).map((verdict) => ({
         utteranceId: verdict.row.id,
         turnIndex: verdict.row.turnIndex,

@@ -18,7 +18,7 @@ afterEach(() => {
 });
 
 describe("HostedWorkspace layout", () => {
-  it("places the work-creation panel inside the scroll container with the provider panel", async () => {
+  it("places work inside the hosted scroll container and exposes Connections navigation", async () => {
     const fetcher = vi.fn<typeof fetch>(async (input, init) => {
       const url = String(input);
       if (url === "/api/session" && (!init?.method || init.method === "GET")) {
@@ -41,7 +41,8 @@ describe("HostedWorkspace layout", () => {
     const scroller = container.querySelector(".hosted-workspace");
     expect(scroller).not.toBeNull();
     expect(scroller?.contains(panel)).toBe(true);
-    expect(scroller?.querySelector(".provider-settings")).not.toBeNull();
+    expect(screen.getByRole("button", { name: "Connections" })).toBeVisible();
+    expect(scroller?.querySelector(".provider-settings")).toBeNull();
   });
 });
 
@@ -126,6 +127,78 @@ describe("HostedWorkspace owner session", () => {
 
     await screen.findByRole("heading", { name: "Describe the work" });
     expect(screen.queryByText(/not included in this hosted setup stage/)).not.toBeInTheDocument();
+  });
+
+  it("switches between Work and Connections and renders only the selected connection sheet", async () => {
+    const fetcher = vi.fn<typeof fetch>(async (input) => {
+      const url = String(input);
+      if (url === "/api/session") return jsonResponse({ authenticated: true });
+      if (url === "/api/providers") {
+        return jsonResponse({
+          providers: [
+            { id: "openai", status: "disconnected" },
+            { id: "anthropic", status: "disconnected" },
+          ],
+          modelSelection: { mode: "automatic" },
+        });
+      }
+      if (url === "/api/chatgpt-plan") {
+        return jsonResponse({
+          status: "disconnected",
+          active: false,
+          email: null,
+          limitReachedAt: null,
+          inUseLabel: "Using ChatGPT plan",
+          manageUsageUrl: "https://chatgpt.com/settings/usage",
+        });
+      }
+      if (url === "/api/lamp") {
+        return jsonResponse({
+          endpoint: { baseUrl: "http://localhost:11434", configured: false, tokenSet: false },
+          model: "qwen3:8b",
+          degraded: false,
+          failures: 0,
+          latency: { count: 0, p50Ms: null, p95Ms: null },
+        });
+      }
+      if (url === "/api/integrations") {
+        return jsonResponse({ integrations: [{ id: "github", status: "disconnected" }] });
+      }
+      return jsonResponse({ code: "NOT_FOUND" }, 404);
+    });
+    const user = userEvent.setup();
+    render(<HostedWorkspace fetcher={fetcher} />);
+
+    expect(await screen.findByRole("heading", { name: "Describe the work" })).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Connections" }));
+
+    expect(screen.getByRole("heading", { name: "Connections" })).toBeVisible();
+    expect(screen.getByLabelText("Anthropic API key")).toBeVisible();
+    expect(screen.queryByLabelText("GitHub fine-grained token")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("region", { name: /connection sheet/i })).toHaveLength(1);
+
+    await user.click(screen.getByRole("button", { name: /OpenAI \/ ChatGPT plan/ }));
+    expect(screen.getByLabelText("OpenAI API key")).toBeVisible();
+    expect(screen.queryByLabelText("Credential from siwc:login")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Import ChatGPT credential" }));
+    expect(screen.getByLabelText("Credential from siwc:login")).toBeVisible();
+    expect(screen.queryByLabelText("OpenAI API key")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Your Ollama address")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("GitHub fine-grained token")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /^Ollama/ }));
+    expect(screen.getByLabelText("Your Ollama address")).toBeVisible();
+    expect(screen.queryByLabelText("OpenAI API key")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Credential from siwc:login")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /^GitHub/ }));
+    expect(screen.getByLabelText("GitHub fine-grained token")).toBeVisible();
+    expect(screen.queryByLabelText("Your Ollama address")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Sign out" })).toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: "Work" }));
+    expect(screen.getByRole("heading", { name: "Describe the work" })).toBeVisible();
+    expect(screen.queryByRole("heading", { name: "Connections" })).not.toBeInTheDocument();
   });
 
   it("approves without sending an empty JSON body (Fastify rejects content-type with no body)", async () => {

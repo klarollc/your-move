@@ -21,7 +21,7 @@ export type ToolCall = Readonly<{
 
 export type TranscriptEntry =
   | Readonly<{ role: "system"; content: string }>
-  | Readonly<{ role: "user"; content: string }>
+  | Readonly<{ role: "user"; content: string; ownerReply?: boolean }>
   | Readonly<{ role: "assistant"; content: string; toolCalls: ToolCall[] }>
   // Exactly one per tool call: providers reject a request where a call has none, or two.
   | Readonly<{ role: "tool"; toolCallId: string; name: string; content: string }>

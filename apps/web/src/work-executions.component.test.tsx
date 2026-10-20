@@ -117,9 +117,12 @@ describe("WorkExecutions", () => {
     });
     const user = userEvent.setup();
     render(<WorkExecutions signedIn fetcher={fetcher} />);
+    await user.click(await screen.findByRole("button", { name: "List" }));
+    await user.click(screen.getByRole("button", { name: "Open Add a setup section" }));
 
+    const panel = await screen.findByRole("region", { name: "Add a setup section" });
     expect(
-      await screen.findByText("Waiting on you — the agent proposes a file change."),
+      within(panel).getByText("Waiting on you — the agent proposes a file change."),
     ).toBeVisible();
     expect(screen.queryByText("Not approved")).not.toBeInTheDocument();
     const proposal = screen.getByRole("group", { name: "Proposed change to README.md" });
@@ -127,7 +130,7 @@ describe("WorkExecutions", () => {
     // R4 Track E supersedes "Approve change": the approval button always says "Go ahead and send".
     await user.click(within(proposal).getByRole("button", { name: "Go ahead and send" }));
 
-    expect(await screen.findByText("Done.")).toBeVisible();
+    expect(await within(panel).findByText("Done.")).toBeVisible();
     const approveCall = fetcher.mock.calls.find(([input]) => String(input).endsWith("/approve"))!;
     expect(new Headers(approveCall[1]?.headers).get("content-type")).toBeNull();
     expect(approveCall[1]?.body).toBeUndefined();
@@ -148,8 +151,11 @@ describe("WorkExecutions", () => {
     });
     const user = userEvent.setup();
     render(<WorkExecutions signedIn fetcher={fetcher} />);
-    expect(await screen.findByText("Not started.")).toBeVisible();
-    expect(screen.getByText(APPROVAL_CONSENT)).toBeVisible();
+    await user.click(await screen.findByRole("button", { name: "All work & history" }));
+    await user.click(screen.getByRole("button", { name: "Open Add a setup section" }));
+    const detail = await screen.findByRole("region", { name: "Add a setup section" });
+    expect(within(detail).getByText("Not started.")).toBeVisible();
+    expect(within(detail).getByText(APPROVAL_CONSENT)).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Start this work" }));
     const start = fetcher.mock.calls.find(
       ([input, init]) => String(input) === "/api/work-executions" && init?.method === "POST",
@@ -212,7 +218,9 @@ describe("GitHub tool connection", () => {
     const user = userEvent.setup();
     const { container } = render(<HostedWorkspace fetcher={fetcher} />);
 
-    expect(await screen.findByRole("heading", { name: "Tool connections" })).toBeVisible();
+    await user.click(await screen.findByRole("button", { name: "Connections" }));
+    await user.click(screen.getByRole("button", { name: /^GitHub/ }));
+    expect(await screen.findByRole("heading", { name: "GitHub" })).toBeVisible();
     expect(screen.getByText(/fine-grained token limited to the repositories/)).toBeVisible();
     await user.type(screen.getByLabelText("GitHub fine-grained token"), token);
     await user.click(screen.getByRole("button", { name: "Connect GitHub" }));

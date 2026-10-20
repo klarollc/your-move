@@ -8,7 +8,7 @@ import WebSocket from "ws";
 import { sharedLampVerdictMessageSchema } from "@cuckcode/contracts";
 
 import { openExecutionStore } from "./execution-store.js";
-import { createHostedApp, type HostedApp } from "./hosted-app.js";
+import { createHostedApp, projectExecutionConversation, type HostedApp } from "./hosted-app.js";
 import { PLAN_LIMIT_NOTE } from "./chatgpt-plan.js";
 import { LAMP_V2_MODEL } from "./lamp-v2.js";
 import {
@@ -222,6 +222,7 @@ type ExecutionView = {
   error: string | null;
   fundedBy: string | null;
   utterances: { turnIndex: number; text: string }[];
+  conversation: { role: "agent" | "owner"; text: string; turnIndex?: number }[];
   lampVerdicts: {
     utteranceId: string;
     turnIndex: number;
@@ -256,6 +257,66 @@ const auditOf = (app: HostedApp, executionId: string) => {
     store.close();
   }
 };
+
+describe("execution conversation projection", () => {
+  it("includes legacy unmarked owner turns after the startup prompt", () => {
+    expect(
+      projectExecutionConversation([
+        { role: "system", content: "System prompt." },
+        { role: "user", content: "Begin the approved work now." },
+        { role: "assistant", content: "Which branch should I use?", toolCalls: [] },
+        { role: "user", content: "Use main." },
+        { role: "assistant", content: "Done on main.", toolCalls: [] },
+      ]),
+    ).toEqual({
+      utterances: [
+        { turnIndex: 1, text: "Which branch should I use?" },
+        { turnIndex: 2, text: "Done on main." },
+      ],
+      conversation: [
+        { role: "agent", turnIndex: 1, text: "Which branch should I use?" },
+        { role: "owner", text: "Use main." },
+        { role: "agent", turnIndex: 2, text: "Done on main." },
+      ],
+    });
+  });
+
+  it("does not expose a legacy restart instruction as an owner reply", () => {
+    const restartInstruction =
+      "The previous attempt stopped before finishing (error). This is a new attempt: continue the work from where it left off.";
+
+    expect(
+      projectExecutionConversation([
+        { role: "system", content: "System prompt." },
+        { role: "user", content: "Begin the approved work now." },
+        { role: "assistant", content: "I need one detail before I continue.", toolCalls: [] },
+        { role: "user", content: restartInstruction },
+        { role: "assistant", content: "I resumed the previous work.", toolCalls: [] },
+      ]).conversation,
+    ).toEqual([
+      { role: "agent", turnIndex: 1, text: "I need one detail before I continue." },
+      { role: "agent", turnIndex: 2, text: "I resumed the previous work." },
+    ]);
+  });
+
+  it("does not expose a marked restart control message as an owner reply", () => {
+    const restartInstruction =
+      "The previous attempt stopped before finishing (error). This is a new attempt: continue the work from where it left off.";
+
+    expect(
+      projectExecutionConversation([
+        { role: "system", content: "System prompt." },
+        { role: "user", content: "Begin the approved work now." },
+        { role: "assistant", content: "I need one detail before I continue.", toolCalls: [] },
+        { role: "user", content: restartInstruction, ownerReply: false },
+        { role: "assistant", content: "I resumed the previous work.", toolCalls: [] },
+      ]).conversation,
+    ).toEqual([
+      { role: "agent", turnIndex: 1, text: "I need one detail before I continue." },
+      { role: "agent", turnIndex: 2, text: "I resumed the previous work." },
+    ]);
+  });
+});
 
 describe("R4 Track A — the lamp on the hosted loop", () => {
   it("taps once per committed non-empty utterance; verdicts are stored, textless, and joinable to the transcript", async () => {
@@ -510,6 +571,11 @@ describe("R4 Track C — owner triage", () => {
       (v) => v.status === "waiting-on-you" && v.turnCount === 2,
     );
     expect(resumed).toMatchObject({ attempt: 1, maxTurns: 10, output: "Done on main." });
+    expect(resumed.conversation).toEqual([
+      { role: "agent", turnIndex: 1, text: "Which branch should I use?" },
+      { role: "owner", text: "Use main." },
+      { role: "agent", turnIndex: 2, text: "Done on main." },
+    ]);
     expect(turns[1]!.messages.at(-1)).toEqual({ role: "user", content: "Use main." });
     expect(auditOf(app, execution.id).map((row) => [row.tool, row.resultSummary])).toContainEqual([
       "owner",

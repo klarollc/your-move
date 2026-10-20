@@ -639,6 +639,7 @@ export function createExecutionEngine(options: {
             ...previous.transcript,
             {
               role: "user",
+              ownerReply: false,
               content:
                 previous.status === "done"
                   ? "The owner closed this work and has now picked it up again. This is a new attempt: continue the work from where it left off."

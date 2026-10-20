@@ -2,8 +2,8 @@ import { useEffect, useState, type FormEvent } from "react";
 
 import "./provider-settings.css";
 
-type ProviderId = "openai" | "anthropic";
-type ConnectionStatus = "disconnected" | "connected" | "needs_reauth";
+export type ProviderId = "openai" | "anthropic";
+export type ConnectionStatus = "disconnected" | "connected" | "needs_reauth";
 type ProviderModel = { id: string; label: string };
 type ModelSelection =
   { mode: "automatic" } | { mode: "specific"; provider: ProviderId; modelId: string };
@@ -90,7 +90,18 @@ function selectedModel(value: string): { provider: ProviderId; modelId: string }
 export function ProviderSettings({
   fetcher = globalThis.fetch,
   onSessionChange,
-}: Readonly<{ fetcher?: typeof fetch; onSessionChange?: (signedIn: boolean) => void }>) {
+  onStatusesChange,
+  selectedProvider,
+  embedded = false,
+  showSettings = true,
+}: Readonly<{
+  fetcher?: typeof fetch;
+  onSessionChange?: (signedIn: boolean) => void;
+  onStatusesChange?: (statuses: Readonly<Record<ProviderId, ConnectionStatus>>) => void;
+  selectedProvider?: ProviderId;
+  embedded?: boolean;
+  showSettings?: boolean;
+}>) {
   const [view, setView] = useState<"loading" | "signed-out" | "signed-in" | "error">("loading");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
@@ -110,6 +121,10 @@ export function ProviderSettings({
     if (view === "loading") return;
     onSessionChange?.(view === "signed-in");
   }, [view, onSessionChange]);
+
+  useEffect(() => {
+    if (view === "signed-in") onStatusesChange?.(statuses);
+  }, [view, statuses, onStatusesChange]);
 
   useEffect(() => {
     let disposed = false;
@@ -326,18 +341,34 @@ export function ProviderSettings({
     );
   }
 
+  if (!showSettings) {
+    return embedded && view === "signed-in" ? (
+      <button className="provider-settings__quiet" type="button" onClick={() => void signOut()}>
+        Sign out
+      </button>
+    ) : null;
+  }
+
   const selectedOption = selectionValue(selection);
   const savedSelectionIsListed =
     selection.mode === "automatic" ||
     models[selection.provider].some(({ id }) => id === selection.modelId);
+  const visibleProviders = selectedProvider ? [selectedProvider] : providerIds;
+  const ProviderTitle = embedded ? "h2" : "h1";
 
   return (
     <main className="provider-settings">
       <header className="provider-settings__header">
-        <p className="provider-settings__eyebrow">CuckCode · hosted setup</p>
+        <p className="provider-settings__eyebrow">Connections</p>
         <div className="provider-settings__title-row">
           <div>
-            <h1>Provider connections</h1>
+            <ProviderTitle>
+              {selectedProvider === "anthropic"
+                ? "Anthropic"
+                : selectedProvider === "openai"
+                  ? "OpenAI / ChatGPT plan"
+                  : "Provider connections"}
+            </ProviderTitle>
             <p>Connect a provider once. Your key is encrypted when saved and never shown again.</p>
           </div>
           <button className="provider-settings__quiet" type="button" onClick={() => void signOut()}>
@@ -349,7 +380,7 @@ export function ProviderSettings({
       <section className="provider-settings__section" aria-labelledby="provider-list-title">
         <h2 id="provider-list-title">Available providers</h2>
         <div className="provider-settings__providers">
-          {providerIds.map((provider) => {
+          {visibleProviders.map((provider) => {
             const status = statuses[provider];
             const label = providerLabels[provider];
             const statusLabel =
@@ -417,39 +448,44 @@ export function ProviderSettings({
         </div>
       </section>
 
-      <section className="provider-settings__section" aria-labelledby="model-choice-title">
-        <h2 id="model-choice-title">Model choice</h2>
-        <label htmlFor="model-choice">Choose a default or a specific available model</label>
-        <select
-          id="model-choice"
-          value={selectedOption}
-          disabled={busySelection}
-          onChange={(event) => void updateSelection(event.currentTarget.value)}
-        >
-          <option value="automatic">Choose automatically</option>
-          {!savedSelectionIsListed && selection.mode === "specific" ? (
-            <option value={selectedOption}>
-              {providerLabels[selection.provider]} — {selection.modelId} (saved choice)
-            </option>
-          ) : null}
-          {providerIds.flatMap((provider) =>
-            models[provider].map((model) => (
-              <option key={`${provider}:${model.id}`} value={modelOptionValue(provider, model.id)}>
-                {providerLabels[provider]} — {model.label}
+      {!selectedProvider || selectedProvider === "openai" ? (
+        <section className="provider-settings__section" aria-labelledby="model-choice-title">
+          <h2 id="model-choice-title">Model choice</h2>
+          <label htmlFor="model-choice">Choose a default or a specific available model</label>
+          <select
+            id="model-choice"
+            value={selectedOption}
+            disabled={busySelection}
+            onChange={(event) => void updateSelection(event.currentTarget.value)}
+          >
+            <option value="automatic">Choose automatically</option>
+            {!savedSelectionIsListed && selection.mode === "specific" ? (
+              <option value={selectedOption}>
+                {providerLabels[selection.provider]} — {selection.modelId} (saved choice)
               </option>
-            )),
-          )}
-        </select>
-        <p className="provider-settings__hint">
-          Automatic selection is the default. A saved model choice remains in place when a provider
-          is disconnected.
-        </p>
-        {selectionError ? (
-          <p className="provider-settings__error" role="alert">
-            {selectionError}
+            ) : null}
+            {providerIds.flatMap((provider) =>
+              models[provider].map((model) => (
+                <option
+                  key={`${provider}:${model.id}`}
+                  value={modelOptionValue(provider, model.id)}
+                >
+                  {providerLabels[provider]} — {model.label}
+                </option>
+              )),
+            )}
+          </select>
+          <p className="provider-settings__hint">
+            Automatic selection is the default. A saved model choice remains in place when a
+            provider is disconnected.
           </p>
-        ) : null}
-      </section>
+          {selectionError ? (
+            <p className="provider-settings__error" role="alert">
+              {selectionError}
+            </p>
+          ) : null}
+        </section>
+      ) : null}
 
       <p className="provider-settings__feedback" role="status" aria-live="polite">
         {message}

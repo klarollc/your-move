@@ -21,8 +21,16 @@ async function requestJson<T>(
 export function IntegrationSettings({
   signedIn,
   fetcher = globalThis.fetch,
-}: Readonly<{ signedIn: boolean; fetcher?: typeof fetch }>) {
+  visible = true,
+  onStatusChange,
+}: Readonly<{
+  signedIn: boolean;
+  fetcher?: typeof fetch;
+  visible?: boolean;
+  onStatusChange?: (connection: "github", status: string) => void;
+}>) {
   const [status, setStatus] = useState<IntegrationStatus | undefined>();
+  const [loaded, setLoaded] = useState(false);
   const [token, setToken] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -32,24 +40,39 @@ export function IntegrationSettings({
     if (!signedIn) {
       setStatus(undefined);
       setToken("");
+      setLoaded(false);
       return;
     }
     let disposed = false;
+    setLoaded(false);
+    onStatusChange?.("github", "Checking");
     void (async () => {
       try {
         const { response, body } = await requestJson<{
           integrations?: { id: string; status: IntegrationStatus }[];
         }>(fetcher, "/api/integrations");
         const github = body?.integrations?.find(({ id }) => id === "github");
-        if (!disposed && response.ok && github) setStatus(github.status);
+        if (disposed) return;
+        if (response.ok && github) {
+          setStatus(github.status);
+          onStatusChange?.("github", github.status === "connected" ? "Connected" : "Not connected");
+        } else {
+          setStatus(undefined);
+          onStatusChange?.("github", "Status unavailable");
+        }
       } catch {
-        // No panel when the service does not offer integrations.
+        if (!disposed) {
+          setStatus(undefined);
+          onStatusChange?.("github", "Status unavailable");
+        }
+      } finally {
+        if (!disposed) setLoaded(true);
       }
     })();
     return () => {
       disposed = true;
     };
-  }, [signedIn, fetcher]);
+  }, [signedIn, fetcher, onStatusChange]);
 
   async function connect(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -75,6 +98,7 @@ export function IntegrationSettings({
         return;
       }
       setStatus("connected");
+      onStatusChange?.("github", "Connected");
       setMessage("GitHub connected. The token is not shown again.");
     } catch {
       setError("Could not connect GitHub. Try again.");
@@ -94,6 +118,7 @@ export function IntegrationSettings({
       });
       if (!response.ok) throw new Error("INTEGRATION_DISCONNECT_FAILED");
       setStatus("disconnected");
+      onStatusChange?.("github", "Not connected");
       setMessage("GitHub disconnected.");
     } catch {
       setError("Could not disconnect GitHub. Try again.");
@@ -102,7 +127,20 @@ export function IntegrationSettings({
     }
   }
 
-  if (!signedIn || !status) return null;
+  if (!signedIn || !visible) return null;
+
+  if (!status) {
+    return (
+      <section className="provider-settings integration-settings" aria-labelledby="github-title">
+        <div className="provider-settings__section">
+          <h2 id="github-title">GitHub</h2>
+          <p className="ym3c__status-unavailable" role="status">
+            {loaded ? "Status unavailable" : "Checking…"}
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section
@@ -110,7 +148,7 @@ export function IntegrationSettings({
       aria-labelledby="tool-connections-title"
     >
       <div className="provider-settings__section">
-        <h2 id="tool-connections-title">Tool connections</h2>
+        <h2 id="tool-connections-title">GitHub</h2>
         <div className="provider-settings__providers">
           <fieldset className="provider-settings__provider">
             <legend>GitHub</legend>

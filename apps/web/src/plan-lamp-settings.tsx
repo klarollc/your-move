@@ -22,6 +22,8 @@ type LampView = {
   failures: number;
   latency: { count: number; p50Ms: number | null; p95Ms: number | null };
 };
+type SelectedPanel = "all" | "plan" | "lamp" | null;
+type ConnectionId = "openai-plan" | "ollama";
 
 async function requestJson<T>(
   fetcher: typeof fetch,
@@ -62,9 +64,17 @@ const lampErrors: Record<string, string> = {
 export function PlanAndLampSettings({
   signedIn,
   fetcher = globalThis.fetch,
-}: Readonly<{ signedIn: boolean; fetcher?: typeof fetch }>) {
+  selectedPanel = "all",
+  onStatusChange,
+}: Readonly<{
+  signedIn: boolean;
+  fetcher?: typeof fetch;
+  selectedPanel?: SelectedPanel;
+  onStatusChange?: (connection: ConnectionId, status: string) => void;
+}>) {
   const [plan, setPlan] = useState<PlanView | undefined>();
   const [lamp, setLamp] = useState<LampView | undefined>();
+  const [loaded, setLoaded] = useState(false);
   const [bundle, setBundle] = useState("");
   const [welcome, setWelcome] = useState(false);
   const [baseUrl, setBaseUrl] = useState("");
@@ -75,20 +85,46 @@ export function PlanAndLampSettings({
   const [message, setMessage] = useState("");
 
   const load = useCallback(async () => {
+    setLoaded(false);
+    onStatusChange?.("openai-plan", "Checking");
+    onStatusChange?.("ollama", "Checking");
     try {
       const [planResult, lampResult] = await Promise.all([
         requestJson<PlanView>(fetcher, "/api/chatgpt-plan"),
         requestJson<LampView>(fetcher, "/api/lamp"),
       ]);
-      if (planResult.ok && planResult.body?.status) setPlan(planResult.body);
+      if (planResult.ok && planResult.body?.status) {
+        setPlan(planResult.body);
+        onStatusChange?.(
+          "openai-plan",
+          planResult.body.status === "needs_reauth"
+            ? "Needs reconnection"
+            : planResult.body.status === "connected"
+              ? planResult.body.active
+                ? "Using ChatGPT plan"
+                : "Connected, not in use"
+              : "Not connected",
+        );
+      } else {
+        onStatusChange?.("openai-plan", "Status unavailable");
+      }
       if (lampResult.ok && lampResult.body?.endpoint) {
         setLamp(lampResult.body);
         setBaseUrl((current) => current || lampResult.body!.endpoint.baseUrl);
+        onStatusChange?.(
+          "ollama",
+          lampResult.body.endpoint.configured ? "Connected" : "Using default address",
+        );
+      } else {
+        onStatusChange?.("ollama", "Status unavailable");
       }
     } catch {
-      // No panel when the service does not offer these.
+      onStatusChange?.("openai-plan", "Status unavailable");
+      onStatusChange?.("ollama", "Status unavailable");
+    } finally {
+      setLoaded(true);
     }
-  }, [fetcher]);
+  }, [fetcher, onStatusChange]);
 
   useEffect(() => {
     if (!signedIn) {
@@ -96,10 +132,15 @@ export function PlanAndLampSettings({
       setLamp(undefined);
       setBundle("");
       setToken("");
+      setLoaded(false);
       return;
     }
     void load();
   }, [signedIn, load]);
+
+  useEffect(() => {
+    setMessage("");
+  }, [selectedPanel]);
 
   async function run(work: () => Promise<void>) {
     setBusy(true);
@@ -188,14 +229,26 @@ export function PlanAndLampSettings({
     });
   };
 
-  if (!signedIn || (!plan && !lamp)) return null;
+  if (!signedIn || selectedPanel === null) return null;
+
+  const showPlan = selectedPanel === "all" || selectedPanel === "plan";
+  const showLamp = selectedPanel === "all" || selectedPanel === "lamp";
+  const title =
+    selectedPanel === "plan"
+      ? "ChatGPT plan"
+      : selectedPanel === "lamp"
+        ? "Ollama"
+        : "Your plan and the lamp";
 
   return (
-    <section className="provider-settings integration-settings" aria-labelledby="plan-lamp-title">
+    <section
+      className="provider-settings integration-settings plan-lamp-sheet"
+      aria-labelledby="plan-lamp-title"
+    >
       <div className="provider-settings__section">
-        <h2 id="plan-lamp-title">Your plan and the lamp</h2>
+        <h2 id="plan-lamp-title">{title}</h2>
         <div className="provider-settings__providers">
-          {plan ? (
+          {showPlan && plan ? (
             <fieldset className="provider-settings__provider">
               <legend>Use your ChatGPT plan</legend>
               {plan.status === "connected" ? (
@@ -297,9 +350,13 @@ export function PlanAndLampSettings({
                 </>
               )}
             </fieldset>
+          ) : showPlan && selectedPanel !== "all" ? (
+            <p className="ym3c__status-unavailable" role="status">
+              {loaded ? "Status unavailable" : "Checking…"}
+            </p>
           ) : null}
 
-          {lamp ? (
+          {showLamp && lamp ? (
             <fieldset className="provider-settings__provider">
               <legend>The lamp</legend>
               <p className="provider-settings__provider-status">
@@ -334,10 +391,11 @@ export function PlanAndLampSettings({
                   </button>
                 </div>
                 <span className="provider-settings__hint">
-                  The lamp runs qwen3:8b on an Ollama you provide. This server must be able to reach
-                  it: a hosted server cannot see your computer&apos;s localhost. Ollama has no
-                  sign-in of its own, so a public address should sit behind a tunnel or proxy that
-                  checks this token — without one, anyone who finds the address can use it.
+                  Ollama evaluates lamp signals; it does not perform agent work. The lamp runs
+                  qwen3:8b on an Ollama you provide. This server must be able to reach it: a hosted
+                  server cannot see your computer&apos;s localhost. Ollama has no sign-in of its
+                  own, so a public address should sit behind a tunnel or proxy that checks this
+                  token — without one, anyone who finds the address can use it.
                 </span>
                 {lampError ? (
                   <p className="provider-settings__error" role="alert">
@@ -346,6 +404,10 @@ export function PlanAndLampSettings({
                 ) : null}
               </form>
             </fieldset>
+          ) : showLamp && selectedPanel !== "all" ? (
+            <p className="ym3c__status-unavailable" role="status">
+              {loaded ? "Status unavailable" : "Checking…"}
+            </p>
           ) : null}
         </div>
         <p className="provider-settings__feedback" role="status" aria-live="polite">
