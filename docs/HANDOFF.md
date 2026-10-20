@@ -1,17 +1,17 @@
 # Handoff — state, next action, and what would otherwise be relearned expensively
 
-Written 2026-09-18, last updated 2026-10-18 for the owner-approved Your Move R1 workstream. Read `AGENTS.md` first for authority; this document is the
+Written 2026-09-18, last updated 2026-10-20 for the Your Move R4 and UI revision closeout. Read `AGENTS.md` first for authority; this document is the
 live state, the next action, and the things a fresh session pays for twice if nobody wrote them down.
 
 ---
 
-## Current owner-authorized workstream — Your Move R1
+## Current state — Your Move R1–R4 and UI revision
 
-On 2026-10-18 the owner approved R1 only: hosted Railway foundation and OpenAI/Anthropic provider connections. The source plan and narrow amendment are `docs/your-move-redesign-build-plan-2026-10-18.md`; the authorization is recorded in `docs/evidence/your-move-r1-authorization-2026-10-18.md`; the checklist is `tasks/your-move-r1-todo.md`. Work on `feature/your-move-r1-hosted-providers` in its dedicated worktree. Do not switch to or modify `main`.
+R1 is complete and merged as `f40cf3329a9a0d456c0736e04676d0199a855abe` on 2026-10-18. R2 is complete, merged as `edefd23aa384415ab287919ca08371bbd46c1869`, and deployed on 2026-10-19. R3 is complete, merged as `7d3edc7522cdabbd29f1473c78bf7dc3117c5dfc` on 2026-10-19; its walk-through is complete. R4 is complete, merged as `56d3708821e9b17a8e92ce6241b5f4924772d77d` on 2026-10-19; its functional walk-through passed that day, with screenshots deferred. The R4 exports hotfix is complete, merged as `6ca66b55ec4b599e34bbe28aa55fd175771d0702` on 2026-10-19.
 
-Scope exclusions: no Hermes provider, multi-user support, billing, local-loopback changes, canonical event-log changes, lamp/T3/T4 changes, or R2–R5. Success-path tests must mock at the provider HTTP boundary; use invalid dummy keys for rejection tests; no real provider credentials. Build deploy-ready Docker/Railway configuration and document required settings, but do not connect the Railway project, set variables, push, or deploy. The Railway project reference is in the authorization record.
+The sage/oat UI revision and the three R4 walk-through fixes (explicit proposal approval, visible owner replies, and per-utterance lamp verdicts) are complete, merged as `794d22fcb260ef800618be77032fea6e832e0e8b` on 2026-10-20. The hosted Your Move product is functional. The Section 6 screenshot pass on the new UI remains pending.
 
-**Next action:** complete the R1 checklist, starting with the hosted-only server boundary and provider vault; preserve the existing loopback and event-log paths. Run the R1-focused checks and applicable regression suite before reporting completion.
+**Next:** complete the Section 6 screenshot pass on the new UI. R5 (dogfood) is the planned next phase, but it is not yet owner-authorized; do not begin R5 until explicit owner approval.
 
 ---
 
