@@ -5,7 +5,7 @@
     {
       "id": "your-move-r1",
       "title": "Your Move redesign R1 — Hosted foundation + provider connections",
-      "state": "in_progress",
+      "state": "complete",
       "checklist": "tasks/your-move-r1-todo.md",
       "tasks": [
         { "id": "1", "state": "authorized" },
@@ -18,7 +18,72 @@
         { "id": "8", "state": "authorized" },
         { "id": "9", "state": "authorized" },
         { "id": "10", "state": "authorized" }
+      ],
+      "note": "Merged to main 2026-10-18 at f40cf3329a9a0d456c0736e04676d0199a855abe. The task checklist is intentionally unchanged under the no-checklist-edits scope, so its existing unchecked rows remain represented as authorized."
+    },
+    {
+      "id": "your-move-r2",
+      "title": "Your Move R2 — Plain-language work creation",
+      "state": "complete",
+      "tasks": [
+        {
+          "id": "merge",
+          "state": "done",
+          "gate": { "verify": "edefd23aa384415ab287919ca08371bbd46c1869" },
+          "note": "Merged 2026-10-19 UTC (commit timestamp: 2026-10-18 22:37 PDT); deployed 2026-10-19."
+        }
       ]
+    },
+    {
+      "id": "your-move-r3",
+      "title": "Your Move R3 — Live execution loop and v1 tool suite",
+      "state": "complete",
+      "tasks": [
+        {
+          "id": "merge",
+          "state": "done",
+          "gate": { "verify": "7d3edc7522cdabbd29f1473c78bf7dc3117c5dfc" },
+          "note": "Merged 2026-10-19; functional walk-through complete 2026-10-19."
+        }
+      ]
+    },
+    {
+      "id": "your-move-r4",
+      "title": "Your Move R4 — Lamp on hosted and provider authentication",
+      "state": "complete",
+      "tasks": [
+        {
+          "id": "merge",
+          "state": "done",
+          "gate": { "verify": "56d3708821e9b17a8e92ce6241b5f4924772d77d" },
+          "note": "Merged 2026-10-19; functional walk-through passed 2026-10-19; screenshots deferred."
+        },
+        {
+          "id": "exports-hotfix",
+          "state": "done",
+          "gate": { "verify": "6ca66b55ec4b599e34bbe28aa55fd175771d0702" },
+          "note": "R4 exports hotfix merged 2026-10-19."
+        }
+      ]
+    },
+    {
+      "id": "your-move-ui-revision",
+      "title": "Your Move UI revision — sage/oat redesign and three walk-through fixes",
+      "state": "complete",
+      "tasks": [
+        {
+          "id": "merge",
+          "state": "done",
+          "gate": { "verify": "794d22fcb260ef800618be77032fea6e832e0e8b" },
+          "note": "Merged 2026-10-20. The Section 6 screenshot pass on the new UI remains pending."
+        }
+      ]
+    },
+    {
+      "id": "your-move-r5",
+      "title": "Your Move R5 — Dogfood",
+      "state": "proposed",
+      "note": "Planned, not yet owner-authorized. Do not begin implementation until explicit owner approval."
     },
     {
       "id": "phase-0-3",
