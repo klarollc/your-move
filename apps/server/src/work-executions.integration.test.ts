@@ -509,6 +509,27 @@ describe("R3 approval gate: propose-class tools never execute on the agent path"
     expect(twice.statusCode).toBe(409);
   });
 
+  it("does not treat an approach-approved free-text reply as approval to write a proposal", async () => {
+    const fake = proposingWorld(() => jsonResponse(readmeFile("sha_readme_1")));
+    const app = createApp(fake.fetcher);
+    const cookie = await setUp(app);
+    const approved = await approveNewDraft(app, cookie);
+    const waiting = await waitFor(app, cookie, approved.execution!.id, "waiting-on-you");
+    const proposalId = waiting.proposals[0]!.id;
+
+    const reply = await post(app, cookie, `/api/work-executions/${waiting.id}/reply`, {
+      message: "Approved — summarize…",
+    });
+
+    expect(reply.statusCode).toBe(409);
+    expect(reply.json()).toEqual({ code: "PROPOSAL_PENDING" });
+    expect(fake.githubCalls.filter((call) => call.method === "PUT")).toHaveLength(0);
+    expect((await waitFor(app, cookie, waiting.id, "waiting-on-you")).proposals[0]).toMatchObject({
+      id: proposalId,
+      status: "pending",
+    });
+  });
+
   it("stale base_sha: no write, proposal stale, transcript note, run resumes", async () => {
     // The agent's read (turn 1) sees sha_readme_1; by approval time the file has changed.
     let reads = 0;

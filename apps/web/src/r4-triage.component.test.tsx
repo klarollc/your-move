@@ -6,11 +6,11 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { HostedWorkspace } from "./hosted-workspace.js";
+import { buildStreetPage } from "./owner-action-queue.js";
 import {
   NOTHING_GOES_OUT,
   WorkExecutions,
   availableActions,
-  buildStreet,
   windowLight,
   type ExecutionStatus,
   type ExecutionView,
@@ -94,45 +94,39 @@ describe("triage actions (R4 Track C invariant)", () => {
 });
 
 describe("Lit Windows street (R4 Track E)", () => {
-  it("lights only what needs the owner, pulls lit windows to the ground floor, and keeps 30 works in 6 houses", () => {
-    expect(windowLight(null)).toBe("lit");
-    expect(windowLight(run())).toBe("lit");
+  it("lights only unresolved owner actions; active-work lamp verdicts stay out of Street", () => {
+    expect(windowLight(null)).toBe("dark");
+    expect(windowLight(run({ status: "waiting-on-you" }))).toBe("lit");
     expect(windowLight(run({ status: "failed" }))).toBe("lit");
-    expect(windowLight(run({ status: "working" }))).toBe("working");
-    expect(windowLight(run({ status: "queued" }))).toBe("working");
+    expect(windowLight(run({ status: "working" }))).toBe("dark");
+    expect(windowLight(run({ status: "queued" }))).toBe("dark");
     expect(windowLight(run({ status: "done" }))).toBe("dark");
+
     const lampCue = {
       utteranceId: "utterance_exec_1_1_1",
       turnIndex: 1,
       verdict: "lamp" as const,
-      verdictTs: "t",
+      verdictTs: "2026-10-19T00:00:00.000Z",
       ownerChoice: null,
     };
-    expect(windowLight(run({ status: "working", lampVerdicts: [lampCue] }))).toBe("lit");
-    expect(
-      windowLight(
-        run({ status: "working", lampVerdicts: [{ ...lampCue, ownerChoice: "dismissed" }] }),
-      ),
-    ).toBe("working");
+    expect(windowLight(run({ status: "working", lampVerdicts: [lampCue] }))).toBe("dark");
 
-    const works = Array.from({ length: 30 }, (_, index) => ({
+    const waiting = Array.from({ length: 30 }, (_, index) => ({
       id: `d${index}`,
-      status: "approved" as const,
-      prose: prose(`Work ${index}`),
-      execution: run({
+      title: `Work ${index}`,
+      execution: {
         id: `e${index}`,
-        status: index % 3 === 0 ? "waiting-on-you" : index % 3 === 1 ? "working" : "done",
-      }),
+        status: "waiting-on-you",
+        turnCount: 1,
+        maxTurns: 10,
+        proposals: [],
+      },
     }));
-    const { houses, overflow } = buildStreet(works);
-    expect(houses).toHaveLength(5);
-    expect(overflow).toBe(0);
-    expect(
-      houses.flatMap((house) => house.items).map((item) => windowLight(item.execution)),
-    ).toEqual([...Array(10).fill("lit"), ...Array(10).fill("working"), ...Array(10).fill("dark")]);
-    expect(buildStreet([...works, ...works.map((w) => ({ ...w, id: `${w.id}b` }))]).overflow).toBe(
-      24,
-    );
+    const first = buildStreetPage(waiting, 0);
+    expect(first).toMatchObject({ total: 30, page: 0, pageCount: 2, start: 1, end: 15 });
+    expect(first.houses).toHaveLength(3);
+    expect(first.houses.flatMap((house) => house)).toHaveLength(15);
+    expect(buildStreetPage(waiting, 1)).toMatchObject({ page: 1, start: 16, end: 30 });
   });
 
   it("uses periwinkle only in rules for lit windows, needs-you labels, lamp cues and the lit panel", () => {
@@ -151,13 +145,24 @@ describe("Lit Windows street (R4 Track E)", () => {
 
   it("unfolds the waiting work beside the street with its reply box, and sends the reply", async () => {
     let status: ExecutionStatus = "waiting-on-you";
+    let replied = false;
     const fetcher = serve(
       () => [
         {
           id: "draft_1",
           status: "approved",
           prose: prose("Add a setup section"),
-          execution: run({ status }),
+          execution: run({
+            status,
+            ...(replied
+              ? {
+                  conversation: [
+                    { role: "agent" as const, turnIndex: 2, text: "Which branch should I use?" },
+                    { role: "owner" as const, text: "Use main." },
+                  ],
+                }
+              : {}),
+          }),
         },
         {
           id: "draft_2",
@@ -169,6 +174,7 @@ describe("Lit Windows street (R4 Track E)", () => {
       (url, init) => {
         if (url === "/api/work-executions/exec_1/reply" && init?.method === "POST") {
           status = "queued";
+          replied = true;
           return jsonResponse(run({ status: "queued" }));
         }
         return undefined;
@@ -176,6 +182,8 @@ describe("Lit Windows street (R4 Track E)", () => {
     );
     const user = userEvent.setup();
     render(<WorkExecutions signedIn fetcher={fetcher} openFeed={noFeed} />);
+    await user.click(await screen.findByRole("button", { name: "List" }));
+    await user.click(screen.getByRole("button", { name: "Open Add a setup section" }));
 
     const panel = await screen.findByRole("region", { name: "Add a setup section" });
     expect(
@@ -186,19 +194,15 @@ describe("Lit Windows street (R4 Track E)", () => {
       "href",
       "https://chatgpt.com/settings/usage",
     );
-    expect(screen.getByRole("button", { name: "Add a setup section — needs you" })).toHaveClass(
-      "your-move__window--lit",
-    );
-    expect(screen.getByRole("button", { name: "Tidy the changelog — working" })).toHaveClass(
-      "your-move__window--working",
-    );
-    expect(screen.getByText("One window is lit.")).toBeVisible();
+    expect(screen.getByText("1 needs you")).toBeVisible();
+    expect(screen.queryByRole("button", { name: /Tidy the changelog/ })).not.toBeInTheDocument();
 
     await user.type(within(panel).getByLabelText("Your reply"), "Use main.");
     await user.click(within(panel).getByRole("button", { name: "Send" }));
     const sent = fetcher.mock.calls.find(([input]) => String(input).endsWith("/reply"))!;
     expect(JSON.parse(String(sent[1]?.body))).toEqual({ message: "Use main." });
     expect(await within(panel).findByText("Queued — the agent starts shortly.")).toBeVisible();
+    expect(within(panel).getByRole("group", { name: "Your reply" })).toHaveTextContent("Use main.");
   });
 
   it("states that nothing goes out on the approval screen, says Go ahead and send, and closes with Draw the curtain", async () => {
@@ -230,6 +234,8 @@ describe("Lit Windows street (R4 Track E)", () => {
     );
     const user = userEvent.setup();
     render(<WorkExecutions signedIn fetcher={fetcher} openFeed={noFeed} />);
+    await user.click(await screen.findByRole("button", { name: "List" }));
+    await user.click(screen.getByRole("button", { name: "Open Add a setup section" }));
     const change = await screen.findByRole("group", { name: "Proposed change to README.md" });
     expect(within(change).getByRole("button", { name: "Go ahead and send" })).toBeVisible();
     expect(within(change).getByText(NOTHING_GOES_OUT, { exact: false })).toBeVisible();
@@ -251,7 +257,7 @@ describe("Lit Windows street (R4 Track E)", () => {
       verdictTs: "2026-10-19T00:00:00.000Z",
       ownerChoice: null,
     };
-    let dismissed = false;
+    let choice: "dismissed" | "engaged" | null = null;
     const fetcher = serve(
       () => [
         {
@@ -261,14 +267,13 @@ describe("Lit Windows street (R4 Track E)", () => {
           execution: run({
             status: "working",
             output: null,
-            lampVerdicts: [{ ...cue, ownerChoice: dismissed ? "dismissed" : null }],
+            lampVerdicts: [{ ...cue, ownerChoice: choice }],
           }),
         },
       ],
       (url, init) => {
         if (url === "/api/lamp-verdicts/utterance_exec_1_1_1/choice" && init?.method === "POST") {
-          if ((JSON.parse(String(init.body)) as { choice: string }).choice === "dismissed")
-            dismissed = true;
+          choice = (JSON.parse(String(init.body)) as { choice: "dismissed" | "engaged" }).choice;
           return jsonResponse({ ok: true });
         }
         return undefined;
@@ -276,20 +281,55 @@ describe("Lit Windows street (R4 Track E)", () => {
     );
     const user = userEvent.setup();
     render(<WorkExecutions signedIn fetcher={fetcher} openFeed={noFeed} />);
-    const lamp = await screen.findByRole("group", { name: "The lamp lit" });
-    expect(within(lamp).getByText("Reading the README first.")).toBeVisible();
-    await vi.waitFor(() =>
-      expect(
-        fetcher.mock.calls.some(
-          ([input, init]) =>
-            String(input).endsWith("/choice") && String(init?.body).includes("engaged"),
-        ),
-      ).toBe(true),
-    );
+    await user.click(await screen.findByRole("button", { name: "All work & history" }));
+    await user.click(screen.getByRole("button", { name: "Open Add a setup section" }));
+    const detail = await screen.findByRole("region", { name: "Add a setup section" });
+    const lamp = within(detail).getByRole("group", { name: "Lamp verdict" });
+    expect(
+      within(detail).getByText("Reading the README first.", { selector: "blockquote" }),
+    ).toBeVisible();
+    await user.click(within(lamp).getByRole("button", { name: "Mark as seen" }));
+    await vi.waitFor(() => expect(choice).toBe("engaged"));
+    expect(await within(lamp).findByText("Marked as seen.")).toBeVisible();
     await user.click(within(lamp).getByRole("button", { name: "Draw the curtain" }));
-    await vi.waitFor(() =>
-      expect(screen.queryByRole("group", { name: "The lamp lit" })).toBeNull(),
-    );
+    await vi.waitFor(() => expect(choice).toBe("dismissed"));
+    expect(await within(lamp).findByText("Curtain drawn.")).toBeVisible();
+    expect(within(lamp).queryByRole("button", { name: "Mark as seen" })).not.toBeInTheDocument();
+  });
+
+  it("shows a no-lamp verdict beside its utterance in work history", async () => {
+    const fetcher = serve(() => [
+      {
+        id: "draft_1",
+        status: "approved",
+        prose: prose("Add a setup section"),
+        execution: run({
+          status: "working",
+          output: null,
+          utterances: [{ turnIndex: 1, text: "Reading the README first." }],
+          lampVerdicts: [
+            {
+              utteranceId: "utterance_exec_1_1_1",
+              turnIndex: 1,
+              verdict: "no-lamp",
+              verdictTs: "2026-10-19T00:00:00.000Z",
+              ownerChoice: null,
+            },
+          ],
+        }),
+      },
+    ]);
+    const user = userEvent.setup();
+    render(<WorkExecutions signedIn fetcher={fetcher} openFeed={noFeed} />);
+    await user.click(await screen.findByRole("button", { name: "All work & history" }));
+    await user.click(screen.getByRole("button", { name: "Open Add a setup section" }));
+
+    const detail = await screen.findByRole("region", { name: "Add a setup section" });
+    expect(
+      within(detail).getByText("Reading the README first.", { selector: "blockquote" }),
+    ).toBeVisible();
+    expect(within(detail).getByRole("group", { name: "No lamp signal" })).toBeVisible();
+    expect(within(detail).queryByRole("button", { name: "Mark as seen" })).not.toBeInTheDocument();
   });
 
   it("refreshes when the live feed reports a verdict, and offers the list escape hatch", async () => {
@@ -308,14 +348,19 @@ describe("Lit Windows street (R4 Track E)", () => {
     ]);
     const user = userEvent.setup();
     render(<WorkExecutions signedIn fetcher={fetcher} openFeed={openFeed} />);
-    await screen.findByText("No window is lit.");
+    expect(await screen.findByText("0 need you")).toBeVisible();
+    expect(
+      within(screen.getByRole("region", { name: "Street" })).getByText("Nothing needs you"),
+    ).toBeVisible();
     const before = fetcher.mock.calls.length;
     notify();
     await vi.waitFor(() => expect(fetcher.mock.calls.length).toBeGreaterThan(before));
 
-    await user.click(screen.getByRole("button", { name: "See it as a list" }));
-    const list = screen.getByRole("list", { name: "All approved work" });
-    expect(within(list).getByText("Working — turn 3 of 10.")).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "All work & history" }));
+    expect(screen.getByText("Working — turn 3 of 10.")).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Open Add a setup section" }));
+    const detail = await screen.findByRole("region", { name: "Add a setup section" });
+    expect(within(detail).getByText("Working — turn 3 of 10.")).toBeVisible();
   });
 });
 
@@ -368,6 +413,9 @@ describe("Continue with ChatGPT and the lamp (R4 Track D)", () => {
     const user = userEvent.setup();
     const { container } = render(<HostedWorkspace fetcher={fetcher} openFeed={noFeed} />);
 
+    await user.click(await screen.findByRole("button", { name: "Connections" }));
+    await user.click(screen.getByRole("button", { name: /OpenAI \/ ChatGPT plan/ }));
+    await user.click(screen.getByRole("button", { name: "Import ChatGPT credential" }));
     await user.type(await screen.findByLabelText("Credential from siwc:login"), secretLine);
     await user.click(screen.getByRole("button", { name: "Continue with ChatGPT" }));
     expect(await screen.findByText("Using ChatGPT plan")).toBeVisible();
@@ -378,6 +426,7 @@ describe("Continue with ChatGPT and the lamp (R4 Track D)", () => {
     )!;
     expect(JSON.parse(String(imported[1]?.body))).toEqual({ bundle: secretLine });
 
+    await user.click(screen.getByRole("button", { name: /^Ollama/ }));
     const address = screen.getByLabelText("Your Ollama address");
     await user.clear(address);
     await user.type(address, "https://ollama.example.test");

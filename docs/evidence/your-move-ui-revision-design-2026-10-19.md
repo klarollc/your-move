@@ -59,3 +59,13 @@ Capture the implemented 1440px and 1280px states in `docs/evidence/`. Verify Str
 ## Data boundary
 
 The existing hosted response already includes execution `createdAt` / `updatedAt` and proposal `createdAt`; the frontend may consume these existing fields to order recorded owner actions. Do not add a route, response field, database column, or state transition for this UI revision.
+
+## Owner-approved R4 walk-through addendum — 2026-10-19
+
+The owner subsequently directed that three defects reproduced in the R4 walk-through be fixed in this build: proposal writes must wait for an explicit proposal-specific decision, owner replies must appear in transcript order, and per-utterance lamp verdicts must appear beside their utterances. This is a narrow amendment to the presentation-only and data-boundary rules above, limited to those three paths.
+
+- Keep proposal authorization tied to the stored proposal decision. Free-text approval of an approach must never authorize a write; render the proposal-specific Approve/Deny card and do not resume the applier until the explicit decision is recorded.
+- To render persisted owner replies in order, an additive derived conversation projection and a minimal transcript-origin marker are permitted. Mark restart/control prompts as non-owner messages and preserve legacy reply projection without exposing control prompts. No new route, database column, canonical event, or unrelated response/state change is authorized.
+- Diagnose and fix the lamp cue path so stored verdicts are projected beside their corresponding utterances. Verdicts remain projection-only and must not enter the canonical log or affect window lighting.
+
+All other exclusions remain unchanged: no unrelated backend, API, tool, credential, provider, agent-loop, persistence, or canonical-state changes; no push, merge, deployment, or external write.

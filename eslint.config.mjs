@@ -6,6 +6,7 @@ export default tseslint.config(
     ignores: [
       ".restore/**",
       ".worktrees/**",
+      ".scratch/**",
       ".cuckcode/**",
       "coverage/**",
       "**/dist/**",

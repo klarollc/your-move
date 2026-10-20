@@ -415,7 +415,7 @@ export function openExecutionStore(options: { dataDir: string }) {
         if (execution.turnCount >= execution.maxTurns) return "NO_TURNS_LEFT" as const;
         const transcript: TranscriptEntry[] = [
           ...execution.transcript,
-          { role: "user", content: message },
+          { role: "user", content: message, ownerReply: true },
         ];
         database
           .prepare(
