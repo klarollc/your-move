@@ -194,7 +194,7 @@ describe("Lit Windows street (R4 Track E)", () => {
       "href",
       "https://chatgpt.com/settings/usage",
     );
-    expect(screen.getByText("1 needs you")).toBeVisible();
+    expect(screen.getByText("1 window lit · oldest first")).toBeVisible();
     expect(screen.queryByRole("button", { name: /Tidy the changelog/ })).not.toBeInTheDocument();
 
     await user.type(within(panel).getByLabelText("Your reply"), "Use main.");
@@ -281,7 +281,8 @@ describe("Lit Windows street (R4 Track E)", () => {
     );
     const user = userEvent.setup();
     render(<WorkExecutions signedIn fetcher={fetcher} openFeed={noFeed} />);
-    await user.click(await screen.findByRole("button", { name: "All work & history" }));
+    await user.click(await screen.findByRole("button", { name: "List" }));
+    await user.click(screen.getByRole("button", { name: "All work & history" }));
     await user.click(screen.getByRole("button", { name: "Open Add a setup section" }));
     const detail = await screen.findByRole("region", { name: "Add a setup section" });
     const lamp = within(detail).getByRole("group", { name: "Lamp verdict" });
@@ -321,7 +322,8 @@ describe("Lit Windows street (R4 Track E)", () => {
     ]);
     const user = userEvent.setup();
     render(<WorkExecutions signedIn fetcher={fetcher} openFeed={noFeed} />);
-    await user.click(await screen.findByRole("button", { name: "All work & history" }));
+    await user.click(await screen.findByRole("button", { name: "List" }));
+    await user.click(screen.getByRole("button", { name: "All work & history" }));
     await user.click(screen.getByRole("button", { name: "Open Add a setup section" }));
 
     const detail = await screen.findByRole("region", { name: "Add a setup section" });
@@ -348,14 +350,17 @@ describe("Lit Windows street (R4 Track E)", () => {
     ]);
     const user = userEvent.setup();
     render(<WorkExecutions signedIn fetcher={fetcher} openFeed={openFeed} />);
-    expect(await screen.findByText("0 need you")).toBeVisible();
+    expect(await screen.findByText("No windows lit · nothing needs you")).toBeVisible();
     expect(
-      within(screen.getByRole("region", { name: "Street" })).getByText("Nothing needs you"),
-    ).toBeVisible();
+      within(screen.getByRole("region", { name: "Street" })).queryAllByRole("button"),
+    ).toHaveLength(0);
+    // Running work stays in the queue strip as a sage glyph, never as a lit window.
+    expect(screen.getByTestId("queue-strip-row")).toHaveAttribute("data-glyph", "running");
     const before = fetcher.mock.calls.length;
     notify();
     await vi.waitFor(() => expect(fetcher.mock.calls.length).toBeGreaterThan(before));
 
+    await user.click(screen.getByRole("button", { name: "List" }));
     await user.click(screen.getByRole("button", { name: "All work & history" }));
     expect(screen.getByText("Working — turn 3 of 10.")).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Open Add a setup section" }));

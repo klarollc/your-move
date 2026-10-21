@@ -4,7 +4,6 @@ import "./hosted-workspace.css";
 import { IntegrationSettings } from "./integration-settings.js";
 import { PlanAndLampSettings } from "./plan-lamp-settings.js";
 import { ProviderSettings, type ConnectionStatus, type ProviderId } from "./provider-settings.js";
-import { WorkCreation } from "./work-creation.js";
 import { WorkExecutions, openLampFeed, type OpenFeed } from "./work-executions.js";
 
 type Surface = "work" | "connections";
@@ -33,13 +32,12 @@ function openAiStatusLabel(provider: ConnectionStatus | undefined, plan: string)
   return "Status unavailable";
 }
 
-// Owns the owner-session state shared by the provider panel and the work-creation panel.
+// Owns the owner-session state shared by the provider panel and the Work surface.
 export function HostedWorkspace({
   fetcher = globalThis.fetch,
   openFeed = openLampFeed,
 }: Readonly<{ fetcher?: typeof fetch; openFeed?: OpenFeed }>) {
   const [signedIn, setSignedIn] = useState(false);
-  const [approvals, setApprovals] = useState(0);
   const [surface, setSurface] = useState<Surface>("connections");
   const [selectedConnection, setSelectedConnection] = useState<ConnectionId>("anthropic");
   const [connectionDrawerOpen, setConnectionDrawerOpen] = useState(false);
@@ -53,7 +51,6 @@ export function HostedWorkspace({
     ollama: "Checking",
     github: "Checking",
   });
-  const onApproved = useCallback(() => setApprovals((count) => count + 1), []);
   const onSessionChange = useCallback((authenticated: boolean) => {
     setSignedIn(authenticated);
     setSurface(authenticated ? "work" : "connections");
@@ -189,11 +186,9 @@ export function HostedWorkspace({
       ) : null}
 
       <main className="hosted-workspace__work" hidden={!signedIn || surface !== "work"}>
-        <WorkCreation signedIn={signedIn} fetcher={fetcher} onApproved={onApproved} />
         <WorkExecutions
           signedIn={signedIn}
           surfaceActive={surface === "work"}
-          refreshKey={approvals}
           fetcher={fetcher}
           openFeed={openFeed}
         />

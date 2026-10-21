@@ -77,7 +77,7 @@ describe("approval consent copy", () => {
     render(<HostedWorkspace fetcher={fetcher} />);
     await user.type(await screen.findByLabelText(/What should get done/), "Add a setup section");
     await user.click(screen.getByRole("button", { name: "Draft it" }));
-    await user.click(await screen.findByRole("button", { name: "Approve this work" }));
+    await user.click(await screen.findByRole("button", { name: "Approve draft" }));
     const dialog = screen.getByRole("alertdialog");
     expect(within(dialog).getByText(APPROVAL_CONSENT)).toBeVisible();
     expect(APPROVAL_CONSENT).toBe(
@@ -151,7 +151,8 @@ describe("WorkExecutions", () => {
     });
     const user = userEvent.setup();
     render(<WorkExecutions signedIn fetcher={fetcher} />);
-    await user.click(await screen.findByRole("button", { name: "All work & history" }));
+    await user.click(await screen.findByRole("button", { name: "List" }));
+    await user.click(screen.getByRole("button", { name: "All work & history" }));
     await user.click(screen.getByRole("button", { name: "Open Add a setup section" }));
     const detail = await screen.findByRole("region", { name: "Add a setup section" });
     expect(within(detail).getByText("Not started.")).toBeVisible();
