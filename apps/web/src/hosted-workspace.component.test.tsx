@@ -216,7 +216,7 @@ describe("HostedWorkspace owner session", () => {
     expect(screen.getByRole("button", { name: "Close GitHub settings" })).toBeVisible();
     expect(screen.getByLabelText("GitHub fine-grained token")).toBeVisible();
     expect(screen.queryByLabelText("Your Ollama address")).not.toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: "Sign out" })).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: "Sign out" })).toHaveLength(1);
 
     await user.click(screen.getByRole("button", { name: "Work" }));
     expect(screen.getByRole("heading", { name: "Describe the work" })).toBeVisible();

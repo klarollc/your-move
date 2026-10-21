@@ -346,7 +346,7 @@ export function ProviderSettings({
   }
 
   if (!showSettings) {
-    return embedded && view === "signed-in" ? (
+    return embedded && !hideSignOut && view === "signed-in" ? (
       <button className="provider-settings__quiet" type="button" onClick={() => void signOut()}>
         {signOutLabel}
       </button>
