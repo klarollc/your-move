@@ -8,5 +8,7 @@
 .git
 .worktrees
 .scratch
-.cuckcode
+.cache
+.browser-profile
+.your-move
 output

@@ -91,15 +91,19 @@ export function ProviderSettings({
   fetcher = globalThis.fetch,
   onSessionChange,
   onStatusesChange,
+  signOutLabel = "Sign out",
   selectedProvider,
   embedded = false,
+  hideSignOut = false,
   showSettings = true,
 }: Readonly<{
   fetcher?: typeof fetch;
   onSessionChange?: (signedIn: boolean) => void;
   onStatusesChange?: (statuses: Readonly<Record<ProviderId, ConnectionStatus>>) => void;
+  signOutLabel?: string;
   selectedProvider?: ProviderId;
   embedded?: boolean;
+  hideSignOut?: boolean;
   showSettings?: boolean;
 }>) {
   const [view, setView] = useState<"loading" | "signed-out" | "signed-in" | "error">("loading");
@@ -314,7 +318,7 @@ export function ProviderSettings({
     return (
       <main className="provider-settings">
         <header className="provider-settings__header">
-          <p className="provider-settings__eyebrow">CuckCode · hosted setup</p>
+          <p className="provider-settings__eyebrow">Your Move · hosted setup</p>
           <h1>Owner sign in</h1>
           <p>Sign in to connect and manage the providers used by this workspace.</p>
         </header>
@@ -342,9 +346,9 @@ export function ProviderSettings({
   }
 
   if (!showSettings) {
-    return embedded && view === "signed-in" ? (
+    return embedded && !hideSignOut && view === "signed-in" ? (
       <button className="provider-settings__quiet" type="button" onClick={() => void signOut()}>
-        Sign out
+        {signOutLabel}
       </button>
     ) : null;
   }
@@ -371,9 +375,15 @@ export function ProviderSettings({
             </ProviderTitle>
             <p>Connect a provider once. Your key is encrypted when saved and never shown again.</p>
           </div>
-          <button className="provider-settings__quiet" type="button" onClick={() => void signOut()}>
-            Sign out
-          </button>
+          {!hideSignOut ? (
+            <button
+              className="provider-settings__quiet"
+              type="button"
+              onClick={() => void signOut()}
+            >
+              Sign out
+            </button>
+          ) : null}
         </div>
       </header>
 

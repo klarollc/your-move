@@ -20,8 +20,7 @@ function jsonResponse(body: unknown, status = 200): Response {
 }
 
 function createApp(providerFetch: typeof fetch): HostedApp {
-  const scratchRoot = process.env.TMPDIR ?? tmpdir();
-  const dataDir = mkdtempSync(join(scratchRoot, "cuckcode-r1-provider-api-"));
+  const dataDir = mkdtempSync(join(process.env.TMPDIR ?? tmpdir(), "your-move-r1-provider-api-"));
   directories.push(dataDir);
   const app = createHostedApp({
     mode: "test",

@@ -220,6 +220,7 @@ describe("GitHub tool connection", () => {
 
     await user.click(await screen.findByRole("button", { name: "Connections" }));
     await user.click(screen.getByRole("button", { name: /^GitHub/ }));
+    await user.click(screen.getByRole("button", { name: "Open GitHub settings" }));
     expect(await screen.findByRole("heading", { name: "GitHub" })).toBeVisible();
     expect(screen.getByText(/fine-grained token limited to the repositories/)).toBeVisible();
     await user.type(screen.getByLabelText("GitHub fine-grained token"), token);

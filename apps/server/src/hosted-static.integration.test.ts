@@ -12,7 +12,7 @@ const roots: string[] = [];
 const apps: HostedApp[] = [];
 
 function makeRoot(): string {
-  const root = mkdtempSync(join(process.env.TMPDIR ?? tmpdir(), "cuckcode-r1-static-"));
+  const root = mkdtempSync(join(process.env.TMPDIR ?? tmpdir(), "your-move-r1-static-"));
   roots.push(root);
   mkdirSync(join(root, "assets"));
   writeFileSync(join(root, "index.html"), "<!doctype html><title>Hosted UI</title>");

@@ -143,7 +143,7 @@ const CONDITIONS = {
 function staffed(prefix: string): Log {
   const log = createLog(prefix);
   const { emit } = log;
-  emit("project.created", { name: "CuckCode graybox office" }, "manager");
+  emit("project.created", { name: "Your Move graybox office" }, "manager");
   for (const roleId of ROLES) {
     emit("agent.registered", {
       agentId: `agent_${underscored(roleId)}`,

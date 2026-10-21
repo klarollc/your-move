@@ -143,7 +143,10 @@ test("@e2e Your Move renders readable, explicit proposal decisions on the daylig
   await page.getByRole("button", { name: "Open Add a setup section" }).click();
 
   const surface = page.locator(".ym3");
-  await expect(surface).toHaveCSS("background-color", "rgb(202, 211, 196)");
+  await expect(page.locator(".hosted-workspace")).toHaveCSS(
+    "background-color",
+    "rgb(202, 211, 196)",
+  );
   await expect(surface).toHaveCSS("border-radius", "0px");
   const detail = page.getByRole("region", { name: "Add a setup section" });
   const proposal = detail.getByRole("group", { name: "Proposed change to README.md" });
@@ -207,7 +210,75 @@ test("@e2e Your Move renders readable, explicit proposal decisions on the daylig
   ).toBeGreaterThanOrEqual(4.5);
 
   await page.getByRole("button", { name: "Connections" }).click();
+  await page.getByRole("button", { name: "Open Anthropic settings" }).click();
+  const paperSurface = page.locator(".ym3c__sheet");
+  await expect(paperSurface).toBeVisible();
+  await page.screenshot({
+    path: testInfo.outputPath("connections-anthropic-paper.png"),
+    fullPage: true,
+  });
+  const paperBackground = await paperSurface.evaluate(
+    (element) => getComputedStyle(element).backgroundColor,
+  );
+  const paperText = await paperSurface.evaluate((element) => {
+    const candidates = [
+      element.querySelector("h2"),
+      element.querySelector("legend"),
+      element.querySelector("label"),
+      element.querySelector(".provider-settings__provider-status"),
+      element.querySelector(".provider-settings__hint"),
+    ];
+    return candidates.map((node) => {
+      if (!node) throw new Error("Expected Connections paper text was not rendered");
+      return { label: node.textContent?.trim(), color: getComputedStyle(node).color };
+    });
+  });
+  const sheetContrast = async (surface: import("@playwright/test").Locator, label: string) => {
+    const result = await surface.evaluate((element) => {
+      const background = getComputedStyle(element).backgroundColor;
+      return Array.from(
+        element.querySelectorAll<HTMLElement>(
+          "h1, h2, h3, legend, label, p, span, strong, button, input, .provider-settings__hint, .provider-settings__feedback",
+        ),
+      )
+        .map((node) => ({
+          label: node.textContent?.trim().replace(/\s+/g, " ").slice(0, 100),
+          color: getComputedStyle(node).color,
+          background: getComputedStyle(node).backgroundColor,
+        }))
+        .map((node) => ({ ...node, surfaceBackground: background }));
+    });
+    for (const text of result) {
+      const background =
+        text.background === "rgba(0, 0, 0, 0)" ? text.surfaceBackground : text.background;
+      expect(
+        contrastRatio(text.color, background),
+        `${label} paper contrast: ${text.label}`,
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+  };
+  await sheetContrast(paperSurface, "Anthropic");
+  await page.getByRole("button", { name: "Close Anthropic settings" }).click();
+  for (const connection of ["Ollama", "GitHub"] as const) {
+    const providerRow = page.getByRole("button", { name: new RegExp(`^${connection}`) });
+    await expect(providerRow).toBeVisible();
+    await providerRow.click();
+    const closedTab = page.getByRole("button", { name: `Open ${connection} settings` });
+    await expect(closedTab).toHaveAttribute("aria-expanded", "false");
+    await closedTab.click();
+    await expect(page.getByRole("dialog", { name: `${connection} settings` })).toBeVisible();
+    await sheetContrast(page.locator(".ym3c__sheet"), connection);
+    await page.getByRole("button", { name: `Close ${connection} settings` }).click();
+  }
+  for (const text of paperText) {
+    expect(
+      contrastRatio(text.color, paperBackground),
+      `Connections paper text contrast: ${text.label}`,
+    ).toBeGreaterThanOrEqual(4.5);
+  }
+
   await page.getByRole("button", { name: /^GitHub/ }).click();
+  await page.getByRole("button", { name: "Open GitHub settings" }).click();
   await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("connections-github.png"), fullPage: true });
 });

@@ -6,7 +6,7 @@ test("@visual Phase 4 graybox office captures a deterministic current build", as
 }, testInfo) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  await expect(page.getByRole("main", { name: "CuckCode office workspace" })).toBeVisible();
+  await expect(page.getByRole("main", { name: "Your Move office workspace" })).toBeVisible();
   await expect(page.locator('svg[data-scene-renderer="svg"]')).toHaveCount(1);
   // Task 9e (P-4): the office fills the surface; the outline is one action away.
   await openOfficeOutline(page);

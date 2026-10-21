@@ -17,7 +17,7 @@ function openVault(dataDir: string) {
 
 function createVault() {
   const scratchRoot = process.env.TMPDIR ?? tmpdir();
-  const dataDir = mkdtempSync(join(scratchRoot, "cuckcode-r1-provider-vault-"));
+  const dataDir = mkdtempSync(join(scratchRoot, "your-move-r1-provider-vault-"));
   directories.push(dataDir);
   return openVault(dataDir);
 }

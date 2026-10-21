@@ -241,7 +241,7 @@ export function createWebFetchTool(options: {
             redirect: "manual",
             headers: {
               accept: "text/html,text/plain,application/xhtml+xml;q=0.9,*/*;q=0.5",
-              "user-agent": "cuckcode-hosted",
+              "user-agent": "your-move-hosted",
             },
             signal,
           });

@@ -4,7 +4,7 @@ import type { BoundedContract } from "./work-contract.js";
 
 // The tool interface (R3 brief, design 1). It mirrors the shape of an MCP tool (name, description,
 // JSON Schema input) so a future MCP-client adapter can register remote tools here without any
-// change to the execution loop or the approval gate. `sideEffectClass` is CuckCode's own addition:
+// change to the execution loop or the approval gate. `sideEffectClass` is Your Move's own addition:
 // it is what the gate routes on.
 export type SideEffectClass = "read" | "propose";
 

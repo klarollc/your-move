@@ -471,7 +471,7 @@ export function OfficeShell({
     <main
       className="office-shell"
       ref={shellRef}
-      aria-label="CuckCode office workspace"
+      aria-label="Your Move office workspace"
       data-inspector-open={inspectorOpen}
       data-attention-open={attentionOpen}
       data-outline-open={outlineOpen}
@@ -497,7 +497,7 @@ export function OfficeShell({
         data-testid="persistent-structure"
       >
         <div className="office-project-identity">
-          <h1 className="office-product-name">CuckCode</h1>
+          <h1 className="office-product-name">Your Move</h1>
           <span aria-hidden="true">/</span>
           <span>truthful graybox office</span>
         </div>

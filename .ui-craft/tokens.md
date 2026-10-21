@@ -1,10 +1,10 @@
-# CuckCode design tokens
+# Your Move design tokens
 
 Status: **Direction approved; numeric values and promotion remain unapproved**
 
 The project has an approved material and palette direction, but no approved numeric token values. Do not silently default to blue, Inter, rounded cards, glassmorphism, a dark neon interface, or a generic dashboard system.
 
-The owner-approved [A/B visual supplement](../docs/art-reference-approval-2026-09-27.md)
+The owner-approved historical office [A/B visual supplement](../docs/art-reference-approval-2026-09-27.md)
 (2026-09-27) governs composition and information hierarchy. Its raster colors, generated fonts,
 editorial green/red framing and incidental control colors are not numeric tokens. This supplement
 does not promote or replace token values; retain the existing token authority and approval gates.
@@ -21,7 +21,7 @@ Approved direction:
 - calm non-bouncy scene easing, faster exits, deterministic clocks, and no travel/parallax/ambient loops in reduced-motion mode;
 - fixed soft-daylight scene lighting, subordinate warm practicals, restrained contact shadows, and no status-dependent global lighting.
 
-## Approved type families (Phase 7 Task 1)
+## Historical office type families (Phase 7 Task 1)
 
 Chosen by the owner 2026-09-28 (Phase 7 spec F-5) and confirmed in Windows Chromium 2026-10-03
 (`docs/evidence/phase-7/fonts/`). Families only: the type **scale** is not yet approved.

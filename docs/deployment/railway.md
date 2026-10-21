@@ -1,12 +1,12 @@
-# Railway deployment — R1
+# Your Move Railway deployment — R1
 
-This deploys only the hosted Fastify entry point in `apps/server`. It does not change the local-loopback launcher. The owner supplied Railway project ID `265f5b22-b4c3-46ae-90b0-32fec7893e04`; no Railway account, project, variables, domain, or deployment was modified by this build.
+This deploys only the hosted Fastify entry point in `apps/server`. It does not change the local-loopback launcher. The owner supplied Railway project ID `265f5b22-b4c3-46ae-90b0-32fec7893e04`; repository and service renames are owner-confirmed complete (2026-10-20). The production public domain is `klaro-your-move-production.up.railway.app` (plain `your-move-production` was already taken globally), so `APP_ORIGIN` is `https://klaro-your-move-production.up.railway.app`. This work does not modify Railway account settings, variables, domain, or deployment.
 
 ## Git-push deployment
 
-1. In the supplied Railway project, create/connect a service to the repository and the feature branch `feature/your-move-r1-hosted-providers` for verification. Keep the service build root at the repository root; Railway detects and uses the root `Dockerfile`. Enable GitHub-triggered deployments only when the owner is ready; a Git push is not itself approval to deploy.
+1. In the supplied Railway project, connect the Your Move service to the renamed repository and the selected branch for verification. Keep the service build root at the repository root; Railway detects and uses the root `Dockerfile`. Enable GitHub-triggered deployments only when the owner is ready; a Git push is not itself approval to deploy.
 2. Attach a Railway Volume to the service at `/data`. Keep one replica: the R1 SQLite vault uses a single persistent volume.
-3. Set the required service variables below. Generate the public domain, then set `APP_ORIGIN` to that exact HTTPS origin.
+3. Set the required service variables below. Set `APP_ORIGIN` to `https://klaro-your-move-production.up.railway.app`; if the Railway domain ever changes, update it to the new exact HTTPS origin.
 4. Configure Railway's healthcheck path as `/health` and expose the service with a Railway-generated or custom HTTPS domain.
 5. After the owner connects the repo, enables/approves GitHub deployments, and explicitly approves a deployment, pushes to the selected branch build with the root Dockerfile. Railway may queue a deployment for owner approval when the person pushing the repository is not linked to the Railway account.
 
@@ -18,7 +18,7 @@ Railway injects `PORT`; the hosted server binds to `0.0.0.0:$PORT`. The attached
 
 | Variable | Purpose |
 | --- | --- |
-| `APP_ORIGIN` | Exact public HTTPS origin, e.g. `https://<railway-domain>`; used for same-origin/CSRF checks. |
+| `APP_ORIGIN` | Exact Your Move public HTTPS origin, currently `https://klaro-your-move-production.up.railway.app`; used for same-origin/CSRF checks. The value must exactly equal the serialized origin (https:// + lowercase host, no trailing slash, path, or port) — anything else throws HOSTED_APP_ORIGIN_INVALID at boot and crash-loops. Verified live on 2026-10-20. |
 | `APP_ACCESS_PASSWORD` | Single owner's login password; store only in Railway Variables, never source control. |
 | `SESSION_SIGNING_KEY` | Random, persistent secret used to sign the HttpOnly session cookie. |
 | `CREDENTIAL_ENCRYPTION_KEY` | Random 32-byte base64 key for AES-256-GCM encryption of provider keys. Preserve it across redeploys/backups or stored credentials cannot be decrypted. |
