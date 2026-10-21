@@ -1,8 +1,15 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from "react";
 
 import "./work-creation.css";
-import { APPROVAL_CONSENT, executionStatusLine, type ExecutionView } from "./work-executions.js";
+import type { ExecutionView } from "./work-executions.js";
 import { MaterialsEditor, type WorkMaterials } from "./work-materials-editor.js";
+
+// The composer is a slip above the street; the draft it produces is a sheet in the sheet position.
+// Describe → draft → revise → approve is unchanged; only where each step sits has moved.
+
+/** What approval arms. Shown before the owner confirms, and on the start button for older work. */
+export const APPROVAL_CONSENT =
+  "Approving gives the agent web research + repo read access. File changes always need your go-ahead.";
 
 type ProseDraft = {
   achieve: string;
@@ -59,17 +66,30 @@ async function requestJson<T>(
   return { ok: response.ok, status: response.status, body };
 }
 
-export function WorkCreation({
+export type WorkComposer = ReturnType<typeof useWorkComposer>;
+
+/** The composer's state, shared by the slip and the draft sheet so each can sit where it belongs. */
+export function useWorkComposer({
   signedIn,
-  fetcher = globalThis.fetch,
+  fetcher,
+  onDrafted,
   onApproved,
-}: Readonly<{ signedIn: boolean; fetcher?: typeof fetch; onApproved?: () => void }>) {
+}: Readonly<{
+  signedIn: boolean;
+  fetcher: typeof fetch;
+  onDrafted?: () => void;
+  onApproved?: () => void;
+}>) {
   const [draft, setDraft] = useState<WorkDraftView | undefined>();
   const [description, setDescription] = useState("");
   const [feedback, setFeedback] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [confirming, setConfirming] = useState(false);
+  const [notice, setNotice] = useState("");
+  // Focus moves only on the owner's own step (a new draft, approval, discard), never on a refresh.
+  const draftFocus = useRef(false);
+  const slipFocus = useRef(false);
 
   // Drop any in-progress draft when the owner signs out, so the next session starts blank.
   useEffect(() => {
@@ -79,12 +99,14 @@ export function WorkCreation({
     setFeedback("");
     setError("");
     setConfirming(false);
+    setNotice("");
   }, [signedIn]);
 
   async function createDraft(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
     setError("");
+    setNotice("");
     const result = await requestJson<WorkDraftView>(fetcher, "/api/work-drafts", {
       method: "POST",
       body: JSON.stringify({ description }),
@@ -94,8 +116,10 @@ export function WorkCreation({
       setError(messageFor(result.body?.code));
       return;
     }
+    draftFocus.current = true;
     setDraft(result.body);
     setFeedback("");
+    onDrafted?.();
   }
 
   async function reviseDraft(event: FormEvent<HTMLFormElement>) {
@@ -150,48 +174,98 @@ export function WorkCreation({
       setError(messageFor(result.body?.code));
       return;
     }
-    setDraft(result.body);
+    // Approved work joins the queue; the composer folds back to the slip.
+    slipFocus.current = true;
+    setDraft(undefined);
+    setDescription("");
+    setFeedback("");
+    setNotice("Approved — it has joined the queue.");
     onApproved?.();
   }
 
-  function startOver() {
+  function discard() {
+    slipFocus.current = true;
     setDraft(undefined);
     setDescription("");
     setFeedback("");
     setError("");
     setConfirming(false);
+    setNotice("");
   }
 
-  if (!signedIn) return null;
+  return {
+    draft,
+    description,
+    setDescription,
+    feedback,
+    setFeedback,
+    busy,
+    error,
+    confirming,
+    setConfirming,
+    notice,
+    createDraft,
+    reviseDraft,
+    saveMaterials,
+    approveDraft,
+    discard,
+    requestDraftFocus: () => {
+      draftFocus.current = true;
+    },
+    takeDraftFocus: () => {
+      const pending = draftFocus.current;
+      draftFocus.current = false;
+      return pending;
+    },
+    takeSlipFocus: () => {
+      const pending = slipFocus.current;
+      slipFocus.current = false;
+      return pending;
+    },
+  };
+}
 
-  if (draft?.status === "approved") {
-    return (
-      <section className="work-creation" aria-labelledby="work-creation-title">
-        <h2 id="work-creation-title">Work approved</h2>
-        <p className="work-creation__approved">
-          Approved on {new Date(draft.approvedAt ?? draft.updatedAt).toLocaleString()}.{" "}
-          {executionStatusLine(draft.execution)} Follow it under Approved work.
-        </p>
-        <ProseSummary prose={draft.prose} />
-        <button type="button" onClick={startOver}>
-          Describe another piece of work
-        </button>
-      </section>
-    );
-  }
+/** The New Work slip: one describe field and "Draft it", folded to slip height until used. */
+export function WorkSlip({
+  composer,
+  draftSetAside,
+  onShowDraft,
+}: Readonly<{ composer: WorkComposer; draftSetAside: boolean; onShowDraft: () => void }>) {
+  const field = useRef<HTMLTextAreaElement>(null);
+  const { draft, description, busy } = composer;
+
+  useLayoutEffect(() => {
+    if (composer.takeSlipFocus()) field.current?.focus();
+  });
 
   return (
-    <section className="work-creation" aria-labelledby="work-creation-title">
-      <h2 id="work-creation-title">Describe the work</h2>
-
-      {!draft && (
-        <form onSubmit={createDraft}>
+    <section
+      className={`ym3-slip${description ? " ym3-slip--written" : ""}`}
+      aria-labelledby="new-work-title"
+    >
+      <h2 id="new-work-title">New work</h2>
+      {draft ? (
+        <div className="ym3-slip__held">
+          <p role="status">
+            {draftSetAside
+              ? "Your draft is set aside while you read this sheet."
+              : "Your draft is open below. Approve or discard it to start another."}
+          </p>
+          {draftSetAside ? (
+            <button type="button" className="ym3-slip__return" onClick={onShowDraft}>
+              Back to your draft
+            </button>
+          ) : null}
+        </div>
+      ) : (
+        <form className="ym3-slip__form" onSubmit={(event) => void composer.createDraft(event)}>
           <label htmlFor="work-description">What should get done? Say it in your own words.</label>
           <textarea
+            ref={field}
             id="work-description"
             value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            rows={5}
+            onChange={(event) => composer.setDescription(event.target.value)}
+            rows={1}
             maxLength={4000}
             disabled={busy}
           />
@@ -200,62 +274,132 @@ export function WorkCreation({
           </button>
         </form>
       )}
-
-      {draft && (
-        <>
-          <ProseSummary prose={draft.prose} />
-
-          <form onSubmit={reviseDraft}>
-            <label htmlFor="work-feedback">Want something changed? Tell me in plain words.</label>
-            <textarea
-              id="work-feedback"
-              value={feedback}
-              onChange={(event) => setFeedback(event.target.value)}
-              rows={3}
-              maxLength={4000}
-              disabled={busy}
-            />
-            <button type="submit" disabled={busy || feedback.trim().length === 0}>
-              {busy ? "Updating…" : "Update the draft"}
-            </button>
-          </form>
-
-          <MaterialsEditor
-            materials={draft.materials ?? null}
-            disabled={busy}
-            onSave={saveMaterials}
-          />
-
-          {!confirming ? (
-            <button type="button" onClick={() => setConfirming(true)} disabled={busy}>
-              Approve this work
-            </button>
-          ) : (
-            <div
-              className="work-creation__confirm"
-              role="alertdialog"
-              aria-labelledby="confirm-title"
-            >
-              <p id="confirm-title">
-                Approve this work? Once approved, the scope and done-when above are locked.
-              </p>
-              <p className="work-creation__consent">{APPROVAL_CONSENT}</p>
-              <button type="button" onClick={approveDraft} disabled={busy}>
-                Yes, approve
-              </button>
-              <button type="button" onClick={() => setConfirming(false)} disabled={busy}>
-                Keep editing
-              </button>
-            </div>
-          )}
-        </>
-      )}
-
-      {error && (
-        <p role="alert" className="work-creation__error">
-          {error}
+      {!draft && composer.notice ? (
+        <p className="ym3-slip__notice" role="status">
+          {composer.notice}
         </p>
+      ) : null}
+      {!draft && composer.error ? (
+        <p role="alert" className="work-creation__error">
+          {composer.error}
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+/** The generated draft as a letter: what it is for, what is in and out, and when it is done. */
+export function DraftSheet({ composer }: Readonly<{ composer: WorkComposer }>) {
+  const title = useRef<HTMLHeadingElement>(null);
+  const { draft, busy, confirming } = composer;
+
+  useLayoutEffect(() => {
+    if (composer.takeDraftFocus()) title.current?.focus();
+  });
+
+  if (!draft) return null;
+
+  return (
+    <section
+      className="your-move__panel ym3-sheet ym3-sheet--draft"
+      id="draft-sheet"
+      aria-labelledby="draft-sheet-title"
+    >
+      <header className="ym3-sheet__letterhead">
+        <div>
+          <h2 ref={title} tabIndex={-1} id="draft-sheet-title" className="your-move__panel-title">
+            New work draft
+          </h2>
+          <p className="ym3-sheet__dateline">
+            Revision {draft.revision}. Nothing starts until you approve it.
+          </p>
+        </div>
+      </header>
+
+      <ProseSummary prose={draft.prose} />
+
+      <form className="ym3-sheet__revise" onSubmit={(event) => void composer.reviseDraft(event)}>
+        <label htmlFor="work-feedback">Want something changed? Tell me in plain words.</label>
+        <textarea
+          id="work-feedback"
+          value={composer.feedback}
+          onChange={(event) => composer.setFeedback(event.target.value)}
+          rows={3}
+          maxLength={4000}
+          disabled={busy}
+        />
+        <div className="your-move__actions">
+          <button
+            type="submit"
+            className="your-move__secondary"
+            disabled={busy || composer.feedback.trim().length === 0}
+          >
+            {busy ? "Updating…" : "Update the draft"}
+          </button>
+        </div>
+      </form>
+
+      <MaterialsEditor
+        materials={draft.materials ?? null}
+        disabled={busy}
+        onSave={composer.saveMaterials}
+      />
+
+      {!confirming ? (
+        <div className="your-move__actions ym3-sheet__decision">
+          <button
+            type="button"
+            className="your-move__primary"
+            onClick={() => composer.setConfirming(true)}
+            disabled={busy}
+          >
+            Approve draft
+          </button>
+          <button
+            type="button"
+            className="your-move__secondary"
+            onClick={composer.discard}
+            disabled={busy}
+          >
+            Discard
+          </button>
+        </div>
+      ) : (
+        <div
+          className="work-creation__confirm ym3-sheet__decision"
+          role="alertdialog"
+          aria-labelledby="confirm-title"
+        >
+          <p id="confirm-title">
+            Approve this work? Once approved, the scope and done-when above are locked.
+          </p>
+          <p className="work-creation__consent">{APPROVAL_CONSENT}</p>
+          <div className="your-move__actions">
+            <button
+              type="button"
+              className="your-move__primary"
+              onClick={() => void composer.approveDraft()}
+              disabled={busy}
+            >
+              Yes, approve
+            </button>
+            <button
+              type="button"
+              className="your-move__secondary"
+              onClick={() => composer.setConfirming(false)}
+              disabled={busy}
+            >
+              Keep editing
+            </button>
+          </div>
+        </div>
       )}
+
+      {composer.error ? (
+        <p role="alert" className="work-creation__error">
+          {composer.error}
+        </p>
+      ) : null}
     </section>
   );
 }
@@ -263,30 +407,38 @@ export function WorkCreation({
 function ProseSummary({ prose }: Readonly<{ prose: ProseDraft }>) {
   return (
     <div className="work-creation__prose">
-      <h3>What this is for</h3>
-      <p>{prose.achieve}</p>
-      <h3>What is in scope</h3>
-      <ul>
-        {prose.inScope.map((item) => (
-          <li key={item}>{item}</li>
-        ))}
-      </ul>
-      <h3>What is not included</h3>
-      {prose.outOfScope.length > 0 ? (
+      <div className="ym3-sheet__letter-section">
+        <h3>What this is for</h3>
+        <p>{prose.achieve}</p>
+      </div>
+      <div className="ym3-sheet__letter-section">
+        <h3>What is in scope</h3>
         <ul>
-          {prose.outOfScope.map((item) => (
+          {prose.inScope.map((item) => (
             <li key={item}>{item}</li>
           ))}
         </ul>
-      ) : (
-        <p>Nothing called out.</p>
-      )}
-      <h3>Done when</h3>
-      <ul>
-        {prose.doneWhen.map((item) => (
-          <li key={item}>{item}</li>
-        ))}
-      </ul>
+      </div>
+      <div className="ym3-sheet__letter-section">
+        <h3>What is not included</h3>
+        {prose.outOfScope.length > 0 ? (
+          <ul>
+            {prose.outOfScope.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        ) : (
+          <p>Nothing called out.</p>
+        )}
+      </div>
+      <div className="ym3-sheet__letter-section">
+        <h3>Done when</h3>
+        <ul>
+          {prose.doneWhen.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

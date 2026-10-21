@@ -1,4 +1,6 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
+
+import { routeHostedApi, signIn, streetDrafts } from "../support/your-move-hosted.js";
 
 function rgbChannels(value: string): [number, number, number] {
   const channels = value.match(/[\d.]+/g);
@@ -18,127 +20,13 @@ function contrastRatio(foreground: string, background: string): number {
   return (lighter! + 0.05) / (darker! + 0.05);
 }
 
-const draft = {
-  id: "draft_synthetic_1",
-  status: "approved",
-  prose: { achieve: "Add a setup section" },
-  execution: {
-    id: "exec_synthetic_1",
-    status: "waiting-on-you",
-    attempt: 1,
-    turnCount: 1,
-    maxTurns: 4,
-    output: "The setup summary is ready for your review.",
-    error: null,
-    utterances: [
-      { turnIndex: 1, text: "Should I add a setup section?" },
-      { turnIndex: 2, text: "I drafted a README change for your separate approval." },
-    ],
-    conversation: [
-      { role: "agent", turnIndex: 1, text: "Should I add a setup section?" },
-      { role: "owner", text: "Approved — summarize the change." },
-      {
-        role: "agent",
-        turnIndex: 2,
-        text: "I drafted a README change for your separate approval.",
-      },
-    ],
-    lampVerdicts: [
-      {
-        utteranceId: "utterance_synthetic_1_2_1",
-        turnIndex: 2,
-        verdict: "lamp",
-        verdictTs: "2026-10-19T17:01:00.000Z",
-        ownerChoice: null,
-      },
-    ],
-    proposals: [
-      {
-        id: "proposal_synthetic_1",
-        tool: "github_propose_write",
-        status: "pending",
-        createdAt: "2026-10-19T17:00:00.000Z",
-        change: {
-          repo: "octo/repo",
-          path: "README.md",
-          message: "Add setup instructions",
-          content: "## Setup\n\nInstall with npm ci.",
-        },
-      },
-    ],
-    fundedBy: "openai",
-  },
-};
-
 test("@e2e Your Move renders readable, explicit proposal decisions on the daylight surface", async ({
   page,
 }, testInfo) => {
-  let authenticated = false;
-  await page.addInitScript(() => {
-    Object.defineProperty(window, "WebSocket", {
-      configurable: true,
-      writable: true,
-      value: undefined,
-    });
-  });
-  await page.route("**/api/**", async (route) => {
-    const { pathname } = new URL(route.request().url());
-    const method = route.request().method();
-    let body: unknown;
-    if (pathname === "/api/session" && method === "GET") {
-      body = { authenticated };
-    } else if (pathname === "/api/session" && method === "POST") {
-      authenticated = true;
-      body = { authenticated: true };
-    } else if (pathname === "/api/providers" && method === "GET") {
-      body = {
-        providers: [
-          { id: "openai", status: "disconnected" },
-          { id: "anthropic", status: "disconnected" },
-        ],
-        modelSelection: { mode: "automatic" },
-      };
-    } else if (pathname === "/api/work-drafts" && method === "GET") {
-      body = { drafts: [draft] };
-    } else if (pathname === "/api/chatgpt-plan" && method === "GET") {
-      body = {
-        status: "disconnected",
-        active: false,
-        email: null,
-        limitReachedAt: null,
-        inUseLabel: "Using ChatGPT plan",
-        manageUsageUrl: "https://chatgpt.com/settings/usage",
-      };
-    } else if (pathname === "/api/lamp" && method === "GET") {
-      body = {
-        endpoint: { baseUrl: "", configured: false, tokenSet: false },
-        model: "qwen3:8b",
-        degraded: false,
-        failures: 0,
-        latency: { count: 0, p50Ms: null, p95Ms: null },
-      };
-    } else if (pathname === "/api/integrations" && method === "GET") {
-      body = { integrations: [{ id: "github", status: "disconnected" }] };
-    } else {
-      await route.fulfill({
-        status: 404,
-        contentType: "application/json",
-        body: '{"code":"NOT_FOUND"}',
-      });
-      return;
-    }
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(body),
-    });
-  });
+  await routeHostedApi(page);
 
-  await page.goto("/hosted.html");
-  await page.getByLabel("Owner password").fill("synthetic-capture-only");
-  await page.getByRole("button", { name: "Sign in" }).click();
-  await page.getByRole("button", { name: "All work & history" }).waitFor({ state: "visible" });
-  await page.getByRole("button", { name: "List" }).click();
+  await signIn(page);
+  await page.getByRole("button", { name: "List", exact: true }).click();
   await page.getByRole("button", { name: "All work & history" }).click();
   await page.getByRole("button", { name: "Open Add a setup section" }).click();
 
@@ -281,4 +169,72 @@ test("@e2e Your Move renders readable, explicit proposal decisions on the daylig
   await page.getByRole("button", { name: "Open GitHub settings" }).click();
   await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("connections-github.png"), fullPage: true });
+});
+
+/**
+ * Every visible text node on a surface, measured against the nearest painted background behind it.
+ * Disabled controls are exempt (WCAG 1.4.3), as are visually hidden labels.
+ */
+async function surfaceContrast(surface: Locator, label: string) {
+  const samples = await surface.evaluate((root) => {
+    const painted = (element: Element | null): string => {
+      for (let node = element; node; node = node.parentElement) {
+        const background = getComputedStyle(node).backgroundColor;
+        if (background !== "rgba(0, 0, 0, 0)" && background !== "transparent") return background;
+      }
+      return "rgb(255, 255, 255)";
+    };
+    return Array.from(
+      root.querySelectorAll<HTMLElement>(
+        "h1, h2, h3, p, span, strong, li, label, button, a, blockquote, time, pre, td, th",
+      ),
+    )
+      .filter((node) => node.getClientRects().length > 0 && node.textContent?.trim())
+      .filter((node) => !(node as HTMLButtonElement).disabled)
+      .filter((node) => !node.closest(".ym3__visually-hidden"))
+      .map((node) => ({
+        text: node.textContent!.trim().replace(/\s+/g, " ").slice(0, 80),
+        color: getComputedStyle(node).color,
+        background: painted(node),
+      }));
+  });
+  expect(samples.length, `${label} has measurable text`).toBeGreaterThan(0);
+  for (const sample of samples) {
+    expect(
+      contrastRatio(sample.color, sample.background),
+      `${label} contrast: ${sample.text}`,
+    ).toBeGreaterThanOrEqual(4.5);
+  }
+}
+
+test("@e2e Your Move slip, status line, street sheet, queue strip, and draft sheet meet contrast", async ({
+  page,
+}) => {
+  await routeHostedApi(page, streetDrafts);
+  await signIn(page);
+
+  await surfaceContrast(
+    page.getByRole("region", { name: "New work", exact: true }),
+    "New Work slip",
+  );
+  await surfaceContrast(page.locator(".ym3__status-line"), "Status line");
+  await surfaceContrast(page.getByRole("region", { name: "Queue" }), "Queue strip");
+
+  await page
+    .getByRole("group", { name: "The street" })
+    .getByRole("button", { name: "Add a setup section — Review a proposed change" })
+    .click();
+  const sheet = page.getByRole("region", { name: "Add a setup section" });
+  await expect(sheet).toBeVisible();
+  await surfaceContrast(sheet, "Correspondence sheet");
+  await surfaceContrast(page.getByRole("region", { name: "Queue" }), "Queue strip, selected row");
+
+  await page.getByLabel(/What should get done/).fill("Add a changelog page to the docs site");
+  await page.getByRole("button", { name: "Draft it" }).click();
+  const draft = page.getByRole("region", { name: "New work draft" });
+  await expect(draft).toBeVisible();
+  await surfaceContrast(draft, "Draft sheet");
+  await surfaceContrast(page.getByRole("region", { name: "New work", exact: true }), "Held slip");
+  await draft.getByRole("button", { name: "Approve draft" }).click();
+  await surfaceContrast(draft, "Draft sheet approval confirmation");
 });

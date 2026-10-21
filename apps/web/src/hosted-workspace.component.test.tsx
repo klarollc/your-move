@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -37,7 +37,7 @@ describe("HostedWorkspace layout", () => {
     });
     const { container } = render(<HostedWorkspace fetcher={fetcher} />);
 
-    const panel = await screen.findByRole("heading", { name: "Describe the work" });
+    const panel = await screen.findByRole("heading", { name: "New work" });
     const scroller = container.querySelector(".hosted-workspace");
     expect(scroller).not.toBeNull();
     expect(scroller?.contains(panel)).toBe(true);
@@ -74,13 +74,13 @@ describe("HostedWorkspace owner session", () => {
 
     // Signed out: no work-creation panel.
     expect(await screen.findByRole("heading", { name: "Owner sign in" })).toBeVisible();
-    expect(screen.queryByRole("heading", { name: "Describe the work" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "New work" })).not.toBeInTheDocument();
 
     await user.type(screen.getByLabelText("Owner password"), "owner-test-password");
     await user.click(screen.getByRole("button", { name: "Sign in" }));
 
     // Signed in, same page: the work panel renders with the prose-first entry point.
-    expect(await screen.findByRole("heading", { name: "Describe the work" })).toBeVisible();
+    expect(await screen.findByRole("heading", { name: "New work" })).toBeVisible();
     expect(screen.getByLabelText(/What should get done/)).toBeInTheDocument();
   });
 
@@ -103,7 +103,7 @@ describe("HostedWorkspace owner session", () => {
     });
     render(<HostedWorkspace fetcher={fetcher} />);
 
-    expect(await screen.findByRole("heading", { name: "Describe the work" })).toBeVisible();
+    expect(await screen.findByRole("heading", { name: "New work" })).toBeVisible();
   });
 
   it("does not show the stale 'not included in this hosted setup stage' footer", async () => {
@@ -125,7 +125,7 @@ describe("HostedWorkspace owner session", () => {
     });
     render(<HostedWorkspace fetcher={fetcher} />);
 
-    await screen.findByRole("heading", { name: "Describe the work" });
+    await screen.findByRole("heading", { name: "New work" });
     expect(screen.queryByText(/not included in this hosted setup stage/)).not.toBeInTheDocument();
   });
 
@@ -169,7 +169,7 @@ describe("HostedWorkspace owner session", () => {
     const user = userEvent.setup();
     render(<HostedWorkspace fetcher={fetcher} />);
 
-    expect(await screen.findByRole("heading", { name: "Describe the work" })).toBeVisible();
+    expect(await screen.findByRole("heading", { name: "New work" })).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Connections" }));
 
     expect(screen.getByRole("heading", { name: "Connections" })).toBeVisible();
@@ -219,7 +219,7 @@ describe("HostedWorkspace owner session", () => {
     expect(screen.getAllByRole("button", { name: "Sign out" })).toHaveLength(1);
 
     await user.click(screen.getByRole("button", { name: "Work" }));
-    expect(screen.getByRole("heading", { name: "Describe the work" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "New work" })).toBeVisible();
     expect(screen.queryByRole("heading", { name: "Connections" })).not.toBeInTheDocument();
   });
 
@@ -252,7 +252,7 @@ describe("HostedWorkspace owner session", () => {
     const user = userEvent.setup();
     const { container } = render(<HostedWorkspace fetcher={fetcher} />);
 
-    await screen.findByRole("heading", { name: "Describe the work" });
+    await screen.findByRole("heading", { name: "New work" });
     await user.click(screen.getByRole("button", { name: "Connections" }));
     const tab = screen.getByRole("button", { name: "Open Anthropic settings" });
     const layout = container.querySelector(".ym3c__layout");
@@ -312,10 +312,29 @@ describe("HostedWorkspace owner session", () => {
 
     await user.type(await screen.findByLabelText(/What should get done/), "Test work");
     await user.click(screen.getByRole("button", { name: "Draft it" }));
-    await user.click(await screen.findByRole("button", { name: "Approve this work" }));
+    // The draft opens as a sheet in the sheet position, and the slip holds no second form.
+    const sheet = await screen.findByRole("region", { name: "New work draft" });
+    expect(screen.queryByLabelText(/What should get done/)).not.toBeInTheDocument();
+    expect(document.activeElement).toBe(
+      within(sheet).getByRole("heading", { name: "New work draft" }),
+    );
+    for (const section of [
+      "What this is for",
+      "What is in scope",
+      "What is not included",
+      "Done when",
+    ]) {
+      expect(within(sheet).getByRole("heading", { name: section })).toBeVisible();
+    }
+    expect(within(sheet).getByLabelText(/Want something changed/)).toBeVisible();
+    expect(within(sheet).getByRole("button", { name: "Discard" })).toBeVisible();
+    await user.click(within(sheet).getByRole("button", { name: "Approve draft" }));
     await user.click(screen.getByRole("button", { name: "Yes, approve" }));
 
-    expect(await screen.findByRole("heading", { name: "Work approved" })).toBeVisible();
+    // Approved work joins the queue and the composer folds back to the slip.
+    expect(await screen.findByText("Approved — it has joined the queue.")).toBeVisible();
+    expect(screen.queryByRole("region", { name: "New work draft" })).not.toBeInTheDocument();
+    expect(document.activeElement).toBe(screen.getByLabelText(/What should get done/));
     const approveCall = fetcher.mock.calls.find(
       ([input, init]) =>
         String(input) === "/api/work-drafts/draft_test/approve" && init?.method === "POST",

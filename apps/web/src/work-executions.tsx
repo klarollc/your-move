@@ -11,6 +11,7 @@ import {
 import "./work-creation.css";
 import "./work-executions.css";
 import "./your-move-revision.css";
+import { APPROVAL_CONSENT, DraftSheet, WorkSlip, useWorkComposer } from "./work-creation.js";
 import {
   buildQueuePage,
   buildStreetPage,
@@ -80,9 +81,7 @@ type ApprovedDraft = {
   execution?: ExecutionView | null;
 };
 
-/** What approval arms. Shown before the owner confirms, and on the start button for older work. */
-export const APPROVAL_CONSENT =
-  "Approving gives the agent web research + repo read access. File changes always need your go-ahead.";
+export { APPROVAL_CONSENT };
 /** Stated on every approval screen (locked rule). */
 export const NOTHING_GOES_OUT = "Nothing goes out until you say so.";
 /** OpenAI's "Manage usage" destination and in-use label (SIWC UI guidelines). */
@@ -271,14 +270,23 @@ function queueRange(start: number, end: number, total: number, filtered: boolean
     : range;
 }
 
+// One composed scene per Street page: up to three houses on a shared ground line. The scene's
+// size is fixed by its viewBox, so the house count, a selection, or an open sheet never rescales it.
+const SCENE_WIDTH = 760;
+const SCENE_HEIGHT = 336;
+const HOUSE_WIDTH = 216;
+const HOUSE_GAP = 32;
+const HOUSE_TOP = 8;
+const GROUND_Y = HOUSE_TOP + 298;
+
 function TownshipHouse({
-  index,
+  x,
   items,
   selected,
   statusUnavailable,
   open,
 }: Readonly<{
-  index: number;
+  x: number;
   items: WaitingWork[];
   selected: string | undefined;
   statusUnavailable: boolean;
@@ -292,100 +300,203 @@ function TownshipHouse({
     { x: 36, y: 218 },
   ];
   return (
-    <article className="ym3__house" aria-label={`House ${index + 1}`}>
-      <svg
-        className="ym3__facade"
-        viewBox="0 0 216 300"
-        role="group"
-        aria-label={`House ${index + 1}`}
-      >
-        <path className="ym3__chimney" d="M164 12h18v42h-18z M160 10h26v7h-26z" />
-        <path className="ym3__roof" d="M8 64 108 10l100 54-5 8-95-51L13 72z" />
-        <rect className="ym3__cornice" x="12" y="68" width="192" height="8" />
-        <rect className="ym3__wall" x="20" y="76" width="176" height="206" />
-        <path
-          className="ym3__masonry"
-          d="M20 126h176M20 196h176M20 266h176M55 76v8m70-8v8M100 126v8m70-8v8M45 196v8m84-8v8M82 266v8m88-8v8"
-        />
-        {positions.map((position, slot) => {
-          const item = items[slot];
-          const title = item?.title ?? "Unused capacity";
-          const className = [
-            "ym3__window",
-            item
-              ? statusUnavailable
-                ? "ym3__window--unknown"
-                : "ym3__window--lit"
-              : "ym3__window--unused",
-            item && selected === item.id ? "ym3__window--selected" : "",
-          ]
-            .filter(Boolean)
-            .join(" ");
-          const requestLabel = item
+    <g className="ym3__facade" transform={`translate(${x} ${HOUSE_TOP})`}>
+      <path className="ym3__chimney" d="M164 12h18v42h-18z M160 10h26v7h-26z" />
+      <path className="ym3__roof" d="M8 64 108 10l100 54-5 8-95-51L13 72z" />
+      <rect className="ym3__cornice" x="12" y="68" width="192" height="8" />
+      <rect className="ym3__wall" x="20" y="76" width="176" height="206" />
+      <path
+        className="ym3__masonry"
+        d="M20 126h176M20 196h176M20 266h176M55 76v8m70-8v8M100 126v8m70-8v8M45 196v8m84-8v8M82 266v8m88-8v8"
+      />
+      {positions.map((position, slot) => {
+        const item = items[slot];
+        const title = item?.title ?? "Unused capacity";
+        const className = [
+          "ym3__window",
+          item
             ? statusUnavailable
-              ? `${title} — status unavailable; last confirmed action: ${item.action.label}`
-              : `${title} — ${item.action.label}`
-            : undefined;
-          const onKeyDown = (event: KeyboardEvent<SVGGElement>) => {
-            if (!item || (event.key !== "Enter" && event.key !== " ")) return;
-            event.preventDefault();
-            open(item, event.currentTarget);
-          };
-          return (
-            <g
-              key={item?.id ?? `unused-${slot}`}
-              className={className}
-              data-testid="street-window"
-              data-work-id={item?.id}
-              role={item ? "button" : undefined}
-              tabIndex={item ? 0 : undefined}
-              aria-label={requestLabel}
-              aria-hidden={item ? undefined : true}
-              aria-expanded={item ? selected === item.id : undefined}
-              aria-controls={item ? "work-detail" : undefined}
-              onClick={item ? (event) => open(item, event.currentTarget) : undefined}
-              onKeyDown={onKeyDown}
-            >
-              <rect
-                className="ym3__window-frame"
-                x={position.x}
-                y={position.y}
-                width="44"
-                height="48"
-                rx="1"
-              />
-              <rect
-                className="ym3__window-pane"
-                x={position.x + 5}
-                y={position.y + 5}
-                width="34"
-                height="38"
-              />
-              <path
-                className="ym3__mullion"
-                d={`M${position.x + 22} ${position.y + 5}v38 M${position.x + 5} ${position.y + 24}h34`}
-              />
-              <path className="ym3__sill" d={`M${position.x - 4} ${position.y + 50}h52`} />
-            </g>
-          );
-        })}
-        <path className="ym3__door-frame" d="M112 282v-48q0-10 10-10h32q10 0 10 10v48z" />
-        <path className="ym3__door" d="M118 282v-45q0-7 7-7h26q7 0 7 7v45z" />
-        <circle className="ym3__door-knob" cx="147" cy="260" r="2" />
-        <path className="ym3__step" d="M106 282h64v7h-64z M99 289h78v7h-78z M8 298h200" />
-        <path
-          className="ym3__railing"
-          d="M18 281h80m-75 0v-16m16 16v-16m16 16v-16m16 16v-16m16 16v-16m-67 0h72"
-        />
-      </svg>
-      <div className="ym3__house-label">
-        <h3>House {index + 1}</h3>
-        <p>
-          {items.length} {items.length === 1 ? "owner action" : "owner actions"}
-        </p>
-      </div>
-    </article>
+              ? "ym3__window--unknown"
+              : "ym3__window--lit"
+            : "ym3__window--unused",
+          item && selected === item.id ? "ym3__window--selected" : "",
+        ]
+          .filter(Boolean)
+          .join(" ");
+        const requestLabel = item
+          ? statusUnavailable
+            ? `${title} — status unavailable; last confirmed action: ${item.action.label}`
+            : `${title} — ${item.action.label}`
+          : undefined;
+        const onKeyDown = (event: KeyboardEvent<SVGGElement>) => {
+          if (!item || (event.key !== "Enter" && event.key !== " ")) return;
+          event.preventDefault();
+          open(item, event.currentTarget);
+        };
+        return (
+          <g
+            key={item?.id ?? `unused-${slot}`}
+            className={className}
+            data-testid="street-window"
+            data-work-id={item?.id}
+            role={item ? "button" : undefined}
+            tabIndex={item ? 0 : undefined}
+            aria-label={requestLabel}
+            aria-hidden={item ? undefined : true}
+            aria-expanded={item ? selected === item.id : undefined}
+            aria-controls={item ? "work-detail" : undefined}
+            onClick={item ? (event) => open(item, event.currentTarget) : undefined}
+            onKeyDown={onKeyDown}
+          >
+            <rect
+              className="ym3__window-frame"
+              x={position.x}
+              y={position.y}
+              width="44"
+              height="48"
+              rx="1"
+            />
+            <rect
+              className="ym3__window-pane"
+              x={position.x + 5}
+              y={position.y + 5}
+              width="34"
+              height="38"
+            />
+            <path
+              className="ym3__mullion"
+              d={`M${position.x + 22} ${position.y + 5}v38 M${position.x + 5} ${position.y + 24}h34`}
+            />
+            <path className="ym3__sill" d={`M${position.x - 4} ${position.y + 50}h52`} />
+          </g>
+        );
+      })}
+      <path className="ym3__door-frame" d="M112 282v-48q0-10 10-10h32q10 0 10 10v48z" />
+      <path className="ym3__door" d="M118 282v-45q0-7 7-7h26q7 0 7 7v45z" />
+      <circle className="ym3__door-knob" cx="147" cy="260" r="2" />
+      <path className="ym3__step" d="M106 282h64v7h-64z M99 289h78v7h-78z M8 298h200" />
+      <path
+        className="ym3__railing"
+        d="M18 281h80m-75 0v-16m16 16v-16m16 16v-16m16 16v-16m16 16v-16m-67 0h72"
+      />
+    </g>
   );
+}
+
+function StreetScene({
+  houses,
+  selected,
+  statusUnavailable,
+  open,
+}: Readonly<{
+  houses: WaitingWork[][];
+  selected: string | undefined;
+  statusUnavailable: boolean;
+  open: (item: WaitingWork, origin: SVGElement) => void;
+}>) {
+  const width = houses.length * HOUSE_WIDTH + (houses.length - 1) * HOUSE_GAP;
+  const left = (SCENE_WIDTH - width) / 2;
+  return (
+    <svg
+      className="ym3__scene"
+      viewBox={`0 0 ${SCENE_WIDTH} ${SCENE_HEIGHT}`}
+      role="group"
+      aria-label="The street"
+      data-testid="street-scene"
+    >
+      <rect
+        className="ym3__pavement"
+        x="0"
+        y={GROUND_Y}
+        width={SCENE_WIDTH}
+        height={SCENE_HEIGHT - GROUND_Y}
+      />
+      <path className="ym3__ground" d={`M0 ${GROUND_Y}H${SCENE_WIDTH}`} />
+      {houses.map((house, index) => (
+        <TownshipHouse
+          key={index}
+          x={left + index * (HOUSE_WIDTH + HOUSE_GAP)}
+          items={house}
+          selected={selected}
+          statusUnavailable={statusUnavailable}
+          open={open}
+        />
+      ))}
+    </svg>
+  );
+}
+
+type Glyph = "lit" | "running" | "dark" | "unknown";
+
+type StripRow = { id: string; title: string; glyph: Glyph; status: string };
+
+/** Finished work the strip keeps in view; the rest of the history lives in List. */
+const STRIP_FINISHED_LIMIT = 5;
+
+function updatedTime(draft: ApprovedDraft): number {
+  const parsed = Date.parse(draft.execution?.updatedAt ?? draft.updatedAt ?? "");
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function newestFirst(left: ApprovedDraft, right: ApprovedDraft): number {
+  return updatedTime(right) - updatedTime(left) || (left.id < right.id ? -1 : 1);
+}
+
+/** The queue strip: waiting work in Street order, then running work, then the latest finished. */
+function queueStrip(
+  approved: readonly ApprovedDraft[],
+  waiting: readonly WaitingWork[],
+  statusUnavailable: boolean,
+): { rows: StripRow[]; olderFinished: boolean } {
+  const waitingIds = new Set(waiting.map((item) => item.id));
+  const rest = approved.filter((draft) => !waitingIds.has(draft.id));
+  const running = rest
+    .filter((draft) => draft.execution && ACTIVE.has(draft.execution.status))
+    .sort(newestFirst);
+  const finished = rest
+    .filter((draft) => !(draft.execution && ACTIVE.has(draft.execution.status)))
+    .sort(newestFirst);
+  const row = (id: string, title: string, glyph: Glyph, status: string): StripRow =>
+    statusUnavailable
+      ? { id, title, glyph: "unknown", status: `Status unavailable; last confirmed: ${status}` }
+      : { id, title, glyph, status };
+  return {
+    rows: [
+      ...waiting.map((item) => row(item.id, item.title, "lit", item.action.label)),
+      ...running.map((draft) =>
+        row(draft.id, draft.prose.achieve, "running", executionStatusLine(draft.execution)),
+      ),
+      ...finished
+        .slice(0, STRIP_FINISHED_LIMIT)
+        .map((draft) =>
+          row(draft.id, draft.prose.achieve, "dark", executionStatusLine(draft.execution)),
+        ),
+    ],
+    olderFinished: finished.length > STRIP_FINISHED_LIMIT,
+  };
+}
+
+function WindowGlyph({ glyph }: Readonly<{ glyph: Glyph }>) {
+  return (
+    <svg
+      className={`ym3__glyph ym3__glyph--${glyph}`}
+      viewBox="0 0 20 22"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <rect className="ym3__glyph-frame" x="1" y="1" width="18" height="20" rx="1" />
+      <rect className="ym3__glyph-pane" x="4" y="4" width="12" height="14" />
+      <path className="ym3__glyph-mullion" d="M10 4v14M4 11h12" />
+    </svg>
+  );
+}
+
+function statusLineText(count: number, statusUnavailable: boolean, loaded: boolean): string {
+  const lit = `${count} ${count === 1 ? "window" : "windows"} lit`;
+  if (statusUnavailable) {
+    return loaded ? `Status unavailable · last confirmed: ${lit}` : "Status unavailable";
+  }
+  return count === 0 ? "No windows lit · nothing needs you" : `${lit} · oldest first`;
 }
 
 export function WorkExecutions({
@@ -417,6 +528,7 @@ export function WorkExecutions({
   const entryMotionStarted = useRef(false);
   const origin = useRef<SVGElement | HTMLButtonElement | null>(null);
   const queueHeading = useRef<HTMLHeadingElement>(null);
+  const statusLine = useRef<HTMLParagraphElement>(null);
 
   const load = useCallback(async () => {
     try {
@@ -431,6 +543,14 @@ export function WorkExecutions({
       setStatusUnavailable(true);
     }
   }, [fetcher]);
+
+  // One sheet at a time: a new draft takes the sheet position from any open work.
+  const composer = useWorkComposer({
+    signedIn,
+    fetcher,
+    onDrafted: () => setSelected(undefined),
+    onApproved: () => void load(),
+  });
 
   useEffect(() => {
     if (!signedIn) {
@@ -491,6 +611,7 @@ export function WorkExecutions({
   const street = buildStreetPage(waiting, streetPage);
   const filtered = filterOwnerActionItems(waiting, { query, kind: actionFilter });
   const queue = buildQueuePage(filtered, queuePage);
+  const strip = queueStrip(approved, waiting, statusUnavailable);
   const allWorkPageCount = Math.ceil(approved.length / QUEUE_PAGE_SIZE);
   const visibleAllWorkPage = Math.max(0, Math.min(allWorkPage, Math.max(0, allWorkPageCount - 1)));
   const allWorkItems = approved.slice(
@@ -517,84 +638,401 @@ export function WorkExecutions({
     origin.current = target;
     setSelected(item.id);
   };
-  const foldBack = () => {
+  const closeSheet = () => {
     setSelected(undefined);
     const selectedIndex = filtered.findIndex((item) => item.id === selected);
     if (selectedIndex >= 0 && asList) setQueuePage(Math.floor(selectedIndex / 10));
     const target = origin.current;
     if (target?.isConnected) target.focus();
-    else queueHeading.current?.focus();
+    else if (asList) queueHeading.current?.focus();
+    else statusLine.current?.focus();
   };
+  const showDraft = () => {
+    composer.requestDraftFocus();
+    setSelected(undefined);
+  };
+  const filtersActive = Boolean(query.trim()) || actionFilter !== "all";
+
+  const streetView = (
+    <section className="ym3__street-section" aria-labelledby="street-title">
+      <h2 id="street-title" className="ym3__visually-hidden">
+        Street
+      </h2>
+      <StreetScene
+        houses={street.houses}
+        selected={selected}
+        statusUnavailable={statusUnavailable}
+        open={open}
+      />
+      {street.total > 15 ? (
+        <div className="ym3__pager">
+          <span>
+            {streetRange(street.page, street.total, street.start, street.end, street.pageCount)}
+          </span>
+          <button
+            type="button"
+            disabled={street.page === 0}
+            onClick={() => setStreetPage(street.page - 1)}
+          >
+            Previous houses
+          </button>
+          <button
+            type="button"
+            disabled={street.page + 1 >= street.pageCount}
+            onClick={() => setStreetPage(street.page + 1)}
+          >
+            Next houses
+          </button>
+        </div>
+      ) : null}
+    </section>
+  );
+
+  const listView = (
+    <div className="ym3__list-view">
+      <nav className="ym3__collection-switch" aria-label="Work collection">
+        <button
+          type="button"
+          aria-pressed={!allWorkView}
+          onClick={() => {
+            setEntryMotionDone(true);
+            setAllWorkView(false);
+            setSelected(undefined);
+          }}
+        >
+          Waiting work
+        </button>
+        <button
+          type="button"
+          aria-pressed={allWorkView}
+          onClick={() => {
+            setEntryMotionDone(true);
+            setAllWorkView(true);
+            setSelected(undefined);
+            setAllWorkPage(0);
+          }}
+        >
+          All work &amp; history
+        </button>
+      </nav>
+
+      <section className="ym3__queue" aria-labelledby="queue-title" hidden={allWorkView}>
+        <header className="ym3__queue-header">
+          <div>
+            <h2 ref={queueHeading} id="queue-title" tabIndex={-1}>
+              Waiting work
+            </h2>
+            <p className="ym3__range">
+              {queueRange(queue.start, queue.end, queue.total, filtersActive)}
+            </p>
+          </div>
+          <div className="ym3__filters">
+            <label>
+              <span>Search waiting work</span>
+              <input
+                type="search"
+                aria-label="Search waiting work"
+                value={query}
+                onChange={(event) => {
+                  setQuery(event.currentTarget.value);
+                  setQueuePage(0);
+                }}
+              />
+            </label>
+            <label>
+              <span>Filter by action</span>
+              <select
+                aria-label="Filter by action"
+                value={actionFilter}
+                onChange={(event) => {
+                  setActionFilter(event.currentTarget.value as OwnerActionFilter);
+                  setQueuePage(0);
+                }}
+              >
+                <option value="all">All actions</option>
+                <option value="proposal">Review a proposed change</option>
+                <option value="reply">Reply to the agent</option>
+                <option value="close">Close finished work</option>
+                <option value="restart">Restart or close work</option>
+              </select>
+            </label>
+          </div>
+        </header>
+
+        {waiting.length === 0 ? (
+          <p className="ym3__empty">
+            {statusUnavailable ? "Status unavailable" : "Nothing needs you"}
+          </p>
+        ) : queue.total === 0 ? (
+          <div className="ym3__empty">
+            <p>No matching work</p>
+            <button
+              type="button"
+              onClick={() => {
+                setQuery("");
+                setActionFilter("all");
+                setQueuePage(0);
+              }}
+            >
+              Clear filters
+            </button>
+          </div>
+        ) : (
+          <div className="ym3__table-wrap">
+            <table className="ym3__table">
+              <thead>
+                <tr>
+                  <th scope="col">Work</th>
+                  <th scope="col">Action needed</th>
+                  <th scope="col">Waiting since</th>
+                  <th scope="col">
+                    <span className="ym3__visually-hidden">Open work</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {queue.items.map((item) => (
+                  <tr
+                    key={item.id}
+                    className={selected === item.id ? "ym3__row--selected" : undefined}
+                  >
+                    <th scope="row">{item.title}</th>
+                    <td>{item.action.label}</td>
+                    <td>
+                      {item.action.requestedAt &&
+                      Number.isFinite(Date.parse(item.action.requestedAt)) ? (
+                        <time dateTime={item.action.requestedAt}>
+                          Waiting since {requestTimeLabel(item.action.requestedAt)}
+                        </time>
+                      ) : (
+                        "Time unavailable"
+                      )}
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        aria-label={`Open ${item.title}`}
+                        aria-expanded={selected === item.id}
+                        aria-controls="work-detail"
+                        onClick={(event) => open(item, event.currentTarget)}
+                      >
+                        Open
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {queue.pageCount > 1 ? (
+          <footer className="ym3__queue-pager">
+            <span>{queueRange(queue.start, queue.end, queue.total, filtersActive)}</span>
+            <button
+              type="button"
+              disabled={queue.page === 0}
+              onClick={() => setQueuePage(queue.page - 1)}
+            >
+              Previous queue page
+            </button>
+            <button
+              type="button"
+              disabled={queue.page + 1 >= queue.pageCount}
+              onClick={() => setQueuePage(queue.page + 1)}
+            >
+              Next queue page
+            </button>
+          </footer>
+        ) : null}
+      </section>
+
+      <section
+        className="ym3__queue ym3__history"
+        aria-labelledby="all-work-title"
+        hidden={!allWorkView}
+      >
+        <header className="ym3__queue-header">
+          <div>
+            <h2 id="all-work-title">All work &amp; history</h2>
+            <p className="ym3__range">
+              {queueRange(allWorkStart, allWorkEnd, approved.length, false)}
+            </p>
+          </div>
+        </header>
+        {approved.length === 0 ? (
+          <p className="ym3__empty">No approved work yet.</p>
+        ) : (
+          <div className="ym3__table-wrap">
+            <table className="ym3__table">
+              <thead>
+                <tr>
+                  <th scope="col">Work</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Updated</th>
+                  <th scope="col">
+                    <span className="ym3__visually-hidden">Open work</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {allWorkItems.map((draft) => {
+                  const updatedAt = draft.execution?.updatedAt ?? draft.updatedAt;
+                  return (
+                    <tr
+                      key={draft.id}
+                      className={selected === draft.id ? "ym3__row--selected" : undefined}
+                    >
+                      <th scope="row">{draft.prose.achieve}</th>
+                      <td>{executionStatusLine(draft.execution ?? null)}</td>
+                      <td>
+                        {updatedAt && Number.isFinite(Date.parse(updatedAt)) ? (
+                          <time dateTime={updatedAt}>{requestTimeLabel(updatedAt)}</time>
+                        ) : (
+                          "Time unavailable"
+                        )}
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          aria-label={`Open ${draft.prose.achieve}`}
+                          aria-expanded={selected === draft.id}
+                          aria-controls="work-detail"
+                          onClick={(event) => open(draft, event.currentTarget)}
+                        >
+                          Open
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {allWorkPageCount > 1 ? (
+          <footer className="ym3__queue-pager">
+            <span>{queueRange(allWorkStart, allWorkEnd, approved.length, false)}</span>
+            <button
+              type="button"
+              disabled={visibleAllWorkPage === 0}
+              onClick={() => setAllWorkPage(visibleAllWorkPage - 1)}
+            >
+              Previous history page
+            </button>
+            <button
+              type="button"
+              disabled={visibleAllWorkPage + 1 >= allWorkPageCount}
+              onClick={() => setAllWorkPage(visibleAllWorkPage + 1)}
+            >
+              Next history page
+            </button>
+          </footer>
+        ) : null}
+      </section>
+    </div>
+  );
+
+  const queueStripView = (
+    <section className="ym3__strip" aria-labelledby="strip-title">
+      <h2 id="strip-title">Queue</h2>
+      {strip.rows.length === 0 ? (
+        <p className="ym3__empty">No approved work yet.</p>
+      ) : (
+        <ul className="ym3__strip-list">
+          {strip.rows.map((row) => (
+            <li key={row.id}>
+              <button
+                type="button"
+                className={`ym3__strip-row${selected === row.id ? " ym3__strip-row--selected" : ""}`}
+                data-testid="queue-strip-row"
+                data-glyph={row.glyph}
+                aria-expanded={selected === row.id}
+                aria-controls="work-detail"
+                onClick={(event) => open(row, event.currentTarget)}
+              >
+                <WindowGlyph glyph={row.glyph} />
+                <span className="ym3__strip-title">{row.title}</span>
+                <span className="ym3__strip-status">{row.status}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {strip.olderFinished ? (
+        <button
+          type="button"
+          className="ym3__strip-link"
+          onClick={() => {
+            setEntryMotionDone(true);
+            setAsList(true);
+            setAllWorkView(true);
+            setAllWorkPage(0);
+          }}
+        >
+          See older finished work in List
+        </button>
+      ) : null}
+    </section>
+  );
+
+  // The sheet keeps one place in the tree, so switching Street and List never re-opens it.
+  const sheet = current ? (
+    <WorkPanel
+      key={current.id}
+      item={current}
+      ownerAction={currentAction}
+      busy={busy}
+      act={act}
+      onClose={closeSheet}
+      fetcher={fetcher}
+      reload={load}
+    />
+  ) : composer.draft ? (
+    <DraftSheet key={composer.draft.id} composer={composer} />
+  ) : null;
 
   return (
     <section
       className={`your-move ym3${entryMotionDone ? " ym3--entered" : ""}`}
       aria-labelledby="ym3-title"
     >
-      <header className="ym3__header">
-        <div>
-          <p className="ym3__eyebrow">Work</p>
-          <h1 id="ym3-title">Your Move</h1>
-          <p className="ym3__global-count">
-            {statusUnavailable
-              ? items
-                ? `Status unavailable; last confirmed: ${waiting.length} ${waiting.length === 1 ? "needed" : "needed"} you.`
-                : "Status unavailable"
-              : `${waiting.length} ${waiting.length === 1 ? "needs" : "need"} you`}
-          </p>
+      <h1 id="ym3-title" className="ym3__visually-hidden">
+        Work
+      </h1>
+      <WorkSlip
+        composer={composer}
+        draftSetAside={Boolean(current && composer.draft)}
+        onShowDraft={showDraft}
+      />
+
+      <div className="ym3__status-line">
+        <p ref={statusLine} tabIndex={-1} className="ym3__status">
+          {statusLineText(waiting.length, statusUnavailable, Boolean(items))}
+        </p>
+        <div className="ym3__view-switch" role="group" aria-label="Work view">
+          <button
+            type="button"
+            aria-pressed={!asList}
+            onClick={() => {
+              setEntryMotionDone(true);
+              setAsList(false);
+            }}
+          >
+            Street
+          </button>
+          <button
+            type="button"
+            aria-pressed={asList}
+            onClick={() => {
+              setEntryMotionDone(true);
+              setAsList(true);
+            }}
+          >
+            List
+          </button>
         </div>
-        <div className="ym3__header-navigation">
-          <nav className="ym3__collection-switch" aria-label="Work collection">
-            <button
-              type="button"
-              aria-pressed={!allWorkView}
-              onClick={() => {
-                setEntryMotionDone(true);
-                setAllWorkView(false);
-                setSelected(undefined);
-              }}
-            >
-              Waiting work
-            </button>
-            <button
-              type="button"
-              aria-pressed={allWorkView}
-              onClick={() => {
-                setEntryMotionDone(true);
-                setAllWorkView(true);
-                setSelected(undefined);
-                setAllWorkPage(0);
-              }}
-            >
-              All work &amp; history
-            </button>
-          </nav>
-          {!allWorkView ? (
-            <div className="ym3__view-switch" aria-label="Waiting work view">
-              <button
-                type="button"
-                aria-pressed={!asList}
-                onClick={() => {
-                  setEntryMotionDone(true);
-                  setAsList(false);
-                }}
-              >
-                Street
-              </button>
-              <button
-                type="button"
-                aria-pressed={asList}
-                onClick={() => {
-                  setEntryMotionDone(true);
-                  setAsList(true);
-                }}
-              >
-                List
-              </button>
-            </div>
-          ) : null}
-        </div>
-      </header>
+      </div>
 
       {statusUnavailable ? (
         <p className="ym3__visually-hidden" role="status">
@@ -602,313 +1040,9 @@ export function WorkExecutions({
         </p>
       ) : null}
 
-      <div className={`ym3__workspace${current ? " ym3__workspace--open" : ""}`}>
-        <div className="ym3__primary-column">
-          <section
-            className="ym3__street-section"
-            aria-labelledby="street-title"
-            hidden={asList || allWorkView}
-          >
-            <div className="ym3__section-heading">
-              <div>
-                <h2 id="street-title">Street</h2>
-                <p>
-                  {statusUnavailable
-                    ? "Status unavailable"
-                    : waiting.length === 0
-                      ? "Nothing needs you"
-                      : `${waiting.length} waiting items`}
-                </p>
-              </div>
-              {street.total > 15 ? (
-                <div className="ym3__pager">
-                  <span>
-                    {streetRange(
-                      street.page,
-                      street.total,
-                      street.start,
-                      street.end,
-                      street.pageCount,
-                    )}
-                  </span>
-                  <button
-                    type="button"
-                    disabled={street.page === 0}
-                    onClick={() => setStreetPage(street.page - 1)}
-                  >
-                    Previous houses
-                  </button>
-                  <button
-                    type="button"
-                    disabled={street.page + 1 >= street.pageCount}
-                    onClick={() => setStreetPage(street.page + 1)}
-                  >
-                    Next houses
-                  </button>
-                </div>
-              ) : null}
-            </div>
-            <div className="ym3__street" role="list" aria-label="The street">
-              {street.houses.map((house, index) => (
-                <div className="ym3__street-item" role="listitem" key={`${street.page}-${index}`}>
-                  <TownshipHouse
-                    index={street.page * 3 + index}
-                    items={house}
-                    selected={selected}
-                    statusUnavailable={statusUnavailable}
-                    open={open}
-                  />
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="ym3__queue" aria-labelledby="queue-title" hidden={allWorkView}>
-            <header className="ym3__queue-header">
-              <div>
-                <h2 ref={queueHeading} id="queue-title" tabIndex={-1}>
-                  Waiting work
-                </h2>
-                <p className="ym3__range">
-                  {queueRange(
-                    queue.start,
-                    queue.end,
-                    queue.total,
-                    Boolean(query.trim()) || actionFilter !== "all",
-                  )}
-                </p>
-              </div>
-              <div className="ym3__filters">
-                <label>
-                  <span>Search waiting work</span>
-                  <input
-                    type="search"
-                    aria-label="Search waiting work"
-                    value={query}
-                    onChange={(event) => {
-                      setQuery(event.currentTarget.value);
-                      setQueuePage(0);
-                    }}
-                  />
-                </label>
-                <label>
-                  <span>Filter by action</span>
-                  <select
-                    aria-label="Filter by action"
-                    value={actionFilter}
-                    onChange={(event) => {
-                      setActionFilter(event.currentTarget.value as OwnerActionFilter);
-                      setQueuePage(0);
-                    }}
-                  >
-                    <option value="all">All actions</option>
-                    <option value="proposal">Review a proposed change</option>
-                    <option value="reply">Reply to the agent</option>
-                    <option value="close">Close finished work</option>
-                    <option value="restart">Restart or close work</option>
-                  </select>
-                </label>
-              </div>
-            </header>
-
-            {waiting.length === 0 ? (
-              <p className="ym3__empty">
-                {statusUnavailable
-                  ? "Status unavailable"
-                  : items
-                    ? "Nothing needs you"
-                    : "Waiting work has not loaded."}
-              </p>
-            ) : queue.total === 0 ? (
-              <div className="ym3__empty">
-                <p>No matching work</p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuery("");
-                    setActionFilter("all");
-                    setQueuePage(0);
-                  }}
-                >
-                  Clear filters
-                </button>
-              </div>
-            ) : (
-              <div className="ym3__table-wrap">
-                <table className="ym3__table">
-                  <thead>
-                    <tr>
-                      <th scope="col">Work</th>
-                      <th scope="col">Action needed</th>
-                      <th scope="col">Waiting since</th>
-                      <th scope="col">
-                        <span className="ym3__visually-hidden">Open work</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {queue.items.map((item) => (
-                      <tr
-                        key={item.id}
-                        className={selected === item.id ? "ym3__row--selected" : undefined}
-                      >
-                        <th scope="row">{item.title}</th>
-                        <td>{item.action.label}</td>
-                        <td>
-                          {item.action.requestedAt &&
-                          Number.isFinite(Date.parse(item.action.requestedAt)) ? (
-                            <time dateTime={item.action.requestedAt}>
-                              Waiting since {requestTimeLabel(item.action.requestedAt)}
-                            </time>
-                          ) : (
-                            "Time unavailable"
-                          )}
-                        </td>
-                        <td>
-                          <button
-                            type="button"
-                            aria-label={`Open ${item.title}`}
-                            aria-expanded={selected === item.id}
-                            aria-controls="work-detail"
-                            onClick={(event) => open(item, event.currentTarget)}
-                          >
-                            Open
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {queue.pageCount > 1 ? (
-              <footer className="ym3__queue-pager">
-                <span>
-                  {queueRange(
-                    queue.start,
-                    queue.end,
-                    queue.total,
-                    Boolean(query.trim()) || actionFilter !== "all",
-                  )}
-                </span>
-                <button
-                  type="button"
-                  disabled={queue.page === 0}
-                  onClick={() => setQueuePage(queue.page - 1)}
-                >
-                  Previous queue page
-                </button>
-                <button
-                  type="button"
-                  disabled={queue.page + 1 >= queue.pageCount}
-                  onClick={() => setQueuePage(queue.page + 1)}
-                >
-                  Next queue page
-                </button>
-              </footer>
-            ) : null}
-          </section>
-
-          <section
-            className="ym3__queue ym3__history"
-            aria-labelledby="all-work-title"
-            hidden={!allWorkView}
-          >
-            <header className="ym3__queue-header">
-              <div>
-                <h2 id="all-work-title">All work &amp; history</h2>
-                <p className="ym3__range">
-                  {queueRange(allWorkStart, allWorkEnd, approved.length, false)}
-                </p>
-              </div>
-            </header>
-            {approved.length === 0 ? (
-              <p className="ym3__empty">No approved work yet.</p>
-            ) : (
-              <div className="ym3__table-wrap">
-                <table className="ym3__table">
-                  <thead>
-                    <tr>
-                      <th scope="col">Work</th>
-                      <th scope="col">Status</th>
-                      <th scope="col">Updated</th>
-                      <th scope="col">
-                        <span className="ym3__visually-hidden">Open work</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {allWorkItems.map((draft) => {
-                      const updatedAt = draft.execution?.updatedAt ?? draft.updatedAt;
-                      return (
-                        <tr
-                          key={draft.id}
-                          className={selected === draft.id ? "ym3__row--selected" : undefined}
-                        >
-                          <th scope="row">{draft.prose.achieve}</th>
-                          <td>{executionStatusLine(draft.execution ?? null)}</td>
-                          <td>
-                            {updatedAt && Number.isFinite(Date.parse(updatedAt)) ? (
-                              <time dateTime={updatedAt}>{requestTimeLabel(updatedAt)}</time>
-                            ) : (
-                              "Time unavailable"
-                            )}
-                          </td>
-                          <td>
-                            <button
-                              type="button"
-                              aria-label={`Open ${draft.prose.achieve}`}
-                              aria-expanded={selected === draft.id}
-                              aria-controls="work-detail"
-                              onClick={(event) => open(draft, event.currentTarget)}
-                            >
-                              Open
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-            {allWorkPageCount > 1 ? (
-              <footer className="ym3__queue-pager">
-                <span>{queueRange(allWorkStart, allWorkEnd, approved.length, false)}</span>
-                <button
-                  type="button"
-                  disabled={visibleAllWorkPage === 0}
-                  onClick={() => setAllWorkPage(visibleAllWorkPage - 1)}
-                >
-                  Previous history page
-                </button>
-                <button
-                  type="button"
-                  disabled={visibleAllWorkPage + 1 >= allWorkPageCount}
-                  onClick={() => setAllWorkPage(visibleAllWorkPage + 1)}
-                >
-                  Next history page
-                </button>
-              </footer>
-            ) : null}
-          </section>
-        </div>
-
-        {current ? (
-          <WorkPanel
-            key={current.id}
-            item={current}
-            ownerAction={currentAction}
-            backLabel={allWorkView ? "← Back to all work & history" : "← Back to waiting work"}
-            busy={busy}
-            act={act}
-            onFold={foldBack}
-            fetcher={fetcher}
-            reload={load}
-          />
-        ) : null}
-      </div>
+      {asList ? listView : streetView}
+      {sheet}
+      {asList ? null : queueStripView}
       {error ? (
         <p role="alert" className="your-move__error">
           {error}
@@ -918,22 +1052,21 @@ export function WorkExecutions({
   );
 }
 
+/** The correspondence sheet: one item's letters, verdicts, and decisions, below the street. */
 function WorkPanel({
   item,
   ownerAction,
-  backLabel,
   busy,
   act,
-  onFold,
+  onClose,
   fetcher,
   reload,
 }: Readonly<{
   item: ApprovedDraft;
   ownerAction: OwnerAction | undefined;
-  backLabel: string;
   busy: boolean;
   act: (url: string, body?: object) => Promise<boolean>;
-  onFold: () => void;
+  onClose: () => void;
   fetcher: typeof fetch;
   reload: () => Promise<void>;
 }>) {
@@ -1051,11 +1184,39 @@ function WorkPanel({
   );
 
   return (
-    <section className="your-move__panel" id="work-detail" aria-labelledby={`panel-${item.id}`}>
-      <button type="button" className="your-move__back" onClick={onFold}>
-        {backLabel}
-      </button>
-      <div className="ym3__request" aria-label="Recorded owner action">
+    <section
+      className="your-move__panel ym3-sheet"
+      id="work-detail"
+      aria-labelledby={`panel-${item.id}`}
+    >
+      <header className="ym3-sheet__letterhead">
+        <div>
+          <h2
+            ref={titleRef}
+            tabIndex={-1}
+            id={`panel-${item.id}`}
+            className="your-move__panel-title"
+          >
+            {item.prose.achieve}
+          </h2>
+          <p className="ym3-sheet__dateline" role="status">
+            {executionStatusLine(execution)}
+          </p>
+        </div>
+        <button
+          type="button"
+          className="ym3-sheet__close"
+          aria-label="Close this sheet"
+          onClick={onClose}
+        >
+          Close
+        </button>
+      </header>
+      <div
+        className={`ym3__request${ownerAction ? " ym3__request--needs-you" : ""}`}
+        role="group"
+        aria-label="Recorded owner action"
+      >
         <p>{ownerAction?.label ?? "No owner action is pending"}</p>
         <span>
           {ownerAction?.requestedAt && Number.isFinite(Date.parse(ownerAction.requestedAt))
@@ -1063,12 +1224,6 @@ function WorkPanel({
             : "Time unavailable"}
         </span>
       </div>
-      <p className="your-move__panel-kicker" role="status">
-        {executionStatusLine(execution)}
-      </p>
-      <h3 ref={titleRef} tabIndex={-1} id={`panel-${item.id}`} className="your-move__panel-title">
-        {item.prose.achieve}
-      </h3>
 
       {conversation.length > 0 ? (
         <div className="ym3__conversation" role="group" aria-label="Work conversation">
@@ -1091,7 +1246,7 @@ function WorkPanel({
               entry.turnIndex === undefined ? undefined : verdictByTurn.get(entry.turnIndex);
             const verdictLabel = verdict?.verdict === "lamp" ? "Lamp verdict" : "No lamp signal";
             return (
-              <div key={`agent-${entry.turnIndex ?? index}`} className="ym3__conversation-entry">
+              <div key={`agent-${index}`} className="ym3__conversation-entry">
                 <div className="your-move__said" role="group" aria-label="Agent message">
                   <p className="your-move__said-label">The agent says</p>
                   <blockquote className="your-move__words">{entry.text}</blockquote>
@@ -1179,7 +1334,7 @@ function WorkPanel({
         ? pending.map((proposal) => (
             <div
               key={proposal.id}
-              className="your-move__proposal"
+              className="your-move__proposal ym3__proposal--needs-you"
               role="group"
               aria-label={`Proposed change to ${proposal.change.path}`}
             >
