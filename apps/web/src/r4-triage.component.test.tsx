@@ -415,6 +415,7 @@ describe("Continue with ChatGPT and the lamp (R4 Track D)", () => {
 
     await user.click(await screen.findByRole("button", { name: "Connections" }));
     await user.click(screen.getByRole("button", { name: /OpenAI \/ ChatGPT plan/ }));
+    await user.click(screen.getByRole("button", { name: "Open OpenAI settings" }));
     await user.click(screen.getByRole("button", { name: "Import ChatGPT credential" }));
     await user.type(await screen.findByLabelText("Credential from siwc:login"), secretLine);
     await user.click(screen.getByRole("button", { name: "Continue with ChatGPT" }));
@@ -426,7 +427,9 @@ describe("Continue with ChatGPT and the lamp (R4 Track D)", () => {
     )!;
     expect(JSON.parse(String(imported[1]?.body))).toEqual({ bundle: secretLine });
 
+    await user.click(screen.getByRole("button", { name: "Close OpenAI settings" }));
     await user.click(screen.getByRole("button", { name: /^Ollama/ }));
+    await user.click(screen.getByRole("button", { name: "Open Ollama settings" }));
     const address = screen.getByLabelText("Your Ollama address");
     await user.clear(address);
     await user.type(address, "https://ollama.example.test");
