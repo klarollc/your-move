@@ -9,7 +9,7 @@ live state, the next action, and the things a fresh session pays for twice if no
 
 R1 is complete and merged as `f40cf3329a9a0d456c0736e04676d0199a855abe` on 2026-10-18. R2 is complete, merged as `edefd23aa384415ab287919ca08371bbd46c1869`, and deployed on 2026-10-19. R3 is complete, merged as `7d3edc7522cdabbd29f1473c78bf7dc3117c5dfc` on 2026-10-19; its walk-through is complete. R4 is complete, merged as `56d3708821e9b17a8e92ce6241b5f4924772d77d` on 2026-10-19; its functional walk-through passed that day, with screenshots deferred. The R4 exports hotfix is complete, merged as `6ca66b55ec4b599e34bbe28aa55fd175771d0702` on 2026-10-19.
 
-The sage/oat UI revision and the three R4 walk-through fixes (explicit proposal approval, visible owner replies, and per-utterance lamp verdicts) are complete, merged as `794d22fcb260ef800618be77032fea6e832e0e8b` on 2026-10-20. The hosted Your Move product is functional. The Section 6 screenshot pass on the new UI remains pending.
+The sage/oat UI revision and the three R4 walk-through fixes (explicit proposal approval, visible owner replies, and per-utterance lamp verdicts) are complete, merged as `794d22fcb260ef800618be77032fea6e832e0e8b` on 2026-10-20. The hosted Your Move product is functional at `https://klaro-your-move-production.up.railway.app` (plain `your-move-production` was already taken globally on Railway). `APP_ORIGIN`: the value must exactly equal the serialized origin (https:// + lowercase host, no trailing slash, path, or port) — anything else throws HOSTED_APP_ORIGIN_INVALID at boot and crash-loops; see [`deployment/railway.md`](deployment/railway.md). The Section 6 screenshot pass on the new UI remains pending.
 
 **Next:** complete the Section 6 screenshot pass on the new UI. R5 (dogfood) is the planned next phase, but it is not yet owner-authorized; do not begin R5 until explicit owner approval.
 
@@ -509,7 +509,7 @@ and every live script refuses without it. To move the pin: `npm.cmd install --no
 every run record carries `runtime` attempts with Codex's own failure class, and every live session
 leaves a log under `docs/evidence/runtime/sessions/`. Why passes 6–9 failed stays unknown (DF-025).
 
-Everything runs from `C:\Users\nater\CuckCode`. The owner uses **PowerShell**, so `&&` is a parse
+The persistent local checkout currently remains at `C:\Users\nater\CuckCode` after the repository rename; the Git remote is `https://github.com/klarollc/your-move.git` (observed 2026-10-20). The owner uses **PowerShell**, so `&&` is a parse
 error and there is no inline env-var prefix — write `$env:X='1'; cmd` and clear it afterwards.
 **Script execution is disabled on his PowerShell, so `npx`/`npm` fail; give `npx.cmd`/`npm.cmd`.**
 On 2026-10-03 a failed `npx` followed by `Remove-Item Env:...` meant the retry ran without the
@@ -542,7 +542,7 @@ Live runs need an explicit opt-in env var — `CUCKCODE_LIVE_PHASE5`, `CUCKCODE_
 `CUCKCODE_LIVE_ROLE_EXERCISE` — and every one of them debits `docs/evidence/phase-5/turn-ledger.json`
 where applicable. **A budget nobody debits is discovered rather than set.**
 
-Git: work happens on `main` (since the 2026-09-28 merge). Remote is `klarollc/CuckCode`, private,
+Git: work happens on `main` (since the 2026-09-28 merge). Remote is `klarollc/your-move`, private,
 over HTTPS — SSH has no key registered and `ssh -T git@github.com` fails. **Pushes are owner-run.**
 The active `gh` account is `nateriera`, which cannot push; the owner runs `gh auth switch --user
 klarollc`, `git push origin main`, `gh auth switch --user nateriera`. `gh` 2.100.0 does not pick the

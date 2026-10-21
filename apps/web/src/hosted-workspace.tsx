@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import "./hosted-workspace.css";
 import { IntegrationSettings } from "./integration-settings.js";
@@ -10,6 +10,11 @@ import { WorkExecutions, openLampFeed, type OpenFeed } from "./work-executions.j
 type Surface = "work" | "connections";
 type ConnectionId = "anthropic" | "openai-plan" | "ollama" | "github";
 type DirectoryStatuses = Record<ConnectionId, string>;
+const signOutLabel = "Sign out";
+
+async function signOutSession(fetcher: typeof fetch): Promise<void> {
+  await fetcher("/api/session", { method: "DELETE", credentials: "same-origin" });
+}
 
 function providerStatusLabel(status: ConnectionStatus): string {
   return status === "needs_reauth"
@@ -37,6 +42,7 @@ export function HostedWorkspace({
   const [approvals, setApprovals] = useState(0);
   const [surface, setSurface] = useState<Surface>("connections");
   const [selectedConnection, setSelectedConnection] = useState<ConnectionId>("anthropic");
+  const [connectionDrawerOpen, setConnectionDrawerOpen] = useState(false);
   const [openAiMethod, setOpenAiMethod] = useState<"api-key" | "chatgpt-plan">("api-key");
   const [providerStatuses, setProviderStatuses] = useState<
     Readonly<Record<ProviderId, ConnectionStatus>> | undefined
@@ -61,6 +67,48 @@ export function HostedWorkspace({
   const onConnectionStatusChange = useCallback((id: ConnectionId, status: string) => {
     setDirectoryStatuses((current) => ({ ...current, [id]: status }));
   }, []);
+  const signOut = useCallback(async () => {
+    await signOutSession(fetcher);
+    setSignedIn(false);
+    setSurface("connections");
+    setConnectionDrawerOpen(false);
+  }, [fetcher]);
+  const closeConnectionDrawer = useCallback(() => setConnectionDrawerOpen(false), []);
+  const drawerTabRef = useRef<HTMLButtonElement>(null);
+  const drawerCloseRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!connectionDrawerOpen) return;
+    drawerCloseRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        closeConnectionDrawer();
+        drawerTabRef.current?.focus();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const dialog = document.getElementById("connection-settings-drawer");
+      if (!dialog) return;
+      const focusable = Array.from(
+        dialog.querySelectorAll<HTMLElement>(
+          'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((element) => element.getClientRects().length > 0);
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      if (event.shiftKey && document.activeElement === first && last) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last && first) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [closeConnectionDrawer, connectionDrawerOpen]);
 
   const selectedProvider: ProviderId | undefined =
     selectedConnection === "anthropic"
@@ -76,6 +124,14 @@ export function HostedWorkspace({
       : surface === "connections" && selectedConnection === "ollama"
         ? "lamp"
         : null;
+  const selectedConnectionLabel =
+    selectedConnection === "openai-plan"
+      ? "OpenAI"
+      : selectedConnection === "ollama"
+        ? "Ollama"
+        : selectedConnection === "github"
+          ? "GitHub"
+          : "Anthropic";
 
   const directoryStatus = (id: ConnectionId): string => {
     if (id === "anthropic") {
@@ -95,7 +151,10 @@ export function HostedWorkspace({
         className="ym3c__directory-item"
         type="button"
         aria-current={selected ? "page" : undefined}
-        onClick={() => setSelectedConnection(id)}
+        onClick={() => {
+          setSelectedConnection(id);
+          setConnectionDrawerOpen(false);
+        }}
       >
         <strong>{label}</strong>
         <span>{purpose}</span>
@@ -108,7 +167,7 @@ export function HostedWorkspace({
     <div className="hosted-workspace">
       {signedIn ? (
         <nav className="ym3__app-nav" aria-label="Workspace navigation">
-          <p className="ym3__app-nav-brand">CuckCode</p>
+          <p className="ym3__app-nav-brand">Your Move</p>
           <button
             type="button"
             aria-current={surface === "work" ? "page" : undefined}
@@ -122,6 +181,9 @@ export function HostedWorkspace({
             onClick={() => setSurface("connections")}
           >
             Connections
+          </button>
+          <button type="button" onClick={() => void signOut()}>
+            {signOutLabel}
           </button>
         </nav>
       ) : null}
@@ -145,10 +207,12 @@ export function HostedWorkspace({
         {signedIn ? (
           <header className="ym3c__heading">
             <h1>Connections</h1>
-            <p>Choose a service to manage its existing connection.</p>
+            <p>Choose a service. Open its settings only when you need them.</p>
           </header>
         ) : null}
-        <div className={`ym3c__layout${signedIn ? "" : " ym3c__layout--auth"}`}>
+        <div
+          className={`ym3c__layout${signedIn ? "" : " ym3c__layout--auth"}${connectionDrawerOpen && surface === "connections" ? " ym3c__layout--drawer-open" : ""}`}
+        >
           {signedIn ? (
             <nav className="ym3c__directory" aria-label="Connections directory">
               <section className="ym3c__directory-group" aria-labelledby="work-providers-title">
@@ -166,60 +230,131 @@ export function HostedWorkspace({
               </section>
             </nav>
           ) : null}
-          <section
-            className="ym3c__sheet-area"
-            aria-label={signedIn ? "Connection sheet" : "Owner sign-in sheet"}
-          >
-            <div className="ym3c__sheet">
-              {signedIn && surface === "connections" && selectedConnection === "openai-plan" ? (
+          {!signedIn ? (
+            <section className="ym3c__sheet-area" aria-label="Owner sign-in sheet">
+              <div className="ym3c__sheet">
+                <ProviderSettings
+                  fetcher={fetcher}
+                  onSessionChange={onSessionChange}
+                  onStatusesChange={onProviderStatusesChange}
+                  {...(selectedProvider ? { selectedProvider } : {})}
+                  embedded={signedIn}
+                  showSettings={
+                    !signedIn ||
+                    (surface === "connections" &&
+                      (selectedConnection === "anthropic" ||
+                        (selectedConnection === "openai-plan" && openAiMethod === "api-key")))
+                  }
+                />
+              </div>
+            </section>
+          ) : null}
+          {signedIn && surface === "connections" ? (
+            <>
+              <button
+                className="ym3c__drawer-tab"
+                type="button"
+                ref={drawerTabRef}
+                aria-expanded={connectionDrawerOpen}
+                aria-controls="connection-settings-drawer"
+                onClick={() => setConnectionDrawerOpen((open) => !open)}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape" && connectionDrawerOpen) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    closeConnectionDrawer();
+                  }
+                }}
+              >
+                Open {selectedConnectionLabel} settings
+              </button>
+              {connectionDrawerOpen ? (
                 <div
-                  className="ym3c__method-switch"
-                  role="group"
-                  aria-label="OpenAI connection method"
+                  className="ym3c__drawer-backdrop"
+                  onMouseDown={(event) => {
+                    if (event.target === event.currentTarget) setConnectionDrawerOpen(false);
+                  }}
                 >
-                  <button
-                    type="button"
-                    aria-pressed={openAiMethod === "api-key"}
-                    onClick={() => setOpenAiMethod("api-key")}
+                  <section
+                    className="ym3c__drawer"
+                    id="connection-settings-drawer"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label={`${selectedConnectionLabel} settings`}
                   >
-                    API key
-                  </button>
-                  <button
-                    type="button"
-                    aria-pressed={openAiMethod === "chatgpt-plan"}
-                    onClick={() => setOpenAiMethod("chatgpt-plan")}
-                  >
-                    Import ChatGPT credential
-                  </button>
+                    <button
+                      className="ym3c__drawer-close"
+                      type="button"
+                      ref={drawerCloseRef}
+                      onClick={() => setConnectionDrawerOpen(false)}
+                      aria-label={`Close ${selectedConnectionLabel} settings`}
+                    >
+                      Close
+                    </button>
+                    {selectedConnection === "openai-plan" ? (
+                      <div
+                        className="ym3c__method-switch"
+                        role="group"
+                        aria-label="OpenAI connection method"
+                      >
+                        <button
+                          type="button"
+                          aria-pressed={openAiMethod === "api-key"}
+                          onClick={() => setOpenAiMethod("api-key")}
+                        >
+                          API key
+                        </button>
+                        <button
+                          type="button"
+                          aria-pressed={openAiMethod === "chatgpt-plan"}
+                          onClick={() => setOpenAiMethod("chatgpt-plan")}
+                        >
+                          Import ChatGPT credential
+                        </button>
+                      </div>
+                    ) : null}
+                    <div className="ym3c__sheet">
+                      <ProviderSettings
+                        fetcher={fetcher}
+                        onStatusesChange={onProviderStatusesChange}
+                        {...(selectedProvider ? { selectedProvider } : {})}
+                        embedded
+                        hideSignOut
+                        signOutLabel={signOutLabel}
+                        showSettings={
+                          selectedConnection === "anthropic" ||
+                          (selectedConnection === "openai-plan" && openAiMethod === "api-key")
+                        }
+                      />
+                      <PlanAndLampSettings
+                        signedIn
+                        fetcher={fetcher}
+                        selectedPanel={selectedPlanPanel}
+                        onStatusChange={onConnectionStatusChange}
+                      />
+                      <IntegrationSettings
+                        signedIn
+                        fetcher={fetcher}
+                        visible={selectedConnection === "github"}
+                        onStatusChange={onConnectionStatusChange}
+                      />
+                    </div>
+                  </section>
                 </div>
               ) : null}
-              <ProviderSettings
-                fetcher={fetcher}
-                onSessionChange={onSessionChange}
-                onStatusesChange={onProviderStatusesChange}
-                {...(selectedProvider ? { selectedProvider } : {})}
-                embedded={signedIn}
-                showSettings={
-                  !signedIn ||
-                  (surface === "connections" &&
-                    (selectedConnection === "anthropic" ||
-                      (selectedConnection === "openai-plan" && openAiMethod === "api-key")))
-                }
-              />
-              <PlanAndLampSettings
-                signedIn={signedIn}
-                fetcher={fetcher}
-                selectedPanel={selectedPlanPanel}
-                onStatusChange={onConnectionStatusChange}
-              />
-              <IntegrationSettings
-                signedIn={signedIn}
-                fetcher={fetcher}
-                visible={surface === "connections" && selectedConnection === "github"}
-                onStatusChange={onConnectionStatusChange}
-              />
-            </div>
-          </section>
+            </>
+          ) : null}
+          {signedIn && surface === "work" ? (
+            <button
+              className="ym3c__drawer-tab"
+              type="button"
+              aria-expanded={connectionDrawerOpen}
+              aria-controls="connection-settings-drawer"
+              onClick={() => setConnectionDrawerOpen(true)}
+            >
+              Open {selectedConnectionLabel} settings
+            </button>
+          ) : null}
         </div>
       </section>
     </div>

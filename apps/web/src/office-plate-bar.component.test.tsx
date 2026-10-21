@@ -25,7 +25,7 @@ describe("the project bar reads as AR-01", () => {
 
   it("keeps identity, outcome and runtime health in plain words, without the revision", () => {
     render(<OfficeShell state="ready" />);
-    expect(within(bar()).getByRole("heading", { level: 1, name: "CuckCode" })).toBeVisible();
+    expect(within(bar()).getByRole("heading", { level: 1, name: "Your Move" })).toBeVisible();
     expect(bar()).toHaveTextContent("truthful graybox office");
     expect(bar()).not.toHaveTextContent("Outcome:");
     expect(within(bar()).getByText("Connected")).toBeVisible();

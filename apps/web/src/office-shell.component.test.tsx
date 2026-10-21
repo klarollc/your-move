@@ -85,7 +85,7 @@ describe("OfficeShell", () => {
     expect(screen.queryByRole("region", { name: "Office outline" })).toBeNull();
     expect(screen.getByRole("status")).toHaveTextContent("Workspace current");
     await user.click(screen.getByRole("link", { name: "Open the Office outline" }));
-    expect(screen.getByRole("banner", { name: "Project bar" })).toHaveTextContent("CuckCode");
+    expect(screen.getByRole("banner", { name: "Project bar" })).toHaveTextContent("Your Move");
     expect(screen.getByRole("region", { name: "Office scene" })).toHaveAttribute(
       "data-scene-entity-ids",
       officeShellEntities.map(({ entityId }) => entityId).join(","),

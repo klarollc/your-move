@@ -173,11 +173,23 @@ describe("HostedWorkspace owner session", () => {
     await user.click(screen.getByRole("button", { name: "Connections" }));
 
     expect(screen.getByRole("heading", { name: "Connections" })).toBeVisible();
-    expect(screen.getByLabelText("Anthropic API key")).toBeVisible();
+    expect(screen.queryByLabelText("Anthropic API key")).not.toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Open Anthropic settings" })).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
     expect(screen.queryByLabelText("GitHub fine-grained token")).not.toBeInTheDocument();
-    expect(screen.getAllByRole("region", { name: /connection sheet/i })).toHaveLength(1);
+    expect(screen.queryByRole("dialog", { name: "Anthropic settings" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Open Anthropic settings" }));
+    expect(screen.getByLabelText("Anthropic API key")).toBeVisible();
+    expect(screen.getByRole("dialog", { name: "Anthropic settings" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Close Anthropic settings" })).toHaveFocus();
+    await user.click(screen.getByRole("button", { name: "Close Anthropic settings" }));
+    expect(screen.queryByLabelText("Anthropic API key")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /OpenAI \/ ChatGPT plan/ }));
+    await user.click(screen.getByRole("button", { name: "Open OpenAI settings" }));
     expect(screen.getByLabelText("OpenAI API key")).toBeVisible();
     expect(screen.queryByLabelText("Credential from siwc:login")).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Import ChatGPT credential" }));
@@ -186,19 +198,72 @@ describe("HostedWorkspace owner session", () => {
     expect(screen.queryByLabelText("Your Ollama address")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("GitHub fine-grained token")).not.toBeInTheDocument();
 
+    await user.click(screen.getByRole("button", { name: "Close OpenAI settings" }));
+
     await user.click(screen.getByRole("button", { name: /^Ollama/ }));
+    await user.click(screen.getByRole("button", { name: "Open Ollama settings" }));
     expect(screen.getByLabelText("Your Ollama address")).toBeVisible();
     expect(screen.queryByLabelText("OpenAI API key")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Credential from siwc:login")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /^GitHub/ }));
+    expect(screen.getByRole("button", { name: "Open GitHub settings" })).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+    expect(screen.queryByLabelText("Your Ollama address")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Open GitHub settings" }));
+    expect(screen.getByRole("button", { name: "Close GitHub settings" })).toBeVisible();
     expect(screen.getByLabelText("GitHub fine-grained token")).toBeVisible();
     expect(screen.queryByLabelText("Your Ollama address")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Sign out" })).toBeVisible();
+    expect(screen.getAllByRole("button", { name: "Sign out" })).toHaveLength(2);
 
     await user.click(screen.getByRole("button", { name: "Work" }));
     expect(screen.getByRole("heading", { name: "Describe the work" })).toBeVisible();
     expect(screen.queryByRole("heading", { name: "Connections" })).not.toBeInTheDocument();
+  });
+
+  it("keeps the settings tab in Connections layout and closes the overlay on backdrop click", async () => {
+    const fetcher = vi.fn<typeof fetch>(async (input) => {
+      const url = String(input);
+      if (url === "/api/session") return jsonResponse({ authenticated: true });
+      if (url === "/api/providers")
+        return jsonResponse({
+          providers: [
+            { id: "openai", status: "disconnected" },
+            { id: "anthropic", status: "disconnected" },
+          ],
+          modelSelection: { mode: "automatic" },
+        });
+      if (url === "/api/chatgpt-plan")
+        return jsonResponse({ status: "disconnected", active: false, email: null });
+      if (url === "/api/lamp")
+        return jsonResponse({
+          endpoint: { baseUrl: "", configured: false, tokenSet: false },
+          model: "qwen3:8b",
+          degraded: false,
+          failures: 0,
+          latency: { count: 0, p50Ms: null, p95Ms: null },
+        });
+      if (url === "/api/integrations")
+        return jsonResponse({ integrations: [{ id: "github", status: "disconnected" }] });
+      return jsonResponse({ code: "NOT_FOUND" }, 404);
+    });
+    const user = userEvent.setup();
+    const { container } = render(<HostedWorkspace fetcher={fetcher} />);
+
+    await screen.findByRole("heading", { name: "Describe the work" });
+    await user.click(screen.getByRole("button", { name: "Connections" }));
+    const tab = screen.getByRole("button", { name: "Open Anthropic settings" });
+    const layout = container.querySelector(".ym3c__layout");
+    expect(layout?.contains(tab)).toBe(true);
+    expect(tab).toHaveAttribute("aria-expanded", "false");
+    expect(container.querySelector(".ym3c__sheet")).toBeNull();
+
+    await user.click(tab);
+    expect(screen.getByRole("dialog", { name: "Anthropic settings" })).toBeVisible();
+    await user.click(container.querySelector(".ym3c__drawer-backdrop")!);
+    expect(screen.queryByRole("dialog", { name: "Anthropic settings" })).not.toBeInTheDocument();
   });
 
   it("approves without sending an empty JSON body (Fastify rejects content-type with no body)", async () => {

@@ -11,7 +11,7 @@ import type { OfficeShellState } from "./office-shell.js";
 const container = document.querySelector("#app");
 
 if (!(container instanceof HTMLElement)) {
-  throw new Error("CUCKCODE_SCAFFOLD_ROOT_MISSING");
+  throw new Error("YOUR_MOVE_SCAFFOLD_ROOT_MISSING");
 }
 
 const parameters = new URLSearchParams(window.location.search);

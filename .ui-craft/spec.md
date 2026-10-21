@@ -1,4 +1,4 @@
-# CuckCode composition specification
+# Your Move composition specification (historical office surface)
 
 Status: **Owner-approved for Phase 4 Tasks 1–15 on 2026-08-13**
 Date: 2026-08-13

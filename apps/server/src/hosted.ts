@@ -17,7 +17,7 @@ const appOrigin =
 const dataDir =
   mode === "production"
     ? join(requiredEnvironmentVariable("RAILWAY_VOLUME_MOUNT_PATH"), "your-move")
-    : (process.env.HOSTED_DATA_DIR ?? resolve(".cuckcode/hosted-provider-data"));
+    : (process.env.HOSTED_DATA_DIR ?? resolve(".your-move/hosted-provider-data"));
 const hostedDirectory = dirname(fileURLToPath(import.meta.url));
 const app = createHostedApp({
   mode,

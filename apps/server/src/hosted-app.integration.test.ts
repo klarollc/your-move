@@ -13,8 +13,9 @@ const directories: string[] = [];
 const apps: HostedApp[] = [];
 
 function createApp(existingDataDir?: string): HostedApp {
-  const scratchRoot = process.env.TMPDIR ?? tmpdir();
-  const dataDir = existingDataDir ?? mkdtempSync(join(scratchRoot, "cuckcode-r1-hosted-app-"));
+  const dataDir =
+    existingDataDir ??
+    mkdtempSync(join(process.env.TMPDIR ?? tmpdir(), "your-move-r1-hosted-app-"));
   directories.push(dataDir);
   const app = createHostedApp({
     mode: "test",

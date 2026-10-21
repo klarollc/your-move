@@ -2,7 +2,7 @@
   width: 100%;
   min-height: 100vh;
   padding: clamp(24px, 5vw, 64px) clamp(20px, 7vw, 104px);
-  color: #292b2d;
+  color: #27352f;
   background: transparent;
 }
 
@@ -23,7 +23,7 @@
 
 .provider-settings__eyebrow {
   margin: 0 0 14px;
-  opacity: 0.8;
+  opacity: 1;
   font-size: 0.9rem;
 }
 
@@ -48,8 +48,8 @@
 .provider-settings__title-row p {
   max-width: 620px;
   margin-bottom: 0;
-  color: #292b2d;
-  opacity: 0.8;
+  color: #27352f;
+  opacity: 1;
   line-height: 1.55;
 }
 
@@ -91,14 +91,14 @@
   display: grid;
   gap: 5px;
   margin: 0;
-  color: #292b2d;
-  opacity: 0.8;
+  color: #27352f;
+  opacity: 1;
   font-size: 0.9rem;
   line-height: 1.45;
 }
 
 .provider-settings__provider-status strong {
-  color: #292b2d;
+  color: #27352f;
   opacity: 1;
 }
 
@@ -121,7 +121,7 @@
   padding: 8px 12px;
   border: 1px solid #5d6063;
   border-radius: 4px;
-  color: #292b2d;
+  color: #27352f;
   background: #f8f8f5;
   font: inherit;
 }
@@ -131,7 +131,7 @@
   padding: 8px 14px;
   border: 1px solid #5d6063;
   border-radius: 4px;
-  color: #292b2d;
+  color: #27352f;
   background: #f8f8f5;
   font: inherit;
   font-weight: 600;
@@ -151,14 +151,14 @@
 
 .provider-settings button:disabled {
   border-color: #5d6063;
-  color: #292b2d;
+  color: #27352f;
   background: #e3e3df;
   opacity: 0.7;
   cursor: not-allowed;
 }
 
 .provider-settings .provider-settings__quiet {
-  color: #292b2d;
+  color: #27352f;
   background: transparent;
 }
 
@@ -173,8 +173,8 @@
 }
 
 .provider-settings__hint {
-  color: #292b2d;
-  opacity: 0.8;
+  color: #27352f;
+  opacity: 1;
   font-size: 0.875rem;
   line-height: 1.45;
 }
@@ -195,14 +195,14 @@
   margin: 4px 0 0;
   padding-left: 10px;
   border-left: 3px solid #5d6063;
-  color: #292b2d;
+  color: #27352f;
   font-weight: 600;
 }
 
 .provider-settings__feedback {
   min-height: 1.5em;
   margin-top: 20px;
-  color: #292b2d;
+  color: #27352f;
   font-weight: 600;
 }
 
@@ -210,8 +210,8 @@
   margin-top: 22px;
   padding-top: 16px;
   border-top: 1px solid #5d6063;
-  color: #292b2d;
-  opacity: 0.8;
+  color: #27352f;
+  opacity: 1;
   font-size: 0.9rem;
 }
 

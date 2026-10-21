@@ -40,7 +40,7 @@ export function LayoutTrial() {
   return (
     <main className="layout-trial" aria-label="Phase 4 graybox layout trial">
       <header className="trial-project-bar">
-        <strong>CuckCode layout trial</strong>
+        <strong>Your Move layout trial</strong>
         <span>Canonical office reset</span>
         <span className="trial-measurement">
           {viewport.width}×{viewport.height} · zoom {layout.camera.zoom}

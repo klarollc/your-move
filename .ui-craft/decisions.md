@@ -1,4 +1,4 @@
-# CuckCode design decisions
+# Your Move design decisions (historical office surface)
 
 ## 2026-08-13 — Phase 4 graybox office measurements
 

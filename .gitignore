@@ -7,11 +7,13 @@ test-results/
 .env
 .env.*
 !.env.example
-.cuckcode/
+.your-move/
 .restore/
 *.sqlite-wal
 *.sqlite-shm
 test-results-current-build/
+test-results-owner-pass/
+docs/evidence/your-move-owner-pass/
 debug.log
 
 # Local art-reference work, kept out of the repo by owner ruling 2026-09-27.

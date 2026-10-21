@@ -19,8 +19,8 @@ test("@e2e Phase 4 office loads using loopback without application or request fa
 
   await page.goto("/");
 
-  await expect(page).toHaveTitle("CuckCode — Graybox Office");
-  await expect(page.getByRole("main", { name: "CuckCode office workspace" })).toBeAttached();
+  await expect(page).toHaveTitle("Your Move — Graybox Office");
+  await expect(page.getByRole("main", { name: "Your Move office workspace" })).toBeAttached();
   // Task 9e (P-4): the outline is on demand.
   await openOfficeOutline(page);
   await expect(page.getByRole("region", { name: "Office outline" })).toContainText(
@@ -36,7 +36,7 @@ test("@e2e Phase 4 office remains semantically stable with reduced motion", asyn
   await page.goto("/");
 
   // Task 9e (P-4): the page heading is the product name; the outline is on demand.
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("CuckCode");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your Move");
   await expect(page.locator('svg[data-scene-renderer="svg"]')).toHaveCount(1);
   expect(await page.locator("html").evaluate((element) => element.getAnimations().length)).toBe(0);
 });

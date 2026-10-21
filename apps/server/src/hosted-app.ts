@@ -122,7 +122,7 @@ type HostedAppOptions = {
   lampFetch?: typeof fetch;
 };
 
-const SESSION_COOKIE = "cuckcode_session";
+const SESSION_COOKIE = "your_move_session";
 const SESSION_TTL_SECONDS = 12 * 60 * 60;
 const MAX_LOGIN_FAILURES = 32;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;

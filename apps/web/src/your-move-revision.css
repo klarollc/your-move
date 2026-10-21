@@ -20,8 +20,8 @@
   --ym-canvas: #cad3c4;
   --ym-ink: #27352f;
   --ym-muted: #4e5c51;
-  --ym-paper: #e3d3b5;
-  --ym-paper-rule: #a99b80;
+  --ym-paper: #d9d5ca;
+  --ym-paper-rule: #97958b;
   --ym-architecture: #b9c5b2;
   --ym-architecture-line: #34483e;
   --ym-window-lit: #dda64c;
@@ -78,7 +78,7 @@
   min-height: 44px;
   border: 1px solid var(--ym-input);
   border-radius: 1px;
-  background: #eee2ca;
+  background: #efede7;
 }
 
 .hosted-workspace :is(h1, h2, h3, p) {
@@ -235,6 +235,10 @@
   align-items: end;
   padding: 8px 0 0;
   border-bottom: 1px solid var(--ym-architecture-line);
+  background:
+    radial-gradient(ellipse at 12% 76%, rgb(74 96 73 / 18%) 0 8%, transparent 8.5%),
+    radial-gradient(ellipse at 88% 81%, rgb(74 96 73 / 14%) 0 9%, transparent 9.5%),
+    linear-gradient(to top, rgb(52 72 62 / 13%) 0 2px, transparent 2px);
 }
 
 .ym3__street-item {
@@ -244,11 +248,20 @@
 .ym3__house {
   width: min(100%, 216px);
   margin: 0 auto;
+  filter: drop-shadow(0 5px 6px rgb(39 53 47 / 10%));
+  transition:
+    filter 160ms ease,
+    transform 160ms ease;
+}
+
+.ym3__house:hover {
+  filter: drop-shadow(0 9px 10px rgb(39 53 47 / 14%));
+  transform: translateY(-2px);
 }
 
 .ym3__facade {
   display: block;
-  width: 216px;
+  width: 252px;
   max-width: 100%;
   height: auto;
   overflow: visible;
@@ -276,6 +289,11 @@
   opacity: 0.82;
 }
 
+.ym3__masonry {
+  stroke-width: 1.35;
+  opacity: 0.56;
+}
+
 .ym3__door-knob {
   fill: var(--ym-architecture-line);
 }
@@ -292,7 +310,8 @@
 }
 
 .ym3__window--lit .ym3__window-pane {
-  fill: var(--ym-window-lit);
+  fill: #efc875;
+  filter: drop-shadow(0 0 4px rgb(221 166 76 / 38%));
 }
 
 .ym3__window--unknown .ym3__window-pane,
@@ -311,6 +330,10 @@
   stroke: var(--ym-architecture-line);
   stroke-width: 4;
   stroke-linecap: square;
+}
+
+.ym3__facade :is(.ym3__roof, .ym3__cornice, .ym3__wall, .ym3__door-frame, .ym3__door) {
+  stroke-width: 1.8;
 }
 
 .ym3__window[role="button"] {
@@ -350,7 +373,7 @@
 /* The queue is the paper source of truth; the facade is intentionally redundant. */
 .ym3__queue {
   min-width: 0;
-  padding: 24px 28px 20px;
+  padding: 28px 32px 24px;
   border: 1px solid var(--ym-paper-rule);
   background: var(--ym-paper);
   color: var(--ym-ink);
@@ -398,7 +421,7 @@
   padding: 8px 10px;
   border-color: var(--ym-input);
   color: var(--ym-ink);
-  background: #eee2ca;
+  background: #efede7;
   font-size: 14px;
 }
 
@@ -502,13 +525,13 @@
 .ym3 .your-move__panel {
   /* Reused R4 detail controls still consume Lit Windows tokens; map them to daylight here. */
   --ym-ivory: #27352f;
-  --ym-ivory-button: #e3d3b5;
+  --ym-ivory-button: #d9d5ca;
   --ym-ink: #27352f;
-  --ym-muted: #4e5c51;
-  --ym-faint: #4e5c51;
-  --ym-panel: #e3d3b5;
-  --ym-panel-edge: #a99b80;
-  --ym-card: #e3d3b5;
+  --ym-muted: #27352f;
+  --ym-faint: #27352f;
+  --ym-panel: #d9d5ca;
+  --ym-panel-edge: #85877f;
+  --ym-card: #d9d5ca;
 
   position: sticky;
   top: 24px;
@@ -608,7 +631,7 @@
   padding: 10px 12px;
   border: 1px solid var(--ym-input);
   border-radius: 1px;
-  background: #eee2ca;
+  background: #efede7;
 }
 
 .ym3 .your-move__panel button:not(.your-move__back) {
@@ -681,7 +704,7 @@
 .ym3-work__creation .work-creation select {
   border-color: var(--ym-input);
   border-radius: 1px;
-  background: #eee2ca;
+  background: #efede7;
 }
 
 /* Hosted Connections: the directory is navigation; the single sheet is the active configuration. */
@@ -708,6 +731,18 @@
   line-height: 40px;
 }
 
+.ym3c__heading h1::before {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--ym-accent);
+  content: "YOUR MOVE · CONNECTIONS";
+  font-family: "Commissioner", "Fira Sans", system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 18px;
+}
+
 .ym3c__heading p {
   margin: 4px 0 0;
   color: var(--ym-muted);
@@ -723,6 +758,59 @@
 
 .ym3c__layout--auth {
   grid-template-columns: minmax(0, 1fr);
+}
+
+.ym3c__layout--drawer-open > .ym3c__drawer-tab {
+  visibility: hidden;
+}
+
+.ym3c__drawer-tab {
+  position: sticky;
+  z-index: 5;
+  top: 12px;
+  right: 0;
+  justify-self: end;
+  grid-column: 1 / -1;
+  grid-row: 1;
+  writing-mode: horizontal-tb;
+  min-height: 48px;
+  padding: 12px 16px;
+  border: 1px solid var(--ym-paper-rule);
+  color: var(--ym-ink);
+  background: var(--ym-paper);
+  box-shadow: 0 5px 16px rgb(52 72 62 / 14%);
+}
+
+.ym3c__drawer-backdrop {
+  position: fixed;
+  z-index: 10;
+  inset: 0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  background: rgb(39 53 47 / 28%);
+}
+
+.ym3c__drawer {
+  width: min(680px, 92vw);
+  height: min(100%, 100vh);
+  padding: 24px;
+  overflow-y: auto;
+  border-left: 1px solid var(--ym-paper-rule);
+  background: var(--ym-canvas);
+  box-shadow: -12px 0 32px rgb(39 53 47 / 18%);
+  animation: ym3-paper-open 180ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.ym3c__drawer-close {
+  display: block;
+  min-height: 44px;
+  padding: 8px 0 8px 12px;
+  margin: 0 0 16px auto;
+  color: var(--ym-ink);
+  background: transparent;
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 .ym3c__directory {
@@ -759,7 +847,7 @@
 
 .ym3c__directory-item[aria-current="page"] {
   border-left-color: var(--ym-accent);
-  background: rgb(227 211 181 / 62%);
+  background: rgb(217 213 202 / 82%);
   outline: 2px solid var(--ym-accent);
   outline-offset: -2px;
 }
@@ -793,6 +881,13 @@
 
 .ym3c__sheet-area {
   min-width: 0;
+}
+
+.ym3c__drawer .ym3c__sheet {
+  max-width: none;
+  border: 0;
+  box-shadow: none;
+  clip-path: none;
 }
 
 .ym3c__method-switch {
@@ -830,12 +925,19 @@
   width: 100%;
   min-height: 0;
   margin: 0;
-  padding: 24px 28px 28px;
+  padding: 32px;
   border: 1px solid var(--ym-input);
   color: var(--ym-ink);
   background: var(--ym-paper);
   clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
   box-shadow: 0 5px 12px rgb(52 72 62 / 9%);
+}
+
+.ym3c__sheet :is(button, input, select, textarea):focus-visible,
+.ym3c__drawer-close:focus-visible,
+.ym3c__drawer-tab:focus-visible {
+  outline: 2px solid var(--ym-accent);
+  outline-offset: 2px;
 }
 
 .ym3c__sheet > :is(.provider-settings, .integration-settings, .plan-lamp-sheet) {
@@ -937,7 +1039,7 @@
 .ym3c__sheet-area .provider-settings__provider-status strong,
 .ym3c__sheet-area .provider-settings__hint,
 .ym3c__sheet-area .provider-settings__feedback {
-  color: var(--ym-muted);
+  color: var(--ym-ink);
 }
 
 .ym3c__sheet-area .provider-settings input,
@@ -946,7 +1048,7 @@
   border-color: var(--ym-input);
   border-radius: 1px;
   color: var(--ym-ink);
-  background: #eee2ca;
+  background: #efede7;
 }
 
 .ym3c__sheet-area .provider-settings button {
@@ -954,6 +1056,14 @@
   border-radius: 1px;
   color: var(--ym-ink);
   background: transparent;
+}
+
+.ym3c__sheet-area .provider-settings__quiet {
+  position: static;
+  margin: 0;
+  padding: 8px 14px;
+  writing-mode: horizontal-tb;
+  transform: none;
 }
 
 .ym3c__sheet-area .provider-settings .provider-settings__quiet {
@@ -1108,6 +1218,16 @@
     transition: none !important;
     transform: none !important;
   }
+
+  .ym3c__drawer {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+
+  .ym3__house {
+    transition: none !important;
+  }
 }
 
 .ym3 [hidden] {
@@ -1189,6 +1309,19 @@
 }
 
 @media (max-width: 760px) {
+  .ym3c {
+    padding: 16px 20px 40px;
+  }
+
+  .ym3c__drawer-tab {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .ym3c__heading h1::before {
+    margin-bottom: 2px;
+  }
+
   .ym3__header-navigation {
     align-items: flex-start;
     flex-direction: column;

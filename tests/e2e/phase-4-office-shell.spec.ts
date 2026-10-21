@@ -21,9 +21,9 @@ test("@e2e Phase 4 default office keeps Pixi secondary to the keyboard-first out
   const failures = browserFailures(page);
   await page.goto("/");
 
-  const workspace = page.getByRole("main", { name: "CuckCode office workspace" });
+  const workspace = page.getByRole("main", { name: "Your Move office workspace" });
   await expect(workspace).toBeVisible();
-  await expect(page.getByText("CuckCode Phase 0 scaffold")).toHaveCount(0);
+  await expect(page.getByText("Your Move Phase 0 scaffold")).toHaveCount(0);
   // Task 9e (P-4): two persistent structures, the bar and the office. The first Tab reaches the
   // skip link, which opens the outline with focus inside.
   await expect(page.getByTestId("persistent-structure")).toHaveCount(2);
