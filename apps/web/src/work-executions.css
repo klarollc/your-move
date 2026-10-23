@@ -1,29 +1,6 @@
-/* Lit Windows (R4 Track E) — the triage surface only. Tokens are the Round 2 mockup's computed
-   values (Your Move — Directions, "Windows — Home / Crowded / Your move", 2026-10-18).
-   Hard rules: periwinkle ONLY on what needs the owner (a lit window, its label, its panel's edge);
-   working light is a muted oat (~25% saturation); finished work is dark; buttons are ivory; links
-   are ivory with an underline. Typography is the decision record's proposal (not locked), loaded
-   from the system if present: Petrona for words, Hanken Grotesk for the interface. */
+/* R4 detail surfaces share the active Your Move palette. Status meaning remains in words and
+   monochrome window glyphs; amber is reserved for needs-you cues. */
 .your-move {
-  --ym-ivory: #f1e9e1;
-  --ym-ivory-button: #efe6da;
-  --ym-ink: #1a1724;
-  --ym-muted: #c6bac4;
-  --ym-faint: #a497a8;
-  --ym-house: #15121f;
-  --ym-house-quiet: #1d1928;
-  --ym-dark-window: #0b0912;
-  --ym-window-edge: #221d2e;
-  --ym-panel: #1b1726;
-  --ym-panel-edge: #332c40;
-  --ym-card: #14111d;
-  --ym-oat: #b6a28e;
-  --ym-oat-stripe: #9c8a7b;
-  --ym-periwinkle-core: #f4f5ff;
-  --ym-periwinkle: #c0c7ff;
-  --ym-periwinkle-deep: #8890e6;
-  --ym-periwinkle-text: #dfe3ff;
-  --ym-glow: rgba(176, 186, 255, 0.4);
   --ym-serif: Petrona, Georgia, "Times New Roman", serif;
   --ym-sans: "Hanken Grotesk", "Segoe UI", system-ui, sans-serif;
 
@@ -32,16 +9,16 @@
   margin: 2rem auto;
   max-width: 80rem;
   overflow: hidden;
-  color: var(--ym-ivory);
+  color: var(--ym-canvas-text);
   font-family: var(--ym-sans);
-  background: #0d0b14;
+  background: var(--ym-canvas);
   border-radius: 6px;
 }
 
-/* Night sky down to the horizon; the houses stand on the ground band, their names below. */
+/* Canvas-to-paper horizon treatment for the legacy street composition. */
 .your-move__sky {
   padding: 2rem 2.5rem 0;
-  background: linear-gradient(#0c0e20 0%, #181833 45%, #2b2443 85%, #3a2d4a 100%);
+  background: linear-gradient(var(--ym-canvas), var(--ym-paper));
 }
 
 .your-move button,
@@ -51,7 +28,7 @@
 }
 
 .your-move :focus-visible {
-  outline: 2px solid var(--ym-ivory);
+  outline: 2px solid var(--ym-accent);
   outline-offset: 3px;
 }
 
@@ -64,20 +41,20 @@
 .your-move__brand {
   margin: 0 auto 0 0;
   font: 400 1.375rem/1.2 var(--ym-serif);
-  color: var(--ym-muted);
+  color: var(--ym-canvas-muted);
 }
 
 .your-move__counts {
   margin: 0;
   font-size: 0.875rem;
-  color: var(--ym-faint);
+  color: var(--ym-canvas-muted);
 }
 
 .your-move__link {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--ym-ivory);
+  color: var(--ym-canvas-text);
   font-size: 0.9375rem;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -98,9 +75,9 @@
   min-height: 22rem;
   background: linear-gradient(
     to top,
-    #110f18 0,
-    #15121c var(--ym-ground),
-    rgba(58, 45, 74, 0) var(--ym-ground)
+    var(--ym-canvas) 0,
+    var(--ym-paper) var(--ym-ground),
+    transparent var(--ym-ground)
   );
 }
 
@@ -137,7 +114,7 @@
   flex-direction: column-reverse; /* ground floor first in reading order; floors stack upward */
   gap: 1rem;
   padding: 5.25rem 1.75rem 0;
-  background: var(--ym-house);
+  background: var(--ym-architecture-fill);
   clip-path: polygon(0 4.25rem, 50% 0, 100% 4.25rem, 100% 100%, 0 100%);
 }
 
@@ -147,7 +124,7 @@
 }
 
 .your-move__house--quiet .your-move__facade {
-  background: var(--ym-house-quiet);
+  background: var(--ym-architecture-fill);
 }
 
 .your-move__floor {
@@ -169,7 +146,7 @@
   width: 2.75rem;
   height: 5rem;
   margin-left: 0.5rem;
-  background: #0f0d17;
+  background: var(--ym-architecture-fill);
 }
 
 .your-move__window {
@@ -180,24 +157,19 @@
   overflow: hidden;
   border: 0;
   cursor: pointer;
-  background: var(--ym-dark-window);
-  box-shadow: inset 0 0 0 2px var(--ym-window-edge);
+  background: var(--ym-window-unused);
+  box-shadow: inset 0 0 0 2px var(--ym-window-frame);
 }
 
-/* Working light: muted oat behind drawn curtains, soft only. */
+/* Non-attention windows use the same monochrome value across work states. */
 .your-move__window--working {
-  background: repeating-linear-gradient(90deg, var(--ym-oat) 0 3px, var(--ym-oat-stripe) 3px 8px);
-  box-shadow: 0 0 14px rgba(182, 162, 142, 0.18);
+  background: var(--ym-window-unused);
 }
 
-/* Your move: periwinkle, and only here. */
+/* Amber marks work that needs the owner's attention. */
 .your-move__window--lit {
-  background: radial-gradient(
-    var(--ym-periwinkle-core),
-    var(--ym-periwinkle) 50%,
-    var(--ym-periwinkle-deep)
-  );
-  box-shadow: 0 0 40px 10px var(--ym-glow);
+  background: var(--ym-window-lit);
+  box-shadow: 0 0 18px 4px color-mix(in srgb, var(--ym-window-lit) 38%, transparent);
 }
 
 .your-move__curtain {
@@ -205,7 +177,11 @@
   top: 0;
   bottom: 0;
   width: 0;
-  background: repeating-linear-gradient(90deg, #8f7f76 0 3px, #7a6b63 3px 8px);
+  background: repeating-linear-gradient(
+    90deg,
+    var(--ym-window-unused) 0 3px,
+    color-mix(in srgb, var(--ym-window-unused) 80%, transparent) 3px 8px
+  );
   transition: width 240ms ease;
 }
 
@@ -223,7 +199,7 @@
 }
 
 .your-move__window--open {
-  outline: 1px solid var(--ym-ivory);
+  outline: 1px solid var(--ym-accent);
   outline-offset: 4px;
 }
 
@@ -245,7 +221,7 @@
   background: none;
   text-align: left;
   min-height: 0;
-  color: var(--ym-periwinkle-text);
+  color: var(--ym-attention);
   font-size: 0.875rem;
   line-height: 1.4;
   cursor: pointer;
@@ -254,7 +230,7 @@
 .your-move__house-counts,
 .your-move__overflow {
   font-size: 0.8125rem;
-  color: var(--ym-faint);
+  color: var(--ym-canvas-muted);
 }
 
 .your-move__list {
@@ -270,23 +246,23 @@
   display: grid;
   gap: 0.2rem;
   padding: 0.75rem 1rem;
-  border-left: 3px solid var(--ym-window-edge);
-  background: rgba(241, 233, 225, 0.04);
+  border-left: 3px solid var(--ym-window-frame);
+  background: color-mix(in srgb, var(--ym-canvas-text) 4%, transparent);
 }
 
 .your-move__row--lit {
-  border-left-color: var(--ym-periwinkle);
+  border-left-color: var(--ym-window-lit);
 }
 
 .your-move__row--working {
-  border-left-color: var(--ym-oat);
+  border-left-color: var(--ym-window-unused);
 }
 
 .your-move__row-open {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--ym-ivory);
+  color: var(--ym-paper-text);
   font: 400 1.0625rem/1.3 var(--ym-serif);
   text-align: left;
   cursor: pointer;
@@ -294,7 +270,7 @@
 
 .your-move__row-status {
   font-size: 0.8125rem;
-  color: var(--ym-muted);
+  color: var(--ym-paper-muted);
 }
 
 /* The unfold: the work itself slides out beside the street. Not a modal. */
@@ -305,9 +281,9 @@
   gap: 1rem;
   margin: 1.5rem 0;
   padding: 1.75rem 2rem 2rem;
-  background: var(--ym-panel);
-  border: 1px solid var(--ym-panel-edge);
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
+  background: var(--ym-paper);
+  border: 1px solid var(--ym-paper-rule);
+  box-shadow: 0 30px 70px color-mix(in srgb, var(--ym-paper-text) 24%, transparent);
   transform-origin: left center;
   animation: your-move-unfold 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
 }
@@ -315,8 +291,8 @@
 .your-move__panel--lit {
   background-image: linear-gradient(
     90deg,
-    rgba(176, 186, 255, 0.07) 0%,
-    rgba(176, 186, 255, 0) 30%
+    color-mix(in srgb, var(--ym-attention) 7%, transparent) 0%,
+    transparent 30%
   );
 }
 
@@ -346,7 +322,7 @@
   padding: 0;
   border: 0;
   background: none;
-  color: var(--ym-muted);
+  color: var(--ym-paper-muted);
   font-size: 0.9375rem;
   cursor: pointer;
 }
@@ -354,7 +330,7 @@
 .your-move__panel-kicker {
   margin: 0;
   font-size: 0.875rem;
-  color: var(--ym-faint);
+  color: var(--ym-paper-muted);
 }
 
 .your-move__panel-title {
@@ -368,19 +344,19 @@
   display: grid;
   gap: 0.5rem;
   padding: 1rem 1.25rem;
-  background: rgba(241, 233, 225, 0.05);
-  border: 1px solid var(--ym-panel-edge);
+  background: color-mix(in srgb, var(--ym-paper-text) 5%, transparent);
+  border: 1px solid var(--ym-paper-rule);
 }
 
 .your-move__said-label,
 .your-move__cue-label {
   margin: 0;
   font-size: 0.8125rem;
-  color: var(--ym-faint);
+  color: var(--ym-paper-muted);
 }
 
 .your-move__cue-label {
-  color: var(--ym-periwinkle-text);
+  color: var(--ym-attention);
 }
 
 .your-move__cue .your-move__link {
@@ -390,7 +366,7 @@
 .your-move__words {
   margin: 0;
   font: 400 1.125rem/1.55 var(--ym-serif);
-  color: #e2d9d0;
+  color: var(--ym-paper-text);
   white-space: pre-wrap;
 }
 
@@ -403,7 +379,7 @@
   display: grid;
   gap: 0.75rem;
   padding: 1.25rem;
-  background: var(--ym-card);
+  background: var(--ym-paper);
 }
 
 .your-move__proposal-message {
@@ -416,8 +392,8 @@
   margin: 0;
   overflow: auto;
   padding: 0.75rem;
-  background: var(--ym-dark-window);
-  color: #e2d9d0;
+  background: var(--ym-field-background);
+  color: var(--ym-paper-text);
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -436,8 +412,8 @@
   min-height: 3.25rem;
   padding: 0 1.5rem;
   border: 0;
-  background: var(--ym-ivory-button);
-  color: var(--ym-ink);
+  background: var(--ym-button-fill);
+  color: var(--ym-button-text);
   font-size: 1rem;
   font-weight: 600;
   text-decoration: none;
@@ -447,9 +423,9 @@
 .your-move__secondary {
   min-height: 3.25rem;
   padding: 0 1.25rem;
-  border: 1px solid rgba(241, 233, 225, 0.35);
+  border: 1px solid var(--ym-input-boundary);
   background: transparent;
-  color: var(--ym-ivory);
+  color: var(--ym-paper-text);
   font-size: 1rem;
   cursor: pointer;
 }
@@ -473,9 +449,9 @@
 .your-move__reply textarea {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid var(--ym-panel-edge);
-  background: var(--ym-card);
-  color: var(--ym-ivory);
+  border: 1px solid var(--ym-input-boundary);
+  background: var(--ym-field-background);
+  color: var(--ym-paper-text);
   font-size: 1rem;
 }
 
@@ -483,12 +459,12 @@
 .your-move__cost {
   margin: 0;
   font-size: 0.8125rem;
-  color: var(--ym-faint);
+  color: var(--ym-paper-muted);
 }
 
 .your-move__cost a,
 .your-move__plan-limit a:not(.your-move__primary) {
-  color: var(--ym-ivory);
+  color: var(--ym-paper-text);
 }
 
 .your-move__summary {
@@ -509,5 +485,5 @@
 .your-move__error {
   margin: 0;
   padding: 0 2.5rem 1.5rem;
-  color: #f2b8b5;
+  color: var(--ym-paper-text);
 }

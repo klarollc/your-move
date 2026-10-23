@@ -33,7 +33,7 @@ test("@e2e Your Move renders readable, explicit proposal decisions on the daylig
   const surface = page.locator(".ym3");
   await expect(page.locator(".hosted-workspace")).toHaveCSS(
     "background-color",
-    "rgb(202, 211, 196)",
+    "rgb(231, 220, 209)",
   );
   await expect(surface).toHaveCSS("border-radius", "0px");
   const detail = page.getByRole("region", { name: "Add a setup section" });
@@ -180,7 +180,14 @@ async function surfaceContrast(surface: Locator, label: string) {
     const painted = (element: Element | null): string => {
       for (let node = element; node; node = node.parentElement) {
         const background = getComputedStyle(node).backgroundColor;
-        if (background !== "rgba(0, 0, 0, 0)" && background !== "transparent") return background;
+        const alpha = background.match(/\/\s*([\d.]+)\s*\)$/)?.[1];
+        if (
+          background !== "transparent" &&
+          background !== "rgba(0, 0, 0, 0)" &&
+          (alpha === undefined || Number(alpha) === 1)
+        ) {
+          return background;
+        }
       }
       return "rgb(255, 255, 255)";
     };
@@ -202,7 +209,7 @@ async function surfaceContrast(surface: Locator, label: string) {
   for (const sample of samples) {
     expect(
       contrastRatio(sample.color, sample.background),
-      `${label} contrast: ${sample.text}`,
+      `${label} contrast: ${sample.text} (${sample.color} on ${sample.background})`,
     ).toBeGreaterThanOrEqual(4.5);
   }
 }

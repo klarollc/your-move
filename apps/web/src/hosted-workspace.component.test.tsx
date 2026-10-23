@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -14,6 +14,8 @@ function jsonResponse(body: unknown, status = 200): Response {
 
 afterEach(() => {
   cleanup();
+  window.localStorage.clear();
+  delete document.documentElement.dataset.theme;
   vi.restoreAllMocks();
 });
 
@@ -43,6 +45,59 @@ describe("HostedWorkspace layout", () => {
     expect(scroller?.contains(panel)).toBe(true);
     expect(screen.getByRole("button", { name: "Connections" })).toBeVisible();
     expect(scroller?.querySelector(".provider-settings")).toBeNull();
+  });
+});
+
+describe("HostedWorkspace theme mode", () => {
+  it("follows the OS until the owner chooses and persists a theme", async () => {
+    const listeners: ((event: MediaQueryListEvent) => void)[] = [];
+    const media = {
+      matches: true,
+      media: "(prefers-color-scheme: dark)",
+      addEventListener: (_type: string, listener: (event: MediaQueryListEvent) => void) => {
+        listeners.push(listener);
+      },
+      removeEventListener: vi.fn(),
+    } as unknown as MediaQueryList;
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn(() => media),
+    );
+    const fetcher = vi.fn<typeof fetch>(async (input) => {
+      const url = String(input);
+      if (url === "/api/session") return jsonResponse({ authenticated: true });
+      if (url === "/api/providers") {
+        return jsonResponse({
+          providers: [
+            { id: "openai", status: "disconnected" },
+            { id: "anthropic", status: "disconnected" },
+          ],
+          modelSelection: { mode: "automatic" },
+        });
+      }
+      if (url === "/api/work-drafts") return jsonResponse({ drafts: [] });
+      return jsonResponse({ code: "NOT_FOUND" }, 404);
+    });
+    const user = userEvent.setup();
+
+    const firstMount = render(<HostedWorkspace fetcher={fetcher} openFeed={() => () => {}} />);
+    expect(await screen.findByRole("heading", { name: "New work" })).toBeVisible();
+    expect(document.documentElement).toHaveAttribute("data-theme", "dark");
+
+    listeners[0]?.({ matches: false } as MediaQueryListEvent);
+    await waitFor(() => expect(document.documentElement).toHaveAttribute("data-theme", "light"));
+
+    await user.click(screen.getByRole("button", { name: "Dark mode" }));
+    await waitFor(() => expect(document.documentElement).toHaveAttribute("data-theme", "dark"));
+    expect(window.localStorage.getItem("your-move-theme")).toBe("dark");
+
+    listeners[0]?.({ matches: false } as MediaQueryListEvent);
+    await waitFor(() => expect(document.documentElement).toHaveAttribute("data-theme", "dark"));
+    firstMount.unmount();
+
+    render(<HostedWorkspace fetcher={fetcher} openFeed={() => () => {}} />);
+    expect(await screen.findByRole("heading", { name: "New work" })).toBeVisible();
+    expect(document.documentElement).toHaveAttribute("data-theme", "dark");
   });
 });
 

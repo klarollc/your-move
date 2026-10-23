@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import "./hosted-workspace.css";
 import { IntegrationSettings } from "./integration-settings.js";
@@ -10,6 +10,28 @@ type Surface = "work" | "connections";
 type ConnectionId = "anthropic" | "openai-plan" | "ollama" | "github";
 type DirectoryStatuses = Record<ConnectionId, string>;
 const signOutLabel = "Sign out";
+const themePreferenceKey = "your-move-theme";
+type Theme = "light" | "dark";
+
+function storedTheme(): Theme | null {
+  try {
+    const value = window.localStorage.getItem(themePreferenceKey);
+    return value === "light" || value === "dark" ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+function preferredTheme(): Theme {
+  return typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
+function initialTheme(): Theme {
+  return storedTheme() ?? preferredTheme();
+}
 
 async function signOutSession(fetcher: typeof fetch): Promise<void> {
   await fetcher("/api/session", { method: "DELETE", credentials: "same-origin" });
@@ -38,6 +60,7 @@ export function HostedWorkspace({
   openFeed = openLampFeed,
 }: Readonly<{ fetcher?: typeof fetch; openFeed?: OpenFeed }>) {
   const [signedIn, setSignedIn] = useState(false);
+  const [theme, setTheme] = useState<Theme>(initialTheme);
   const [surface, setSurface] = useState<Surface>("connections");
   const [selectedConnection, setSelectedConnection] = useState<ConnectionId>("anthropic");
   const [connectionDrawerOpen, setConnectionDrawerOpen] = useState(false);
@@ -73,6 +96,30 @@ export function HostedWorkspace({
   const closeConnectionDrawer = useCallback(() => setConnectionDrawerOpen(false), []);
   const drawerTabRef = useRef<HTMLButtonElement>(null);
   const drawerCloseRef = useRef<HTMLButtonElement>(null);
+
+  useLayoutEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") return;
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const followSystem = (event: MediaQueryListEvent) => {
+      if (storedTheme() === null) setTheme(event.matches ? "dark" : "light");
+    };
+    media.addEventListener("change", followSystem);
+    return () => media.removeEventListener("change", followSystem);
+  }, []);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === "dark" ? "light" : "dark";
+    try {
+      window.localStorage.setItem(themePreferenceKey, nextTheme);
+    } catch {
+      // The current tab still honors the owner's choice when storage is unavailable.
+    }
+    setTheme(nextTheme);
+  };
 
   useEffect(() => {
     if (!connectionDrawerOpen) return;
@@ -178,6 +225,9 @@ export function HostedWorkspace({
             onClick={() => setSurface("connections")}
           >
             Connections
+          </button>
+          <button type="button" onClick={toggleTheme}>
+            {theme === "dark" ? "Light mode" : "Dark mode"}
           </button>
           <button type="button" onClick={() => void signOut()}>
             {signOutLabel}

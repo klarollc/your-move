@@ -181,7 +181,7 @@ describe("Your Move waiting-work revision", () => {
 });
 
 describe("Your Move structural pass", () => {
-  it("keeps amber for needs-you and cobalt for links, navigation, focus, and selection", () => {
+  it("keeps amber for needs-you and the theme accent for navigation, focus, and selection", () => {
     const css = readFileSync(resolve(process.cwd(), "apps/web/src/your-move-revision.css"), "utf8");
     const rules = css
       .replace(/\/\*[\s\S]*?\*\//g, "")
@@ -191,24 +191,86 @@ describe("Your Move structural pass", () => {
         const at = rule.lastIndexOf("{");
         return { selector: rule.slice(0, at).trim(), body: rule.slice(at + 1) };
       })
-      // The token definitions, and the Connections surface this pass leaves untouched.
-      .filter(({ selector }) => selector !== ".hosted-workspace" && !/ym3c/u.test(selector));
-    const amber = rules.filter(({ body }) =>
-      /--ym-window-lit|#dda64c|#efc875|221 166 76/iu.test(body),
-    );
-    const cobalt = rules.filter(({ body }) => /--ym-accent|#234ac4/iu.test(body));
+      .filter(({ selector }) => selector !== ".hosted-workspace");
+    const amber = rules.filter(({ body }) => /--ym-window-lit/iu.test(body));
+    const accent = rules.filter(({ body }) => /--ym-accent/iu.test(body));
     expect(amber.length).toBeGreaterThan(0);
     expect(
       amber.filter(({ selector }) => !/--lit|needs-you/u.test(selector)).map((r) => r.selector),
     ).toEqual([]);
     expect(
-      cobalt
+      accent
         .filter(
           ({ selector }) =>
-            !/focus-visible|nav|switch|aria-current|aria-pressed|selected|-link/u.test(selector),
+            !/focus-visible|nav|switch|aria-current|aria-pressed|selected|-open|-link/u.test(
+              selector,
+            ),
         )
         .map((r) => r.selector),
     ).toEqual([]);
+  });
+
+  it("defines the approved light and dark token tables on the document root", () => {
+    const css = readFileSync(resolve(process.cwd(), "apps/web/src/global.css"), "utf8");
+    const lightTokens = [
+      "--ym-canvas: #e7dcd1",
+      "--ym-canvas-text: #33261e",
+      "--ym-canvas-muted: #6e5847",
+      "--ym-paper: #f8f2ea",
+      "--ym-paper-text: #33261e",
+      "--ym-paper-muted: #6e5847",
+      "--ym-paper-rule: #cdbba7",
+      "--ym-input-boundary: #7a6656",
+      "--ym-field-background: #ffffff",
+      "--ym-button-fill: #43332a",
+      "--ym-button-text: #f8f2ea",
+      "--ym-architecture-fill: none",
+      "--ym-architecture-edge: #7a6656",
+      "--ym-window-lit: #e9b85f",
+      "--ym-window-frame: #70501e",
+      "--ym-window-unused: #d8c9b8",
+      "--ym-attention: #765015",
+      "--ym-accent: #1f5e63",
+      "--ym-selected-row: #efe3d3",
+    ];
+    const darkTokens = [
+      "--ym-canvas: #211b2a",
+      "--ym-canvas-text: #f1ebf7",
+      "--ym-canvas-muted: #b3a6c4",
+      "--ym-paper: #2d2438",
+      "--ym-paper-text: #f1ebf7",
+      "--ym-paper-muted: #b3a6c4",
+      "--ym-paper-rule: #413550",
+      "--ym-input-boundary: #6e5f8a",
+      "--ym-field-background: #251d31",
+      "--ym-button-fill: #4a3a61",
+      "--ym-button-text: #f1ebf7",
+      "--ym-architecture-fill: #271f33",
+      "--ym-architecture-edge: #6e5f8a",
+      "--ym-window-lit: #e9b85f",
+      "--ym-window-frame: #8a6a30",
+      "--ym-window-unused: #171320",
+      "--ym-attention: #e9b85f",
+      "--ym-accent: #b7a6e3",
+      "--ym-selected-row: #372c49",
+    ];
+
+    expect(css).toContain(':root[data-theme="dark"]');
+    for (const token of [...lightTokens, ...darkTokens]) expect(css).toContain(token);
+  });
+
+  it("keeps component colors on root theme tokens", () => {
+    const stylesheets = [
+      "apps/web/src/your-move-revision.css",
+      "apps/web/src/work-executions.css",
+      "apps/web/src/provider-settings.css",
+      "apps/web/src/work-creation.css",
+      "apps/web/src/hosted-workspace.css",
+    ];
+    for (const stylesheet of stylesheets) {
+      const css = readFileSync(resolve(process.cwd(), stylesheet), "utf8");
+      expect(css, stylesheet).not.toMatch(/#[0-9a-f]{3,8}\b|rgba?\(/iu);
+    }
   });
 
   it("keeps the home surface to the slip, one status line, the street, and the queue strip", async () => {

@@ -14,9 +14,65 @@
   color-scheme: light;
   --font-ui: "Fira Sans", system-ui, sans-serif;
   --font-mono: "Fira Mono", ui-monospace, monospace;
+  --ym-canvas: #e7dcd1;
+  --ym-canvas-text: #33261e;
+  --ym-canvas-muted: #6e5847;
+  --ym-paper: #f8f2ea;
+  --ym-paper-text: #33261e;
+  --ym-paper-muted: #6e5847;
+  --ym-paper-rule: #cdbba7;
+  --ym-input-boundary: #7a6656;
+  --ym-field-background: #ffffff;
+  --ym-button-fill: #43332a;
+  --ym-button-text: #f8f2ea;
+  --ym-architecture-fill: none;
+  --ym-architecture-edge: #7a6656;
+  --ym-window-lit: #e9b85f;
+  --ym-window-frame: #70501e;
+  --ym-window-unused: #d8c9b8;
+  --ym-attention: #765015;
+  --ym-accent: #1f5e63;
+  --ym-selected-row: #efe3d3;
+  --ym-ink: var(--ym-canvas-text);
+  --ym-muted: var(--ym-canvas-muted);
+  --ym-input: var(--ym-input-boundary);
+  --ym-architecture: var(--ym-architecture-fill);
+  --ym-architecture-line: var(--ym-architecture-edge);
+  --ym-selected: var(--ym-selected-row);
   font-family: var(--font-ui);
   color: #292b2d;
   background: #e3e3df;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  color: var(--ym-canvas-text);
+  background: var(--ym-canvas);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  color: var(--ym-canvas-text);
+  background: var(--ym-canvas);
+  --ym-canvas: #211b2a;
+  --ym-canvas-text: #f1ebf7;
+  --ym-canvas-muted: #b3a6c4;
+  --ym-paper: #2d2438;
+  --ym-paper-text: #f1ebf7;
+  --ym-paper-muted: #b3a6c4;
+  --ym-paper-rule: #413550;
+  --ym-input-boundary: #6e5f8a;
+  --ym-field-background: #251d31;
+  --ym-button-fill: #4a3a61;
+  --ym-button-text: #f1ebf7;
+  --ym-architecture-fill: #271f33;
+  --ym-architecture-edge: #6e5f8a;
+  --ym-window-lit: #e9b85f;
+  --ym-window-frame: #8a6a30;
+  --ym-window-unused: #171320;
+  --ym-attention: #e9b85f;
+  --ym-accent: #b7a6e3;
+  --ym-selected-row: #372c49;
 }
 
 * {
