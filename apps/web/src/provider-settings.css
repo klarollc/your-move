@@ -2,7 +2,7 @@
   width: 100%;
   min-height: 100vh;
   padding: clamp(24px, 5vw, 64px) clamp(20px, 7vw, 104px);
-  color: #27352f;
+  color: var(--ym-paper-text);
   background: transparent;
 }
 
@@ -18,7 +18,7 @@
 .provider-settings__header {
   margin-bottom: 38px;
   padding-bottom: 24px;
-  border-bottom: 1px solid #5d6063;
+  border-bottom: 1px solid var(--ym-paper-rule);
 }
 
 .provider-settings__eyebrow {
@@ -48,7 +48,7 @@
 .provider-settings__title-row p {
   max-width: 620px;
   margin-bottom: 0;
-  color: #27352f;
+  color: var(--ym-paper-muted);
   opacity: 1;
   line-height: 1.55;
 }
@@ -65,7 +65,7 @@
 }
 
 .provider-settings__providers {
-  border-top: 1px solid #5d6063;
+  border-top: 1px solid var(--ym-paper-rule);
 }
 
 .provider-settings__provider {
@@ -76,7 +76,7 @@
   margin: 0;
   padding: 20px 0 24px;
   border: 0;
-  border-bottom: 1px solid #5d6063;
+  border-bottom: 1px solid var(--ym-paper-rule);
 }
 
 .provider-settings__provider legend {
@@ -91,14 +91,14 @@
   display: grid;
   gap: 5px;
   margin: 0;
-  color: #27352f;
+  color: var(--ym-paper-text);
   opacity: 1;
   font-size: 0.9rem;
   line-height: 1.45;
 }
 
 .provider-settings__provider-status strong {
-  color: #27352f;
+  color: var(--ym-paper-text);
   opacity: 1;
 }
 
@@ -119,61 +119,77 @@
   width: 100%;
   min-height: 44px;
   padding: 8px 12px;
-  border: 1px solid #5d6063;
+  border: 1px solid var(--ym-input-boundary);
   border-radius: 4px;
-  color: #27352f;
-  background: #f8f8f5;
+  color: var(--ym-paper-text);
+  background: var(--ym-field-background);
   font: inherit;
 }
 
 .provider-settings button {
   min-height: 44px;
   padding: 8px 14px;
-  border: 1px solid #5d6063;
+  border: 1px solid var(--ym-input-boundary);
   border-radius: 4px;
-  color: #27352f;
-  background: #f8f8f5;
+  color: var(--ym-button-text);
+  background: var(--ym-button-fill);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
 }
 
 .provider-settings button:hover:not(:disabled) {
-  background: #e3e3df;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .provider-settings button:focus-visible,
 .provider-settings input:focus-visible,
 .provider-settings select:focus-visible {
-  outline: 3px solid #242628;
+  outline: 3px solid var(--ym-accent);
   outline-offset: 2px;
 }
 
 .provider-settings button:disabled {
-  border-color: #5d6063;
-  color: #27352f;
-  background: #e3e3df;
+  border-color: var(--ym-input-boundary);
+  color: var(--ym-paper-muted);
+  background: var(--ym-field-background);
   opacity: 0.7;
   cursor: not-allowed;
 }
 
 .provider-settings .provider-settings__quiet {
-  color: #27352f;
+  color: var(--ym-paper-text);
   background: transparent;
 }
 
 .provider-settings .provider-settings__quiet:hover:not(:disabled) {
-  background: #e3e3df;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .provider-settings__key-row {
-  display: grid;
-  grid-template-columns: minmax(200px, 1fr) auto auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
   gap: 10px;
 }
 
+.provider-settings__key-row input {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.provider-settings__key-row button {
+  flex: 0 0 auto;
+  width: max-content;
+  max-width: 100%;
+  min-height: 44px;
+  white-space: nowrap;
+}
+
 .provider-settings__hint {
-  color: #27352f;
+  color: var(--ym-paper-muted);
   opacity: 1;
   font-size: 0.875rem;
   line-height: 1.45;
@@ -194,23 +210,23 @@
 .provider-settings__error {
   margin: 4px 0 0;
   padding-left: 10px;
-  border-left: 3px solid #5d6063;
-  color: #27352f;
+  border-left: 3px solid var(--ym-input-boundary);
+  color: var(--ym-paper-text);
   font-weight: 600;
 }
 
 .provider-settings__feedback {
   min-height: 1.5em;
   margin-top: 20px;
-  color: #27352f;
+  color: var(--ym-paper-text);
   font-weight: 600;
 }
 
 .provider-settings__footer {
   margin-top: 22px;
   padding-top: 16px;
-  border-top: 1px solid #5d6063;
-  color: #27352f;
+  border-top: 1px solid var(--ym-paper-rule);
+  color: var(--ym-paper-muted);
   opacity: 1;
   font-size: 0.9rem;
 }
@@ -233,9 +249,5 @@
   .provider-settings__provider form {
     grid-column: 1;
     grid-row: auto;
-  }
-
-  .provider-settings__key-row {
-    grid-template-columns: 1fr;
   }
 }

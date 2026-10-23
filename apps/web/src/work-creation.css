@@ -25,7 +25,7 @@
 }
 
 .work-creation__error {
-  color: #9b1c1c;
+  color: var(--ym-paper-text);
 }
 
 .work-creation__materials {
